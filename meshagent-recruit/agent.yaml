@@ -1,0 +1,45 @@
+version: v1
+kind: ServiceTemplate
+metadata:
+  name: recruit
+  description: MeshAgent service that captures recruiting form submissions (job postings and resumes), stores them, and sends acknowledgement email.
+  repo: https://github.com/dmcqueen/meshagent-recruit
+  annotations:
+    meshagent.service.id: meshagent.recruit
+agents:
+  - name: recruit
+    description: Receives job post and resume submissions from widgets and manages acknowledgement email.
+    annotations:
+      meshagent.agent.type: Mailbot
+      meshagent.agent.widget: https://raw.githubusercontent.com/dmcqueen/meshagent-recruit/refs/heads/main/submit-resume.json
+variables:
+  - name: EMAIL_ADDRESS
+    description: Mailbox address used as the service sender for acknowledgement email.
+ports:
+  - num: "*"
+    type: http
+    endpoints:
+      - path: "/job-post-submission"
+        meshagent:
+          identity: recruit
+      - path: "/job-post-schema"
+        meshagent:
+          identity: recruit
+      - path: "/resume-submission"
+        meshagent:
+          identity: recruit
+      - path: "/resume-schema"
+        meshagent:
+          identity: recruit
+      - path: "/resume-task-runner"
+        meshagent:
+          identity: recruit
+    liveness: "/"
+container:
+  environment:
+    - name: MESHAGENT_IDENTITY
+      value: recruit
+    - name: EMAIL_ADDRESS
+      value: "{EMAIL_ADDRESS}"
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/recruit:latest
+  command: "python /app/main.py"

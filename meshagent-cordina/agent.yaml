@@ -1,0 +1,33 @@
+version: v1
+kind: ServiceTemplate
+metadata:
+  name: cordina
+  description: MeshAgent service that pairs the Cordina chatbot with the email worker.
+  repo: https://github.com/dmcqueen/meshagent-cordina
+  annotations:
+    meshagent.service.id: meshagent.cordina
+agents:
+  - name: cordina
+    description: Handles chat conversations while dispatching outbound email on demand.
+    annotations:
+      meshagent.agent.type: ChatBot
+variables:
+  - name: EMAIL_ADDRESS
+    description: Mailbox address used as the service sender.
+ports:
+  - num: "*"
+    type: http
+    endpoints:
+      - path: "/chat"
+        meshagent:
+          identity: cordina
+      - path: "/mail"
+        meshagent:
+          identity: cordina
+    liveness: "/"
+container:
+  environment:
+    - name: EMAIL_ADDRESS
+      value: ${EMAIL_ADDRESS}
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cordina:latest
+  command: "python /app/main.py"
