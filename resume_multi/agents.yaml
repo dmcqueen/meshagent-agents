@@ -61,3 +61,6 @@ variables:
   - name: SendToEmail
     type: email
     description: "Email address used by the worker to send the resume scoring report."
+  - name: SendToEmail
+    type: email
+    description: "Email address used by the worker to send the resume scoring report."
