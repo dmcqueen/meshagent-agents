@@ -1,0 +1,60 @@
+version: v1
+kind: ServiceTemplate
+metadata:
+  name: ResumeAssistant
+  description: Agents for resume intake, analysis, and scheduled scoring.
+  annotations:
+    meshagent.service.id: ResumeAssistant
+    meshagent.service.readme: "Mailbot ingests resume PDFs, worker scores candidates on a schedule, and chatbot supports queries."
+container:
+  command: /bin/meshagent/meshagent multi service -c "mailbot --require-storage --require-table-write resumes --room-rules rules-mailbot.txt --agent-name mailbot-resumes --queue email --email-address {MailbotEmail}; worker --agent-name worker-resumes --queue resumes --require-storage --require-shell --require-table-write resumes --room-rules rules-worker.txt; chatbot --agent-name chatbot-resumes --require-table-write resumes --require-shell --room-rules rules-chatbot.txt"
+  image: "us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz"
+ports:
+  - num: "*"
+    type: http
+    endpoints:
+      - path: /agent
+        meshagent:
+          identity: ResumeAssistant
+          api:
+            livekit: {}
+            queues:
+              list: true
+            messaging:
+              broadcast: true
+              list: true
+              send: true
+            database:
+              list_tables: true
+            sync: {}
+            storage: {}
+            containers:
+              logs: true
+              use_containers: true
+            developer:
+              logs: true
+            agents:
+              register_agent: true
+              register_public_toolkit: true
+              register_private_toolkit: true
+              call: true
+              use_agents: true
+              use_tools: true
+              allowed_toolkits: null
+    liveness: /
+agents:
+  - name: mailbot-resumes
+    annotations:
+      meshagent.agent.type: MailBot
+      meshagent.agent.database.schema: '{"tables":[{"table":"resumes","schema":{"id":{"type":"int","nullable":true,"metadata":null},"resume_text":{"type":"text","nullable":true,"metadata":null},"email":{"type":"text","nullable":true,"metadata":null},"submitted_at":{"type":"timestamp","nullable":true,"metadata":null}}}]}'
+  - name: worker-resumes
+    annotations:
+      meshagent.agent.type: Worker
+      meshagent.agent.schedule: '{"schedule":"*/5 * * * *","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from rules-worker.txt using echelix-job-post.txt in room storage."}}'
+  - name: chatbot-resumes
+    annotations:
+      meshagent.agent.type: ChatBot
+variables:
+  - name: MailbotEmail
+    type: email
+    description: "Email address used by the mailbot to receive resumes."
