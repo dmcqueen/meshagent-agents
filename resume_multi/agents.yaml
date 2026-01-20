@@ -59,5 +59,4 @@ variables:
     type: email
     description: "Email address used by the mailbot to receive resumes."
   - name: SendToEmail
-    type: email
     description: "Email address used by the worker to send the resume scoring report."
