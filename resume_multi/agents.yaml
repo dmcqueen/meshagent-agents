@@ -39,14 +39,14 @@ container:
             use_tools: true
             allowed_toolkits: null
 agents:
-  - name: chatbot-resumes
+  - name: ResumeAssistant
     annotations:
       meshagent.agent.type: ChatBot
-  - name: mailbot-resumes
+  - name: ResumeAssistant
     annotations:
       meshagent.agent.type: MailBot
       meshagent.agent.database.schema: '{"tables":[{"table":"resumes","schema":{"id":{"type":"int","nullable":true,"metadata":null},"resume_text":{"type":"text","nullable":true,"metadata":null},"email":{"type":"text","nullable":true,"metadata":null},"submitted_at":{"type":"timestamp","nullable":true,"metadata":null}}}]}'
-  - name: worker-resumes
+  - name: ResumeAssistant
     annotations:
       meshagent.agent.type: Worker
       meshagent.agent.schedule: '{"schedule":"*/5 * * * *","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from rules-worker.txt using echelix-job-post.txt in room storage."}}'
