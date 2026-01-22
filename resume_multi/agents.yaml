@@ -45,11 +45,11 @@ container:
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          when a resume attachment comes in as a pdf extract the text and email and insert it with a uuid and submitted_at timestamp as a row into the room database resumes.
+          When a resume attachment comes in as a pdf extract the text and email and insert it with a uuid and submitted_at timestamp as a row into the room database resumes.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
-          look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the job-description.txt at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.
+          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the job-description.txt at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.
       - path: /var/job-description.txt
         read_only: true
         text: |
