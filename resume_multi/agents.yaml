@@ -18,15 +18,21 @@ container:
 
           mkdir -p /data
 
-          : > /data/rules-chatbot.txt
+          if [[ ! -f /data/rules-chatbot.txt ]]; then
+            : > /data/rules-chatbot.txt
+          fi
 
-          cat <<'EOF' > /data/rules-mailbot.txt
-          when a resume attachment comes in as a pdf extract the text and email and insert it with a uuid and submitted_at timestamp as a row into the room database resumes.
-          EOF
+          if [[ ! -f /data/rules-mailbot.txt ]]; then
+            cat <<'EOF' > /data/rules-mailbot.txt
+            when a resume attachment comes in as a pdf extract the text and email and insert it with a uuid and submitted_at timestamp as a row into the room database resumes.
+            EOF
+          fi
 
-          cat <<'EOF' > /data/rules-worker.txt
-          look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the echelix-job-post.txt at the room storage root at /data/echelix-job-post.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.
-          EOF
+          if [[ ! -f /data/rules-worker.txt ]]; then
+            cat <<'EOF' > /data/rules-worker.txt
+            look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the echelix-job-post.txt at the room storage root at /data/echelix-job-post.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.
+            EOF
+          fi
 
           /usr/bin/meshagent multi join -c "chatbot --agent-name ResumeAssistant --require-table-write resumes --require-shell --room-rules /data/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --room-rules /data/rules-mailbot.txt --agent-name ResumeAssistant --email-address {{MailbotEmail}}; worker --agent-name ResumeAssistant --queue resumes --require-storage --require-shell --require-table-write resumes --room-rules /data/rules-worker.txt"
   environment:
