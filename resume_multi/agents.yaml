@@ -16,7 +16,7 @@ container:
     files:
       - path: /var/start.sh
         read_only: true
-        text: !template |
+        text: |
           #!/bin/bash
 
           mkdir -p /data
