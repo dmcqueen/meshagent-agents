@@ -22,76 +22,86 @@ container:
           mkdir -p /data
 
           if [[ ! -f /data/rules-chatbot.txt ]]; then
-            : > /data/rules-chatbot.txt
+            cp /var/rules-chatbot.txt /data/rules-chatbot.txt
           fi
 
           if [[ ! -f /data/rules-mailbot.txt ]]; then
-            cat <<'EOF' > /data/rules-mailbot.txt
-            when a resume attachment comes in as a pdf extract the text and email and insert it with a uuid and submitted_at timestamp as a row into the room database resumes.
-            EOF
+            cp /var/rules-mailbot.txt /data/rules-mailbot.txt
           fi
 
           if [[ ! -f /data/rules-worker.txt ]]; then
-            cat <<'EOF' > /data/rules-worker.txt
-            look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the job-description.txt at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.
-            EOF
+            cp /var/rules-worker.txt /data/rules-worker.txt
           fi
 
           if [[ ! -f /data/job-description.txt ]]; then
-            cat <<'EOF' > /data/job-description.txt
-            About {{CompanyName}}
-
-            {{CompanyName}} is a leading AI consulting company helping businesses design, build, and scale intelligent systems. We partner with organizations to make artificial intelligence practical, powerful, and easy to adopt. Our team blends deep technical skill with real-world business sense to deliver AI that drives measurable results.
-
-
-
-            The Role
-
-            We're looking for a Senior Data Engineer to architect, optimize, and manage database systems that power AI-driven solutions and enterprise applications. You'll lead the design of scalable, secure, and high-performance data infrastructure across cloud platforms, ensuring our clients' data foundations are built for the future.
-
-            This role is ideal for database professionals who have evolved beyond traditional DBA work into cloud-native architectures, API-driven data access layers, and modern DevOps practices. You'll work with cutting-edge technologies like GraphQL, Hasura, and managed cloud databases while mentoring engineers on data architecture best practices.
-
-            What You'll Do
-
-            Design, tune, and manage PostgreSQL, SQL Server, and cloud-managed databases (AWS RDS/Aurora, Azure SQL Database/Cosmos DB)
-            Architect and implement GraphQL APIs using Hasura or equivalent technologies for real-time data access
-            Lead cloud database migrations and deployments across AWS and Azure environments
-            Automate database CI/CD pipelines using tools like GitHub Actions, Azure DevOps, or AWS Code Pipeline
-            Develop and maintain data access layers and APIs that integrate with AI and application workloads
-            Monitor, secure, and optimize database performance using cloud-native tools (AWS CloudWatch, Azure Monitor, Datadog)
-            Implement database security best practices including encryption, access controls, and compliance requirements
-            Mentor engineers on database design, data modeling, and architecture best practices
-
-
-            Requirements
-
-            5+ years of experience designing and managing production database systems
-            Deep expertise in PostgreSQL and SQL Server, including performance tuning and query optimization
-            Hands-on experience with cloud database services (AWS RDS, Aurora, Azure SQL Database, Azure Cosmos DB)
-            Experience with GraphQL and API development, preferably with Hasura or similar platforms
-            Strong background in database CI/CD automation and Infrastructure as Code (Terraform, CloudFormation, Bicep)
-            Proficiency in scripting languages (Python, Bash) for automation and tooling
-            Solid understanding of data modeling, schema design, and database normalization
-            Strong communication and mentoring skills
-            US citizen and must reside in Phoenix, AZ, without relocation assistance.
-
-
-            Nice to Have
-
-            Experience with NoSQL databases (MongoDB, DynamoDB, Redis)
-            Knowledge of data streaming platforms (Kafka, AWS Kinesis, Azure Event Hubs)
-            Experience with data warehousing solutions (Snowflake, Redshift, Azure Synapse)
-            Background in AI/ML data pipelines and feature stores
-            Relevant certifications (AWS Database Specialty, Azure Database Administrator, PostgreSQL Professional)
-
-
-            Why Join {{CompanyName}}
-
-            You'll join a fast-moving team that's shaping how AI connects people and data. We value curiosity, precision, and practical innovation. You'll work on real projects with real impact, not just proofs of concept.
-            EOF
+            cp /var/job-description.txt /data/job-description.txt
           fi
 
           /usr/bin/meshagent multi join -c "chatbot --agent-name ResumeAssistant --require-table-write resumes --require-shell --room-rules /data/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --room-rules /data/rules-mailbot.txt --agent-name ResumeAssistant --email-address {{MailbotEmail}}; worker --agent-name ResumeAssistant --queue resumes --require-storage --require-shell --require-table-write resumes --room-rules /data/rules-worker.txt"
+      - path: /var/rules-chatbot.txt
+        read_only: true
+        text: |
+          Answer user questions in a helpful and professional manner.  You have access to the resumes stored in the room database resumes. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the database.
+      - path: /var/rules-mailbot.txt
+        read_only: true
+        text: |
+          when a resume attachment comes in as a pdf extract the text and email and insert it with a uuid and submitted_at timestamp as a row into the room database resumes.
+      - path: /var/rules-worker.txt
+        read_only: true
+        text: |
+          look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the job-description.txt at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.
+      - path: /var/job-description.txt
+        read_only: true
+        text: |
+          About {{CompanyName}}
+
+          {{CompanyName}} is a leading AI consulting company helping businesses design, build, and scale intelligent systems. We partner with organizations to make artificial intelligence practical, powerful, and easy to adopt. Our team blends deep technical skill with real-world business sense to deliver AI that drives measurable results.
+
+
+
+          The Role
+
+          We're looking for a Senior Data Engineer to architect, optimize, and manage database systems that power AI-driven solutions and enterprise applications. You'll lead the design of scalable, secure, and high-performance data infrastructure across cloud platforms, ensuring our clients' data foundations are built for the future.
+
+          This role is ideal for database professionals who have evolved beyond traditional DBA work into cloud-native architectures, API-driven data access layers, and modern DevOps practices. You'll work with cutting-edge technologies like GraphQL, Hasura, and managed cloud databases while mentoring engineers on data architecture best practices.
+
+          What You'll Do
+
+          Design, tune, and manage PostgreSQL, SQL Server, and cloud-managed databases (AWS RDS/Aurora, Azure SQL Database/Cosmos DB)
+          Architect and implement GraphQL APIs using Hasura or equivalent technologies for real-time data access
+          Lead cloud database migrations and deployments across AWS and Azure environments
+          Automate database CI/CD pipelines using tools like GitHub Actions, Azure DevOps, or AWS Code Pipeline
+          Develop and maintain data access layers and APIs that integrate with AI and application workloads
+          Monitor, secure, and optimize database performance using cloud-native tools (AWS CloudWatch, Azure Monitor, Datadog)
+          Implement database security best practices including encryption, access controls, and compliance requirements
+          Mentor engineers on database design, data modeling, and architecture best practices
+
+
+          Requirements
+
+          5+ years of experience designing and managing production database systems
+          Deep expertise in PostgreSQL and SQL Server, including performance tuning and query optimization
+          Hands-on experience with cloud database services (AWS RDS, Aurora, Azure SQL Database, Azure Cosmos DB)
+          Experience with GraphQL and API development, preferably with Hasura or similar platforms
+          Strong background in database CI/CD automation and Infrastructure as Code (Terraform, CloudFormation, Bicep)
+          Proficiency in scripting languages (Python, Bash) for automation and tooling
+          Solid understanding of data modeling, schema design, and database normalization
+          Strong communication and mentoring skills
+          US citizen and must reside in Phoenix, AZ, without relocation assistance.
+
+
+          Nice to Have
+
+          Experience with NoSQL databases (MongoDB, DynamoDB, Redis)
+          Knowledge of data streaming platforms (Kafka, AWS Kinesis, Azure Event Hubs)
+          Experience with data warehousing solutions (Snowflake, Redshift, Azure Synapse)
+          Background in AI/ML data pipelines and feature stores
+          Relevant certifications (AWS Database Specialty, Azure Database Administrator, PostgreSQL Professional)
+
+
+          Why Join {{CompanyName}}
+
+          You'll join a fast-moving team that's shaping how AI connects people and data. We value curiosity, precision, and practical innovation. You'll work on real projects with real impact, not just proofs of concept.
   environment:
     - name: MESHAGENT_TOKEN
       token:  
