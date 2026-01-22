@@ -41,7 +41,7 @@ container:
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
-          Answer user questions in a helpful and professional manner.  You have access to the resumes stored in the room database resumes. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the database.
+          Answer user questions in a helpful and professional manner.  You have access to the resumes stored in the room database resumes and the job description in the job-description.txt at the room storage root at /data/job-description.txt. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the database.
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
