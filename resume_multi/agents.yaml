@@ -8,7 +8,7 @@ metadata:
     meshagent.service.readme: "Mailbot ingests resume PDFs, worker scores candidates on a schedule, and chatbot supports queries."
 container:
   command: bash /var/start.sh
-  image: "us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz"
+  image: "us-central1-docker.pkg.dev/meshagent-life/images/cli:{SERVER_VERSION}-esgz"
   storage:
     room:
       - path: /data
