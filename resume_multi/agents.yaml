@@ -10,6 +10,9 @@ container:
   command: bash -c /var/start.sh
   image: "us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz"
   storage:
+    room:
+      - path: /data
+        read_only: false
     files:
       - path: /var/start.sh
         read_only: true
