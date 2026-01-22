@@ -39,9 +39,9 @@ container:
 
           if [[ ! -f /data/job-description.txt ]]; then
             cat <<'EOF' > /data/job-description.txt
-            About Echelix
+            About {{CompanyName}}
 
-            Echelix is a leading AI consulting company helping businesses design, build, and scale intelligent systems. We partner with organizations to make artificial intelligence practical, powerful, and easy to adopt. Our team blends deep technical skill with real-world business sense to deliver AI that drives measurable results.
+            {{CompanyName}} is a leading AI consulting company helping businesses design, build, and scale intelligent systems. We partner with organizations to make artificial intelligence practical, powerful, and easy to adopt. Our team blends deep technical skill with real-world business sense to deliver AI that drives measurable results.
 
 
 
@@ -85,7 +85,7 @@ container:
             Relevant certifications (AWS Database Specialty, Azure Database Administrator, PostgreSQL Professional)
 
 
-            Why Join Echelix
+            Why Join {{CompanyName}}
 
             You'll join a fast-moving team that's shaping how AI connects people and data. We value curiosity, precision, and practical innovation. You'll work on real projects with real impact, not just proofs of concept.
             EOF
@@ -139,3 +139,5 @@ variables:
     description: "Email address used by the mailbot to receive resumes."
   - name: SendToEmail
     description: "Email address used by the worker to send the resume scoring report."
+  - name: CompanyName
+    description: "Name of the company for the job description."
