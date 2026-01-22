@@ -7,8 +7,28 @@ metadata:
     meshagent.service.id: ResumeAssistant
     meshagent.service.readme: "Mailbot ingests resume PDFs, worker scores candidates on a schedule, and chatbot supports queries."
 container:
-  command: !template /usr/bin/meshagent multi join -c "chatbot --agent-name ResumeAssistant --require-table-write resumes --require-shell; mailbot --require-uuid --require-storage --require-table-write resumes --rule 'when a resume attachment comes in as a pdf extract the text and email and insert it with a uuid and submitted_at timestamp as a row into the room database resumes.' --agent-name ResumeAssistant --email-address {{MailbotEmail}}; worker --agent-name ResumeAssistant --queue resumes --require-storage --require-shell --require-table-write resumes --rule 'look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the echelix-job-post.txt at the room storage root at /data/echelix-job-post.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.'"
+  command: bash -c /var/start.sh
   image: "us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz"
+  storage:
+    files:
+      - path: /var/start.sh
+        read_only: true
+        text: !template |
+          #!/bin/bash
+
+          mkdir -p /data
+
+          : > /data/rules-chatbot.txt
+
+          cat <<'EOF' > /data/rules-mailbot.txt
+          when a resume attachment comes in as a pdf extract the text and email and insert it with a uuid and submitted_at timestamp as a row into the room database resumes.
+          EOF
+
+          cat <<'EOF' > /data/rules-worker.txt
+          look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the echelix-job-post.txt at the room storage root at /data/echelix-job-post.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.
+          EOF
+
+          /usr/bin/meshagent multi join -c "chatbot --agent-name ResumeAssistant --require-table-write resumes --require-shell --room-rules /data/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --room-rules /data/rules-mailbot.txt --agent-name ResumeAssistant --email-address {{MailbotEmail}}; worker --agent-name ResumeAssistant --queue resumes --require-storage --require-shell --require-table-write resumes --room-rules /data/rules-worker.txt"
   environment:
     - name: MESHAGENT_TOKEN
       token:  
@@ -49,7 +69,7 @@ agents:
   - name: ResumeAssistant
     annotations:
       meshagent.agent.type: Worker
-      meshagent.agent.schedule: '{"schedule":"*/5 * * * *","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from rules-worker.txt using echelix-job-post.txt in room storage."}}'
+      meshagent.agent.schedule: '{"schedule":"0 0 * * MON","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from rules-worker.txt using echelix-job-post.txt in room storage."}}'
 variables:
   - name: MailbotEmail
     type: email
