@@ -75,7 +75,7 @@ agents:
   - name: ResumeAssistant
     annotations:
       meshagent.agent.type: Worker
-      meshagent.agent.schedule: '{"schedule":"0 0 * * MON","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from rules-worker.txt using echelix-job-post.txt in room storage."}}'
+      meshagent.agent.schedule: '{"schedule":"0 0 * * MON","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /data/rules-worker.txt"}}'
 variables:
   - name: MailbotEmail
     type: email
