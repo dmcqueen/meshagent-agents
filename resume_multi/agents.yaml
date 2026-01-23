@@ -21,35 +21,35 @@ container:
 
           mkdir -p /data
 
-          if [[ ! -f /data/rules-chatbot.txt ]]; then
-            cp /var/rules-chatbot.txt /data/rules-chatbot.txt
+          if [[ ! -f /data/data/rules-chatbot.txt ]]; then
+            cp /var/rules-chatbot.txt /data/data/rules-chatbot.txt
           fi
 
-          if [[ ! -f /data/rules-mailbot.txt ]]; then
-            cp /var/rules-mailbot.txt /data/rules-mailbot.txt
+          if [[ ! -f /data/data/rules-mailbot.txt ]]; then
+            cp /var/rules-mailbot.txt /data/data/rules-mailbot.txt
           fi
 
-          if [[ ! -f /data/rules-worker.txt ]]; then
-            cp /var/rules-worker.txt /data/rules-worker.txt
+          if [[ ! -f /data/data/rules-worker.txt ]]; then
+            cp /var/rules-worker.txt /data/data/rules-worker.txt
           fi
 
-          if [[ ! -f /data/job-description.txt ]]; then
-            cp /var/job-description.txt /data/job-description.txt
+          if [[ ! -f /data/data/job-description.txt ]]; then
+            cp /var/job-description.txt /data/data/job-description.txt
           fi
 
-          /usr/bin/meshagent multi join -c "chatbot --agent-name ResumeAssistant --require-table-write resumes --require-shell --room-rules /data/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /data/rules-mailbot.txt --agent-name ResumeAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name ResumeAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /data/rules-worker.txt"
+          /usr/bin/meshagent multi join -c "chatbot --agent-name ResumeAssistant --require-table-write resumes --require-shell --room-rules /data/data/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /data/data/rules-mailbot.txt --agent-name ResumeAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name ResumeAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /data/data/rules-worker.txt"
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
-          Answer user questions in a helpful and professional manner.  You have access to the resumes stored in the room database resumes and the job description in the job-description.txt at the room storage root at /data/job-description.txt. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the database.
+          Answer user questions in a helpful and professional manner.  You have access to the resumes stored in the room database resumes and the job description in the job-description.txt at the room storage root at /data/data/job-description.txt. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the database.
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          When a resume attachment comes in as a pdf store the resume file in the room storage under /data/resumes/ then from the pdf extract the resume text and email and insert them with a uuid and submitted_at timestamp and the resume path as a row into the room database resumes.  Do not put a pointer to the resume file in the resume_text field, put the extracted text of the resume there and put the path location to the stored file in the resume_path field.
+          When a resume attachment comes in as a pdf extract the resume text and email and insert them with a uuid and submitted_at timestamp and the resume path as a row into the room database resumes.  Do not put a pointer to the resume file in the resume_text field, put the extracted text of the resume there and put the path location to the stored file in the resume_path field.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
-          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the job-description.txt at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.  Do not attach any resumes to this email, only the scored candidate table.
+          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the job-description.txt at the room storage root at /data/data/job-description.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.  Do not attach any resumes to this email, only the scored candidate table.
       - path: /var/job-description.txt
         read_only: true
         text: |
@@ -142,7 +142,7 @@ agents:
   - name: ResumeAssistant
     annotations:
       meshagent.agent.type: Worker
-      meshagent.agent.schedule: '{"schedule":"0 0 * * MON","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /data/rules-worker.txt"}}'
+      meshagent.agent.schedule: '{"schedule":"0 0 * * MON","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /data/data/rules-worker.txt"}}'
 variables:
   - name: MailbotEmail
     type: email
