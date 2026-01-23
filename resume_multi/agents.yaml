@@ -37,7 +37,7 @@ container:
             cp /var/job-description.txt /data/job-description.txt
           fi
 
-          /usr/bin/meshagent multi join -c "chatbot --agent-name ResumeAssistant --require-table-write resumes --require-shell --room-rules /data/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --room-rules /data/rules-mailbot.txt --agent-name ResumeAssistant --email-address {{MailbotEmail}}; worker --agent-name ResumeAssistant --queue resumes --require-storage --require-shell --require-table-write resumes --room-rules /data/rules-worker.txt"
+          /usr/bin/meshagent multi join -c "chatbot --agent-name ResumeAssistant --require-table-write resumes --require-shell --room-rules /data/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --room-rules /data/rules-mailbot.txt --agent-name ResumeAssistant --email-address {{MailbotEmail}}; worker --agent-name ResumeAssistant --queue resumes --require-shell --require-table-write resumes --room-rules /data/rules-worker.txt"
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
