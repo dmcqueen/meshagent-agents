@@ -45,11 +45,11 @@ container:
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          When a resume attachment comes in as a pdf extract the resume text and email and insert them with a uuid and submitted_at timestamp as a row into the room database resumes.  Do not put a pointer to the resume file in the resume_text field, put the extracted text of the resume there.
+          When a resume attachment comes in as a pdf store the resume file in the room storage under /data/resumes/ then from the pdf extract the resume text and email and insert them with a uuid and submitted_at timestamp and the resume path as a row into the room database resumes.  Do not put a pointer to the resume file in the resume_text field, put the extracted text of the resume there and put the path location to the stored file in the resume_path field.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
-          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the job-description.txt at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.
+          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the job-description.txt at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.  Do not attach any resumes to this email, only the scored candidate table.
       - path: /var/job-description.txt
         read_only: true
         text: |
@@ -138,7 +138,7 @@ agents:
   - name: ResumeAssistant
     annotations:
       meshagent.agent.type: MailBot
-      meshagent.agent.database.schema: '{"tables":[{"table":"resumes","schema":{"id":{"type":"text","nullable":true,"metadata":null},"resume_text":{"type":"text","nullable":true,"metadata":null},"email":{"type":"text","nullable":true,"metadata":null},"submitted_at":{"type":"timestamp","nullable":true,"metadata":null}}}]}'
+      meshagent.agent.database.schema: '{"tables":[{"table":"resumes","schema":{"id":{"type":"text","nullable":true,"metadata":null},"resume_path":{"type":"text","nullable":true,"metadata":null}, "resume_text":{"type":"text","nullable":true,"metadata":null},"email":{"type":"text","nullable":true,"metadata":null},"submitted_at":{"type":"timestamp","nullable":true,"metadata":null}}}]}'
   - name: ResumeAssistant
     annotations:
       meshagent.agent.type: Worker
