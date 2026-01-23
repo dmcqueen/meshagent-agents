@@ -45,7 +45,7 @@ container:
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          When a resume attachment comes in as a pdf extract the text and email and insert it with a uuid and submitted_at timestamp as a row into the room database resumes.
+          When a resume attachment comes in as a pdf extract the resume text and email and insert them with a uuid and submitted_at timestamp as a row into the room database resumes.  Do not put a pointer to the resume file in the resume_text field, put the extracted text of the resume there.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
