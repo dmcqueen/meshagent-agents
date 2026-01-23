@@ -45,7 +45,7 @@ container:
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          When resume attachments come in as PDFs extract the resume text and email for each resume and insert them with a uuid, submitted_at timestamp and the resume path as rows into the room database resumes.  Do not put a pointer to the resume file in the resume_text field, put the extracted text of the resume there and put the path location to the stored file in the resume_path field.
+          When resume attachments come in as PDFs extract the resume text and email for each resume and insert them with a uuid, submitted_at timestamp and the resume path as rows into the room database resumes.  Do not put a pointer to the resume file in the resume_text field, put the extracted text of the resume there and put the path location to the stored file in the resume_path field.  If no resume text is available don't insert that resume into the database.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
