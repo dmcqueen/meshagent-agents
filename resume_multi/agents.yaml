@@ -41,15 +41,15 @@ container:
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
-          Answer user questions in a helpful and professional manner.  You have access to the resumes stored in the room database resumes and the job description in the job-description.txt at the room storage root at /data/job-description.txt. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the database.
+          Answer user questions in a helpful and professional manner.  You have access to the resumes database stored in the room and the job description in the room storage at /data/job-description.txt. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the resumes database and use the file /data/job-description.txt in the room storage when asked about the job or role.
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          When a resume attachment comes in as a pdf extract the resume text and email and insert them with a uuid and submitted_at timestamp and the resume path as a row into the room database resumes.  Do not put a pointer to the resume file in the resume_text field, put the extracted text of the resume there and put the path location to the stored file in the resume_path field.
+          When a resume attachment comes in as a pdf extract the resume text and email and insert them with a uuid, submitted_at timestamp and the resume path as a row into the room database resumes.  Do not put a pointer to the resume file in the resume_text field, put the extracted text of the resume there and put the path location to the stored file in the resume_path field.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
-          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the job-description.txt at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.  Do not attach any resumes to this email, only the scored candidate table.
+          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf file named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.  Do not attach any resumes to this email, only the scored candidate table pdf.
       - path: /var/job-description.txt
         read_only: true
         text: |
