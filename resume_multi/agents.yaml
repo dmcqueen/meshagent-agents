@@ -53,20 +53,17 @@ container:
       - path: /var/job-description.txt
         read_only: true
         text: |
-          This file is a guide for writing a job post. A strong job post is clear, specific, and easy to scan.
+          Before using this agent paste or create a job post here.  
+
+          If you need help, the JobPostingAssistant chatbot can ask clarifying questions and draft or refine the job post based on your inputs.
 
           Include these sections:
           - Role title, team, and one-sentence mission.
           - Responsibilities: 4-8 concrete bullets.
           - Required qualifications: skills, years of experience, certifications if needed.
           - Preferred qualifications: nice-to-have skills without inflating requirements.
-          - Tools/tech stack and work environment.
+          - Tools/tech and work environment.
           - Location, time zone, and work arrangement (remote/hybrid/on-site).
-          - Compensation range and key benefits.
-          - Hiring process and expected timeline.
-          - How to apply and what to include.
-
-          Keep the tone inclusive, avoid jargon, and remove unnecessary requirements. If you need help, the chatbot can ask clarifying questions and draft or refine the job post based on your inputs.
   environment:
     - name: MESHAGENT_TOKEN
       token:  
