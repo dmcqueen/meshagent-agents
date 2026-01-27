@@ -142,7 +142,7 @@ agents:
   - name: ResumeAssistant
     annotations:
       meshagent.agent.type: Worker
-      meshagent.agent.schedule: '{"schedule":"0 0 * * MON","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /data/rules-worker.txt"}}'
+      meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /data/rules-worker.txt"}}'
 variables:
   - name: MailbotEmail
     type: email
