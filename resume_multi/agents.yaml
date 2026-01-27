@@ -41,7 +41,7 @@ container:
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
-          Answer user questions in a helpful and professional manner.  You have access to the resumes database stored in the room and the job description in the room storage at /data/job-description.txt. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the resumes database and use the file /data/job-description.txt in the room storage when asked about the job or role.
+          Answer user questions in a helpful and professional manner.  You have access to the resumes database stored in the room and the job description in the room storage at /agents/JobPostingAssistant/job-description.txt. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the resumes database and use the file /agents/JobPostingAssistant/job-description.txt in the room storage when asked about the job or role.
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
@@ -49,7 +49,7 @@ container:
       - path: /var/rules-worker.txt
         read_only: true
         text: |
-          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /data/job-description.txt. Once the table is completed put it into a pdf file named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.  Do not attach any resumes to this email, only the scored candidate table pdf.
+          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /agents/JobPostingAssistant/job-description.txt. Once the table is completed put it into a pdf file named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.  Do not attach any resumes to this email, only the scored candidate table pdf.
       - path: /var/job-description.txt
         read_only: true
         text: |
@@ -142,7 +142,7 @@ agents:
   - name: JobPostingAssistant
     annotations:
       meshagent.agent.type: Worker
-      meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /data/rules-worker.txt"}}'
+      meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /agents/JobPostingAssistant/rules-worker.txt"}}'
 variables:
   - name: MailbotEmail
     type: email
