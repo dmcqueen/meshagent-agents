@@ -1,17 +1,17 @@
 version: v1
 kind: ServiceTemplate
 metadata:
-  name: ResumeAssistant
+  name: JobPostingAssistant
   description: Agents for resume intake, analysis, and scheduled scoring.
   annotations:
-    meshagent.service.id: ResumeAssistant
+    meshagent.service.id: JobPostingAssistant
     meshagent.service.readme: "Mailbot ingests resume PDFs, worker scores candidates on a schedule, and chatbot supports queries."
 container:
   command: bash /var/start.sh
   image: "us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz"
   storage:
     room:
-      - path: /data
+      - path: /data/agents/JobPostingAssistant
         read_only: false
     files:
       - path: /var/start.sh
@@ -19,25 +19,25 @@ container:
         text: |
           #!/bin/bash
 
-          mkdir -p /data
+          mkdir -p /data/agents/JobPostingAssistant
 
-          if [[ ! -f /data/rules-chatbot.txt ]]; then
-            cp /var/rules-chatbot.txt /data/rules-chatbot.txt
+          if [[ ! -f /data/agents/JobPostingAssistant/rules-chatbot.txt ]]; then
+            cp /var/rules-chatbot.txt /data/agents/JobPostingAssistant/rules-chatbot.txt
           fi
 
-          if [[ ! -f /data/rules-mailbot.txt ]]; then
-            cp /var/rules-mailbot.txt /data/rules-mailbot.txt
+          if [[ ! -f /data/agents/JobPostingAssistant/rules-mailbot.txt ]]; then
+            cp /var/rules-mailbot.txt /data/agents/JobPostingAssistant/rules-mailbot.txt
           fi
 
-          if [[ ! -f /data/rules-worker.txt ]]; then
-            cp /var/rules-worker.txt /data/rules-worker.txt
+          if [[ ! -f /data/agents/JobPostingAssistant/rules-worker.txt ]]; then
+            cp /var/rules-worker.txt /data/agents/JobPostingAssistant/rules-worker.txt
           fi
 
-          if [[ ! -f /data/job-description.txt ]]; then
-            cp /var/job-description.txt /data/job-description.txt
+          if [[ ! -f /data/agents/JobPostingAssistant/job-description.txt ]]; then
+            cp /var/job-description.txt /data/agents/JobPostingAssistant/job-description.txt
           fi
 
-          /usr/bin/meshagent multi join -c "chatbot --agent-name ResumeAssistant --require-table-write resumes --require-shell --room-rules /data/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /data/rules-mailbot.txt --agent-name ResumeAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name ResumeAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /data/rules-worker.txt"
+          /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /agents/JobPostingAssistant/rules-worker.txt"
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
@@ -105,7 +105,7 @@ container:
   environment:
     - name: MESHAGENT_TOKEN
       token:  
-        identity: ResumeAssistant
+        identity: JobPostingAssistant
         api:
           livekit: {}
           queues:
@@ -132,14 +132,14 @@ container:
             use_tools: true
             allowed_toolkits: null
 agents:
-  - name: ResumeAssistant
+  - name: JobPostingAssistant
     annotations:
       meshagent.agent.type: ChatBot
-  - name: ResumeAssistant
+  - name: JobPostingAssistant
     annotations:
       meshagent.agent.type: MailBot
       meshagent.agent.database.schema: '{"tables":[{"table":"resumes","schema":{"id":{"type":"text","nullable":true,"metadata":null},"resume_path":{"type":"text","nullable":true,"metadata":null}, "resume_text":{"type":"text","nullable":true,"metadata":null},"email":{"type":"text","nullable":true,"metadata":null},"submitted_at":{"type":"timestamp","nullable":true,"metadata":null}}}]}'
-  - name: ResumeAssistant
+  - name: JobPostingAssistant
     annotations:
       meshagent.agent.type: Worker
       meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /data/rules-worker.txt"}}'
