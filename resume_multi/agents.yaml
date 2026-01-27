@@ -45,7 +45,7 @@ container:
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          When resume attachments come in as PDFs extract the resume text and email for each resume. Normalize the email by trimming whitespace and lowercasing, then compute a SHA-256 hash (hex) as email_hash. Before inserting, check the resumes table for an existing row with the same email_hash and skip the insert if it exists to avoid duplicates. Insert with a uuid, submitted_at timestamp, resume_path, resume_text, email, and email_hash. Do not put a pointer to the resume file in the resume_text field, put the extracted text there and put the stored file path in the resume_path field. If no resume text or no email is available, do not insert that resume into the database.
+          When resume attachments come in as PDFs extract the resume text and email for each resume. Normalize the email by trimming whitespace and lowercasing. Before inserting, check the resumes table for an existing row with the same normalized email and skip the insert if it exists to avoid duplicates. Insert with a uuid, submitted_at timestamp, resume_path, resume_text, and email. Do not put a pointer to the resume file in the resume_text field, put the extracted text there and put the stored file path in the resume_path field. If no resume text or no email is available, do not insert that resume into the database.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
@@ -100,7 +100,7 @@ agents:
   - name: JobPostingAssistant
     annotations:
       meshagent.agent.type: MailBot
-      meshagent.agent.database.schema: '{"tables":[{"table":"resumes","schema":{"id":{"type":"text","nullable":true,"metadata":null},"resume_path":{"type":"text","nullable":true,"metadata":null}, "resume_text":{"type":"text","nullable":true,"metadata":null},"email":{"type":"text","nullable":true,"metadata":null},"email_hash":{"type":"text","nullable":true,"metadata":null},"submitted_at":{"type":"timestamp","nullable":true,"metadata":null}}}]}'
+      meshagent.agent.database.schema: '{"tables":[{"table":"resumes","schema":{"id":{"type":"text","nullable":true,"metadata":null},"resume_path":{"type":"text","nullable":true,"metadata":null}, "resume_text":{"type":"text","nullable":true,"metadata":null},"email":{"type":"text","nullable":true,"metadata":null},"submitted_at":{"type":"timestamp","nullable":true,"metadata":null}}}]}'
   - name: JobPostingAssistant
     annotations:
       meshagent.agent.type: Worker
