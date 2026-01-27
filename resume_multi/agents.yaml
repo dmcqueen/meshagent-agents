@@ -41,7 +41,7 @@ container:
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
-          Answer user questions in a helpful and professional manner.  You have access to the resumes database stored in the room and the job description in the room storage at /agents/JobPostingAssistant/job-description.txt. When asked about a candidate, look up their resume by uuid and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the resumes database and use the file /agents/JobPostingAssistant/job-description.txt in the room storage when asked about the job or role.
+          Answer user questions in a helpful and professional manner. You have access to the resumes database stored in the room and the job description in the room storage at /agents/JobPostingAssistant/job-description.txt. When asked about a candidate, look up their resume by resume_text and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the resumes database and use the file /agents/JobPostingAssistant/job-description.txt in the room storage when asked about the job or role. If the user wants help writing or refining a job post, explain that you can help draft it, ask for the needed details, and produce a clear job posting.
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
@@ -53,55 +53,20 @@ container:
       - path: /var/job-description.txt
         read_only: true
         text: |
-          About {{CompanyName}}
+          This file is a guide for writing a job post. A strong job post is clear, specific, and easy to scan.
 
-          {{CompanyName}} is a leading AI consulting company helping businesses design, build, and scale intelligent systems. We partner with organizations to make artificial intelligence practical, powerful, and easy to adopt. Our team blends deep technical skill with real-world business sense to deliver AI that drives measurable results.
+          Include these sections:
+          - Role title, team, and one-sentence mission.
+          - Responsibilities: 4-8 concrete bullets.
+          - Required qualifications: skills, years of experience, certifications if needed.
+          - Preferred qualifications: nice-to-have skills without inflating requirements.
+          - Tools/tech stack and work environment.
+          - Location, time zone, and work arrangement (remote/hybrid/on-site).
+          - Compensation range and key benefits.
+          - Hiring process and expected timeline.
+          - How to apply and what to include.
 
-
-
-          The Role
-
-          We're looking for a Senior Data Engineer to architect, optimize, and manage database systems that power AI-driven solutions and enterprise applications. You'll lead the design of scalable, secure, and high-performance data infrastructure across cloud platforms, ensuring our clients' data foundations are built for the future.
-
-          This role is ideal for database professionals who have evolved beyond traditional DBA work into cloud-native architectures, API-driven data access layers, and modern DevOps practices. You'll work with cutting-edge technologies like GraphQL, Hasura, and managed cloud databases while mentoring engineers on data architecture best practices.
-
-          What You'll Do
-
-          Design, tune, and manage PostgreSQL, SQL Server, and cloud-managed databases (AWS RDS/Aurora, Azure SQL Database/Cosmos DB)
-          Architect and implement GraphQL APIs using Hasura or equivalent technologies for real-time data access
-          Lead cloud database migrations and deployments across AWS and Azure environments
-          Automate database CI/CD pipelines using tools like GitHub Actions, Azure DevOps, or AWS Code Pipeline
-          Develop and maintain data access layers and APIs that integrate with AI and application workloads
-          Monitor, secure, and optimize database performance using cloud-native tools (AWS CloudWatch, Azure Monitor, Datadog)
-          Implement database security best practices including encryption, access controls, and compliance requirements
-          Mentor engineers on database design, data modeling, and architecture best practices
-
-
-          Requirements
-
-          5+ years of experience designing and managing production database systems
-          Deep expertise in PostgreSQL and SQL Server, including performance tuning and query optimization
-          Hands-on experience with cloud database services (AWS RDS, Aurora, Azure SQL Database, Azure Cosmos DB)
-          Experience with GraphQL and API development, preferably with Hasura or similar platforms
-          Strong background in database CI/CD automation and Infrastructure as Code (Terraform, CloudFormation, Bicep)
-          Proficiency in scripting languages (Python, Bash) for automation and tooling
-          Solid understanding of data modeling, schema design, and database normalization
-          Strong communication and mentoring skills
-          US citizen and must reside in Phoenix, AZ, without relocation assistance.
-
-
-          Nice to Have
-
-          Experience with NoSQL databases (MongoDB, DynamoDB, Redis)
-          Knowledge of data streaming platforms (Kafka, AWS Kinesis, Azure Event Hubs)
-          Experience with data warehousing solutions (Snowflake, Redshift, Azure Synapse)
-          Background in AI/ML data pipelines and feature stores
-          Relevant certifications (AWS Database Specialty, Azure Database Administrator, PostgreSQL Professional)
-
-
-          Why Join {{CompanyName}}
-
-          You'll join a fast-moving team that's shaping how AI connects people and data. We value curiosity, precision, and practical innovation. You'll work on real projects with real impact, not just proofs of concept.
+          Keep the tone inclusive, avoid jargon, and remove unnecessary requirements. If you need help, the chatbot can ask clarifying questions and draft or refine the job post based on your inputs.
   environment:
     - name: MESHAGENT_TOKEN
       token:  
@@ -149,5 +114,3 @@ variables:
     description: "Email address used by the mailbot to receive resumes."
   - name: SendToEmail
     description: "Email address used by the worker to send the resume scoring report."
-  - name: CompanyName
-    description: "Name of the company for the job description."
