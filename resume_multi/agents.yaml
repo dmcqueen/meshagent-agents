@@ -49,7 +49,7 @@ container:
       - path: /var/rules-worker.txt
         read_only: true
         text: |
-          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /agents/JobPostingAssistant/job-description.txt. Once the table is completed put it into a pdf file named with a timestamp and email {{SendToEmail}} with the pdf as an attachment.  Do not attach any resumes to this email, only the scored candidate table pdf.
+          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /agents/JobPostingAssistant/job-description.txt. Only include the resumes since the last 24 hours. Once the table is completed put it into a html file saved under /agents/JobPostingAssistant/reports and named with a timestamp then email the report to {{SendToEmail}} with the file as an attachment.  Do not attach any resumes to this email, only the report file.
       - path: /var/job-description.txt
         read_only: true
         text: |
