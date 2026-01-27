@@ -5,7 +5,7 @@ metadata:
   description: Agents for resume intake, analysis, and scheduled scoring.
   annotations:
     meshagent.service.id: JobPostingAssistant
-    meshagent.service.readme: "Mailbot ingests resume PDFs, worker scores candidates on a schedule, and chatbot supports queries."
+    meshagent.service.readme: "JobPostingAssistant manages a hiring pipeline: mailbot ingests resume PDFs into the resumes table (deduped by normalized email), worker generates scheduled candidate scoring reports based on the job description, and chatbot answers questions and helps refine the plain-text job posting stored in room storage."
 container:
   command: bash /var/start.sh
   image: "us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz"
@@ -41,11 +41,11 @@ container:
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
-          Answer user questions in a helpful and professional manner. You have access to the resumes database stored in the room and the job description in the room storage at /agents/JobPostingAssistant/job-description.txt. When asked about a candidate, look up their resume by resume_text and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the resumes database and use the file /agents/JobPostingAssistant/job-description.txt in the room storage when asked about the job or role. If the user wants help writing or refining a job post, explain that you can help draft it, ask for the needed details, and produce a clear job posting. When refining the job description, edit /agents/JobPostingAssistant/job-description.txt directly as plain text (no markdown) and automatically update the file with the latest version.
+          Answer user questions in a helpful and professional manner. You have access to the resumes database stored in the room and the job description in the room storage at /agents/JobPostingAssistant/job-description.txt. When asked about a candidate, look up their resume by resume_text and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the resumes database and use the file /agents/JobPostingAssistant/job-description.txt in the room storage when asked about the job or role. If the user wants help writing or refining a job post, explain that you can help draft it, ask for the needed details, and produce a clear job posting. When refining the job description, edit /agents/JobPostingAssistant/job-description.txt directly as plain text (no markdown) and automatically update the file with the latest version. Use ASCII-only output for the job description: replace smart quotes with straight quotes, em/en dashes with hyphens, and remove any non-ASCII characters before writing.
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          When resume attachments come in as PDFs extract the resume text and email for each resume. Normalize the email by trimming whitespace and lowercasing. Before inserting, check the resumes table for an existing row with the same normalized email and skip the insert if it exists to avoid duplicates. Insert with a uuid, submitted_at timestamp, resume_path, resume_text, and email. Do not put a pointer to the resume file in the resume_text field, put the extracted text there and put the stored file path in the resume_path field. If no resume text or no email is available, do not insert that resume into the database.
+          When resume attachments come in as PDFs extract the resume text and email for each resume. Normalize the email by trimming whitespace and lowercasing. For each resume, check the resumes table for an existing row with the same normalized email and skip only that resume if it exists to avoid duplicates; continue processing any other attachments in the same email. Insert with a uuid, submitted_at timestamp, resume_path, resume_text, and email. Do not put a pointer to the resume file in the resume_text field, put the extracted text there and put the stored file path in the resume_path field. If no resume text or no email is available, do not insert that resume into the database.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
