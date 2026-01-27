@@ -11,7 +11,7 @@ container:
   image: "us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz"
   storage:
     room:
-      - path: /agents/JobPostingAssistant
+      - path: /data
         read_only: false
     files:
       - path: /var/start.sh
@@ -19,22 +19,22 @@ container:
         text: |
           #!/bin/bash
 
-          mkdir -p /agents/JobPostingAssistant
+          mkdir -p /data/agents/JobPostingAssistant
 
-          if [[ ! -f /agents/JobPostingAssistant/rules-chatbot.txt ]]; then
-            cp /var/rules-chatbot.txt /agents/JobPostingAssistant/rules-chatbot.txt
+          if [[ ! -f /data/agents/JobPostingAssistant/rules-chatbot.txt ]]; then
+            cp /var/rules-chatbot.txt /data/agents/JobPostingAssistant/rules-chatbot.txt
           fi
 
-          if [[ ! -f /agents/JobPostingAssistant/rules-mailbot.txt ]]; then
-            cp /var/rules-mailbot.txt /agents/JobPostingAssistant/rules-mailbot.txt
+          if [[ ! -f /data/agents/JobPostingAssistant/rules-mailbot.txt ]]; then
+            cp /var/rules-mailbot.txt /data/agents/JobPostingAssistant/rules-mailbot.txt
           fi
 
-          if [[ ! -f /agents/JobPostingAssistant/rules-worker.txt ]]; then
-            cp /var/rules-worker.txt /agents/JobPostingAssistant/rules-worker.txt
+          if [[ ! -f /data/agents/JobPostingAssistant/rules-worker.txt ]]; then
+            cp /var/rules-worker.txt /data/agents/JobPostingAssistant/rules-worker.txt
           fi
 
-          if [[ ! -f /agents/JobPostingAssistant/job-description.txt ]]; then
-            cp /var/job-description.txt /agents/JobPostingAssistant/job-description.txt
+          if [[ ! -f /data/agents/JobPostingAssistant/job-description.txt ]]; then
+            cp /var/job-description.txt /data/agents/JobPostingAssistant/job-description.txt
           fi
 
           /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /agents/JobPostingAssistant/rules-worker.txt"
