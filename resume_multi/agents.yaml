@@ -37,9 +37,7 @@ container:
             cp /var/job-description.txt /data/agents/JobPostingAssistant/job-description.txt
           fi
 
-          RULE_WORKER=$(cat /var/rules-worker-tech.txt)
-
-          /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /agents/JobPostingAssistant/rules-worker.txt --rule \"${RULE_WORKER}\""
+          /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /agents/JobPostingAssistant/rules-worker.txt"
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
@@ -52,9 +50,6 @@ container:
         read_only: true
         text: |
           Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /agents/JobPostingAssistant/job-description.txt. Only include the resumes since the last 24 hours. Once the table is completed put it into a pdf file saved under /agents/JobPostingAssistant/reports and named with a timestamp then email the report to {{SendToEmail}} with the file as an attachment.  Do not attach any resumes to this email, only the report file.
-      - path: /var/rules-worker-tech.txt
-        read_only: true
-        text: |
           If you need to create a PDF, use the shell tool to run: python -m pip install reportlab.
       - path: /var/job-description.txt
         read_only: true
