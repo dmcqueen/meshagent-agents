@@ -37,19 +37,37 @@ container:
             cp /var/job-description.txt /data/agents/JobPostingAssistant/job-description.txt
           fi
 
-          /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /agents/JobPostingAssistant/rules-worker.txt"
+          RULE_CHATBOT=$(cat /var/rules-chatbot-tech.txt)
+          RULE_MAILBOT=$(cat /var/rules-mailbot-tech.txt)
+          RULE_WORKER=$(cat /var/rules-worker-tech.txt)
+
+          /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt --rule \"${RULE_CHATBOT}\"; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --rule \"${RULE_MAILBOT}\" --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /agents/JobPostingAssistant/rules-worker.txt --rule \"${RULE_WORKER}\""
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
-          Answer user questions in a helpful and professional manner. You have access to the resumes database stored in the room and the job description in the room storage at /agents/JobPostingAssistant/job-description.txt. When asked about a candidate, look up their resume by resume_text and provide relevant information from their resume to answer questions. If you are asked to summarize or compare candidates, create a concise summary based on the resume text available in the resumes database and use the file /agents/JobPostingAssistant/job-description.txt in the room storage when asked about the job or role. If the user wants help writing or refining a job post, explain that you can help draft it, ask for the needed details, and produce a clear job posting. When refining the job description, edit /agents/JobPostingAssistant/job-description.txt directly as plain text (no markdown) and automatically update the file with the latest version. Use ASCII-only output for the job description: replace smart quotes with straight quotes, em/en dashes with hyphens, and remove any non-ASCII characters before writing.
+          You are the JobPostingAssistant chatbot. Be helpful, professional, and concise.
+          Ask clarifying questions when needed. Help users refine or draft job postings.
+      - path: /var/rules-chatbot-tech.txt
+        read_only: true
+        text: |
+          Use the resumes table and the job description at /agents/JobPostingAssistant/job-description.txt. When asked about a candidate, look up their resume by resume_text and provide relevant information from their resume to answer questions. When asked to summarize or compare candidates, create a concise summary based on resume_text and the job description. If the user wants help writing or refining a job post, explain that you can help draft it, ask for the needed details, and produce a clear job posting. When refining the job description, edit /agents/JobPostingAssistant/job-description.txt directly as plain text and overwrite it with the latest version. Use ASCII-only output for the job description: replace smart quotes with straight quotes, em or en dashes with hyphens, and remove non-ASCII characters before writing.
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          When resume attachments come in as PDFs extract the resume text and email for each resume. Normalize the email by trimming whitespace and lowercasing. For each resume, check the resumes table for an existing row with the same normalized email and skip only that resume if it exists to avoid duplicates; continue processing any other attachments in the same email. Insert with a uuid, submitted_at timestamp, resume_path, resume_text, and email. Do not put a pointer to the resume file in the resume_text field, put the extracted text there and put the stored file path in the resume_path field. If no resume text or no email is available, do not insert that resume into the database.
+          You process incoming resumes for JobPostingAssistant.
+          Be careful and concise in any responses.
+      - path: /var/rules-mailbot-tech.txt
+        read_only: true
+        text: |
+          When resume attachments come in as PDFs, extract the resume text and email for each resume. Normalize the email by trimming whitespace and lowercasing. For each resume, check the resumes table for an existing row with the same normalized email and skip only that resume if it exists to avoid duplicates, continue processing any other attachments in the same email. Insert with a uuid, submitted_at timestamp, resume_path, resume_text, and email. Do not put a pointer to the resume file in the resume_text field, put the extracted text there and put the stored file path in the resume_path field. If no resume text or no email is available, do not insert that resume into the database.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
-          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /agents/JobPostingAssistant/job-description.txt. Only include the resumes since the last 24 hours. Once the table is completed put it into a html file saved under /agents/JobPostingAssistant/reports and named with a timestamp then email the report to {{SendToEmail}} with the file as an attachment.  Do not attach any resumes to this email, only the report file.
+          You generate periodic resume scoring reports for JobPostingAssistant.
+      - path: /var/rules-worker-tech.txt
+        read_only: true
+        text: |
+          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description at /agents/JobPostingAssistant/job-description.txt. Only include the resumes since the last 24 hours. Once the table is completed put it into an HTML file saved under /agents/JobPostingAssistant/reports and named with a timestamp then email the report to {{SendToEmail}} with the file as an attachment. Do not attach any resumes to this email, only the report file.
       - path: /var/job-description.txt
         read_only: true
         text: |
@@ -104,7 +122,7 @@ agents:
   - name: JobPostingAssistant
     annotations:
       meshagent.agent.type: Worker
-      meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /agents/JobPostingAssistant/rules-worker.txt"}}'
+      meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"resumes","name":"ProcessResumes","payload":{"prompt":"Run the resume scoring workflow from /data/agents/JobPostingAssistant/rules-worker.txt"}}'
 variables:
   - name: MailbotEmail
     type: email
