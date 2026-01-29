@@ -37,7 +37,7 @@ container:
             cp /var/job-description.txt /data/agents/JobPostingAssistant/job-description.txt
           fi
 
-          /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /agents/JobPostingAssistant/rules-worker.txt"
+          /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --rules-file /var/tech-rules-worker.txt --room-rules /agents/JobPostingAssistant/rules-worker.txt"
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
@@ -49,8 +49,11 @@ container:
       - path: /var/rules-worker.txt
         read_only: true
         text: |
-          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /agents/JobPostingAssistant/job-description.txt. Only include the resumes since the last 24 hours. Once the table is completed put it into a pdf file saved under /data/agents/JobPostingAssistant/reports (create the folder if needed) and named with a timestamp then email the report to {{SendToEmail}} with the file as an attachment using the same absolute path. Do not attach any resumes to this email, only the report file.
-          If you need to create a PDF, use the shell tool to run: python -m pip install reportlab.
+          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /data/agents/JobPostingAssistant/job-description.txt. Only include the resumes since the last 24 hours. Once the table is completed put it into a html file named with the UTC timestamp and save it to the /data/agents/JobPostingAssistant/reports folder (create the folder if needed) then email the report to david.mcqueen@timu.com. Do not attach any resumes to this email, only the report file.
+      - path: /var/tech-rules-worker.txt
+        read_only: true
+        text: |
+          When passing the report file as an attachment to the mailbot email tool use the path starting from /agents/.
       - path: /var/job-description.txt
         read_only: true
         text: |
