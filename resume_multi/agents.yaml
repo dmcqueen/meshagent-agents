@@ -49,11 +49,7 @@ container:
       - path: /var/rules-worker.txt
         read_only: true
         text: |
-          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /data/agents/JobPostingAssistant/job-description.txt. Only include the resumes since the last 24 hours. Once the table is completed put it into a html file named with the UTC timestamp and save it to the /data/agents/JobPostingAssistant/reports folder (create the folder if needed) then email the report to david.mcqueen@timu.com. Do not attach any resumes to this email, only the report file.
-      - path: /var/tech-rules-worker.txt
-        read_only: true
-        text: |
-          When passing the report file as an attachment to the mailbot email tool use the path starting from /agents/.
+          Look at the resumes in the room database resumes and create a sorted table of resumes as rows and columns that rate each candidate on relevant dimensions given the job description in the file at the room storage root at /agents/JobPostingAssistant/job-description.txt. Only include the resumes since the last 24 hours. Once the table is completed put it into a html file saved under /agents/JobPostingAssistant/reports and named with a timestamp then email the report to {{SendToEmail}} with the file as an attachment.  Do not attach any resumes to this email, only the report file.
       - path: /var/job-description.txt
         read_only: true
         text: |
