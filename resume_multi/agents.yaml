@@ -37,7 +37,7 @@ container:
             cp /var/job-description.txt /data/agents/JobPostingAssistant/job-description.txt
           fi
 
-          /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --rules-file /var/tech-rules-worker.txt --room-rules /agents/JobPostingAssistant/rules-worker.txt"
+          /usr/bin/meshagent multi join -c "chatbot --agent-name JobPostingAssistant --require-table-write resumes --require-storage --room-rules /agents/JobPostingAssistant/rules-chatbot.txt; mailbot --require-uuid --require-storage --require-table-write resumes --enable-attachments --room-rules /agents/JobPostingAssistant/rules-mailbot.txt --agent-name JobPostingAssistant --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name JobPostingAssistant --queue resumes --require-shell --require-table-write resumes --require-toolkit=email --room-rules /agents/JobPostingAssistant/rules-worker.txt"
       - path: /var/rules-chatbot.txt
         read_only: true
         text: |
