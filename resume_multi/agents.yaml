@@ -45,7 +45,7 @@ container:
       - path: /var/rules-mailbot.txt
         read_only: true
         text: |
-          When resume attachments come in as PDFs extract the resume text and email for each resume. Normalize the email by trimming whitespace and lowercasing. For each resume, check the resumes table for an existing row with the same normalized email and skip only that resume if it exists to avoid duplicates; continue processing any other attachments in the same email. Insert with a uuid, submitted_at timestamp, resume_path, resume_text, and email. Do not put a pointer to the resume file in the resume_text field, put the extracted text there and put the stored file path in the resume_path field. If no resume text or no email is available, do not insert that resume into the database.
+          When resume attachments come in as PDFs extract the resume text and email for each resume. Normalize the email by trimming whitespace and lowercasing. For each resume, check the resumes table for an existing row with the same normalized email and skip only that resume if it exists to avoid duplicates; continue processing any other attachments in the same email. Insert with a uuid, submitted_at timestamp, resume_path, resume_text, and email. Do not put a pointer to the resume file in the resume_text field, put the extracted text there and put the stored file path in the resume_path field. If no resume text or no email is available, do not insert that individual resume into the database, however if the email contains other resumes that text and email can be extracted, process them and insert into the resumes table.
       - path: /var/rules-worker.txt
         read_only: true
         text: |
