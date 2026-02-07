@@ -5,7 +5,7 @@ metadata:
   description: Agents for industry intelligence collection, event tracking, and reporting.
   annotations:
     meshagent.service.id: IndustryReportSystem
-    meshagent.service.readme: "IndustryReportSystem gathers daily industry intelligence into Companies, People, Products, Features, Subscribers, and weekly Events shards. A mailbot manages subscriptions, a scheduled shard manager prepares weekly event tables, a gatherer ingests x.com hashtag updates and web research, and a nightly reporter emails summaries to subscribers."
+    meshagent.service.readme: "IndustryReportSystem gathers daily industry intelligence into Companies, People, Products, Features, Subscribers, and the current-week Events table. A mailbot manages subscriptions, a scheduled shard manager archives the weekly events into events_YYYY_MM_DD at Saturday night UTC midnight, a gatherer ingests x.com hashtag updates and web research, and a nightly reporter emails summaries to subscribers."
 container:
   command: bash /var/start.sh
   image: "us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz"
@@ -53,9 +53,9 @@ container:
           - products
           - features
           - subscribers
-          - events (fallback only; preferred storage is weekly events shards named events_YYYY_MM_DD)
+          - events (current-week buffer; weekly shards named events_YYYY_MM_DD are historical)
 
-          When answering questions, query the database and summarize clearly. For events, identify the correct weekly shard(s) by Sunday date and query those tables; if no shard exists for the requested range, use the events table as a fallback and note the limitation.
+          When answering questions, query the database and summarize clearly. For events, use the events table for the current week and the correct weekly shard(s) by Sunday date for historical ranges. If a shard is missing for a requested range, note the limitation and use the events table if it overlaps the range.
 
           When inserting or updating records:
           - Avoid duplicates by checking for existing rows by name plus a secondary key (website, x_handle, or source_url).
@@ -84,15 +84,17 @@ container:
       - path: /var/rules-worker-shard.txt
         read_only: true
         text: |
-          This worker ensures the next weekly events shard exists.
+          This worker archives the current week's events and prepares the weekly events shard.
 
           Weekly shards are named events_YYYY_MM_DD, where the date is the Sunday that starts the week (UTC).
 
           Steps:
-          1) Determine the next Sunday date in UTC (the Sunday immediately following the current Saturday run).
-          2) Check list_tables for events_YYYY_MM_DD.
+          1) Determine the Sunday date that started the week that just ended (UTC). At the scheduled run (Saturday night UTC midnight), this is the Sunday 7 days prior.
+          2) Check list_tables for events_YYYY_MM_DD using that Sunday date.
           3) If missing, create the table with the events shard schema below.
-          4) Verify the table exists after creation.
+          4) Copy all rows from the events table into the shard table, mapping all columns except week_start.
+          5) After a successful copy, delete all rows from events so it is empty and ready for the new week.
+          6) Verify the shard exists and events is empty.
 
           Events shard schema (use these columns and types):
           - id (text)
@@ -114,7 +116,7 @@ container:
           - hashtags (text)
           - created_at (timestamp)
 
-          If table creation is not possible, log the issue and continue. The events table exists as a fallback.
+          If shard creation or copy is not possible, log the issue and do not clear the events table.
       - path: /var/rules-worker-gather.txt
         read_only: true
         text: |
@@ -128,7 +130,7 @@ container:
           2) For each relevant signal, extract entities (companies, people, products, features) and events.
           3) Use web search to gather brief profiles for new people (2-4 sentences) and validate key facts.
           4) Insert new entities into the appropriate tables if they do not already exist.
-          5) Record events in the current weekly events shard (events_YYYY_MM_DD) based on the Sunday date that starts the current week. If the shard does not exist, create it using the shard schema; if creation fails, insert into the events fallback table and set week_start to the Sunday date.
+          5) Record events in the events table only. Set week_start to the Sunday date that starts the current week (UTC). Do not write to shard tables.
 
           People roles:
           - Assign one or more roles from: influencer, product_owner, executive, observer, commenter.
@@ -156,7 +158,7 @@ container:
 
           Steps:
           1) Determine the last 24 hours in UTC.
-          2) Query the current and previous weekly events shards that overlap the last 24 hours. If shards are missing, use the events fallback table.
+          2) Query the events table for the current week and the previous week's shard (events_YYYY_MM_DD) if the last 24 hours crosses a week boundary. If the shard is missing, note the limitation and use events if it overlaps the range.
           3) Summarize key updates: new companies, people, products, features, and notable events.
           4) Create a concise HTML report and save it to /data/agents/IndustryReportSystem/reports/report-YYYYMMDD-HHMM-UTC.html (create the folder if needed).
           5) Send the report to subscribers with status=active and frequency:
@@ -206,7 +208,7 @@ agents:
   - name: IndustryReportSystem
     annotations:
       meshagent.agent.type: Worker
-      meshagent.agent.schedule: '{"schedule":"0 2 * * SAT","queue":"events-shard","name":"PrepareEventShard","payload":{"prompt":"Run the weekly shard manager workflow from /data/agents/IndustryReportSystem/rules-worker-shard.txt"}}'
+      meshagent.agent.schedule: '{"schedule":"0 0 * * SUN","queue":"events-shard","name":"PrepareEventShard","payload":{"prompt":"Run the weekly shard manager workflow from /data/agents/IndustryReportSystem/rules-worker-shard.txt"}}'
   - name: IndustryReportSystem
     annotations:
       meshagent.agent.type: Worker
