@@ -1,0 +1,223 @@
+version: v1
+kind: ServiceTemplate
+metadata:
+  name: IndustryReportSystem
+  description: Agents for industry intelligence collection, event tracking, and reporting.
+  annotations:
+    meshagent.service.id: IndustryReportSystem
+    meshagent.service.readme: "IndustryReportSystem gathers daily industry intelligence into Companies, People, Products, Features, Subscribers, and weekly Events shards. A mailbot manages subscriptions, a scheduled shard manager prepares weekly event tables, a gatherer ingests x.com hashtag updates and web research, and a nightly reporter emails summaries to subscribers."
+container:
+  command: bash /var/start.sh
+  image: "us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz"
+  storage:
+    room:
+      - path: /data
+        read_only: false
+    files:
+      - path: /var/start.sh
+        read_only: true
+        text: |
+          #!/bin/bash
+
+          mkdir -p /data/agents/IndustryReportSystem
+
+          if [[ ! -f /data/agents/IndustryReportSystem/rules-chatbot.txt ]]; then
+            cp /var/rules-chatbot.txt /data/agents/IndustryReportSystem/rules-chatbot.txt
+          fi
+
+          if [[ ! -f /data/agents/IndustryReportSystem/rules-mailbot.txt ]]; then
+            cp /var/rules-mailbot.txt /data/agents/IndustryReportSystem/rules-mailbot.txt
+          fi
+
+          if [[ ! -f /data/agents/IndustryReportSystem/rules-worker-shard.txt ]]; then
+            cp /var/rules-worker-shard.txt /data/agents/IndustryReportSystem/rules-worker-shard.txt
+          fi
+
+          if [[ ! -f /data/agents/IndustryReportSystem/rules-worker-gather.txt ]]; then
+            cp /var/rules-worker-gather.txt /data/agents/IndustryReportSystem/rules-worker-gather.txt
+          fi
+
+          if [[ ! -f /data/agents/IndustryReportSystem/rules-worker-report.txt ]]; then
+            cp /var/rules-worker-report.txt /data/agents/IndustryReportSystem/rules-worker-report.txt
+          fi
+
+          /usr/bin/meshagent multi join -c "chatbot --agent-name IndustryReportSystem --require-storage --require-table-write companies --require-table-write people --require-table-write products --require-table-write features --require-table-write subscribers --require-table-write events --room-rules /agents/IndustryReportSystem/rules-chatbot.txt; mailbot --agent-name IndustryReportSystem --require-uuid --require-storage --require-table-write subscribers --room-rules /agents/IndustryReportSystem/rules-mailbot.txt --email-address {{MailbotEmail}} --toolkit-name=email; worker --agent-name IndustryReportSystem --queue events-shard --require-storage --require-table-write events --room-rules /agents/IndustryReportSystem/rules-worker-shard.txt; worker --agent-name IndustryReportSystem --queue x-hashtags --require-storage --require-shell --require-web-search --require-uuid --require-table-write companies --require-table-write people --require-table-write products --require-table-write features --require-table-write events --room-rules /agents/IndustryReportSystem/rules-worker-gather.txt; worker --agent-name IndustryReportSystem --queue nightly-report --require-storage --require-toolkit=email --require-table-read companies --require-table-read people --require-table-read products --require-table-read features --require-table-read subscribers --require-table-read events --room-rules /agents/IndustryReportSystem/rules-worker-report.txt"
+      - path: /var/rules-chatbot.txt
+        read_only: true
+        text: |
+          You are the IndustryReportSystem chatbot. You can read and write the Companies, People, Products, Features, Subscribers, and Events data stored in the room database.
+
+          Tables:
+          - companies
+          - people
+          - products
+          - features
+          - subscribers
+          - events (fallback only; preferred storage is weekly events shards named events_YYYY_MM_DD)
+
+          When answering questions, query the database and summarize clearly. For events, identify the correct weekly shard(s) by Sunday date and query those tables; if no shard exists for the requested range, use the events table as a fallback and note the limitation.
+
+          When inserting or updating records:
+          - Avoid duplicates by checking for existing rows by name plus a secondary key (website, x_handle, or source_url).
+          - Normalize names (trim whitespace) and emails (lowercase) before inserting.
+          - Use ISO dates (YYYY-MM-DD) and UTC timestamps.
+
+          If asked to add records, use the appropriate table schema and include source_url whenever possible.
+      - path: /var/rules-mailbot.txt
+        read_only: true
+        text: |
+          You are the IndustryReportSystem mailbot. You only manage the subscribers table.
+
+          When an email requests a subscription:
+          - Extract the sender email and optional name.
+          - Normalize the email by trimming whitespace and lowercasing.
+          - Determine frequency from the email text. Allowed values: nightly (same as daily), weekly, monthly. If unspecified, default to weekly.
+          - If the subscriber already exists, update frequency and status to active.
+          - If the subscriber does not exist, insert a new row with a uuid, email, name, frequency, status=active, and created_at.
+          - Reply with a short confirmation of the subscription and frequency.
+
+          When an email requests unsubscribe or pause:
+          - Set status to unsubscribed and update updated_at.
+          - Reply with a confirmation.
+
+          Never delete subscribers. Do not touch other tables.
+      - path: /var/rules-worker-shard.txt
+        read_only: true
+        text: |
+          This worker ensures the next weekly events shard exists.
+
+          Weekly shards are named events_YYYY_MM_DD, where the date is the Sunday that starts the week (UTC).
+
+          Steps:
+          1) Determine the next Sunday date in UTC (the Sunday immediately following the current Saturday run).
+          2) Check list_tables for events_YYYY_MM_DD.
+          3) If missing, create the table with the events shard schema below.
+          4) Verify the table exists after creation.
+
+          Events shard schema (use these columns and types):
+          - id (text)
+          - event_date (date)
+          - event_time_utc (timestamp)
+          - event_type (text)
+          - title (text)
+          - description (text)
+          - company_id (text)
+          - company_name (text)
+          - person_id (text)
+          - person_name (text)
+          - product_id (text)
+          - product_name (text)
+          - feature_id (text)
+          - feature_name (text)
+          - audience_change_pct (float)
+          - source_url (text)
+          - hashtags (text)
+          - created_at (timestamp)
+
+          If table creation is not possible, log the issue and continue. The events table exists as a fallback.
+      - path: /var/rules-worker-gather.txt
+        read_only: true
+        text: |
+          This worker gathers daily industry intelligence from x.com and the web.
+
+          Inputs:
+          - Hashtag seeds: {{HashtagSeeds}}
+
+          Workflow:
+          1) Use the hashtag seeds to discover relevant x.com posts and threads.
+          2) For each relevant signal, extract entities (companies, people, products, features) and events.
+          3) Use web search to gather brief profiles for new people (2-4 sentences) and validate key facts.
+          4) Insert new entities into the appropriate tables if they do not already exist.
+          5) Record events in the current weekly events shard (events_YYYY_MM_DD) based on the Sunday date that starts the current week. If the shard does not exist, create it using the shard schema; if creation fails, insert into the events fallback table and set week_start to the Sunday date.
+
+          People roles:
+          - Assign one or more roles from: influencer, product_owner, executive, observer, commenter.
+          - If a person is an employee of a company and has an audience, include influencer in roles.
+          - If independent, leave company_id and company_name empty.
+          - Include audience_size for influencers when available.
+
+          Events to capture (examples, not exhaustive):
+          - product_release
+          - feature_release
+          - person_job_change
+          - audience_growth (>1%)
+          - content_release
+          - partnership
+          - acquisition
+          - funding
+          - policy_change
+          - other
+
+          Always avoid duplicates by checking existing rows by name and source_url. Use UUIDs for new rows and include source_url whenever possible. Use UTC timestamps.
+      - path: /var/rules-worker-report.txt
+        read_only: true
+        text: |
+          This worker creates a nightly report and emails it to subscribers.
+
+          Steps:
+          1) Determine the last 24 hours in UTC.
+          2) Query the current and previous weekly events shards that overlap the last 24 hours. If shards are missing, use the events fallback table.
+          3) Summarize key updates: new companies, people, products, features, and notable events.
+          4) Create a concise HTML report and save it to /data/agents/IndustryReportSystem/reports/report-YYYYMMDD-HHMM-UTC.html (create the folder if needed).
+          5) Send the report to subscribers with status=active and frequency:
+             - nightly or daily: send every run
+             - weekly: send only on Sundays (UTC)
+             - monthly: send on the first Sunday of the month (UTC)
+          6) Send one email per subscriber.
+
+          If no new events exist, send a brief "no major updates" summary.
+  environment:
+    - name: MESHAGENT_TOKEN
+      token:
+        identity: IndustryReportSystem
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
+agents:
+  - name: IndustryReportSystem
+    annotations:
+      meshagent.agent.type: ChatBot
+  - name: IndustryReportSystem
+    annotations:
+      meshagent.agent.type: MailBot
+      meshagent.agent.database.schema: '{"tables":[{"table":"companies","schema":{"id":{"type":"text","nullable":true,"metadata":null},"name":{"type":"text","nullable":true,"metadata":null},"description":{"type":"text","nullable":true,"metadata":null},"website":{"type":"text","nullable":true,"metadata":null},"x_handle":{"type":"text","nullable":true,"metadata":null},"industry":{"type":"text","nullable":true,"metadata":null},"headquarters":{"type":"text","nullable":true,"metadata":null},"tags":{"type":"text","nullable":true,"metadata":null},"source_url":{"type":"text","nullable":true,"metadata":null},"created_at":{"type":"timestamp","nullable":true,"metadata":null},"updated_at":{"type":"timestamp","nullable":true,"metadata":null}}},{"table":"people","schema":{"id":{"type":"text","nullable":true,"metadata":null},"name":{"type":"text","nullable":true,"metadata":null},"roles":{"type":"text","nullable":true,"metadata":null},"title":{"type":"text","nullable":true,"metadata":null},"company_id":{"type":"text","nullable":true,"metadata":null},"company_name":{"type":"text","nullable":true,"metadata":null},"x_handle":{"type":"text","nullable":true,"metadata":null},"audience_size":{"type":"int","nullable":true,"metadata":null},"profile":{"type":"text","nullable":true,"metadata":null},"source_url":{"type":"text","nullable":true,"metadata":null},"created_at":{"type":"timestamp","nullable":true,"metadata":null},"updated_at":{"type":"timestamp","nullable":true,"metadata":null}}},{"table":"products","schema":{"id":{"type":"text","nullable":true,"metadata":null},"company_id":{"type":"text","nullable":true,"metadata":null},"company_name":{"type":"text","nullable":true,"metadata":null},"name":{"type":"text","nullable":true,"metadata":null},"description":{"type":"text","nullable":true,"metadata":null},"launch_date":{"type":"date","nullable":true,"metadata":null},"status":{"type":"text","nullable":true,"metadata":null},"tags":{"type":"text","nullable":true,"metadata":null},"source_url":{"type":"text","nullable":true,"metadata":null},"created_at":{"type":"timestamp","nullable":true,"metadata":null},"updated_at":{"type":"timestamp","nullable":true,"metadata":null}}},{"table":"features","schema":{"id":{"type":"text","nullable":true,"metadata":null},"product_id":{"type":"text","nullable":true,"metadata":null},"product_name":{"type":"text","nullable":true,"metadata":null},"company_id":{"type":"text","nullable":true,"metadata":null},"name":{"type":"text","nullable":true,"metadata":null},"description":{"type":"text","nullable":true,"metadata":null},"launch_date":{"type":"date","nullable":true,"metadata":null},"status":{"type":"text","nullable":true,"metadata":null},"tags":{"type":"text","nullable":true,"metadata":null},"source_url":{"type":"text","nullable":true,"metadata":null},"created_at":{"type":"timestamp","nullable":true,"metadata":null},"updated_at":{"type":"timestamp","nullable":true,"metadata":null}}},{"table":"subscribers","schema":{"id":{"type":"text","nullable":true,"metadata":null},"email":{"type":"text","nullable":true,"metadata":null},"name":{"type":"text","nullable":true,"metadata":null},"frequency":{"type":"text","nullable":true,"metadata":null},"timezone":{"type":"text","nullable":true,"metadata":null},"status":{"type":"text","nullable":true,"metadata":null},"preferences":{"type":"text","nullable":true,"metadata":null},"created_at":{"type":"timestamp","nullable":true,"metadata":null},"updated_at":{"type":"timestamp","nullable":true,"metadata":null},"source":{"type":"text","nullable":true,"metadata":null}}},{"table":"events","schema":{"id":{"type":"text","nullable":true,"metadata":null},"week_start":{"type":"date","nullable":true,"metadata":null},"event_date":{"type":"date","nullable":true,"metadata":null},"event_time_utc":{"type":"timestamp","nullable":true,"metadata":null},"event_type":{"type":"text","nullable":true,"metadata":null},"title":{"type":"text","nullable":true,"metadata":null},"description":{"type":"text","nullable":true,"metadata":null},"company_id":{"type":"text","nullable":true,"metadata":null},"company_name":{"type":"text","nullable":true,"metadata":null},"person_id":{"type":"text","nullable":true,"metadata":null},"person_name":{"type":"text","nullable":true,"metadata":null},"product_id":{"type":"text","nullable":true,"metadata":null},"product_name":{"type":"text","nullable":true,"metadata":null},"feature_id":{"type":"text","nullable":true,"metadata":null},"feature_name":{"type":"text","nullable":true,"metadata":null},"audience_change_pct":{"type":"float","nullable":true,"metadata":null},"source_url":{"type":"text","nullable":true,"metadata":null},"hashtags":{"type":"text","nullable":true,"metadata":null},"created_at":{"type":"timestamp","nullable":true,"metadata":null}}}]}'
+  - name: IndustryReportSystem
+    annotations:
+      meshagent.agent.type: Worker
+      meshagent.agent.schedule: '{"schedule":"0 2 * * SAT","queue":"events-shard","name":"PrepareEventShard","payload":{"prompt":"Run the weekly shard manager workflow from /data/agents/IndustryReportSystem/rules-worker-shard.txt"}}'
+  - name: IndustryReportSystem
+    annotations:
+      meshagent.agent.type: Worker
+      meshagent.agent.schedule: '{"schedule":"0 5 * * *","queue":"x-hashtags","name":"GatherIndustryIntel","payload":{"prompt":"Run the daily x.com + web intelligence workflow from /data/agents/IndustryReportSystem/rules-worker-gather.txt"}}'
+  - name: IndustryReportSystem
+    annotations:
+      meshagent.agent.type: Worker
+      meshagent.agent.schedule: '{"schedule":"30 2 * * *","queue":"nightly-report","name":"SendNightlyReport","payload":{"prompt":"Run the nightly report workflow from /data/agents/IndustryReportSystem/rules-worker-report.txt"}}'
+variables:
+  - name: MailbotEmail
+    type: email
+    description: "Email address used by the mailbot to receive subscription requests."
+  - name: HashtagSeeds
+    description: "Comma-separated list of x.com hashtags to seed the daily industry intelligence gatherer."
