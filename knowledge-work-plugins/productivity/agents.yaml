@@ -795,34 +795,34 @@ container:
           - Follow-ups mentioned
 
           Ask before adding - don't auto-add without confirmation.
-environment:
-  - name: ANTHROPIC_MAX_TOKENS
-    value: "8192"
-  - name: MESHAGENT_TOKEN
-    token:  
-      identity: claude-productivity
-      api:
-        livekit: {}
-        queues:
-          list: true
-        messaging:
-          broadcast: true
-          list: true
-          send: true
-        database:
-          list_tables: true
-        sync: {}
-        storage: {}
-        containers:
-          logs: true
-          use_containers: true
-        developer:
-          logs: true
-        agents:
-          register_agent: true
-          register_public_toolkit: true
-          register_private_toolkit: true
-          call: true
-          use_agents: true
-          use_tools: true
-          allowed_toolkits: null
+  environment:
+    - name: ANTHROPIC_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: claude-productivity
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
