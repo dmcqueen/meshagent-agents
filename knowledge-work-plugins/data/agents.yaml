@@ -3405,34 +3405,34 @@ container:
           - "Churn will be 4.73% next quarter" implies more certainty than is warranted
           - Prefer ranges: "We expect churn between 4-6% based on historical patterns"
           - Round appropriately: "About 5%" is often more honest than "4.73%"
-environment:
-  - name: ANTHROPIC_MAX_TOKENS
-    value: "8192"
-  - name: MESHAGENT_TOKEN
-    token:  
-      identity: claude-data
-      api:
-        livekit: {}
-        queues:
-          list: true
-        messaging:
-          broadcast: true
-          list: true
-          send: true
-        database:
-          list_tables: true
-        sync: {}
-        storage: {}
-        containers:
-          logs: true
-          use_containers: true
-        developer:
-          logs: true
-        agents:
-          register_agent: true
-          register_public_toolkit: true
-          register_private_toolkit: true
-          call: true
-          use_agents: true
-          use_tools: true
-          allowed_toolkits: null
+  environment:
+    - name: ANTHROPIC_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: claude-data
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
