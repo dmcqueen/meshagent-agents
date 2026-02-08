@@ -2389,34 +2389,34 @@ container:
           - Identify the specific person or role that should review (if the organization has defined routing rules)
           - Include a brief summary of issues suitable for the reviewer to quickly understand the key points
           - If the organization has a standard form NDA, recommend sending it as a counterproposal for RED-classified NDAs
-environment:
-  - name: ANTHROPIC_MAX_TOKENS
-    value: "8192"
-  - name: MESHAGENT_TOKEN
-    token:  
-      identity: claude-legal
-      api:
-        livekit: {}
-        queues:
-          list: true
-        messaging:
-          broadcast: true
-          list: true
-          send: true
-        database:
-          list_tables: true
-        sync: {}
-        storage: {}
-        containers:
-          logs: true
-          use_containers: true
-        developer:
-          logs: true
-        agents:
-          register_agent: true
-          register_public_toolkit: true
-          register_private_toolkit: true
-          call: true
-          use_agents: true
-          use_tools: true
-          allowed_toolkits: null
+  environment:
+    - name: ANTHROPIC_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: claude-legal
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
