@@ -1811,34 +1811,34 @@ container:
           5. Write internal notes that help the next person pick up context quickly
           6. Include what you've already checked or ruled out to avoid duplicate investigation
           7. Flag patterns — if you're seeing the same issue repeatedly, escalate the pattern even if individual tickets are low priority
-environment:
-  - name: ANTHROPIC_MAX_TOKENS
-    value: "8192"
-  - name: MESHAGENT_TOKEN
-    token:  
-      identity: claude-customer-support
-      api:
-        livekit: {}
-        queues:
-          list: true
-        messaging:
-          broadcast: true
-          list: true
-          send: true
-        database:
-          list_tables: true
-        sync: {}
-        storage: {}
-        containers:
-          logs: true
-          use_containers: true
-        developer:
-          logs: true
-        agents:
-          register_agent: true
-          register_public_toolkit: true
-          register_private_toolkit: true
-          call: true
-          use_agents: true
-          use_tools: true
-          allowed_toolkits: null
+  environment:
+    - name: ANTHROPIC_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: claude-customer-support
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
