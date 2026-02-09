@@ -2034,14 +2034,8 @@ container:
           if __name__ == "__main__":
               raise SystemExit(main())
   environment:
-    - name: OPENAI_MAX_TOKENS
-      value: "8192"
-    - name: CODEX_HOME
-      value: ""
     - name: IMAGE_GEN
       value: "/data/skills/imagegen/scripts/image_gen.py"
-    - name: OPENAI_API_KEY
-      value: ""
     - name: MESHAGENT_TOKEN
       token:  
         identity: openai-imagegen
