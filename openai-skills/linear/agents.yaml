@@ -1,0 +1,171 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-linear
+  description: An agent that uses OpenAI's linear skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-linear
+
+agents:
+  - name: openai-linear
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-linear/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-linear/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/linear
+    - path: /skills/linear/SKILL.md
+      text: |
+          ---
+          name: linear
+          description: Manage issues, projects & team workflows in Linear. Use when the user wants to read, create or updates tickets in Linear.
+          metadata:
+            short-description: Manage Linear issues in Codex
+          ---
+          
+          # Linear
+          
+          ## Overview
+          
+          This skill provides a structured workflow for managing issues, projects & team workflows in Linear. It ensures consistent integration with the Linear MCP server, which offers natural-language project management for issues, projects, documentation, and team collaboration.
+          
+          ## Prerequisites
+          - Linear MCP server must be connected and accessible via OAuth
+          - Confirm access to the relevant Linear workspace, teams, and projects
+          
+          ## Required Workflow
+          
+          **Follow these steps in order. Do not skip steps.**
+          
+          ### Step 0: Set up Linear MCP (if not already configured)
+          
+          If any MCP call fails because Linear MCP is not connected, pause and set it up:
+          
+          1. Add the Linear MCP:
+             - `codex mcp add linear --url https://mcp.linear.app/mcp`
+          2. Enable remote MCP client:
+             - Set `[features] rmcp_client = true` in `config.toml` **or** run `codex --enable rmcp_client`
+          3. Log in with OAuth:
+             - `codex mcp login linear`
+          
+          After successful login, the user will have to restart codex. You should finish your answer and tell them so when they try again they can continue with Step 1.
+          
+          **Windows/WSL note:** If you see connection errors on Windows, try configuring the Linear MCP to run via WSL:
+          ```json
+          {"mcpServers": {"linear": {"command": "wsl", "args": ["npx", "-y", "mcp-remote", "https://mcp.linear.app/sse", "--transport", "sse-only"]}}}
+          ```
+          
+          ### Step 1
+          Clarify the user's goal and scope (e.g., issue triage, sprint planning, documentation audit, workload balance). Confirm team/project, priority, labels, cycle, and due dates as needed.
+          
+          ### Step 2
+          Select the appropriate workflow (see Practical Workflows below) and identify the Linear MCP tools you will need. Confirm required identifiers (issue ID, project ID, team key) before calling tools.
+          
+          ### Step 3
+          Execute Linear MCP tool calls in logical batches:
+          - Read first (list/get/search) to build context.
+          - Create or update next (issues, projects, labels, comments) with all required fields.
+          - For bulk operations, explain the grouping logic before applying changes.
+          
+          ### Step 4
+          Summarize results, call out remaining gaps or blockers, and propose next actions (additional issues, label changes, assignments, or follow-up comments).
+          
+          ## Available Tools
+          
+          Issue Management: `list_issues`, `get_issue`, `create_issue`, `update_issue`, `list_my_issues`, `list_issue_statuses`, `list_issue_labels`, `create_issue_label`
+          
+          Project & Team: `list_projects`, `get_project`, `create_project`, `update_project`, `list_teams`, `get_team`, `list_users`
+          
+          Documentation & Collaboration: `list_documents`, `get_document`, `search_documentation`, `list_comments`, `create_comment`, `list_cycles`
+          
+          ## Practical Workflows
+          
+          - Sprint Planning: Review open issues for a target team, pick top items by priority, and create a new cycle (e.g., "Q1 Performance Sprint") with assignments.
+          - Bug Triage: List critical/high-priority bugs, rank by user impact, and move the top items to "In Progress."
+          - Documentation Audit: Search documentation (e.g., API auth), then open labeled "documentation" issues for gaps or outdated sections with detailed fixes.
+          - Team Workload Balance: Group active issues by assignee, flag anyone with high load, and suggest or apply redistributions.
+          - Release Planning: Create a project (e.g., "v2.0 Release") with milestones (feature freeze, beta, docs, launch) and generate issues with estimates.
+          - Cross-Project Dependencies: Find all "blocked" issues, identify blockers, and create linked issues if missing.
+          - Automated Status Updates: Find your issues with stale updates and add status comments based on current state/blockers.
+          - Smart Labeling: Analyze unlabeled issues, suggest/apply labels, and create missing label categories.
+          - Sprint Retrospectives: Generate a report for the last completed cycle, note completed vs. pushed work, and open discussion issues for patterns.
+          
+          ## Tips for Maximum Productivity
+          
+          - Batch operations for related changes; consider smart templates for recurring issue structures.
+          - Use natural queries when possible ("Show me what John is working on this week").
+          - Leverage context: reference prior issues in new requests.
+          - Break large updates into smaller batches to avoid rate limits; cache or reuse filters when listing frequently.
+          
+          ## Troubleshooting
+          
+          - Authentication: Clear browser cookies, re-run OAuth, verify workspace permissions, ensure API access is enabled.
+          - Tool Calling Errors: Confirm the model supports multiple tool calls, provide all required fields, and split complex requests.
+          - Missing Data: Refresh token, verify workspace access, check for archived projects, and confirm correct team selection.
+          - Performance: Remember Linear API rate limits; batch bulk operations, use specific filters, or cache frequent queries.
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-linear
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
+
