@@ -672,6 +672,12 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
+    - name: CODEX_HOME
+      value: ""
+    - name: OPENAI_API_KEY
+      value: ""
+    - name: TRANSCRIBE_CLI
+      value: "/data/skills/transcribe/scripts/transcribe_diarize.py"
     - name: MESHAGENT_TOKEN
       token:  
         identity: openai-transcribe
