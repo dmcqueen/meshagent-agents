@@ -46868,6 +46868,8 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
+    - name: CLOUDFLARE_API_TOKEN
+      value: ""
     - name: MESHAGENT_TOKEN
       token:  
         identity: openai-cloudflare-deploy
