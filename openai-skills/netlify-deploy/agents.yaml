@@ -1282,6 +1282,8 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
+    - name: NETLIFY_AUTH_TOKEN
+      value: ""
     - name: MESHAGENT_TOKEN
       token:  
         identity: openai-netlify-deploy
