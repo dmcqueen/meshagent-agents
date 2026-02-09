@@ -1,0 +1,126 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-figma
+  description: An agent that uses OpenAI's figma skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-figma
+
+agents:
+  - name: openai-figma
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-figma/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-figma/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/figma
+    - path: /skills/figma/SKILL.md
+      text: |
+          ---
+          name: figma
+          description: Use the Figma MCP server to fetch design context, screenshots, variables, and assets from Figma, and to translate Figma nodes into production code. Trigger when a task involves Figma URLs, node IDs, design-to-code implementation, or Figma MCP setup and troubleshooting.
+          ---
+          
+          # Figma MCP
+          
+          Use the Figma MCP server for Figma-driven implementation. For setup and debugging details (env vars, config, verification), see `references/figma-mcp-config.md`.
+          
+          ## Figma MCP Integration Rules
+          These rules define how to translate Figma inputs into code for this project and must be followed for every Figma-driven change.
+          
+          ### Required flow (do not skip)
+          1. Run get_design_context first to fetch the structured representation for the exact node(s).
+          2. If the response is too large or truncated, run get_metadata to get the high-level node map and then re-fetch only the required node(s) with get_design_context.
+          3. Run get_screenshot for a visual reference of the node variant being implemented.
+          4. Only after you have both get_design_context and get_screenshot, download any assets needed and start implementation.
+          5. Translate the output (usually React + Tailwind) into this project's conventions, styles and framework. Reuse the project's color tokens, components, and typography wherever possible.
+          6. Validate against Figma for 1:1 look and behavior before marking complete.
+          
+          ### Implementation rules
+          - Treat the Figma MCP output (React + Tailwind) as a representation of design and behavior, not as final code style.
+          - Replace Tailwind utility classes with the project's preferred utilities/design-system tokens when applicable.
+          - Reuse existing components (e.g., buttons, inputs, typography, icon wrappers) instead of duplicating functionality.
+          - Use the project's color system, typography scale, and spacing tokens consistently.
+          - Respect existing routing, state management, and data-fetch patterns already adopted in the repo.
+          - Strive for 1:1 visual parity with the Figma design. When conflicts arise, prefer design-system tokens and adjust spacing or sizes minimally to match visuals.
+          - Validate the final UI against the Figma screenshot for both look and behavior.
+          
+          ### Asset handling
+          - The Figma MCP Server provides an assets endpoint which can serve image and SVG assets.
+          - IMPORTANT: If the Figma MCP Server returns a localhost source for an image or an SVG, use that image or SVG source directly.
+          - IMPORTANT: DO NOT import/add new icon packages, all the assets should be in the Figma payload.
+          - IMPORTANT: do NOT use or create placeholders if a localhost source is provided.
+          
+          ### Link-based prompting
+          - The server is link-based: copy the Figma frame/layer link and give that URL to the MCP client when asking for implementation help.
+          - The client cannot browse the URL but extracts the node ID from the link; always ensure the link points to the exact node/variant you want.
+          
+          ## References
+          - `references/figma-mcp-config.md` — setup, verification, troubleshooting, and link-based usage reminders.
+          - `references/figma-tools-and-prompts.md` — tool catalog and prompt patterns for selecting frameworks/components and fetching metadata.
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-figma
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
+
