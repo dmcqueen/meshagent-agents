@@ -679,6 +679,18 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
+    - name: CODEX_HOME
+      value: ""
+    - name: SENTRY_API
+      value: "/data/skills/sentry/scripts/sentry_api.py"
+    - name: SENTRY_AUTH_TOKEN
+      value: ""
+    - name: SENTRY_BASE_URL
+      value: ""
+    - name: SENTRY_ORG
+      value: ""
+    - name: SENTRY_PROJECT
+      value: ""
     - name: MESHAGENT_TOKEN
       token:  
         identity: openai-sentry
