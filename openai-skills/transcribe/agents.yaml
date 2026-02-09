@@ -1,0 +1,165 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-transcribe
+  description: An agent that uses OpenAI's transcribe skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-transcribe
+
+agents:
+  - name: openai-transcribe
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-transcribe/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-transcribe/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/transcribe
+    - path: /skills/transcribe/SKILL.md
+      text: |
+          ---
+          name: "transcribe"
+          description: "Transcribe audio files to text with optional diarization and known-speaker hints. Use when a user asks to transcribe speech from audio/video, extract text from recordings, or label speakers in interviews or meetings."
+          ---
+          
+          
+          # Audio Transcribe
+          
+          Transcribe audio using OpenAI, with optional speaker diarization when requested. Prefer the bundled CLI for deterministic, repeatable runs.
+          
+          ## Workflow
+          1. Collect inputs: audio file path(s), desired response format (text/json/diarized_json), optional language hint, and any known speaker references.
+          2. Verify `OPENAI_API_KEY` is set. If missing, ask the user to set it locally (do not ask them to paste the key).
+          3. Run the bundled `transcribe_diarize.py` CLI with sensible defaults (fast text transcription).
+          4. Validate the output: transcription quality, speaker labels, and segment boundaries; iterate with a single targeted change if needed.
+          5. Save outputs under `output/transcribe/` when working in this repo.
+          
+          ## Decision rules
+          - Default to `gpt-4o-mini-transcribe` with `--response-format text` for fast transcription.
+          - If the user wants speaker labels or diarization, use `--model gpt-4o-transcribe-diarize --response-format diarized_json`.
+          - If audio is longer than ~30 seconds, keep `--chunking-strategy auto`.
+          - Prompting is not supported for `gpt-4o-transcribe-diarize`.
+          
+          ## Output conventions
+          - Use `output/transcribe/<job-id>/` for evaluation runs.
+          - Use `--out-dir` for multiple files to avoid overwriting.
+          
+          ## Dependencies (install if missing)
+          Prefer `uv` for dependency management.
+          
+          ```
+          uv pip install openai
+          ```
+          If `uv` is unavailable:
+          ```
+          python3 -m pip install openai
+          ```
+          
+          ## Environment
+          - `OPENAI_API_KEY` must be set for live API calls.
+          - If the key is missing, instruct the user to create one in the OpenAI platform UI and export it in their shell.
+          - Never ask the user to paste the full key in chat.
+          
+          ## Skill path (set once)
+          
+          ```bash
+          export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+          export TRANSCRIBE_CLI="$CODEX_HOME/skills/transcribe/scripts/transcribe_diarize.py"
+          ```
+          
+          User-scoped skills install under `$CODEX_HOME/skills` (default: `~/.codex/skills`).
+          
+          ## CLI quick start
+          Single file (fast text default):
+          ```
+          python3 "$TRANSCRIBE_CLI" \
+            path/to/audio.wav \
+            --out transcript.txt
+          ```
+          
+          Diarization with known speakers (up to 4):
+          ```
+          python3 "$TRANSCRIBE_CLI" \
+            meeting.m4a \
+            --model gpt-4o-transcribe-diarize \
+            --known-speaker "Alice=refs/alice.wav" \
+            --known-speaker "Bob=refs/bob.wav" \
+            --response-format diarized_json \
+            --out-dir output/transcribe/meeting
+          ```
+          
+          Plain text output (explicit):
+          ```
+          python3 "$TRANSCRIBE_CLI" \
+            interview.mp3 \
+            --response-format text \
+            --out interview.txt
+          ```
+          
+          ## Reference map
+          - `references/api.md`: supported formats, limits, response formats, and known-speaker notes.
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-transcribe
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
+
