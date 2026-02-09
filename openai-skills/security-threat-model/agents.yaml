@@ -32,6 +32,15 @@ container:
             cp -R -n /skills/* /data/skills/ 2>/dev/null || true
           fi
           
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
           exec /usr/bin/meshagent chatbot join \
             --model=gpt-5.2 \
             --require-storage \
@@ -48,6 +57,209 @@ container:
             --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
             --rule='You have some slash commands available' \
             --skill-dir /data/skills/security-threat-model
+    - path: /skills/security-threat-model/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+          
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+          
+          1. Definitions.
+          
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+          
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+          
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+          
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+          
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+          
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+          
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+          
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+          
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+          
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+          
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+          
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+          
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+          
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+          
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+          
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+          
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+          
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+          
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+          
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+          
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+          
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+          
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+          
+          END OF TERMS AND CONDITIONS
+          
+          APPENDIX: How to apply the Apache License to your work.
+          
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+          
+          Copyright [yyyy] [name of copyright owner]
+          
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+          
+              http://www.apache.org/licenses/LICENSE-2.0
+          
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
     - path: /skills/security-threat-model/SKILL.md
       text: |
           ---
@@ -131,6 +343,303 @@ container:
           - Optional controls/asset list: `references/security-controls-and-assets.md`
           
           Only load the reference files you need. Keep the final result concise, grounded, and reviewable.
+    - path: /skills/security-threat-model/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Security Threat Model"
+            short_description: "Repo-grounded threat modeling and abuse-path analysis"
+            default_prompt: "Create a repository-grounded threat model for this codebase with prioritized abuse paths and mitigations."
+    - path: /skills/security-threat-model/references/prompt-template.md
+      text: |
+          # Threat Modeling Prompt Template for LLMs
+          
+          This reference provides a disciplined, repo-grounded prompt that produces AppSec-usable threat models. Use it when you need a reliable output contract and a consistent process to assemble the threat model output
+          
+          ## System prompt
+          
+          Use this as a stable system prompt:
+          
+          ````text
+          You are a senior application security engineer producing a threat model that will be read by other AppSec engineers.
+          
+          Primary objective:
+          - Generate a threat model that is specific to THIS repository and its real-world usage.
+          - Prefer concrete, evidence-backed findings over generic vulnerability checklists.
+          
+          Evidence and grounding rules:
+          - Do not invent components, data stores, endpoints, flows, or controls.
+          - Every architectural claim must be backed by at least one "Evidence anchor" referencing a repo path
+            (and a symbol name, config key, or a short quoted snippet if available).
+          - If information is missing, state assumptions explicitly and list the open questions needed to validate them.
+          
+          Security hygiene:
+          - Never output secrets. If you encounter tokens/keys/passwords, redact them and only describe their presence and location.
+          
+          Threat modeling approach:
+          - Model the system using data flows and trust boundaries.
+          - Enumerate threats and produce attack goals and abuse paths
+          - Prioritize threats using explicit likelihood and impact reasoning (qualitative is acceptable: low/medium/high).
+          
+          Scope discipline:
+          - Clearly separate: production/runtime behavior vs CI/build/dev tooling vs tests/examples.
+          - Clearly separate attacker-controlled inputs vs operator-controlled inputs vs developer-controlled inputs.
+          - If a vulnerability class requires attacker control that likely does not exist for this repo's real usage, say so and downgrade severity.
+          
+          Communication quality:
+          - Write for AppSec engineers: concise but specific.
+          - Use precise terminology. Include mitigations and residual risks.
+          - Avoid restating large blocks of README/spec; summarize and point to evidence.
+          
+          Diagram requirements:
+          - Produce a single compact Mermaid flowchart showing primary components and trust boundaries.
+          - Mermaid must render cleanly. Use a conservative subset:
+            - Use `flowchart TD` or `flowchart LR` and only `-->` arrows.
+            - Use simple node IDs (letters/numbers/underscores only) and quoted labels (e.g., `A["Label"]`); avoid `A(Label)` shape syntax.
+            - Do not use Mermaid `title` lines or `style` directives.
+            - Keep edge labels to plain words/spaces only via `-->|label|`; avoid `{}`, `[]`, `()`, or quotes in edge labels (if needed, drop the label).
+            - Keep node labels short and readable: do not include file paths, URLs, or socket paths (put those details in prose outside the diagram).
+          - Wrap the diagram in a Markdown fenced block:
+            ```mermaid
+            <mermaid syntax here>
+            ```
+          ````
+          
+          ## Repository summary prompt
+          
+          ```
+          We have a codebase located at {repo_directory/path}, currently on branch {branch_name}.
+          
+          Please produce a security-oriented summary of the repository (or the specified sub-path) with the goal of helping a follow-on security engineer quickly understand the system well enough to build an initial threat model and investigate potential security hypotheses.
+          
+          Objectives
+          1.	Project overview
+          	•	Identify the primary programming languages, frameworks, and build system.
+          	•	Summarize the project’s core purpose and high-level architecture.
+          	•	Describe major components, services, or modules and how they interact.
+          2.	Security posture and entry points
+          	•	Identify likely user entry points and trust boundaries.
+          	•	Describe existing security layers (e.g., authentication, authorization, validation, sandboxing, isolation, privilege boundaries).
+          	•	Call out security-critical components and assumptions that must hold for the system to remain secure.
+          
+          Guidance for Security Analysis
+          
+          Structure the summary so an application security engineer can quickly answer questions such as:
+          	•	Where does user input originate?
+          	•	How is untrusted data parsed, validated, and handled?
+          	•	What security assumptions should not be violated?
+          	•	Where are the most likely choke points for security bugs?
+          
+          Adapt the analysis to the project type. For example:
+          	•	Web applications: where requests enter, how user data is parsed, routed, authenticated, and stored.
+          	•	Command-line tools: supported inputs (arguments, files, environment variables, stdin) and how they are processed.
+          	•	Network daemons: exposed ports, supported protocols, message formats, and request handling paths.
+          	•	Operating system or low-level components: common vulnerability classes (e.g., memory corruption, logic flaws) that could lead to LPE or RCE.
+          
+          Be thorough but pragmatic: the goal is to help a security engineer quickly determine whether a discovered bug is security-relevant and where deeper investigation should focus.
+          
+          Tooling Notes
+          
+          If Ripgrep (rg) is available, use it to explore the codebase. When using grep or rg, always include the -I flag to avoid searching through binary files.
+          ```
+          
+          
+          
+          ## User prompt template
+          
+          Use this as the task prompt, filling in what you know and marking the rest as assumptions:
+          
+          ```text
+          # Inputs
+          Context (fill as available; otherwise infer and mark assumptions):
+          - intended_usage: {intended_usage}
+          - deployment_model: {deployment_model}
+          - data_sensitivity: {data_sensitivity}
+          - internet_exposure: {internet_exposure}
+          - authn_authz_expectations: {authn_authz_expectations}
+          - out_of_scope: {out_of_scope}
+          
+          Provided summaries (may be incomplete):
+          - repository_summary: {repository_summary}
+          
+          
+          In-scope code locations (if known):
+          - in_scope_paths: {in_scope_paths}
+          
+          # Task
+          Construct a repo-centric threat model that helps AppSec engineers understand the most important security risks and where to focus manual review.
+          
+          You MUST follow this process and reflect outputs in the final document:
+          
+          ## Process
+          1) Repo discovery (evidence collection)
+             a. Identify the repo shape:
+                - languages and frameworks
+                - how it runs (server/cli/library), entrypoints, build artifacts
+             b. Identify security-relevant surfaces and controls by searching for evidences, such as:
+                - network listeners/routes/endpoints; RPC handlers; message consumers
+                - authentication, session/token handling, authorization checks, RBAC/ACL logic
+                - parsing/serialization/deserialization (JSON/YAML/XML/protobuf), template rendering, eval/dynamic code
+                - file upload/read paths, archive extraction, image/document parsing
+                - database/queue/cache clients and query construction
+                - secrets/config loading, environment variables, key management
+                - SSRF-capable HTTP clients, webhooks, URL fetchers
+                - sandboxing/isolation, privilege boundaries, subprocess execution
+                - logging/auditing and error handling paths
+                - CI/build/release: pipelines, dependency management, artifact publishing
+             
+          2) System model
+             a. Summarize the primary components (runtime plus critical build/CI components when relevant).
+             b. Enumerate data flows and trust boundaries.
+                - For each trust boundary, specify:
+                  * source to destination
+                  * data types crossing (e.g., credentials, PII, files, tokens, prompts)
+                  * channel/protocol (HTTP/gRPC/IPC/file/db)
+                  * security guarantees and validation (auth, mTLS, origin checks, schema validation, rate limits)
+             c. Provide a compact Mermaid diagram showing components and trust boundaries.
+          
+          3) Assets and security objectives
+             - List assets (data, credentials, integrity-critical state, availability-critical components, build artifacts).
+             - For each asset, state why it matters (confidentiality/integrity/availability, compliance, user harm).
+          
+          4) Attacker model
+             - Capabilities: realistic remote attacker assumptions based on intended usage and exposure.
+             - Non-capabilities: things attacker cannot plausibly do (unless explicitly in scope), to avoid inflated severity.
+          
+          5) Threat enumeration (concrete, system-specific)
+             - Generate threats as attacker stories tied to:
+               * entry points
+               * trust boundaries
+               * privileged components
+             - Prefer abuse paths (multi-step sequences) over single-line generic threats.
+          
+          6) Risk prioritization
+             - For each threat:
+               * Likelihood: low/medium/high with a 1 to 2 sentence justification
+               * Impact: low/medium/high with a 1 to 2 sentence justification
+               * Overall priority: critical/high/medium/low (based on likelihood x impact, adjusted for existing controls)
+             - Explicitly state which assumptions most affect risk.
+          
+          7) Validate assumptions and service context with the user (required before final report)
+             - Summarize key assumptions that materially affect scope or risk ranking.
+             - Ask 1 to 3 targeted questions to resolve missing service meta-context (service owner/environment, scale/users, deployment model, authn/authz, internet exposure, data sensitivity, multi-tenancy).
+             - Pause and wait for user feedback before producing the final report.
+             - If the user cannot answer, proceed with explicit assumptions and mark any conditional conclusions.
+          
+          8) Mitigations and recommendations
+             - For each high/critical threat:
+               * Existing mitigations (with evidence anchors)
+               * Gaps/weaknesses
+               * Recommended mitigations (code/config/process)
+               * Detection/monitoring ideas (logging, metrics, alerts)
+          
+          9) Focus paths for manual security review
+             - Output 2 to 30 repo-relative paths (files or directories) that merit deeper review.
+             - For each path, give a one-sentence reason tied to the threat model.
+          
+          10) Quality check
+             - Provide a short checklist confirming you covered:
+               * all entry points you discovered
+               * each trust boundary at least once in threats
+               * runtime vs CI/dev separation
+               * user clarifications (or explicit non-responses)
+               * assumptions and open questions
+          
+          ## Required output format (exact)
+          Before producing the final Markdown report, first provide an assumption-validation check-in:
+          - List the key assumptions in 3 to 6 bullets.
+          - Ask 1 to 3 targeted context questions.
+          - Wait for the user response, then produce the final report below using the clarified context.
+          
+          Produce valid Markdown with these sections in this order:
+          
+          ## Executive summary
+          - 1 short paragraph on the top risk themes and highest-risk areas.
+          
+          ## Scope and assumptions
+          - In-scope paths, out-of-scope items, and explicit assumptions.
+          - A short list of open questions that would materially change the risk ranking.
+          
+          
+          ## System model
+          ### Primary components
+          ### Data flows and trust boundaries
+          Represent the system as a sequence of arrow-style bullets (e.g., Internet → API Server, User Input -> Application Logic, etc). For each boundary, document:
+          	•	the primary data types crossing the boundary,
+          	•	the communication channel or protocol,
+          	•	the security guarantees (e.g., authentication, origin checks, encryption, rate limiting), and
+          	•	any input validation, normalization, or schema enforcement performed.
+          
+          #### Diagram
+          - Include a single, compact Mermaid diagram (`flowchart TD` or `flowchart LR`) showing primary components and trust boundaries (e.g., separate trust zones via subgraphs). Keep it compact, use only `-->`, avoid `title`/`style`, keep node labels short (no paths/URLs), and keep edge labels to plain words only (avoid `{}`, `[]`, `()`, or quotes).
+          
+          
+          ## Assets and security objectives
+          - A table: Asset | Why it matters | Security objective (C/I/A)
+          
+          ## Attacker model
+          ### Capabilities
+          ### Non-capabilities
+          
+          ## Entry points and attack surfaces
+          - A table: Surface | How reached | Trust boundary | Notes | Evidence (repo path / symbol)
+          
+          ## Top abuse paths
+          - 5 to 10 short abuse paths, each as a numbered sequence of steps (attacker goal -> steps -> impact).
+          
+          ## Threat model table
+          - A Markdown table with columns:
+            Threat ID | Threat source | Prerequisites | Threat action | Impact | Impacted assets | Existing controls (evidence) | Gaps | Recommended mitigations | Detection ideas | Likelihood | Impact severity | Priority
+          
+          Rules:
+          - Threat IDs must be stable and formatted: TM-001, TM-002, ...
+          - Priority must be one of: critical, high, medium, low.
+          - Keep prerequisites to 1 to 2 sentences. Keep recommended mitigations concrete.
+          
+          ## Criticality calibration
+          - Define what counts as critical/high/medium/low for THIS repo and context.
+          - Include 2 to 3 examples per level (tailored to the repo's assets and exposure).
+          
+          ## Focus paths for security review
+          - A table: Path | Why it matters | Related Threat IDs
+          
+          ## Notes on use
+          
+          - Fill in known context, but allow the model to infer and mark assumptions.
+          - Include 1–2 repo-path anchors per major claim; do not dump every match.
+    - path: /skills/security-threat-model/references/security-controls-and-assets.md
+      text: |
+          # Security Controls and Asset Categories
+          
+          Use this as a lightweight checklist to keep outputs consistent across teams. Prefer concrete, system-specific items over generic text.
+          
+          ## Asset categories (pick only what applies)
+          - User data (PII, content, uploads)
+          - Authentication artifacts (passwords, tokens, sessions, cookies)
+          - Authorization state (roles, policies, ACLs)
+          - Secrets and keys (API keys, signing keys, encryption keys)
+          - Configuration and feature flags
+          - Models and weights (if ML systems)
+          - Source code and build artifacts
+          - Audit logs and telemetry
+          - Availability-critical resources (queues, caches, rate limits, compute budgets)
+          - Tenant isolation boundaries and metadata
+          
+          ## Security control categories
+          - Identity and access: authN, authZ, session handling, mTLS, key rotation
+          - Input protection: schema validation, parsing hardening, upload scanning, sandboxing
+          - Network safeguards: TLS, network policies, WAF, rate limiting, DoS controls
+          - Data protection: encryption at rest/in transit, tokenization, redaction
+          - Isolation: process sandboxing, container boundaries, tenant isolation, seccomp
+          - Observability: audit logs, alerting, anomaly detection, tamper resistance
+          - Supply chain: dependency pinning, SBOMs, provenance, signing
+          - Change control: CI checks, deployment approvals, config guardrails
+          
+          ## Mitigation phrasing patterns
+          - "Enforce schema at <boundary> for <payload> before <component>."
+          - "Require authZ check for <action> on <resource> in <service>."
+          - "Isolate <parser/component> in a sandbox with <resource limits>."
+          - "Rate limit <endpoint> by <key> and apply burst caps."
+          - "Encrypt <data> at rest using <key management> and rotate <keys>."
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
@@ -162,4 +671,3 @@ container:
             use_agents: true
             use_tools: true
             allowed_toolkits: null
-
