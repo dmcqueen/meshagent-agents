@@ -32,6 +32,15 @@ container:
             cp -R -n /skills/* /data/skills/ 2>/dev/null || true
           fi
           
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
           exec /usr/bin/meshagent chatbot join \
             --model=gpt-5.2 \
             --require-storage \
@@ -48,6 +57,210 @@ container:
             --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
             --rule='You have some slash commands available' \
             --skill-dir /data/skills/linear
+    - path: /skills/linear/LICENSE.txt
+      text: |
+          
+                                           Apache License
+                                     Version 2.0, January 2004
+                                  http://www.apache.org/licenses/
+          
+             TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+          
+             1. Definitions.
+          
+                "License" shall mean the terms and conditions for use, reproduction,
+                and distribution as defined by Sections 1 through 9 of this document.
+          
+                "Licensor" shall mean the copyright owner or entity authorized by
+                the copyright owner that is granting the License.
+          
+                "Legal Entity" shall mean the union of the acting entity and all
+                other entities that control, are controlled by, or are under common
+                control with that entity. For the purposes of this definition,
+                "control" means (i) the power, direct or indirect, to cause the
+                direction or management of such entity, whether by contract or
+                otherwise, or (ii) ownership of fifty percent (50%) or more of the
+                outstanding shares, or (iii) beneficial ownership of such entity.
+          
+                "You" (or "Your") shall mean an individual or Legal Entity
+                exercising permissions granted by this License.
+          
+                "Source" form shall mean the preferred form for making modifications,
+                including but not limited to software source code, documentation
+                source, and configuration files.
+          
+                "Object" form shall mean any form resulting from mechanical
+                transformation or translation of a Source form, including but
+                not limited to compiled object code, generated documentation,
+                and conversions to other media types.
+          
+                "Work" shall mean the work of authorship, whether in Source or
+                Object form, made available under the License, as indicated by a
+                copyright notice that is included in or attached to the work
+                (an example is provided in the Appendix below).
+          
+                "Derivative Works" shall mean any work, whether in Source or Object
+                form, that is based on (or derived from) the Work and for which the
+                editorial revisions, annotations, elaborations, or other modifications
+                represent, as a whole, an original work of authorship. For the purposes
+                of this License, Derivative Works shall not include works that remain
+                separable from, or merely link (or bind by name) to the interfaces of,
+                the Work and Derivative Works thereof.
+          
+                "Contribution" shall mean any work of authorship, including
+                the original version of the Work and any modifications or additions
+                to that Work or Derivative Works thereof, that is intentionally
+                submitted to Licensor for inclusion in the Work by the copyright owner
+                or by an individual or Legal Entity authorized to submit on behalf of
+                the copyright owner. For the purposes of this definition, "submitted"
+                means any form of electronic, verbal, or written communication sent
+                to the Licensor or its representatives, including but not limited to
+                communication on electronic mailing lists, source code control systems,
+                and issue tracking systems that are managed by, or on behalf of, the
+                Licensor for the purpose of discussing and improving the Work, but
+                excluding communication that is conspicuously marked or otherwise
+                designated in writing by the copyright owner as "Not a Contribution."
+          
+                "Contributor" shall mean Licensor and any individual or Legal Entity
+                on behalf of whom a Contribution has been received by Licensor and
+                subsequently incorporated within the Work.
+          
+             2. Grant of Copyright License. Subject to the terms and conditions of
+                this License, each Contributor hereby grants to You a perpetual,
+                worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+                copyright license to reproduce, prepare Derivative Works of,
+                publicly display, publicly perform, sublicense, and distribute the
+                Work and such Derivative Works in Source or Object form.
+          
+             3. Grant of Patent License. Subject to the terms and conditions of
+                this License, each Contributor hereby grants to You a perpetual,
+                worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+                (except as stated in this section) patent license to make, have made,
+                use, offer to sell, sell, import, and otherwise transfer the Work,
+                where such license applies only to those patent claims licensable
+                by such Contributor that are necessarily infringed by their
+                Contribution(s) alone or by combination of their Contribution(s)
+                with the Work to which such Contribution(s) was submitted. If You
+                institute patent litigation against any entity (including a
+                cross-claim or counterclaim in a lawsuit) alleging that the Work
+                or a Contribution incorporated within the Work constitutes direct
+                or contributory patent infringement, then any patent licenses
+                granted to You under this License for that Work shall terminate
+                as of the date such litigation is filed.
+          
+             4. Redistribution. You may reproduce and distribute copies of the
+                Work or Derivative Works thereof in any medium, with or without
+                modifications, and in Source or Object form, provided that You
+                meet the following conditions:
+          
+                (a) You must give any other recipients of the Work or
+                    Derivative Works a copy of this License; and
+          
+                (b) You must cause any modified files to carry prominent notices
+                    stating that You changed the files; and
+          
+                (c) You must retain, in the Source form of any Derivative Works
+                    that You distribute, all copyright, patent, trademark, and
+                    attribution notices from the Source form of the Work,
+                    excluding those notices that do not pertain to any part of
+                    the Derivative Works; and
+          
+                (d) If the Work includes a "NOTICE" text file as part of its
+                    distribution, then any Derivative Works that You distribute must
+                    include a readable copy of the attribution notices contained
+                    within such NOTICE file, excluding those notices that do not
+                    pertain to any part of the Derivative Works, in at least one
+                    of the following places: within a NOTICE text file distributed
+                    as part of the Derivative Works; within the Source form or
+                    documentation, if provided along with the Derivative Works; or,
+                    within a display generated by the Derivative Works, if and
+                    wherever such third-party notices normally appear. The contents
+                    of the NOTICE file are for informational purposes only and
+                    do not modify the License. You may add Your own attribution
+                    notices within Derivative Works that You distribute, alongside
+                    or as an addendum to the NOTICE text from the Work, provided
+                    that such additional attribution notices cannot be construed
+                    as modifying the License.
+          
+                You may add Your own copyright statement to Your modifications and
+                may provide additional or different license terms and conditions
+                for use, reproduction, or distribution of Your modifications, or
+                for any such Derivative Works as a whole, provided Your use,
+                reproduction, and distribution of the Work otherwise complies with
+                the conditions stated in this License.
+          
+             5. Submission of Contributions. Unless You explicitly state otherwise,
+                any Contribution intentionally submitted for inclusion in the Work
+                by You to the Licensor shall be under the terms and conditions of
+                this License, without any additional terms or conditions.
+                Notwithstanding the above, nothing herein shall supersede or modify
+                the terms of any separate license agreement you may have executed
+                with Licensor regarding such Contributions.
+          
+             6. Trademarks. This License does not grant permission to use the trade
+                names, trademarks, service marks, or product names of the Licensor,
+                except as required for reasonable and customary use in describing the
+                origin of the Work and reproducing the content of the NOTICE file.
+          
+             7. Disclaimer of Warranty. Unless required by applicable law or
+                agreed to in writing, Licensor provides the Work (and each
+                Contributor provides its Contributions) on an "AS IS" BASIS,
+                WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+                implied, including, without limitation, any warranties or conditions
+                of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+                PARTICULAR PURPOSE. You are solely responsible for determining the
+                appropriateness of using or redistributing the Work and assume any
+                risks associated with Your exercise of permissions under this License.
+          
+             8. Limitation of Liability. In no event and under no legal theory,
+                whether in tort (including negligence), contract, or otherwise,
+                unless required by applicable law (such as deliberate and grossly
+                negligent acts) or agreed to in writing, shall any Contributor be
+                liable to You for damages, including any direct, indirect, special,
+                incidental, or consequential damages of any character arising as a
+                result of this License or out of the use or inability to use the
+                Work (including but not limited to damages for loss of goodwill,
+                work stoppage, computer failure or malfunction, or any and all
+                other commercial damages or losses), even if such Contributor
+                has been advised of the possibility of such damages.
+          
+             9. Accepting Warranty or Additional Liability. While redistributing
+                the Work or Derivative Works thereof, You may choose to offer,
+                and charge a fee for, acceptance of support, warranty, indemnity,
+                or other liability obligations and/or rights consistent with this
+                License. However, in accepting such obligations, You may act only
+                on Your own behalf and on Your sole responsibility, not on behalf
+                of any other Contributor, and only if You agree to indemnify,
+                defend, and hold each Contributor harmless for any liability
+                incurred by, or claims asserted against, such Contributor by reason
+                of your accepting any such warranty or additional liability.
+          
+             END OF TERMS AND CONDITIONS
+          
+             APPENDIX: How to apply the Apache License to your work.
+          
+                To apply the Apache License to your work, attach the following
+                boilerplate notice, with the fields enclosed by brackets "[]"
+                replaced with your own identifying information. (Don't include
+                the brackets!)  The text should be enclosed in the appropriate
+                comment syntax for the file format. We also recommend that a
+                file or class name and description of purpose be included on the
+                same "printed page" as the copyright notice for easier
+                identification within third-party archives.
+          
+             Copyright [yyyy] [name of copyright owner]
+          
+             Licensed under the Apache License, Version 2.0 (the "License");
+             you may not use this file except in compliance with the License.
+             You may obtain a copy of the License at
+          
+                 http://www.apache.org/licenses/LICENSE-2.0
+          
+             Unless required by applicable law or agreed to in writing, software
+             distributed under the License is distributed on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+             See the License for the specific language governing permissions and
+             limitations under the License.
     - path: /skills/linear/SKILL.md
       text: |
           ---
@@ -137,6 +350,154 @@ container:
           - Tool Calling Errors: Confirm the model supports multiple tool calls, provide all required fields, and split complex requests.
           - Missing Data: Refresh token, verify workspace access, check for archived projects, and confirm correct team selection.
           - Performance: Remember Linear API rate limits; batch bulk operations, use specific filters, or cache frequent queries.
+    - path: /skills/linear/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Linear"
+            short_description: "Manage Linear issues in Codex"
+            icon_small: "./assets/linear-small.svg"
+            icon_large: "./assets/linear.png"
+            default_prompt: "Use Linear context to triage or update relevant issues for this task, with clear next actions."
+          
+          dependencies:
+            tools:
+              - type: "mcp"
+                value: "linear"
+                description: "Linear MCP server"
+                transport: "streamable_http"
+                url: "https://mcp.linear.app/mcp"
+    - path: /skills/linear/assets/linear-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="200" height="200" viewBox="0 0 100 100">
+            <path
+              d="M1.22541 61.5228c-.2225-.9485.90748-1.5459 1.59638-.857L39.3342 97.1782c.6889.6889.0915 1.8189-.857 1.5964C20.0515 94.4522 5.54779 79.9485 1.22541 61.5228ZM.00189135 46.8891c-.01764375.2833.08887215.5599.28957165.7606L52.3503 99.7085c.2007.2007.4773.3075.7606.2896 2.3692-.1476 4.6938-.46 6.9624-.9259.7645-.157 1.0301-1.0963.4782-1.6481L2.57595 39.4485c-.55186-.5519-1.49117-.2863-1.648174.4782-.465915 2.2686-.77832 4.5932-.92588465 6.9624ZM4.21093 29.7054c-.16649.3738-.08169.8106.20765 1.1l64.77602 64.776c.2894.2894.7262.3742 1.1.2077 1.7861-.7956 3.5171-1.6927 5.1855-2.684.5521-.328.6373-1.0867.1832-1.5407L8.43566 24.3367c-.45409-.4541-1.21271-.3689-1.54074.1832-.99132 1.6684-1.88843 3.3994-2.68399 5.1855ZM12.6587 18.074c-.3701-.3701-.393-.9637-.0443-1.3541C21.7795 6.45931 35.1114 0 49.9519 0 77.5927 0 100 22.4073 100 50.0481c0 14.8405-6.4593 28.1724-16.7199 37.3375-.3903.3487-.984.3258-1.3542-.0443L12.6587 18.074Z"
+            />
+          </svg>
+    - path: /skills/linear/assets/linear.png.b64
+      text: |
+          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
+          USoeAAAAAElFTkSuQmCC
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
@@ -168,4 +529,3 @@ container:
             use_agents: true
             use_tools: true
             allowed_toolkits: null
-
