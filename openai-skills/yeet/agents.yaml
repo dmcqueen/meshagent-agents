@@ -1,0 +1,112 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-yeet
+  description: An agent that uses OpenAI's yeet skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-yeet
+
+agents:
+  - name: openai-yeet
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-yeet/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-yeet/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/yeet
+    - path: /skills/yeet/SKILL.md
+      text: |
+          ---
+          name: "yeet"
+          description: "Use only when the user explicitly asks to stage, commit, push, and open a GitHub pull request in one flow using the GitHub CLI (`gh`)."
+          ---
+          
+          ## Prerequisites
+          
+          - Require GitHub CLI `gh`. Check `gh --version`. If missing, ask the user to install `gh` and stop.
+          - Require authenticated `gh` session. Run `gh auth status`. If not authenticated, ask the user to run `gh auth login` (and re-run `gh auth status`) before continuing.
+          
+          ## Naming conventions
+          
+          - Branch: `codex/{description}` when starting from main/master/default.
+          - Commit: `{description}` (terse).
+          - PR title: `[codex] {description}` summarizing the full diff.
+          
+          ## Workflow
+          
+          - If on main/master/default, create a branch: `git checkout -b "codex/{description}"`
+          - Otherwise stay on the current branch.
+          - Confirm status, then stage everything: `git status -sb` then `git add -A`.
+          - Commit tersely with the description: `git commit -m "{description}"`
+          - Run checks if not already. If checks fail due to missing deps/tools, install dependencies and rerun once.
+          - Push with tracking: `git push -u origin $(git branch --show-current)`
+          - If git push fails due to workflow auth errors, pull from master and retry the push.
+          - Open a PR and edit title/body to reflect the description and the deltas: `GH_PROMPT_DISABLED=1 GIT_TERMINAL_PROMPT=0 gh pr create --draft --fill --head $(git branch --show-current)`
+          - Write the PR description to a temp file with real newlines (e.g. pr-body.md ... EOF) and run pr-body.md to avoid \\n-escaped markdown.
+          - PR description (markdown) must be detailed prose covering the issue, the cause and effect on users, the root cause, the fix, and any tests or checks used to validate.
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-yeet
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
+
