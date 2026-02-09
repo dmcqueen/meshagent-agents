@@ -1442,6 +1442,12 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
+    - name: CODEX_HOME
+      value: ""
+    - name: OPENAI_API_KEY
+      value: ""
+    - name: TTS_GEN
+      value: "/data/skills/speech/scripts/text_to_speech.py"
     - name: MESHAGENT_TOKEN
       token:  
         identity: openai-speech
