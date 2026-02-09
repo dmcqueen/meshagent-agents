@@ -679,8 +679,6 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
-    - name: CODEX_HOME
-      value: ""
     - name: SENTRY_API
       value: "/data/skills/sentry/scripts/sentry_api.py"
     - name: SENTRY_AUTH_TOKEN
