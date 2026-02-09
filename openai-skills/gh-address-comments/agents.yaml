@@ -1,0 +1,109 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-gh-address-comments
+  description: An agent that uses OpenAI's gh-address-comments skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-gh-address-comments
+
+agents:
+  - name: openai-gh-address-comments
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-gh-address-comments/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-gh-address-comments/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/gh-address-comments
+    - path: /skills/gh-address-comments/SKILL.md
+      text: |
+          ---
+          name: gh-address-comments
+          description: Help address review/issue comments on the open GitHub PR for the current branch using gh CLI; verify gh auth first and prompt the user to authenticate if not logged in.
+          metadata:
+            short-description: Address comments in a GitHub PR review
+          ---
+          
+          # PR Comment Handler
+          
+          Guide to find the open PR for the current branch and address its comments with gh CLI. Run all `gh` commands with elevated network access.
+          
+          Prereq: ensure `gh` is authenticated (for example, run `gh auth login` once), then run `gh auth status` with escalated permissions (include workflow/repo scopes) so `gh` commands succeed. If sandboxing blocks `gh auth status`, rerun it with `sandbox_permissions=require_escalated`.
+          
+          ## 1) Inspect comments needing attention
+          - Run scripts/fetch_comments.py which will print out all the comments and review threads on the PR
+          
+          ## 2) Ask the user for clarification
+          - Number all the review threads and comments and provide a short summary of what would be required to apply a fix for it
+          - Ask the user which numbered comments should be addressed
+          
+          ## 3) If user chooses comments
+          - Apply fixes for the selected comments
+          
+          Notes:
+          - If gh hits auth/rate issues mid-run, prompt the user to re-authenticate with `gh auth login`, then retry.
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-gh-address-comments
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
+
