@@ -716,6 +716,12 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
+    - name: CODEX_HOME
+      value: ""
+    - name: PLAYWRIGHT_CLI_SESSION
+      value: ""
+    - name: PWCLI
+      value: "/data/skills/playwright/scripts/playwright_cli.sh"
     - name: MESHAGENT_TOKEN
       token:  
         identity: openai-playwright
