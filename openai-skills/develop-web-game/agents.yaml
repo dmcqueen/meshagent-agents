@@ -837,8 +837,6 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
-    - name: CODEX_HOME
-      value: ""
     - name: WEB_GAME_ACTIONS
       value: ""
     - name: WEB_GAME_CLIENT
