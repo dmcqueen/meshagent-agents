@@ -3830,6 +3830,8 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
+    - name: RENDER_API_KEY
+      value: ""
     - name: MESHAGENT_TOKEN
       token:  
         identity: openai-render-deploy
