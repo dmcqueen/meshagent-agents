@@ -463,6 +463,8 @@ container:
   environment:
     - name: OPENAI_MAX_TOKENS
       value: "8192"
+    - name: FIGMA_OAUTH_TOKEN
+      value: ""
     - name: MESHAGENT_TOKEN
       token:  
         identity: openai-figma
