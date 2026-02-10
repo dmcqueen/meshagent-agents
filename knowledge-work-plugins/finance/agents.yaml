@@ -37,10 +37,12 @@ container:
             --require-storage \
             --require-web-search \
             --require-web-fetch \
+            --require-shell \
             --rule="you can use the storage tool to read skills not just the shell tool" \
             --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
             --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
             --rule="when using the storage tool to read skills, the path should be prefixed with /data/knowledge-work-plugins (the folder where the plugins are located)" \
+            --rule="for SEC/EDGAR downloads, use the shell tool with curl and a compliant User-Agent string; prefer the primary 10-K HTML document and avoid large 'complete submission' files unless explicitly requested" \
             --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins \
             --storage-tool-room-path=/:/data \
             --script-tool \
