@@ -36,6 +36,7 @@ container:
             --model=claude-sonnet-4-5 \
             --require-storage \
             --require-web-search \
+            --require-web-fetch \
             --rule="you can use the storage tool to read skills not just the shell tool" \
             --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
             --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
