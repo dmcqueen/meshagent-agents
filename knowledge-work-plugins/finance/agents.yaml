@@ -45,6 +45,8 @@ container:
             --rule="for SEC/EDGAR downloads, use the shell tool with curl and a compliant User-Agent string; prefer the primary 10-K HTML document and avoid large 'complete submission' files unless explicitly requested" \
             --rule="never load full documents over 1 MB into the prompt; instead extract only the requested section or summarize in smaller chunks and ask the user which section they want if unclear" \
             --rule="before calling read_file on any /data file, check size via shell (e.g., wc -c). If >1 MB, do not read it directly. Use shell to extract the needed section into a new smaller file (<=200 KB) and read that instead." \
+            --rule="limit total file content loaded per response to <=50 KB; read at most one extracted file per response. If more is needed, summarize and ask to continue before reading another chunk." \
+            --rule="avoid emitting large raw excerpts: do not paste long HTML/text blocks into the chat; summarize instead and store any longer extracts in /data files." \
             --rule="format output lists as hyphen bullets, not numbered lists; never emit a bare list marker like '1.' on its own line; keep each bullet item on one line" \
             --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins \
             --storage-tool-room-path=/:/data \
