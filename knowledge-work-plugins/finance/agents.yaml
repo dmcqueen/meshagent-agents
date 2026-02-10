@@ -28,35 +28,17 @@ container:
           set -e
 
           mkdir -p /data/knowledge-work-plugins
+          mkdir -p /data/agents/claude-finance
           if [ -d /knowledge-work-plugins ]; then
             cp -R -n /knowledge-work-plugins/* /data/knowledge-work-plugins/ 2>/dev/null || true
           fi
 
           exec /usr/bin/meshagent chatbot join \
             --model=claude-sonnet-4-5 \
-            --require-storage \
             --require-web-search \
             --require-shell \
-            --rule="you can use the storage tool to read skills not just the shell tool" \
-            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
-            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
-            --rule="when using the storage tool to read skills, the path should be prefixed with /data/knowledge-work-plugins (the folder where the plugins are located)" \
-            --rule="for SEC/EDGAR downloads, use the shell tool with curl and a compliant User-Agent string; prefer the primary 10-K HTML document and avoid large 'complete submission' files unless explicitly requested" \
-            --rule="never load full documents over 1 MB into the prompt; instead extract only the requested section or summarize in smaller chunks and ask the user which section they want if unclear" \
-            --rule="before calling read_file on any /data file, check size via shell (e.g., wc -c). If >1 MB, do not read it directly. Use shell to extract the needed section into a new smaller file (<=200 KB) and read that instead." \
-            --rule="limit total file content loaded per response to <=50 KB; read at most one extracted file per response. If more is needed, summarize and ask to continue before reading another chunk." \
-            --rule="avoid emitting large raw excerpts: do not paste long HTML/text blocks into the chat; summarize instead and store any longer extracts in /data files." \
-            --rule="for shell commands that handle large files, always write output to /data using redirects or curl -o; never stream large file contents to stdout. Keep shell tool output to status/summary only." \
-            --rule="if the user asks for analysis of a long filing, do not read the full filing. Ask which sections to cover and process one section per response." \
-            --rule="format output lists as hyphen bullets, not numbered lists; never emit a bare list marker like '1.' on its own line; keep each bullet item on one line" \
-            --rule="avoid markdown headings and numbered lists entirely; use short labeled lines (e.g., 'Summary:'), then hyphen bullets with no blank lines between them" \
-            --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins \
-            --storage-tool-room-path=/:/data \
             --script-tool \
             -rr=agents/claude-finance/rules.txt \
-            --rule='You have customizable rules stored in agents/claude-finance/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
-            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
-            --rule='You have some slash commands available' \
             --rules-file /data/knowledge-work-plugins/commands/income-statement.md \
             --rules-file /data/knowledge-work-plugins/commands/journal-entry.md \
             --rules-file /data/knowledge-work-plugins/commands/reconciliation.md \
@@ -68,6 +50,24 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/journal-entry-prep \
             --skill-dir /data/knowledge-work-plugins/skills/reconciliation \
             --skill-dir /data/knowledge-work-plugins/skills/variance-analysis
+    - path: /data/agents/claude-finance/rules.txt
+      text: |
+          you can use the storage tool to read skills not just the shell tool
+          when a question could be served by a skill, read the skill and follow the pattern specified in the skill
+          when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data.
+          when using the storage tool to read skills, the path should be prefixed with /data/knowledge-work-plugins (the folder where the plugins are located)
+          for SEC/EDGAR downloads, use the shell tool with curl and a compliant User-Agent string; prefer the primary 10-K HTML document and avoid large 'complete submission' files unless explicitly requested
+          never load full documents over 1 MB into the prompt; instead extract only the requested section or summarize in smaller chunks and ask the user which section they want if unclear
+          before calling read_file on any /data file, check size via shell (e.g., wc -c). If >1 MB, do not read it directly. Use shell to extract the needed section into a new smaller file (<=200 KB) and read that instead.
+          limit total file content loaded per response to <=50 KB; read at most one extracted file per response. If more is needed, summarize and ask to continue before reading another chunk.
+          avoid emitting large raw excerpts: do not paste long HTML/text blocks into the chat; summarize instead and store any longer extracts in /data files.
+          for shell commands that handle large files, always write output to /data using redirects or curl -o; never stream large file contents to stdout. Keep shell tool output to status/summary only.
+          if the user asks for analysis of a long filing, do not read the full filing. Ask which sections to cover and process one section per response.
+          format output lists as hyphen bullets, not numbered lists; never emit a bare list marker like '1.' on its own line; keep each bullet item on one line
+          avoid markdown headings and numbered lists entirely; use short labeled lines (e.g., 'Summary:'), then hyphen bullets with no blank lines between them
+          You have customizable rules stored in /data/agents/claude-finance/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.
+          You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com
+          You have some slash commands available
     - path: /knowledge-work-plugins/commands/income-statement.md
       text: |
           ---
