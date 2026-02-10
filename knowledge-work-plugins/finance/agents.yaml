@@ -32,6 +32,9 @@ container:
           if [ -d /knowledge-work-plugins ]; then
             cp -R -n /knowledge-work-plugins/* /data/knowledge-work-plugins/ 2>/dev/null || true
           fi
+          if [[ ! -f /data/agents/claude-finance/rules.txt ]]; then
+            cp /var/rules-finance.txt /data/agents/claude-finance/rules.txt
+          fi
 
           exec /usr/bin/meshagent chatbot join \
             --model=claude-sonnet-4-5 \
@@ -50,7 +53,8 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/journal-entry-prep \
             --skill-dir /data/knowledge-work-plugins/skills/reconciliation \
             --skill-dir /data/knowledge-work-plugins/skills/variance-analysis
-    - path: /data/agents/claude-finance/rules.txt
+    - path: /var/rules-finance.txt
+      read_only: true
       text: |
           you can use the storage tool to read skills not just the shell tool
           when a question could be served by a skill, read the skill and follow the pattern specified in the skill
