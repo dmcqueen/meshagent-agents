@@ -55,7 +55,7 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/financial-statements \
             --skill-dir /data/knowledge-work-plugins/skills/journal-entry-prep \
             --skill-dir /data/knowledge-work-plugins/skills/reconciliation \
-            --skill-dir /data/knowledge-work-plugins/skills/variance-analysis
+            --skill-dir /data/knowledge-work-plugins/skills/variance-analysis \
     - path: /var/rules-finance.txt
       read_only: true
       text: |
