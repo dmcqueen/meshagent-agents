@@ -48,7 +48,7 @@ container:
             --rules-file /data/knowledge-work-plugins/commands/start.md \
             --rules-file /data/knowledge-work-plugins/commands/update.md \
             --skill-dir /data/knowledge-work-plugins/skills/memory-management \
-            --skill-dir /data/knowledge-work-plugins/skills/task-management
+            --skill-dir /data/knowledge-work-plugins/skills/task-management \
     - path: /var/rules-claude-productivity.txt
       read_only: true
       text: |
