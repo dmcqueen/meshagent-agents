@@ -56,7 +56,7 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/metrics-tracking \
             --skill-dir /data/knowledge-work-plugins/skills/roadmap-management \
             --skill-dir /data/knowledge-work-plugins/skills/stakeholder-comms \
-            --skill-dir /data/knowledge-work-plugins/skills/user-research-synthesis
+            --skill-dir /data/knowledge-work-plugins/skills/user-research-synthesis \
     - path: /var/rules-claude-product-management.txt
       read_only: true
       text: |
