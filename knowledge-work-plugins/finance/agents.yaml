@@ -2362,8 +2362,6 @@ container:
           - **Shrinking variance:** Forecast accuracy improving through the year (normal pattern)
           - **Volatile:** Unpredictable business or poor forecasting methodology
   environment:
-    - name: ANTHROPIC_MAX_TOKENS
-      value: "8192"
     - name: MESHAGENT_TOKEN
       token:  
         identity: claude-finance
