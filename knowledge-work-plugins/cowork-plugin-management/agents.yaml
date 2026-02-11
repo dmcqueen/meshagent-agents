@@ -52,7 +52,7 @@ container:
     - path: /var/rules-claude-cowork-plugin-management.txt
       read_only: true
       text: |
-          ONLY use the knowledge-work-plugin skills to answer questions and follow the pattern specified in the skill
+          ONLY use the knowledge-work-plugins skills to answer questions and follow the pattern specified in the skill
           you can use the storage tool to read skills not just the shell tool
           when a question could be served by a skill, read the skill and follow the pattern specified in the skill
           when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data.
