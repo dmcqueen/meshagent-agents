@@ -55,7 +55,7 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/contract-review \
             --skill-dir /data/knowledge-work-plugins/skills/legal-risk-assessment \
             --skill-dir /data/knowledge-work-plugins/skills/meeting-briefing \
-            --skill-dir /data/knowledge-work-plugins/skills/nda-triage
+            --skill-dir /data/knowledge-work-plugins/skills/nda-triage \
     - path: /var/rules-claude-legal.txt
       read_only: true
       text: |
