@@ -56,8 +56,9 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/data-validation \
             --skill-dir /data/knowledge-work-plugins/skills/data-visualization \
             --skill-dir /data/knowledge-work-plugins/skills/interactive-dashboard-builder \
+            --skill-dir /data/knowledge-work-plugins/skills/references \
             --skill-dir /data/knowledge-work-plugins/skills/sql-queries \
-            --skill-dir /data/knowledge-work-plugins/skills/statistical-analysis
+            --skill-dir /data/knowledge-work-plugins/skills/statistical-analysis \
     - path: /var/rules-claude-data.txt
       read_only: true
       text: |
@@ -1176,6 +1177,628 @@ container:
           - [ ] At least 2-3 sample queries per domain
           - [ ] SQL uses correct dialect syntax
           - [ ] Reference files are linked from SKILL.md navigation section
+    - path: /knowledge-work-plugins/skills/data-context-extractor/references/domain-template.md
+      text: |
+          # Domain Reference File Template
+
+          Use this template when creating reference files for specific data domains (e.g., revenue, users, marketing).
+
+          ---
+
+          ```markdown
+          # [DOMAIN_NAME] Tables
+
+          This document contains [domain]-related tables, metrics, and query patterns.
+
+          ---
+
+          ## Quick Reference
+
+          ### Business Context
+
+          [2-3 sentences explaining what this domain covers and key concepts]
+
+          ### Entity Clarification
+
+          **"[AMBIGUOUS_TERM]" can mean:**
+          - **[MEANING_1]**: [DEFINITION] ([TABLE]: [ID_FIELD])
+          - **[MEANING_2]**: [DEFINITION] ([TABLE]: [ID_FIELD])
+
+          Always clarify which one before querying.
+
+          ### Standard Filters
+
+          For [domain] queries, always:
+          ```sql
+          WHERE [STANDARD_FILTER_1]
+            AND [STANDARD_FILTER_2]
+          ```
+
+          ---
+
+          ## Key Tables
+
+          ### [TABLE_1_NAME]
+          **Location**: `[project.dataset.table]` or `[schema.table]`
+          **Description**: [What this table contains, when to use it]
+          **Primary Key**: [COLUMN(S)]
+          **Update Frequency**: [Daily/Hourly/Real-time] ([LAG] lag)
+          **Partitioned By**: [PARTITION_COLUMN] (if applicable)
+
+          | Column | Type | Description | Notes |
+          |--------|------|-------------|-------|
+          | **[column_1]** | [TYPE] | [DESCRIPTION] | [GOTCHA_OR_CONTEXT] |
+          | **[column_2]** | [TYPE] | [DESCRIPTION] | |
+          | **[column_3]** | [TYPE] | [DESCRIPTION] | Nullable |
+
+          **Relationships**:
+          - Joins to `[OTHER_TABLE]` on `[JOIN_KEY]`
+          - Parent of `[CHILD_TABLE]` via `[FOREIGN_KEY]`
+
+          **Nested/Struct Fields** (if applicable):
+          - `[struct_name].[field_1]`: [DESCRIPTION]
+          - `[struct_name].[field_2]`: [DESCRIPTION]
+
+          ---
+
+          ### [TABLE_2_NAME]
+          [REPEAT FORMAT]
+
+          ---
+
+          ## Key Metrics
+
+          | Metric | Definition | Table | Formula | Notes |
+          |--------|------------|-------|---------|-------|
+          | [METRIC_1] | [DEFINITION] | [TABLE] | `[FORMULA]` | [CAVEATS] |
+          | [METRIC_2] | [DEFINITION] | [TABLE] | `[FORMULA]` | |
+
+          ---
+
+          ## Sample Queries
+
+          ### [QUERY_PURPOSE_1]
+          ```sql
+          -- [Brief description of what this query does]
+          SELECT
+              [columns]
+          FROM [table]
+          WHERE [standard_filters]
+          GROUP BY [grouping]
+          ORDER BY [ordering]
+          ```
+
+          ### [QUERY_PURPOSE_2]
+          ```sql
+          [ANOTHER_COMMON_QUERY]
+          ```
+
+          ### [QUERY_PURPOSE_3]: [More Complex Pattern]
+          ```sql
+          WITH [cte_name] AS (
+              [CTE_LOGIC]
+          )
+          SELECT
+              [final_columns]
+          FROM [cte_name]
+          [joins_and_filters]
+          ```
+
+          ---
+
+          ## Common Gotchas
+
+          1. **[GOTCHA_1]**: [EXPLANATION]
+             - Wrong: `[INCORRECT_APPROACH]`
+             - Right: `[CORRECT_APPROACH]`
+
+          2. **[GOTCHA_2]**: [EXPLANATION]
+
+          ---
+
+          ## Related Dashboards (if applicable)
+
+          | Dashboard | Link | Use For |
+          |-----------|------|---------|
+          | [DASHBOARD_1] | [URL] | [DESCRIPTION] |
+          | [DASHBOARD_2] | [URL] | [DESCRIPTION] |
+          ```
+
+          ---
+
+          ## Tips for Creating Domain Files
+
+          1. **Start with the most-queried tables** - Don't try to document everything
+          2. **Include column-level detail only for important columns** - Skip obvious ones like `created_at`
+          3. **Real query examples > abstract descriptions** - Show don't tell
+          4. **Document the gotchas prominently** - These save the most time
+          5. **Keep sample queries runnable** - Use real table/column names
+          6. **Note nested/struct fields explicitly** - These trip people up
+
+          ## Suggested Domain Files
+
+          Common domains to document (create separate files for each):
+
+          - `revenue.md` - Billing, subscriptions, ARR, transactions
+          - `users.md` - Accounts, authentication, user attributes
+          - `product.md` - Feature usage, events, sessions
+          - `growth.md` - DAU/WAU/MAU, retention, activation
+          - `sales.md` - CRM, pipeline, opportunities
+          - `marketing.md` - Campaigns, attribution, leads
+          - `support.md` - Tickets, CSAT, response times
+    - path: /knowledge-work-plugins/skills/data-context-extractor/references/example-output.md
+      text: |
+          # Example: Generated Skill
+
+          This is an example of what a generated skill looks like after the bootstrap process. This example is for a fictional e-commerce company called "ShopCo" using Snowflake.
+
+          ---
+
+          ## Example SKILL.md
+
+          ```markdown
+          ---
+          name: shopco-data-analyst
+          description: "ShopCo data analysis skill for Snowflake. Provides context for querying e-commerce data including customer, order, and product analytics. Use when analyzing ShopCo data for: (1) Revenue and order metrics, (2) Customer behavior and retention, (3) Product performance, or any data questions requiring ShopCo-specific context."
+          ---
+
+          # ShopCo Data Analysis
+
+          ## SQL Dialect: Snowflake
+
+          - **Table references**: `SHOPCO_DW.SCHEMA.TABLE` or with quotes for case-sensitive: `"Column_Name"`
+          - **Safe division**: `DIV0(a, b)` returns 0, `DIV0NULL(a, b)` returns NULL
+          - **Date functions**:
+            - `DATE_TRUNC('MONTH', date_col)`
+            - `DATEADD(DAY, -1, date_col)`
+            - `DATEDIFF(DAY, start_date, end_date)`
+          - **Column exclusion**: `SELECT * EXCLUDE (column_to_exclude)`
+
+          ---
+
+          ## Entity Disambiguation
+
+          **"Customer" can mean:**
+          - **User**: A login account that can browse and save items (CORE.DIM_USERS: user_id)
+          - **Customer**: A user who has made at least one purchase (CORE.DIM_CUSTOMERS: customer_id)
+          - **Account**: A billing entity, can have multiple users in B2B (CORE.DIM_ACCOUNTS: account_id)
+
+          **Relationships:**
+          - User → Customer: 1:1 (customer_id = user_id for purchasers)
+          - Account → User: 1:many (join on account_id)
+
+          ---
+
+          ## Business Terminology
+
+          | Term | Definition | Notes |
+          |------|------------|-------|
+          | GMV | Gross Merchandise Value - total order value before returns/discounts | Use for top-line reporting |
+          | NMV | Net Merchandise Value - GMV minus returns and discounts | Use for actual revenue |
+          | AOV | Average Order Value - NMV / order count | Exclude $0 orders |
+          | LTV | Lifetime Value - total NMV per customer since first order | Rolling calc, updates daily |
+          | CAC | Customer Acquisition Cost - marketing spend / new customers | By cohort month |
+
+          ---
+
+          ## Standard Filters
+
+          Always apply these filters unless explicitly told otherwise:
+
+          ```sql
+          -- Exclude test and internal orders
+          WHERE order_status != 'TEST'
+            AND customer_type != 'INTERNAL'
+            AND is_employee_order = FALSE
+
+          -- Exclude cancelled orders for revenue metrics
+            AND order_status NOT IN ('CANCELLED', 'FRAUDULENT')
+          ```
+
+          ---
+
+          ## Key Metrics
+
+          ### Gross Merchandise Value (GMV)
+          - **Definition**: Total value of all orders placed
+          - **Formula**: `SUM(order_total_gross)`
+          - **Source**: `CORE.FCT_ORDERS.order_total_gross`
+          - **Time grain**: Daily, aggregated to weekly/monthly
+          - **Caveats**: Includes orders that may later be cancelled or returned
+
+          ### Net Revenue
+          - **Definition**: Actual revenue after returns and discounts
+          - **Formula**: `SUM(order_total_gross - return_amount - discount_amount)`
+          - **Source**: `CORE.FCT_ORDERS`
+          - **Caveats**: Returns can occur up to 90 days post-order; use settled_revenue for finalized numbers
+
+          ---
+
+          ## Knowledge Base Navigation
+
+          | Domain | Reference File | Use For |
+          |--------|----------------|---------|
+          | Orders | `references/orders.md` | Order tables, GMV/NMV calculations |
+          | Customers | `references/customers.md` | User/customer entities, LTV, cohorts |
+          | Products | `references/products.md` | Catalog, inventory, categories |
+
+          ---
+
+          ## Common Query Patterns
+
+          ### Daily GMV by Channel
+          ```sql
+          SELECT
+              DATE_TRUNC('DAY', order_timestamp) AS order_date,
+              channel,
+              SUM(order_total_gross) AS gmv,
+              COUNT(DISTINCT order_id) AS order_count
+          FROM SHOPCO_DW.CORE.FCT_ORDERS
+          WHERE order_status NOT IN ('TEST', 'CANCELLED', 'FRAUDULENT')
+            AND order_timestamp >= DATEADD(DAY, -30, CURRENT_DATE())
+          GROUP BY 1, 2
+          ORDER BY 1 DESC, 3 DESC
+          ```
+
+          ### Customer Cohort Retention
+          ```sql
+          WITH cohorts AS (
+              SELECT
+                  customer_id,
+                  DATE_TRUNC('MONTH', first_order_date) AS cohort_month
+              FROM SHOPCO_DW.CORE.DIM_CUSTOMERS
+          )
+          SELECT
+              c.cohort_month,
+              DATEDIFF(MONTH, c.cohort_month, DATE_TRUNC('MONTH', o.order_timestamp)) AS months_since_first,
+              COUNT(DISTINCT c.customer_id) AS active_customers
+          FROM cohorts c
+          JOIN SHOPCO_DW.CORE.FCT_ORDERS o ON c.customer_id = o.customer_id
+          WHERE o.order_status NOT IN ('TEST', 'CANCELLED')
+          GROUP BY 1, 2
+          ORDER BY 1, 2
+          ```
+          ```
+
+          ---
+
+          ## Example references/orders.md
+
+          ```markdown
+          # Orders Tables
+
+          Order and transaction data for ShopCo.
+
+          ---
+
+          ## Key Tables
+
+          ### FCT_ORDERS
+          **Location**: `SHOPCO_DW.CORE.FCT_ORDERS`
+          **Description**: Fact table of all orders. One row per order.
+          **Primary Key**: `order_id`
+          **Update Frequency**: Hourly (15 min lag)
+          **Partitioned By**: `order_date`
+
+          | Column | Type | Description | Notes |
+          |--------|------|-------------|-------|
+          | **order_id** | VARCHAR | Unique order identifier | |
+          | **customer_id** | VARCHAR | FK to DIM_CUSTOMERS | NULL for guest checkout |
+          | **order_timestamp** | TIMESTAMP_NTZ | When order was placed | UTC |
+          | **order_date** | DATE | Date portion of order_timestamp | Partition column |
+          | **order_status** | VARCHAR | Current status | PENDING, SHIPPED, DELIVERED, CANCELLED, RETURNED |
+          | **channel** | VARCHAR | Acquisition channel | WEB, APP, MARKETPLACE |
+          | **order_total_gross** | DECIMAL(12,2) | Pre-discount total | |
+          | **discount_amount** | DECIMAL(12,2) | Total discounts applied | |
+          | **return_amount** | DECIMAL(12,2) | Value of returned items | Updates async |
+
+          **Relationships**:
+          - Joins to `DIM_CUSTOMERS` on `customer_id`
+          - Parent of `FCT_ORDER_ITEMS` via `order_id`
+
+          ---
+
+          ## Sample Queries
+
+          ### Orders with Returns Rate
+          ```sql
+          SELECT
+              DATE_TRUNC('WEEK', order_date) AS week,
+              COUNT(*) AS total_orders,
+              SUM(CASE WHEN return_amount > 0 THEN 1 ELSE 0 END) AS orders_with_returns,
+              DIV0(SUM(CASE WHEN return_amount > 0 THEN 1 ELSE 0 END), COUNT(*)) AS return_rate
+          FROM SHOPCO_DW.CORE.FCT_ORDERS
+          WHERE order_status NOT IN ('TEST', 'CANCELLED')
+            AND order_date >= DATEADD(MONTH, -3, CURRENT_DATE())
+          GROUP BY 1
+          ORDER BY 1
+          ```
+          ```
+
+          ---
+
+          This example demonstrates:
+          - Complete frontmatter with triggering description
+          - Dialect-specific SQL notes
+          - Clear entity disambiguation
+          - Terminology glossary
+          - Standard filters as copy-paste SQL
+          - Metric definitions with formulas
+          - Navigation to reference files
+          - Real, runnable query examples
+    - path: /knowledge-work-plugins/skills/data-context-extractor/references/skill-template.md
+      text: |
+          # Generated Skill Template
+
+          Use this template when generating a new data analysis skill. Replace all `[PLACEHOLDER]` values.
+
+          ---
+
+          ```markdown
+          ---
+          name: [company]-data-analyst
+          description: "[COMPANY] data analysis skill. Provides context for querying [WAREHOUSE_TYPE] including entity definitions, metric calculations, and common query patterns. Use when analyzing [COMPANY] data for: (1) [PRIMARY_USE_CASE_1], (2) [PRIMARY_USE_CASE_2], (3) [PRIMARY_USE_CASE_3], or any data questions requiring [COMPANY]-specific context."
+          ---
+
+          # [COMPANY] Data Analysis
+
+          ## SQL Dialect: [WAREHOUSE_TYPE]
+
+          [INSERT APPROPRIATE DIALECT SECTION FROM sql-dialects.md]
+
+          ---
+
+          ## Entity Disambiguation
+
+          When users mention these terms, clarify which entity they mean:
+
+          [EXAMPLE FORMAT - customize based on discovery:]
+
+          **"User" can mean:**
+          - **Account**: An individual login/profile ([PRIMARY_TABLE]: [ID_FIELD])
+          - **Organization**: A billing entity that can have multiple accounts ([ORG_TABLE]: [ORG_ID])
+          - **[OTHER_TYPE]**: [DEFINITION] ([TABLE]: [ID])
+
+          **Relationships:**
+          - [ENTITY_1] → [ENTITY_2]: [RELATIONSHIP_TYPE] (join on [JOIN_KEY])
+
+          ---
+
+          ## Business Terminology
+
+          | Term | Definition | Notes |
+          |------|------------|-------|
+          | [TERM_1] | [DEFINITION] | [CONTEXT/GOTCHA] |
+          | [TERM_2] | [DEFINITION] | [CONTEXT/GOTCHA] |
+          | [ACRONYM] | [FULL_NAME] - [EXPLANATION] | |
+
+          ---
+
+          ## Standard Filters
+
+          Always apply these filters unless explicitly told otherwise:
+
+          ```sql
+          -- Exclude test/internal data
+          WHERE [TEST_FLAG_COLUMN] = FALSE
+            AND [INTERNAL_FLAG_COLUMN] = FALSE
+
+          -- Exclude invalid/fraud
+            AND [STATUS_COLUMN] != '[EXCLUDED_STATUS]'
+
+          -- [OTHER STANDARD EXCLUSIONS]
+          ```
+
+          **When to override:**
+          - [SCENARIO_1]: Include [NORMALLY_EXCLUDED] when [CONDITION]
+
+          ---
+
+          ## Key Metrics
+
+          ### [METRIC_1_NAME]
+          - **Definition**: [PLAIN_ENGLISH_EXPLANATION]
+          - **Formula**: `[EXACT_CALCULATION]`
+          - **Source**: `[TABLE_NAME].[COLUMN_NAME]`
+          - **Time grain**: [DAILY/WEEKLY/MONTHLY]
+          - **Caveats**: [EDGE_CASES_OR_GOTCHAS]
+
+          ### [METRIC_2_NAME]
+          [REPEAT FORMAT]
+
+          ---
+
+          ## Data Freshness
+
+          | Table | Update Frequency | Typical Lag |
+          |-------|------------------|-------------|
+          | [TABLE_1] | [FREQUENCY] | [LAG] |
+          | [TABLE_2] | [FREQUENCY] | [LAG] |
+
+          To check data freshness:
+          ```sql
+          SELECT MAX([DATE_COLUMN]) as latest_data FROM [TABLE]
+          ```
+
+          ---
+
+          ## Knowledge Base Navigation
+
+          Use these reference files for detailed table documentation:
+
+          | Domain | Reference File | Use For |
+          |--------|----------------|---------|
+          | [DOMAIN_1] | `references/[domain1].md` | [BRIEF_DESCRIPTION] |
+          | [DOMAIN_2] | `references/[domain2].md` | [BRIEF_DESCRIPTION] |
+          | Entities | `references/entities.md` | Entity definitions and relationships |
+          | Metrics | `references/metrics.md` | KPI calculations and formulas |
+
+          ---
+
+          ## Common Query Patterns
+
+          ### [PATTERN_1_NAME]
+          ```sql
+          [SAMPLE_QUERY]
+          ```
+
+          ### [PATTERN_2_NAME]
+          ```sql
+          [SAMPLE_QUERY]
+          ```
+
+          ---
+
+          ## Troubleshooting
+
+          ### Common Mistakes
+          - **[MISTAKE_1]**: [EXPLANATION] → [CORRECT_APPROACH]
+          - **[MISTAKE_2]**: [EXPLANATION] → [CORRECT_APPROACH]
+
+          ### Access Issues
+          - If you encounter permission errors on `[TABLE]`: [WORKAROUND]
+          - For PII-restricted columns: [ALTERNATIVE_APPROACH]
+
+          ### Performance Tips
+          - Filter by `[PARTITION_COLUMN]` first to reduce data scanned
+          - For large tables, use `LIMIT` during exploration
+          - Prefer `[AGGREGATED_TABLE]` over `[RAW_TABLE]` when possible
+          ```
+
+          ---
+
+          ## Customization Notes
+
+          When generating a skill:
+
+          1. **Fill all placeholders** - Don't leave any `[PLACEHOLDER]` text
+          2. **Remove unused sections** - If they don't have dashboards, remove that section
+          3. **Add specificity** - Generic advice is less useful than specific column names and values
+          4. **Include real examples** - Sample queries should use actual table/column names
+          5. **Keep it scannable** - Use tables and code blocks liberally
+    - path: /knowledge-work-plugins/skills/data-context-extractor/references/sql-dialects.md
+      text: |
+          # SQL Dialect Reference
+
+          Include the appropriate section in generated skills based on the user's data warehouse.
+
+          ---
+
+          ## BigQuery
+
+          ```markdown
+          ## SQL Dialect: BigQuery
+
+          - **Table references**: Use backticks: \`project.dataset.table\`
+          - **Safe division**: `SAFE_DIVIDE(a, b)` returns NULL instead of error
+          - **Date functions**:
+            - `DATE_TRUNC(date_col, MONTH)`
+            - `DATE_SUB(date_col, INTERVAL 1 DAY)`
+            - `DATE_DIFF(end_date, start_date, DAY)`
+          - **Column exclusion**: `SELECT * EXCEPT(column_to_exclude)`
+          - **Arrays**: `UNNEST(array_column)` to flatten
+          - **Structs**: Access with dot notation `struct_col.field_name`
+          - **Timestamps**: `TIMESTAMP_TRUNC()`, times in UTC by default
+          - **String matching**: `LIKE`, `REGEXP_CONTAINS(col, r'pattern')`
+          - **NULLs in aggregations**: Most functions ignore NULLs; use `IFNULL()` or `COALESCE()`
+          ```
+
+          ---
+
+          ## Snowflake
+
+          ```markdown
+          ## SQL Dialect: Snowflake
+
+          - **Table references**: `DATABASE.SCHEMA.TABLE` or with quotes for case-sensitive: `"Column_Name"`
+          - **Safe division**: `DIV0(a, b)` returns 0, `DIV0NULL(a, b)` returns NULL
+          - **Date functions**:
+            - `DATE_TRUNC('MONTH', date_col)`
+            - `DATEADD(DAY, -1, date_col)`
+            - `DATEDIFF(DAY, start_date, end_date)`
+          - **Column exclusion**: `SELECT * EXCLUDE (column_to_exclude)`
+          - **Arrays**: `FLATTEN(array_column)` to flatten, access with `value`
+          - **Variants/JSON**: Access with colon notation `variant_col:field_name`
+          - **Timestamps**: `TIMESTAMP_NTZ` (no timezone), `TIMESTAMP_TZ` (with timezone)
+          - **String matching**: `LIKE`, `REGEXP_LIKE(col, 'pattern')`
+          - **Case sensitivity**: Identifiers are uppercase by default unless quoted
+          ```
+
+          ---
+
+          ## PostgreSQL / Redshift
+
+          ```markdown
+          ## SQL Dialect: PostgreSQL/Redshift
+
+          - **Table references**: `schema.table` (lowercase convention)
+          - **Safe division**: `NULLIF(b, 0)` pattern: `a / NULLIF(b, 0)`
+          - **Date functions**:
+            - `DATE_TRUNC('month', date_col)`
+            - `date_col - INTERVAL '1 day'`
+            - `DATE_PART('day', end_date - start_date)`
+          - **Column selection**: No EXCEPT; must list columns explicitly
+          - **Arrays**: `UNNEST(array_column)` (PostgreSQL), limited in Redshift
+          - **JSON**: `json_col->>'field_name'` for text, `json_col->'field_name'` for JSON
+          - **Timestamps**: `AT TIME ZONE 'UTC'` for timezone conversion
+          - **String matching**: `LIKE`, `col ~ 'pattern'` for regex
+          - **Boolean**: Native BOOLEAN type; use `TRUE`/`FALSE`
+          ```
+
+          ---
+
+          ## Databricks / Spark SQL
+
+          ```markdown
+          ## SQL Dialect: Databricks/Spark SQL
+
+          - **Table references**: `catalog.schema.table` (Unity Catalog) or `schema.table`
+          - **Safe division**: Use `NULLIF`: `a / NULLIF(b, 0)` or `TRY_DIVIDE(a, b)`
+          - **Date functions**:
+            - `DATE_TRUNC('MONTH', date_col)`
+            - `DATE_SUB(date_col, 1)`
+            - `DATEDIFF(end_date, start_date)`
+          - **Column exclusion**: `SELECT * EXCEPT (column_to_exclude)` (Databricks SQL)
+          - **Arrays**: `EXPLODE(array_column)` to flatten
+          - **Structs**: Access with dot notation `struct_col.field_name`
+          - **JSON**: `json_col:field_name` or `GET_JSON_OBJECT()`
+          - **String matching**: `LIKE`, `RLIKE` for regex
+          - **Delta features**: `DESCRIBE HISTORY`, time travel with `VERSION AS OF`
+          ```
+
+          ---
+
+          ## MySQL
+
+          ```markdown
+          ## SQL Dialect: MySQL
+
+          - **Table references**: \`database\`.\`table\` with backticks
+          - **Safe division**: Manual: `IF(b = 0, NULL, a / b)` or `a / NULLIF(b, 0)`
+          - **Date functions**:
+            - `DATE_FORMAT(date_col, '%Y-%m-01')` for truncation
+            - `DATE_SUB(date_col, INTERVAL 1 DAY)`
+            - `DATEDIFF(end_date, start_date)`
+          - **Column selection**: No EXCEPT; must list columns explicitly
+          - **Arrays**: Limited native support; often stored as JSON
+          - **JSON**: `JSON_EXTRACT(col, '$.field')` or `col->>'$.field'`
+          - **Timestamps**: `CONVERT_TZ()` for timezone conversion
+          - **String matching**: `LIKE`, `REGEXP` for regex
+          - **Case sensitivity**: Table names case-sensitive on Linux, not on Windows
+          ```
+
+          ---
+
+          ## Common Patterns Across Dialects
+
+          | Operation | BigQuery | Snowflake | PostgreSQL | Databricks |
+          |-----------|----------|-----------|------------|------------|
+          | Current date | `CURRENT_DATE()` | `CURRENT_DATE()` | `CURRENT_DATE` | `CURRENT_DATE()` |
+          | Current timestamp | `CURRENT_TIMESTAMP()` | `CURRENT_TIMESTAMP()` | `NOW()` | `CURRENT_TIMESTAMP()` |
+          | String concat | `CONCAT()` or `\|\|` | `CONCAT()` or `\|\|` | `CONCAT()` or `\|\|` | `CONCAT()` or `\|\|` |
+          | Coalesce | `COALESCE()` | `COALESCE()` | `COALESCE()` | `COALESCE()` |
+          | Case when | `CASE WHEN` | `CASE WHEN` | `CASE WHEN` | `CASE WHEN` |
+          | Count distinct | `COUNT(DISTINCT x)` | `COUNT(DISTINCT x)` | `COUNT(DISTINCT x)` | `COUNT(DISTINCT x)` |
     - path: /knowledge-work-plugins/skills/data-exploration/SKILL.md
       text: |
           ---
