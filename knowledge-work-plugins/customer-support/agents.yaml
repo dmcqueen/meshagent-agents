@@ -54,7 +54,7 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/escalation \
             --skill-dir /data/knowledge-work-plugins/skills/knowledge-management \
             --skill-dir /data/knowledge-work-plugins/skills/response-drafting \
-            --skill-dir /data/knowledge-work-plugins/skills/ticket-triage
+            --skill-dir /data/knowledge-work-plugins/skills/ticket-triage \
     - path: /var/rules-claude-customer-support.txt
       read_only: true
       text: |
