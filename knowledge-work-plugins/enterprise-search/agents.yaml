@@ -49,7 +49,7 @@ container:
             --rules-file /data/knowledge-work-plugins/commands/search.md \
             --skill-dir /data/knowledge-work-plugins/skills/knowledge-synthesis \
             --skill-dir /data/knowledge-work-plugins/skills/search-strategy \
-            --skill-dir /data/knowledge-work-plugins/skills/source-management
+            --skill-dir /data/knowledge-work-plugins/skills/source-management \
     - path: /var/rules-claude-enterprise-search.txt
       read_only: true
       text: |
