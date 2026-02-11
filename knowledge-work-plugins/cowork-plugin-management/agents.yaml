@@ -33,7 +33,7 @@ container:
           fi
 
           exec /usr/bin/meshagent chatbot join \
-            --model=claude-sonnet-4-5 \
+            --model=gpt-5.2 \
             --require-storage \
             --require-web-search \
             --require-web-fetch \
