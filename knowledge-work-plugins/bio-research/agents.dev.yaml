@@ -12668,13 +12668,8 @@ container:
             cp "$MCP_SOURCE" "$MCP_DEST"
           fi
 
-          if [ -z "$MESHAGENT_PROJECT_ID" ] || [ -z "$MESHAGENT_ROOM" ]; then
-            echo "MESHAGENT_PROJECT_ID or MESHAGENT_ROOM not set; skipping MCP registration" >&2
-            exit 0
-          fi
-
-          if ! command -v meshagent >/dev/null 2>&1; then
-            echo "meshagent CLI not found; skipping MCP registration" >&2
+          if [ -z "$MESHAGENT_ROOM" ] || [ -z "$MESHAGENT_TOKEN" ]; then
+            echo "MESHAGENT_ROOM or MESHAGENT_TOKEN not set; skipping MCP registration" >&2
             exit 0
           fi
 
@@ -12721,20 +12716,12 @@ container:
             fi
 
             case "$typ" in
-              http)
-                meshagent mcp http \
-                  --toolkit-name "$name" \
+              http|sse)
+                python3 /var/mcp-bridge.py \
+                  --name "$name" \
+                  --type "$typ" \
                   --url "$url" \
                   --room "$MESHAGENT_ROOM" \
-                  --project-id "$MESHAGENT_PROJECT_ID" \
-                  >/data/knowledge-work-plugins/mcp-"$name".log 2>&1 &
-                ;;
-              sse)
-                meshagent mcp sse \
-                  --toolkit-name "$name" \
-                  --url "$url" \
-                  --room "$MESHAGENT_ROOM" \
-                  --project-id "$MESHAGENT_PROJECT_ID" \
                   >/data/knowledge-work-plugins/mcp-"$name".log 2>&1 &
                 ;;
               *)
@@ -12742,6 +12729,137 @@ container:
                 ;;
             esac
           done
+    - path: /var/mcp-bridge.py
+      text: |
+          #!/usr/bin/env python3
+          from __future__ import annotations
+
+          import argparse
+          import asyncio
+          import os
+          from typing import Any
+
+          from meshagent.api import RoomClient, WebSocketClientProtocol
+          from meshagent.api.helpers import websocket_room_url
+          from meshagent.tools.hosting import RemoteToolkit
+          from meshagent.tools.strict_schema import ensure_strict_json_schema
+          from meshagent.tools import Tool
+
+          from mcp.client.session import ClientSession
+          from mcp.client.sse import sse_client
+          from mcp.client.streamable_http import streamablehttp_client
+
+
+          class MCPTool(Tool):
+              def __init__(self, *, session: ClientSession, mcp_tool):
+                  self.mcp_tool = mcp_tool
+                  self.session = session
+                  schema = mcp_tool.inputSchema or {}
+                  schema = _sanitize_schema(schema)
+                  strict_schema = ensure_strict_json_schema(schema)
+                  super().__init__(
+                      name=mcp_tool.name,
+                      input_schema=strict_schema,
+                      title=mcp_tool.name,
+                      description=mcp_tool.description,
+                  )
+
+              async def execute(self, context, **kwargs):
+                  result = await self.session.call_tool(self.mcp_tool.name, kwargs)
+                  return result.model_dump_json()
+
+
+          def _sanitize_schema(schema: Any) -> Any:
+              if isinstance(schema, dict):
+                  if "additionalProperties" in schema and schema["additionalProperties"] is not False:
+                      schema["additionalProperties"] = False
+                  for key, value in list(schema.items()):
+                      schema[key] = _sanitize_schema(value)
+              elif isinstance(schema, list):
+                  for i, value in enumerate(schema):
+                      schema[i] = _sanitize_schema(value)
+              return schema
+
+
+          def _parse_args() -> argparse.Namespace:
+              parser = argparse.ArgumentParser(
+                  description="Bridge an MCP server into a MeshAgent room with sanitized schemas."
+              )
+              parser.add_argument("--name", required=True, help="Toolkit name")
+              parser.add_argument("--url", required=True, help="MCP server URL")
+              parser.add_argument(
+                  "--type",
+                  choices=("http", "sse"),
+                  default="http",
+                  help="MCP transport type",
+              )
+              parser.add_argument(
+                  "--room",
+                  default=os.getenv("MESHAGENT_ROOM"),
+                  help="MeshAgent room name",
+              )
+              return parser.parse_args()
+
+
+          async def _run() -> None:
+              args = _parse_args()
+
+              if not args.room:
+                  raise SystemExit("MESHAGENT_ROOM is required")
+
+              token = os.getenv("MESHAGENT_TOKEN")
+              if not token:
+                  raise SystemExit("MESHAGENT_TOKEN is required")
+
+              ws_url = websocket_room_url(room_name=args.room)
+
+              async with RoomClient(
+                  protocol=WebSocketClientProtocol(url=ws_url, token=token)
+              ) as client:
+                  if args.type == "sse":
+                      async with sse_client(args.url) as (read_stream, write_stream):
+                          async with ClientSession(
+                              read_stream=read_stream, write_stream=write_stream
+                          ) as session:
+                              tools_response = await session.list_tools()
+                              tools = [MCPTool(session=session, mcp_tool=tool) for tool in tools_response.tools]
+                              toolkit = RemoteToolkit(
+                                  name=args.name,
+                                  tools=tools,
+                                  title=args.name,
+                                  description=f"MCP server: {args.url}",
+                              )
+                              await toolkit.start(room=client)
+                              await client.protocol.wait_for_close()
+                  else:
+                      async with streamablehttp_client(args.url) as (
+                          read_stream,
+                          write_stream,
+                          _get_session_id,
+                      ):
+                          async with ClientSession(
+                              read_stream=read_stream, write_stream=write_stream
+                          ) as session:
+                              await session.initialize()
+                              tools_response = await session.list_tools()
+                              tools = [MCPTool(session=session, mcp_tool=tool) for tool in tools_response.tools]
+                              toolkit = RemoteToolkit(
+                                  name=args.name,
+                                  tools=tools,
+                                  title=args.name,
+                                  description=f"MCP server: {args.url}",
+                              )
+                              await toolkit.start(room=client)
+                              await client.protocol.wait_for_close()
+
+
+          def main() -> int:
+              asyncio.run(_run())
+              return 0
+
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
     - path: /knowledge-work-plugins/.mcp.json
       text: |
           {
