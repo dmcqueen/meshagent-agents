@@ -136,15 +136,15 @@ container:
           ARCHIVE_PATH="${TMP_DIR}/meshagent-docs.tar.gz"
 
           if ! "${PYTHON_BIN}" - <<PY
-import urllib.request
-import sys
-url = "${ARCHIVE_URL}"
-path = "${ARCHIVE_PATH}"
-try:
-    urllib.request.urlretrieve(url, path)
-except Exception:
-    sys.exit(1)
-PY
+          import urllib.request
+          import sys
+          url = "${ARCHIVE_URL}"
+          path = "${ARCHIVE_PATH}"
+          try:
+              urllib.request.urlretrieve(url, path)
+          except Exception:
+              sys.exit(1)
+          PY
           then
             log "python download failed"
             log "completed"
@@ -152,23 +152,23 @@ PY
           fi
 
           if ! "${PYTHON_BIN}" - <<PY
-import os
-import tarfile
-import sys
-archive = "${ARCHIVE_PATH}"
-dest = "${REPO_DIR}"
-os.makedirs(dest, exist_ok=True)
-try:
-    with tarfile.open(archive, "r:gz") as tf:
-        for member in tf.getmembers():
-            parts = member.name.split("/", 1)
-            if len(parts) != 2 or not parts[1]:
-                continue
-            member.name = parts[1]
-            tf.extract(member, dest)
-except Exception:
-    sys.exit(1)
-PY
+          import os
+          import tarfile
+          import sys
+          archive = "${ARCHIVE_PATH}"
+          dest = "${REPO_DIR}"
+          os.makedirs(dest, exist_ok=True)
+          try:
+              with tarfile.open(archive, "r:gz") as tf:
+                  for member in tf.getmembers():
+                      parts = member.name.split("/", 1)
+                      if len(parts) != 2 or not parts[1]:
+                          continue
+                      member.name = parts[1]
+                      tf.extract(member, dest)
+          except Exception:
+              sys.exit(1)
+          PY
           then
             log "python extract failed"
             log "completed"
