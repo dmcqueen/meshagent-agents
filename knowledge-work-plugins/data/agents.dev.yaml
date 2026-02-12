@@ -56,7 +56,6 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/data-validation \
             --skill-dir /data/knowledge-work-plugins/skills/data-visualization \
             --skill-dir /data/knowledge-work-plugins/skills/interactive-dashboard-builder \
-            --skill-dir /data/knowledge-work-plugins/skills/references \
             --skill-dir /data/knowledge-work-plugins/skills/sql-queries \
             --skill-dir /data/knowledge-work-plugins/skills/statistical-analysis \
     - path: /var/rules-claude-data.txt
