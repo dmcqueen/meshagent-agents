@@ -45,7 +45,7 @@ container:
 
           bash /var/update-meshagent-docs.sh
 
-          exec /usr/bin/meshagent multi join -c "chatbot --agent-name claude-customer-support-meshagent --model=gpt-5.2 --require-storage --require-web-search --require-web-fetch --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins --storage-tool-room-path=/:/data --script-tool -rr=agents/claude-customer-support-meshagent/rules.txt --rules-file /data/knowledge-work-plugins/commands/draft-response.md --rules-file /data/knowledge-work-plugins/commands/escalate.md --rules-file /data/knowledge-work-plugins/commands/kb-article.md --rules-file /data/knowledge-work-plugins/commands/research.md --rules-file /data/knowledge-work-plugins/commands/triage.md --skill-dir /data/knowledge-work-plugins/skills/customer-research --skill-dir /data/knowledge-work-plugins/skills/escalation --skill-dir /data/knowledge-work-plugins/skills/knowledge-management --skill-dir /data/knowledge-work-plugins/skills/response-drafting --skill-dir /data/knowledge-work-plugins/skills/ticket-triage; worker --agent-name claude-customer-support-meshagent --queue docs-sync --require-shell --require-storage --room-rules /agents/claude-customer-support-meshagent/rules-worker.txt"
+          exec /usr/bin/meshagent multi join -c "chatbot --agent-name claude-customer-support-meshagent --model=gpt-5.2 --require-storage --require-web-search --require-web-fetch --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins --storage-tool-room-path=/:/data --script-tool -rr=agents/claude-customer-support-meshagent/rules.txt --rules-file /data/knowledge-work-plugins/commands/draft-response.md --rules-file /data/knowledge-work-plugins/commands/escalate.md --rules-file /data/knowledge-work-plugins/commands/kb-article.md --rules-file /data/knowledge-work-plugins/commands/research.md --rules-file /data/knowledge-work-plugins/commands/triage.md --skill-dir /data/knowledge-work-plugins/skills/customer-research --skill-dir /data/knowledge-work-plugins/skills/escalation --skill-dir /data/knowledge-work-plugins/skills/knowledge-management --skill-dir /data/knowledge-work-plugins/skills/response-drafting --skill-dir /data/knowledge-work-plugins/skills/ticket-triage; worker --agent-name claude-customer-support-meshagent --queue docs-sync --require-shell --room-rules /agents/claude-customer-support-meshagent/rules-worker.txt"
     - path: /var/rules-claude-customer-support.txt
       read_only: true
       text: |
@@ -55,7 +55,7 @@ container:
           when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data.
           when using the storage tool to read skills, the path should be prefixed with /data/knowledge-work-plugins (the folder where the plugins are located)
           You have customizable rules stored in agents/claude-customer-support-meshagent/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.
-          You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com
+          You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com, /data/meshagent-docs and docs.meshagent.com
           You have some slash commands available
     - path: /var/rules-claude-customer-support-worker.txt
       read_only: true
@@ -72,14 +72,40 @@ container:
 
           REPO_URL="https://github.com/meshagent/meshagent-docs.git"
           REPO_DIR="/data/meshagent-docs"
+          LOG_FILE="/data/meshagent-docs-sync.log"
+
+          mkdir -p /data
+          touch "${LOG_FILE}"
+          echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") starting" >> "${LOG_FILE}"
+
+          if ! command -v git >/dev/null 2>&1; then
+            echo "[sync] git not found in container PATH" >> "${LOG_FILE}"
+            mkdir -p "${REPO_DIR}"
+            exit 0
+          fi
 
           if [ -d "${REPO_DIR}/.git" ]; then
-            git -C "${REPO_DIR}" fetch --depth 1 origin main
-            git -C "${REPO_DIR}" checkout main
-            git -C "${REPO_DIR}" reset --hard origin/main
+            if ! git -C "${REPO_DIR}" fetch --depth 1 origin main; then
+              echo "[sync] fetch failed" >> "${LOG_FILE}"
+              exit 0
+            fi
+            if ! git -C "${REPO_DIR}" checkout main; then
+              echo "[sync] checkout failed" >> "${LOG_FILE}"
+              exit 0
+            fi
+            if ! git -C "${REPO_DIR}" reset --hard origin/main; then
+              echo "[sync] reset failed" >> "${LOG_FILE}"
+              exit 0
+            fi
           else
-            git clone --depth 1 --branch main "${REPO_URL}" "${REPO_DIR}"
+            if ! git clone --depth 1 --branch main "${REPO_URL}" "${REPO_DIR}"; then
+              echo "[sync] clone failed" >> "${LOG_FILE}"
+              mkdir -p "${REPO_DIR}"
+              exit 0
+            fi
           fi
+
+          echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") completed" >> "${LOG_FILE}"
     - path: /knowledge-work-plugins/commands/draft-response.md
       text: |
           ---
