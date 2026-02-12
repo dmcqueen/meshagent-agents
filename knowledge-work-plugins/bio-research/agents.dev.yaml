@@ -36,6 +36,7 @@ container:
             cp /var/rules-claude-bio-research.txt /data/agents/claude-bio-research/rules.txt
           fi
 
+          /bin/bash /var/mcp-setup.sh
           exec /usr/bin/meshagent chatbot join \
             --model=gpt-5.2 \
             --require-storage \
@@ -44,6 +45,7 @@ container:
             --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins \
             --storage-tool-room-path=/:/data \
             --script-tool \
+            --mcp \
             -rr=agents/claude-bio-research/rules.txt \
             --rules-file /data/knowledge-work-plugins/commands/start.md \
             --skill-dir /data/knowledge-work-plugins/skills/instrument-data-to-allotrope \
@@ -12652,6 +12654,140 @@ container:
           - Luecken & Theis (2019): Current best practices in single-cell RNA-seq analysis
           - Osorio & Cai (2021): Systematic determination of the mitochondrial proportion in human and mouse genomes
           - Germain et al. (2020): Doublet identification in single-cell sequencing data using scDblFinder
+    - path: /var/mcp-setup.sh
+      text: |
+          #!/bin/bash
+
+          set -e
+
+          MCP_SOURCE="/knowledge-work-plugins/.mcp.json"
+          MCP_DEST="/data/knowledge-work-plugins/.mcp.json"
+
+          if [ -f "$MCP_SOURCE" ] && [ ! -f "$MCP_DEST" ]; then
+            mkdir -p /data/knowledge-work-plugins
+            cp "$MCP_SOURCE" "$MCP_DEST"
+          fi
+
+          if [ -z "$MESHAGENT_PROJECT_ID" ] || [ -z "$MESHAGENT_ROOM" ]; then
+            echo "MESHAGENT_PROJECT_ID or MESHAGENT_ROOM not set; skipping MCP registration" >&2
+            exit 0
+          fi
+
+          if ! command -v meshagent >/dev/null 2>&1; then
+            echo "meshagent CLI not found; skipping MCP registration" >&2
+            exit 0
+          fi
+
+          if ! command -v python3 >/dev/null 2>&1; then
+            echo "python3 not found; skipping MCP registration" >&2
+            exit 0
+          fi
+
+          MCP_CONFIG="$MCP_DEST"
+          if [ ! -f "$MCP_CONFIG" ]; then
+            MCP_CONFIG="$MCP_SOURCE"
+          fi
+
+          if [ ! -f "$MCP_CONFIG" ]; then
+            echo "MCP config not found; skipping MCP registration" >&2
+            exit 0
+          fi
+
+          mapfile -t MCP_SERVERS < <(python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("/data/knowledge-work-plugins/.mcp.json")
+          if not path.exists():
+              path = Path("/knowledge-work-plugins/.mcp.json")
+
+          data = json.loads(path.read_text(encoding="utf-8"))
+          servers = data.get("mcpServers", {})
+          for name, cfg in servers.items():
+              if not isinstance(cfg, dict):
+                  continue
+              url = (cfg.get("url") or "").strip()
+              if not url:
+                  continue
+              typ = (cfg.get("type") or "http").strip()
+              print(f"{name}\t{typ}\t{url}")
+          PY
+          )
+
+          for entry in "${MCP_SERVERS[@]}"; do
+            IFS=$'\t' read -r name typ url <<<"$entry"
+            if [ -z "$name" ] || [ -z "$url" ]; then
+              continue
+            fi
+
+            case "$typ" in
+              http)
+                meshagent mcp http \
+                  --toolkit-name "$name" \
+                  --url "$url" \
+                  --room "$MESHAGENT_ROOM" \
+                  --project-id "$MESHAGENT_PROJECT_ID" \
+                  >/data/knowledge-work-plugins/mcp-"$name".log 2>&1 &
+                ;;
+              sse)
+                meshagent mcp sse \
+                  --toolkit-name "$name" \
+                  --url "$url" \
+                  --room "$MESHAGENT_ROOM" \
+                  --project-id "$MESHAGENT_PROJECT_ID" \
+                  >/data/knowledge-work-plugins/mcp-"$name".log 2>&1 &
+                ;;
+              *)
+                echo "Skipping MCP server '$name' (unsupported type: $typ)" >&2
+                ;;
+            esac
+          done
+    - path: /knowledge-work-plugins/.mcp.json
+      text: |
+          {
+            "mcpServers": {
+              "pubmed": {
+                "type": "http",
+                "url": "https://pubmed.mcp.claude.com/mcp"
+              },
+              "biorender": {
+                "type": "http",
+                "url": "https://mcp.services.biorender.com/mcp"
+              },
+              "biorxiv": {
+                "type": "http",
+                "url": "https://mcp.deepsense.ai/biorxiv/mcp"
+              },
+              "c-trials": {
+                "type": "http",
+                "url": "https://mcp.deepsense.ai/clinical_trials/mcp"
+              },
+              "chembl": {
+                "type": "http",
+                "url": "https://mcp.deepsense.ai/chembl/mcp"
+              },
+              "synapse": {
+                "type": "http",
+                "url": "https://mcp.synapse.org/mcp"
+              },
+              "wiley": {
+                "type": "http",
+                "url": "https://connector.scholargateway.ai/mcp"
+              },
+              "owkin": {
+                "type": "http",
+                "url": "https://mcp.k.owkin.com/mcp"
+              },
+              "ot": {
+                "type": "http",
+                "url": "https://mcp.platform.opentargets.org/mcp"
+              },
+              "benchling": {
+                "type": "http",
+                "url": ""
+              }
+            }
+          }
   environment:
     - name: MESHAGENT_TOKEN
       token:  
