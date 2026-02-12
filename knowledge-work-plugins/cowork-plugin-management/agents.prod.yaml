@@ -47,8 +47,6 @@ container:
             -rr=agents/claude-cowork-plugin-management/rules.txt \
             --skill-dir /data/knowledge-work-plugins/skills/cowork-plugin-customizer \
             --skill-dir /data/knowledge-work-plugins/skills/create-cowork-plugin \
-            --skill-dir /data/knowledge-work-plugins/skills/examples \
-            --skill-dir /data/knowledge-work-plugins/skills/references \
     - path: /var/rules-claude-cowork-plugin-management.txt
       read_only: true
       text: |
