@@ -82,35 +82,7 @@ container:
 
           log "starting"
 
-          HAS_GIT=0
           if command -v git >/dev/null 2>&1; then
-            HAS_GIT=1
-          else
-            log "git not found in container PATH"
-
-            if command -v apk >/dev/null 2>&1; then
-              log "attempting install via apk"
-              apk add --no-cache git curl >/dev/null 2>&1 || log "apk install failed"
-            elif command -v apt-get >/dev/null 2>&1; then
-              log "attempting install via apt-get"
-              apt-get update -y >/dev/null 2>&1 && apt-get install -y git curl >/dev/null 2>&1 || log "apt-get install failed"
-            elif command -v yum >/dev/null 2>&1; then
-              log "attempting install via yum"
-              yum install -y git curl >/dev/null 2>&1 || log "yum install failed"
-            elif command -v dnf >/dev/null 2>&1; then
-              log "attempting install via dnf"
-              dnf install -y git curl >/dev/null 2>&1 || log "dnf install failed"
-            else
-              log "no supported package manager found"
-            fi
-
-            if command -v git >/dev/null 2>&1; then
-              HAS_GIT=1
-              log "git installed successfully"
-            fi
-          fi
-
-          if [ "${HAS_GIT}" -eq 1 ]; then
             if [ -d "${REPO_DIR}/.git" ]; then
               if ! git -C "${REPO_DIR}" fetch --depth 1 origin main; then
                 log "fetch failed"
@@ -135,47 +107,72 @@ container:
                 exit 0
               fi
             fi
+            log "completed"
+            exit 0
+          fi
+
+          log "git not found in container PATH"
+
+          if command -v python3 >/dev/null 2>&1; then
+            PYTHON_BIN="python3"
+          elif command -v python >/dev/null 2>&1; then
+            PYTHON_BIN="python"
           else
-            mkdir -p "${REPO_DIR}"
-            log "falling back to tarball download"
-            ARCHIVE_URL="https://codeload.github.com/meshagent/meshagent-docs/tar.gz/refs/heads/main"
-            if ! command -v mktemp >/dev/null 2>&1; then
-              log "mktemp not available"
-              log "completed"
-              exit 0
-            fi
-            TMP_DIR="$(mktemp -d /tmp/meshagent-docs.XXXXXX)"
-            ARCHIVE_PATH="${TMP_DIR}/meshagent-docs.tar.gz"
+            log "python not available for tarball download"
+            log "completed"
+            exit 0
+          fi
 
-            if command -v curl >/dev/null 2>&1; then
-              if ! curl -fsSL "${ARCHIVE_URL}" -o "${ARCHIVE_PATH}"; then
-                log "curl download failed"
-                log "completed"
-                exit 0
-              fi
-            elif command -v wget >/dev/null 2>&1; then
-              if ! wget -qO "${ARCHIVE_PATH}" "${ARCHIVE_URL}"; then
-                log "wget download failed"
-                log "completed"
-                exit 0
-              fi
-            else
-              log "neither curl nor wget available"
-              log "completed"
-              exit 0
-            fi
+          ARCHIVE_URL="https://codeload.github.com/meshagent/meshagent-docs/tar.gz/refs/heads/main"
+          mkdir -p "${REPO_DIR}"
 
-            if ! command -v tar >/dev/null 2>&1; then
-              log "tar not available"
-              log "completed"
-              exit 0
-            fi
+          if ! command -v mktemp >/dev/null 2>&1; then
+            log "mktemp not available"
+            log "completed"
+            exit 0
+          fi
 
-            if ! tar -xzf "${ARCHIVE_PATH}" -C "${REPO_DIR}" --strip-components=1; then
-              log "tar extract failed"
-              log "completed"
-              exit 0
-            fi
+          TMP_DIR="$(mktemp -d /tmp/meshagent-docs.XXXXXX)"
+          ARCHIVE_PATH="${TMP_DIR}/meshagent-docs.tar.gz"
+
+          if ! "${PYTHON_BIN}" - <<PY
+import urllib.request
+import sys
+url = "${ARCHIVE_URL}"
+path = "${ARCHIVE_PATH}"
+try:
+    urllib.request.urlretrieve(url, path)
+except Exception:
+    sys.exit(1)
+PY
+          then
+            log "python download failed"
+            log "completed"
+            exit 0
+          fi
+
+          if ! "${PYTHON_BIN}" - <<PY
+import os
+import tarfile
+import sys
+archive = "${ARCHIVE_PATH}"
+dest = "${REPO_DIR}"
+os.makedirs(dest, exist_ok=True)
+try:
+    with tarfile.open(archive, "r:gz") as tf:
+        for member in tf.getmembers():
+            parts = member.name.split("/", 1)
+            if len(parts) != 2 or not parts[1]:
+                continue
+            member.name = parts[1]
+            tf.extract(member, dest)
+except Exception:
+    sys.exit(1)
+PY
+          then
+            log "python extract failed"
+            log "completed"
+            exit 0
           fi
 
           log "completed"
