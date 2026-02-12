@@ -18,7 +18,7 @@ agents:
       meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"docs-sync","name":"SyncMeshagentDocs","payload":{"prompt":"Run the meshagent docs sync workflow from /data/agents/claude-customer-support-meshagent/rules-worker.txt"}}'
 
 container:
-  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/shell:{SERVER_VERSION}-esgz
   command: /bin/bash /var/start.sh
   storage:
     room:
@@ -68,114 +68,27 @@ container:
       text: |
           #!/bin/bash
 
-          set -uo pipefail
+          set -euo pipefail
 
           REPO_URL="https://github.com/meshagent/meshagent-docs.git"
           REPO_DIR="/data/meshagent-docs"
           LOG_FILE="/data/meshagent-docs-sync.log"
 
           mkdir -p /data
-          touch "${LOG_FILE}"
-          log() {
-            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") $1" >> "${LOG_FILE}"
-          }
 
-          log "starting"
+          {
+            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") starting"
 
-          if command -v git >/dev/null 2>&1; then
             if [ -d "${REPO_DIR}/.git" ]; then
-              if ! git -C "${REPO_DIR}" fetch --depth 1 origin main; then
-                log "fetch failed"
-                log "completed"
-                exit 0
-              fi
-              if ! git -C "${REPO_DIR}" checkout main; then
-                log "checkout failed"
-                log "completed"
-                exit 0
-              fi
-              if ! git -C "${REPO_DIR}" reset --hard origin/main; then
-                log "reset failed"
-                log "completed"
-                exit 0
-              fi
+              git -C "${REPO_DIR}" fetch --depth 1 origin main
+              git -C "${REPO_DIR}" checkout main
+              git -C "${REPO_DIR}" reset --hard origin/main
             else
-              if ! git clone --depth 1 --branch main "${REPO_URL}" "${REPO_DIR}"; then
-                log "clone failed"
-                mkdir -p "${REPO_DIR}"
-                log "completed"
-                exit 0
-              fi
+              git clone --depth 1 --branch main "${REPO_URL}" "${REPO_DIR}"
             fi
-            log "completed"
-            exit 0
-          fi
 
-          log "git not found in container PATH"
-
-          if command -v python3 >/dev/null 2>&1; then
-            PYTHON_BIN="python3"
-          elif command -v python >/dev/null 2>&1; then
-            PYTHON_BIN="python"
-          else
-            log "python not available for tarball download"
-            log "completed"
-            exit 0
-          fi
-
-          ARCHIVE_URL="https://codeload.github.com/meshagent/meshagent-docs/tar.gz/refs/heads/main"
-          mkdir -p "${REPO_DIR}"
-
-          if ! command -v mktemp >/dev/null 2>&1; then
-            log "mktemp not available"
-            log "completed"
-            exit 0
-          fi
-
-          TMP_DIR="$(mktemp -d /tmp/meshagent-docs.XXXXXX)"
-          ARCHIVE_PATH="${TMP_DIR}/meshagent-docs.tar.gz"
-
-          if ! "${PYTHON_BIN}" - <<PY
-          import urllib.request
-          import sys
-          url = "${ARCHIVE_URL}"
-          path = "${ARCHIVE_PATH}"
-          try:
-              urllib.request.urlretrieve(url, path)
-          except Exception:
-              sys.exit(1)
-          PY
-          then
-            log "python download failed"
-            log "completed"
-            exit 0
-          fi
-
-          if ! "${PYTHON_BIN}" - <<PY
-          import os
-          import tarfile
-          import sys
-          archive = "${ARCHIVE_PATH}"
-          dest = "${REPO_DIR}"
-          os.makedirs(dest, exist_ok=True)
-          try:
-              with tarfile.open(archive, "r:gz") as tf:
-                  for member in tf.getmembers():
-                      parts = member.name.split("/", 1)
-                      if len(parts) != 2 or not parts[1]:
-                          continue
-                      member.name = parts[1]
-                      tf.extract(member, dest)
-          except Exception:
-              sys.exit(1)
-          PY
-          then
-            log "python extract failed"
-            log "completed"
-            exit 0
-          fi
-
-          log "completed"
+            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") completed"
+          } >> "${LOG_FILE}" 2>&1
     - path: /knowledge-work-plugins/commands/draft-response.md
       text: |
           ---
