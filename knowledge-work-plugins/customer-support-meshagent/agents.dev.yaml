@@ -68,7 +68,7 @@ container:
       text: |
           #!/bin/bash
 
-          set -euo pipefail
+          set -uo pipefail
 
           REPO_URL="https://github.com/meshagent/meshagent-docs.git"
           REPO_DIR="/data/meshagent-docs"
@@ -76,93 +76,109 @@ container:
 
           mkdir -p /data
           touch "${LOG_FILE}"
-          echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") starting" >> "${LOG_FILE}"
+          log() {
+            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") $1" >> "${LOG_FILE}"
+          }
 
-          if ! command -v git >/dev/null 2>&1; then
-            echo "[sync] git not found in container PATH" >> "${LOG_FILE}"
+          log "starting"
+
+          HAS_GIT=0
+          if command -v git >/dev/null 2>&1; then
+            HAS_GIT=1
+          else
+            log "git not found in container PATH"
 
             if command -v apk >/dev/null 2>&1; then
-              echo "[sync] attempting install via apk" >> "${LOG_FILE}"
-              if apk add --no-cache git curl >/dev/null 2>&1; then
-                echo "[sync] apk install completed" >> "${LOG_FILE}"
-              else
-                echo "[sync] apk install failed" >> "${LOG_FILE}"
-              fi
+              log "attempting install via apk"
+              apk add --no-cache git curl >/dev/null 2>&1 || log "apk install failed"
             elif command -v apt-get >/dev/null 2>&1; then
-              echo "[sync] attempting install via apt-get" >> "${LOG_FILE}"
-              if apt-get update -y >/dev/null 2>&1 && apt-get install -y git curl >/dev/null 2>&1; then
-                echo "[sync] apt-get install completed" >> "${LOG_FILE}"
-              else
-                echo "[sync] apt-get install failed" >> "${LOG_FILE}"
-              fi
+              log "attempting install via apt-get"
+              apt-get update -y >/dev/null 2>&1 && apt-get install -y git curl >/dev/null 2>&1 || log "apt-get install failed"
             elif command -v yum >/dev/null 2>&1; then
-              echo "[sync] attempting install via yum" >> "${LOG_FILE}"
-              if yum install -y git curl >/dev/null 2>&1; then
-                echo "[sync] yum install completed" >> "${LOG_FILE}"
-              else
-                echo "[sync] yum install failed" >> "${LOG_FILE}"
-              fi
+              log "attempting install via yum"
+              yum install -y git curl >/dev/null 2>&1 || log "yum install failed"
             elif command -v dnf >/dev/null 2>&1; then
-              echo "[sync] attempting install via dnf" >> "${LOG_FILE}"
-              if dnf install -y git curl >/dev/null 2>&1; then
-                echo "[sync] dnf install completed" >> "${LOG_FILE}"
-              else
-                echo "[sync] dnf install failed" >> "${LOG_FILE}"
-              fi
+              log "attempting install via dnf"
+              dnf install -y git curl >/dev/null 2>&1 || log "dnf install failed"
             else
-              echo "[sync] no supported package manager found" >> "${LOG_FILE}"
+              log "no supported package manager found"
+            fi
+
+            if command -v git >/dev/null 2>&1; then
+              HAS_GIT=1
+              log "git installed successfully"
             fi
           fi
 
-          if command -v git >/dev/null 2>&1; then
+          if [ "${HAS_GIT}" -eq 1 ]; then
             if [ -d "${REPO_DIR}/.git" ]; then
               if ! git -C "${REPO_DIR}" fetch --depth 1 origin main; then
-                echo "[sync] fetch failed" >> "${LOG_FILE}"
+                log "fetch failed"
+                log "completed"
                 exit 0
               fi
               if ! git -C "${REPO_DIR}" checkout main; then
-                echo "[sync] checkout failed" >> "${LOG_FILE}"
+                log "checkout failed"
+                log "completed"
                 exit 0
               fi
               if ! git -C "${REPO_DIR}" reset --hard origin/main; then
-                echo "[sync] reset failed" >> "${LOG_FILE}"
+                log "reset failed"
+                log "completed"
                 exit 0
               fi
             else
               if ! git clone --depth 1 --branch main "${REPO_URL}" "${REPO_DIR}"; then
-                echo "[sync] clone failed" >> "${LOG_FILE}"
+                log "clone failed"
                 mkdir -p "${REPO_DIR}"
+                log "completed"
                 exit 0
               fi
             fi
           else
             mkdir -p "${REPO_DIR}"
+            log "falling back to tarball download"
             ARCHIVE_URL="https://codeload.github.com/meshagent/meshagent-docs/tar.gz/refs/heads/main"
+            if ! command -v mktemp >/dev/null 2>&1; then
+              log "mktemp not available"
+              log "completed"
+              exit 0
+            fi
             TMP_DIR="$(mktemp -d /tmp/meshagent-docs.XXXXXX)"
             ARCHIVE_PATH="${TMP_DIR}/meshagent-docs.tar.gz"
 
             if command -v curl >/dev/null 2>&1; then
               if ! curl -fsSL "${ARCHIVE_URL}" -o "${ARCHIVE_PATH}"; then
-                echo "[sync] curl download failed" >> "${LOG_FILE}"
+                log "curl download failed"
+                log "completed"
                 exit 0
               fi
             elif command -v wget >/dev/null 2>&1; then
               if ! wget -qO "${ARCHIVE_PATH}" "${ARCHIVE_URL}"; then
-                echo "[sync] wget download failed" >> "${LOG_FILE}"
+                log "wget download failed"
+                log "completed"
                 exit 0
               fi
             else
-              echo "[sync] neither curl nor wget available" >> "${LOG_FILE}"
+              log "neither curl nor wget available"
+              log "completed"
+              exit 0
+            fi
+
+            if ! command -v tar >/dev/null 2>&1; then
+              log "tar not available"
+              log "completed"
               exit 0
             fi
 
             if ! tar -xzf "${ARCHIVE_PATH}" -C "${REPO_DIR}" --strip-components=1; then
-              echo "[sync] tar extract failed" >> "${LOG_FILE}"
+              log "tar extract failed"
+              log "completed"
               exit 0
             fi
           fi
 
-          echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") completed" >> "${LOG_FILE}"
+          log "completed"
     - path: /knowledge-work-plugins/commands/draft-response.md
       text: |
           ---
