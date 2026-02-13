@@ -1,0 +1,12 @@
+{
+  "name": "claude-legal\\tAn agent that uses Anthropic's legal knowledge work plugin and powered by Claude Sonnet 4.5",
+  "description": "claude-legal\\tAn agent that uses Anthropic's legal knowledge work plugin and powered by Claude Sonnet 4.5",
+  "dev": {
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e48a8a194e15603b2cdc4171584096940167e6a0/knowledge-work-plugins/legal/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e48a8a194e15603b2cdc4171584096940167e6a0/knowledge-work-plugins/legal/agents.dev.yaml"
+  },
+  "prod": {
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bc3b232e3eba53f5102eeb25d5a4a50890ada3cf/knowledge-work-plugins/legal/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bc3b232e3eba53f5102eeb25d5a4a50890ada3cf/knowledge-work-plugins/legal/agents.prod.yaml"
+  }
+}
