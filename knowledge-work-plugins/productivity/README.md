@@ -1,13 +1,15 @@
-# claude-productivity\tAn agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5
+# Claude Productivity
 
-claude-productivity\tAn agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5
+An agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5
+
+ID: claude-productivity
 
 ## Install Links
 
-Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f0c967386806e502e2fa8537ec91356a14a97ead/knowledge-work-plugins/productivity/agents.dev.yaml
-Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ceb383cd531497f0e1d11af92b179395dd63378/knowledge-work-plugins/productivity/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/68d1acf1a8f65a32902796054f40db237c82c775/knowledge-work-plugins/productivity/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a5a620ad0aa746367e49bc4281b3f104a0e6a562/knowledge-work-plugins/productivity/agents.prod.yaml
 
 ## Raw SHA Links
 
-Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f0c967386806e502e2fa8537ec91356a14a97ead/knowledge-work-plugins/productivity/agents.dev.yaml
-Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ceb383cd531497f0e1d11af92b179395dd63378/knowledge-work-plugins/productivity/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/68d1acf1a8f65a32902796054f40db237c82c775/knowledge-work-plugins/productivity/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a5a620ad0aa746367e49bc4281b3f104a0e6a562/knowledge-work-plugins/productivity/agents.prod.yaml
