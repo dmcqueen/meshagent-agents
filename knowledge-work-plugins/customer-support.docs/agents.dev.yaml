@@ -18,7 +18,7 @@ agents:
       meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"docs-sync","name":"SyncMeshagentDocs","payload":{"prompt":"Run the meshagent docs sync workflow from /data/agents/claude-customer-support-meshagent/rules-worker.txt"}}'
 
 container:
-  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/shell:{SERVER_VERSION}-esgz
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/shell-terminal:{SERVER_VERSION}-esgz
   command: /bin/bash /var/start.sh
   storage:
     room:
@@ -45,7 +45,31 @@ container:
 
           bash /var/update-meshagent-docs.sh
 
-          exec /usr/bin/meshagent multi join -c "chatbot --agent-name claude-customer-support-meshagent --model=gpt-5.2 --require-storage --require-web-search --require-web-fetch --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins --storage-tool-room-path=/:/data --script-tool -rr=agents/claude-customer-support-meshagent/rules.txt --rules-file /data/knowledge-work-plugins/commands/draft-response.md --rules-file /data/knowledge-work-plugins/commands/escalate.md --rules-file /data/knowledge-work-plugins/commands/kb-article.md --rules-file /data/knowledge-work-plugins/commands/research.md --rules-file /data/knowledge-work-plugins/commands/triage.md --skill-dir /data/knowledge-work-plugins/skills/customer-research --skill-dir /data/knowledge-work-plugins/skills/escalation --skill-dir /data/knowledge-work-plugins/skills/knowledge-management --skill-dir /data/knowledge-work-plugins/skills/response-drafting --skill-dir /data/knowledge-work-plugins/skills/ticket-triage; worker --agent-name claude-customer-support-meshagent --queue docs-sync --require-shell --room-rules /agents/claude-customer-support-meshagent/rules-worker.txt"
+          exec /usr/bin/meshagent multi join -c "chatbot \
+            --agent-name claude-customer-support-meshagent \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --require-web-fetch \
+            --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/claude-customer-support-meshagent/rules.txt \
+            --rules-file /data/knowledge-work-plugins/commands/draft-response.md \
+            --rules-file /data/knowledge-work-plugins/commands/escalate.md \
+            --rules-file /data/knowledge-work-plugins/commands/kb-article.md \
+            --rules-file /data/knowledge-work-plugins/commands/research.md \
+            --rules-file /data/knowledge-work-plugins/commands/triage.md \
+            --skill-dir /data/knowledge-work-plugins/skills/customer-research \
+            --skill-dir /data/knowledge-work-plugins/skills/escalation \
+            --skill-dir /data/knowledge-work-plugins/skills/knowledge-management \
+            --skill-dir /data/knowledge-work-plugins/skills/response-drafting \
+            --skill-dir /data/knowledge-work-plugins/skills/ticket-triage; \
+            worker \
+            --agent-name claude-customer-support-meshagent \
+            --queue docs-sync \
+            --require-shell \
+            --room-rules /agents/claude-customer-support-meshagent/rules-worker.txt"
     - path: /var/rules-claude-customer-support.txt
       read_only: true
       text: |
