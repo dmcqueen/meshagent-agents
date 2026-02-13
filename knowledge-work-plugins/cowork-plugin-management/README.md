@@ -10,10 +10,10 @@ An agent that uses Anthropic's cowork plugin management knowledge work plugin an
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c135c26cafec6a05b92196e2d645bca58b921b62/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b5d2ffaa6c1b73734c4ae2011b1ac1587cdb7fab/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1363c9f4082caec11087581ef2924d3fc7afdff1/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/206077d8580bc871226bd7e157c92811ee4f7bb3/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c135c26cafec6a05b92196e2d645bca58b921b62/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b5d2ffaa6c1b73734c4ae2011b1ac1587cdb7fab/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1363c9f4082caec11087581ef2924d3fc7afdff1/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/206077d8580bc871226bd7e157c92811ee4f7bb3/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
