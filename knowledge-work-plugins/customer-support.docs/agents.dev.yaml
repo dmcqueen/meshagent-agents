@@ -48,11 +48,8 @@ container:
           exec /usr/bin/meshagent multi join -c "chatbot \
             --agent-name claude-customer-support-meshagent \
             --model=gpt-5.2 \
-            --require-storage \
             --require-web-search \
-            --require-web-fetch \
-            --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins \
-            --storage-tool-room-path=/:/data \
+            --require-shell \
             --script-tool \
             -rr=agents/claude-customer-support-meshagent/rules.txt \
             --rules-file /data/knowledge-work-plugins/commands/draft-response.md \
