@@ -1,12 +1,13 @@
 {
-  "name": "claude-customer-support-meshagent\\tAn agent that uses Anthropic's customer support knowledge work plugin with a nightly docs sync worker",
-  "description": "claude-customer-support-meshagent\\tAn agent that uses Anthropic's customer support knowledge work plugin with a nightly docs sync worker",
+  "id": "claude-customer-support-meshagent",
+  "name": "Claude Customer Support MeshAgent",
+  "description": "An agent that uses Anthropic's customer support knowledge work plugin with a nightly docs sync worker",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/49f4542ec0b38c57ed87f7d98ba7a3389b9474ca/knowledge-work-plugins/customer-support.docs/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/49f4542ec0b38c57ed87f7d98ba7a3389b9474ca/knowledge-work-plugins/customer-support.docs/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/27f26f4cd3b58c1978d8fe32ea2a95367173f1c5/knowledge-work-plugins/customer-support.docs/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/27f26f4cd3b58c1978d8fe32ea2a95367173f1c5/knowledge-work-plugins/customer-support.docs/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e96848010bf6d1f3629d1859b48af31aeace1b1c/knowledge-work-plugins/customer-support.docs/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e96848010bf6d1f3629d1859b48af31aeace1b1c/knowledge-work-plugins/customer-support.docs/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/965b119bc20b591e00e4d46eefa56723e31f0ea8/knowledge-work-plugins/customer-support.docs/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/965b119bc20b591e00e4d46eefa56723e31f0ea8/knowledge-work-plugins/customer-support.docs/agents.prod.yaml"
   }
 }
