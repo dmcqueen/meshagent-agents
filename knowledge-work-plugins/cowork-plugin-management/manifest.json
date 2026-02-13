@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's cowork plugin management knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's cowork plugin management knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-cowork-plugin-management (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: cowork-plugin-customizer, create-cowork-plugin.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c135c26cafec6a05b92196e2d645bca58b921b62/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c135c26cafec6a05b92196e2d645bca58b921b62/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1363c9f4082caec11087581ef2924d3fc7afdff1/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1363c9f4082caec11087581ef2924d3fc7afdff1/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b5d2ffaa6c1b73734c4ae2011b1ac1587cdb7fab/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b5d2ffaa6c1b73734c4ae2011b1ac1587cdb7fab/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/206077d8580bc871226bd7e157c92811ee4f7bb3/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/206077d8580bc871226bd7e157c92811ee4f7bb3/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml"
   }
 }
