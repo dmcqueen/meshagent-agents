@@ -1,15 +1,20 @@
 # Claude Product Management
 
+**Overview**
 An agent that uses Anthropic's product management knowledge work plugin and powered by Claude Sonnet 4.5
 
-ID: claude-product-management
+**Details**
+- Agents: claude-product-management (ChatBot)
+- Models: gpt-5
+- Skills: competitive-analysis, feature-spec, metrics-tracking, roadmap-management, stakeholder-comms, user-research-synthesis
+- Rules: competitive-brief
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ad1fd0a3ec2687e884f680e7ed0109680ad665d6/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ac5f99f4921f5d40662dbb8f6315d1d1cd7fdb2/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8b314b0732975a16697ea97190dc16faa12026bc/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3cff10cd68e210115ab59df8248aec8d2a459570/knowledge-work-plugins/product-management/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ad1fd0a3ec2687e884f680e7ed0109680ad665d6/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ac5f99f4921f5d40662dbb8f6315d1d1cd7fdb2/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8b314b0732975a16697ea97190dc16faa12026bc/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3cff10cd68e210115ab59df8248aec8d2a459570/knowledge-work-plugins/product-management/agents.prod.yaml
