@@ -1,15 +1,13 @@
 # Claude Cowork Plugin Management
 
-An agent that uses Anthropic's cowork plugin management knowledge work plugin and powered by Claude Sonnet 4.5
-
-ID: claude-cowork-plugin-management
+An agent that uses Anthropic's cowork plugin management knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-cowork-plugin-management (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: cowork-plugin-customizer, create-cowork-plugin.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f60c27847bd1fe4e9e7fc6b41fc172f576a38b8c/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e5382fd31809a73d170cd4500fed38b6ea37238/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6b5164e78c32f432f655b96e845690aa6a085405/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/71f04c66817c8f559e277ddf5bd0ec84e2efe826/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f60c27847bd1fe4e9e7fc6b41fc172f576a38b8c/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e5382fd31809a73d170cd4500fed38b6ea37238/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6b5164e78c32f432f655b96e845690aa6a085405/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/71f04c66817c8f559e277ddf5bd0ec84e2efe826/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
