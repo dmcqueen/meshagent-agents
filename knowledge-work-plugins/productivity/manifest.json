@@ -2,12 +2,13 @@
   "id": "claude-productivity",
   "name": "Claude Productivity",
   "description": "An agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5",
+  "long_description": "An agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-productivity (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: memory-management, task-management. Rules: start.md, update.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/68d1acf1a8f65a32902796054f40db237c82c775/knowledge-work-plugins/productivity/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/68d1acf1a8f65a32902796054f40db237c82c775/knowledge-work-plugins/productivity/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c75a83e092588de8d02e6120f679f9415c0f636/knowledge-work-plugins/productivity/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c75a83e092588de8d02e6120f679f9415c0f636/knowledge-work-plugins/productivity/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a5a620ad0aa746367e49bc4281b3f104a0e6a562/knowledge-work-plugins/productivity/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a5a620ad0aa746367e49bc4281b3f104a0e6a562/knowledge-work-plugins/productivity/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7158adf2d28cab30fb53bf008df4100593adbc56/knowledge-work-plugins/productivity/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7158adf2d28cab30fb53bf008df4100593adbc56/knowledge-work-plugins/productivity/agents.prod.yaml"
   }
 }
