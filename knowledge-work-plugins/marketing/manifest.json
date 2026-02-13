@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's marketing knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's marketing knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-marketing (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: brand-voice, campaign-planning, competitive-analysis, content-creation, performance-analytics. Rules: brand-review.md, campaign-plan.md, competitive-brief.md, draft-content.md, email-sequence.md, performance-report.md, seo-audit.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61bdc4aef2491c6506fa23d314449752e223a5fa/knowledge-work-plugins/marketing/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61bdc4aef2491c6506fa23d314449752e223a5fa/knowledge-work-plugins/marketing/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4c1ae7341b8dbc39f6dbdec1be091f48e377abc4/knowledge-work-plugins/marketing/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4c1ae7341b8dbc39f6dbdec1be091f48e377abc4/knowledge-work-plugins/marketing/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d8da848b92ca902577b6ba2b34f0321a0f334ff2/knowledge-work-plugins/marketing/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d8da848b92ca902577b6ba2b34f0321a0f334ff2/knowledge-work-plugins/marketing/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d0418436120152bb8ee9500ab817cf2bc4ad2056/knowledge-work-plugins/marketing/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d0418436120152bb8ee9500ab817cf2bc4ad2056/knowledge-work-plugins/marketing/agents.prod.yaml"
   }
 }
