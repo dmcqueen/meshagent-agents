@@ -1,12 +1,13 @@
 {
-  "name": "claude-customer-support\\tAn agent that uses Anthropic's customer support knowledge work plugin and powered by Claude Sonnet 4.5",
-  "description": "claude-customer-support\\tAn agent that uses Anthropic's customer support knowledge work plugin and powered by Claude Sonnet 4.5",
+  "id": "claude-customer-support",
+  "name": "Claude Customer Support",
+  "description": "An agent that uses Anthropic's customer support knowledge work plugin and powered by Claude Sonnet 4.5",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1f8322ffb57013b59dd50367f0777a5350ca4cac/knowledge-work-plugins/customer-support/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1f8322ffb57013b59dd50367f0777a5350ca4cac/knowledge-work-plugins/customer-support/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/83336f02d325974d0b8201f3b5f1c8d8ee9c2875/knowledge-work-plugins/customer-support/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/83336f02d325974d0b8201f3b5f1c8d8ee9c2875/knowledge-work-plugins/customer-support/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b395c9400c3557af8e183af3cf59613c2ab90f27/knowledge-work-plugins/customer-support/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b395c9400c3557af8e183af3cf59613c2ab90f27/knowledge-work-plugins/customer-support/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8ecad31c0a109ffcab6cbfc5f890d5370bb7dd67/knowledge-work-plugins/customer-support/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8ecad31c0a109ffcab6cbfc5f890d5370bb7dd67/knowledge-work-plugins/customer-support/agents.prod.yaml"
   }
 }
