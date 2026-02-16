@@ -101,7 +101,7 @@ container:
       text: |
           When this worker runs, execute the docs sync script by running "bash /var/update-meshagent-docs.sh" using the shell tool.
           Run the script once per run.
-          Read /data/meshagent-docs-sync.status after the script completes. Send a status email using the email toolkit to {{AdminEmail}} only when the status indicates changed=true or status=failure. Include status, changed, before_commit, after_commit, and any error details.
+          Read /data/meshagent-docs-sync.status after the script completes. Send a verbose status email using the email toolkit to {{AdminEmail}} only when the status indicates changed=true or status=failure. Include timestamp, repo URL, status, changed, before_commit, after_commit, and any error details. Also include the last 20 lines of /data/meshagent-docs-sync.log.
           Do not make any other changes.
     - path: /var/rules-claude-customer-support-mailbot.txt
       read_only: true
