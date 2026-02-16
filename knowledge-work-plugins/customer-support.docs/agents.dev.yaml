@@ -78,6 +78,7 @@ container:
             --email-address {{MailbotEmail}} \
             --toolkit-name=email \
             --enable-attachments \
+            --require-storage \
             --room-rules /agents/claude-customer-support-meshagent/rules-mailbot.txt; \
             worker \
             --agent-name claude-customer-support-meshagent \
