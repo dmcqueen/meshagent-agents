@@ -102,7 +102,7 @@ container:
           When this worker runs, execute the docs sync script by running "bash /var/update-meshagent-docs.sh" using the shell tool.
           Run the script once per run.
           Read /data/meshagent-docs-sync.status after the script completes. If /data/meshagent-docs-sync.cloned exists, treat it as a clone event, send the email, and remove the marker file so it only notifies once.
-          Send a verbose status email using the email toolkit to {{SendToEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URL, status, changed, event, before_commit, after_commit, and any error details. If event=cloned or the clone marker exists, explicitly state the repo was cloned. Also include the last 20 lines of /data/meshagent-docs-sync.log.
+          Send a verbose status email using the email toolkit to {{SendToEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URLs, status, changed, event, before_commit, after_commit, agents_before_commit, agents_after_commit, agents_changed, cloned_repo, and any error details. If event=cloned or the clone marker exists, explicitly state which repo(s) were cloned. Also include the last 20 lines of /data/meshagent-docs-sync.log.
           Do not make any other changes.
     - path: /var/rules-claude-customer-support-mailbot.txt
       read_only: true
@@ -118,8 +118,10 @@ container:
 
           set -euo pipefail
 
-          REPO_URL="https://github.com/meshagent/meshagent-docs.git"
-          REPO_DIR="/data/meshagent-docs"
+          DOCS_REPO_URL="https://github.com/meshagent/meshagent-docs.git"
+          DOCS_REPO_DIR="/data/meshagent-docs"
+          AGENTS_REPO_URL="https://github.com/dmcqueen/meshagent-agents.git"
+          AGENTS_REPO_DIR="/data/meshagent-agents"
           LOG_FILE="/data/meshagent-docs-sync.log"
           STATUS_FILE="/data/meshagent-docs-sync.status"
           CLONE_MARKER="/data/meshagent-docs-sync.cloned"
@@ -128,8 +130,21 @@ container:
 
           before_commit=""
           after_commit=""
+          agents_before_commit=""
+          agents_after_commit=""
           changed="false"
+          agents_changed="false"
           event="sync"
+          cloned_repo=""
+
+          add_cloned_repo() {
+            local repo_name="$1"
+            if [ -z "${cloned_repo}" ]; then
+              cloned_repo="${repo_name}"
+            else
+              cloned_repo="${cloned_repo},${repo_name}"
+            fi
+          }
 
           write_status() {
             local status="$1"
@@ -142,6 +157,12 @@ container:
               echo "event=${event}"
               echo "before_commit=${before_commit}"
               echo "after_commit=${after_commit}"
+              echo "agents_before_commit=${agents_before_commit}"
+              echo "agents_after_commit=${agents_after_commit}"
+              echo "agents_changed=${agents_changed}"
+              echo "docs_repo_url=${DOCS_REPO_URL}"
+              echo "agents_repo_url=${AGENTS_REPO_URL}"
+              echo "cloned_repo=${cloned_repo}"
               if [ -n "${error}" ]; then
                 echo "error=${error}"
               fi
@@ -160,20 +181,41 @@ container:
           {
             echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") starting"
 
-            if [ -d "${REPO_DIR}/.git" ]; then
-              before_commit="$(git -C "${REPO_DIR}" rev-parse HEAD)"
-              git -C "${REPO_DIR}" fetch --depth 1 origin main
-              git -C "${REPO_DIR}" checkout main
-              git -C "${REPO_DIR}" reset --hard origin/main
+            if [ -d "${DOCS_REPO_DIR}/.git" ]; then
+              before_commit="$(git -C "${DOCS_REPO_DIR}" rev-parse HEAD)"
+              git -C "${DOCS_REPO_DIR}" fetch --depth 1 origin main
+              git -C "${DOCS_REPO_DIR}" checkout main
+              git -C "${DOCS_REPO_DIR}" reset --hard origin/main
             else
-              git clone --depth 1 --branch main "${REPO_URL}" "${REPO_DIR}"
+              git clone --depth 1 --branch main "${DOCS_REPO_URL}" "${DOCS_REPO_DIR}"
               event="cloned"
               changed="true"
+              add_cloned_repo "meshagent-docs"
               echo "cloned" > "${CLONE_MARKER}"
             fi
 
-            after_commit="$(git -C "${REPO_DIR}" rev-parse HEAD)"
+            after_commit="$(git -C "${DOCS_REPO_DIR}" rev-parse HEAD)"
             if [ -z "${before_commit}" ] || [ "${before_commit}" != "${after_commit}" ]; then
+              changed="true"
+            fi
+
+            if [ -d "${AGENTS_REPO_DIR}/.git" ]; then
+              agents_before_commit="$(git -C "${AGENTS_REPO_DIR}" rev-parse HEAD)"
+              git -C "${AGENTS_REPO_DIR}" fetch --depth 1 origin main
+              git -C "${AGENTS_REPO_DIR}" checkout main
+              git -C "${AGENTS_REPO_DIR}" reset --hard origin/main
+            else
+              git clone --depth 1 --branch main "${AGENTS_REPO_URL}" "${AGENTS_REPO_DIR}"
+              event="cloned"
+              agents_changed="true"
+              changed="true"
+              add_cloned_repo "meshagent-agents"
+              echo "cloned" > "${CLONE_MARKER}"
+            fi
+
+            agents_after_commit="$(git -C "${AGENTS_REPO_DIR}" rev-parse HEAD)"
+            if [ -z "${agents_before_commit}" ] || [ "${agents_before_commit}" != "${agents_after_commit}" ]; then
+              agents_changed="true"
               changed="true"
             fi
 
