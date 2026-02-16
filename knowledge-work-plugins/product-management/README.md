@@ -11,10 +11,10 @@ An agent that uses Anthropic's product management knowledge work plugin and powe
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0c15b00f28c133ae3b3b8ebc7c538ae2949c2547/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e7cf0c83cc4c9816a201375c7d746952ca63c844/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/91a9dd1579fb5992f90eda8d8b88394a645e74c5/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ebb55a79a7fb4d922f445beef1df721c5a59718f/knowledge-work-plugins/product-management/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0c15b00f28c133ae3b3b8ebc7c538ae2949c2547/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e7cf0c83cc4c9816a201375c7d746952ca63c844/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/91a9dd1579fb5992f90eda8d8b88394a645e74c5/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ebb55a79a7fb4d922f445beef1df721c5a59718f/knowledge-work-plugins/product-management/agents.prod.yaml
