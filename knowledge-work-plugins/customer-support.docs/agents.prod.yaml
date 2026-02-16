@@ -78,10 +78,10 @@ container:
                 fi
                 if [ -n "${token_payload}" ]; then
                   if [ -z "${project_id}" ]; then
-                    project_id="$(printf '%s' "${token_payload}" | sed -n 's/.*"project_id":"\\([^"]*\\)".*/\\1/p')"
+                    project_id="$(printf '%s' "${token_payload}" | sed -n 's|.*"project_id":"\\([^"]*\\)".*|\\1|p')"
                   fi
                   if [ -z "${room}" ]; then
-                    room="$(printf '%s' "${token_payload}" | sed -n 's/.*"room":"\\([^"]*\\)".*/\\1/p')"
+                    room="$(printf '%s' "${token_payload}" | sed -n 's|.*"room":"\\([^"]*\\)".*|\\1|p')"
                   fi
                 fi
               fi
