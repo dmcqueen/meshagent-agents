@@ -1,6 +1,12 @@
 version: v1
 kind: ServiceTemplate
-variables: []
+variables:
+  - name: MailbotEmail
+    type: email
+    description: "Email address used by the mailbot to receive customer support requests."
+  - name: AdminEmail
+    type: email
+    description: "Admin email address to receive docs sync status notifications."
 
 metadata:
   name: claude-customer-support-meshagent
@@ -12,6 +18,9 @@ agents:
   - name: claude-customer-support-meshagent
     annotations:
       meshagent.agent.type: ChatBot
+  - name: claude-customer-support-meshagent
+    annotations:
+      meshagent.agent.type: MailBot
   - name: claude-customer-support-meshagent
     annotations:
       meshagent.agent.type: Worker
@@ -39,6 +48,9 @@ container:
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules.txt ]]; then
             cp /var/rules-claude-customer-support.txt /data/agents/claude-customer-support-meshagent/rules.txt
           fi
+          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-mailbot.txt ]]; then
+            cp /var/rules-claude-customer-support-mailbot.txt /data/agents/claude-customer-support-meshagent/rules-mailbot.txt
+          fi
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-worker.txt ]]; then
             cp /var/rules-claude-customer-support-worker.txt /data/agents/claude-customer-support-meshagent/rules-worker.txt
           fi
@@ -62,10 +74,17 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/knowledge-management \
             --skill-dir /data/knowledge-work-plugins/skills/response-drafting \
             --skill-dir /data/knowledge-work-plugins/skills/ticket-triage; \
+            mailbot \
+            --agent-name claude-customer-support-meshagent \
+            --email-address {{MailbotEmail}} \
+            --toolkit-name=email \
+            --enable-attachments \
+            --room-rules /agents/claude-customer-support-meshagent/rules-mailbot.txt; \
             worker \
             --agent-name claude-customer-support-meshagent \
             --queue docs-sync \
             --require-shell \
+            --require-toolkit=email \
             --room-rules /agents/claude-customer-support-meshagent/rules-worker.txt"
     - path: /var/rules-claude-customer-support.txt
       read_only: true
@@ -82,8 +101,15 @@ container:
       read_only: true
       text: |
           When this worker runs, execute the docs sync script by running "bash /var/update-meshagent-docs.sh" using the shell tool.
-          Run the script once per run and report success or errors.
+          Run the script once per run.
+          Read /data/meshagent-docs-sync.status after the script completes. Send a status email using the email toolkit to {{AdminEmail}} only when the status indicates changed=true or status=failure. Include status, changed, before_commit, after_commit, and any error details.
           Do not make any other changes.
+    - path: /var/rules-claude-customer-support-mailbot.txt
+      read_only: true
+      text: |
+          You are the mailbot for the claude-customer-support-meshagent service. Process inbound customer support emails.
+          Use the knowledge-work-plugins skills to draft responses and follow the pattern specified in the skills.
+          Keep replies concise, professional, and tailored to the request.
     - path: /var/update-meshagent-docs.sh
       read_only: true
       text: |
@@ -94,13 +120,44 @@ container:
           REPO_URL="https://github.com/meshagent/meshagent-docs.git"
           REPO_DIR="/data/meshagent-docs"
           LOG_FILE="/data/meshagent-docs-sync.log"
+          STATUS_FILE="/data/meshagent-docs-sync.status"
 
           mkdir -p /data
+
+          before_commit=""
+          after_commit=""
+          changed="false"
+
+          write_status() {
+            local status="$1"
+            local error="${2:-}"
+
+            {
+              echo "timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+              echo "status=${status}"
+              echo "changed=${changed}"
+              echo "before_commit=${before_commit}"
+              echo "after_commit=${after_commit}"
+              if [ -n "${error}" ]; then
+                echo "error=${error}"
+              fi
+            } > "${STATUS_FILE}"
+          }
+
+          on_error() {
+            local exit_code="$1"
+            local failed_command="$2"
+            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") failed (exit=${exit_code} cmd=${failed_command})" >> "${LOG_FILE}"
+            write_status "failure" "exit=${exit_code} cmd=${failed_command}"
+          }
+
+          trap 'on_error "$?" "$BASH_COMMAND"' ERR
 
           {
             echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") starting"
 
             if [ -d "${REPO_DIR}/.git" ]; then
+              before_commit="$(git -C "${REPO_DIR}" rev-parse HEAD)"
               git -C "${REPO_DIR}" fetch --depth 1 origin main
               git -C "${REPO_DIR}" checkout main
               git -C "${REPO_DIR}" reset --hard origin/main
@@ -108,8 +165,15 @@ container:
               git clone --depth 1 --branch main "${REPO_URL}" "${REPO_DIR}"
             fi
 
+            after_commit="$(git -C "${REPO_DIR}" rev-parse HEAD)"
+            if [ -z "${before_commit}" ] || [ "${before_commit}" != "${after_commit}" ]; then
+              changed="true"
+            fi
+
             echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") completed"
           } >> "${LOG_FILE}" 2>&1
+
+          write_status "success"
     - path: /knowledge-work-plugins/commands/draft-response.md
       text: |
           ---
