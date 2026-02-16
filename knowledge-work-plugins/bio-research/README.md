@@ -11,10 +11,10 @@ An agent that uses Anthropic's bio research knowledge work plugin and powered by
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22d06e20e01bd3a2e5386f3e752d020840f4d008/knowledge-work-plugins/bio-research/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3f20b39482f9a3478d0836ff9e7207c518cb2c3e/knowledge-work-plugins/bio-research/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c7261b4a0747a092d245ab2640877ee503f7118a/knowledge-work-plugins/bio-research/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c9f5faee886cec63de55fb04cbb09347662ac527/knowledge-work-plugins/bio-research/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22d06e20e01bd3a2e5386f3e752d020840f4d008/knowledge-work-plugins/bio-research/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3f20b39482f9a3478d0836ff9e7207c518cb2c3e/knowledge-work-plugins/bio-research/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c7261b4a0747a092d245ab2640877ee503f7118a/knowledge-work-plugins/bio-research/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c9f5faee886cec63de55fb04cbb09347662ac527/knowledge-work-plugins/bio-research/agents.prod.yaml
