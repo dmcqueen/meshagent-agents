@@ -96,6 +96,7 @@ container:
           when using the storage tool to read skills, the path should be prefixed with /data/knowledge-work-plugins (the folder where the plugins are located)
           You have customizable rules stored in agents/claude-customer-support-meshagent/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/<any> mime type from attachments or files.
           You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com, /data/meshagent-docs and docs.meshagent.com
+          Example agent yamls are in /data/meshagent-agents 
           You have some slash commands available
     - path: /var/rules-claude-customer-support-worker.txt
       read_only: true
