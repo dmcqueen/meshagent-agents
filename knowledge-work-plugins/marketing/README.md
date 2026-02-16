@@ -11,10 +11,10 @@ An agent that uses Anthropic's marketing knowledge work plugin and powered by Cl
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab160fba5f32b806041d9068f11194c0c8c243fa/knowledge-work-plugins/marketing/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ed9c8ace3688ca19d5972212b4e1602283934805/knowledge-work-plugins/marketing/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6406704c2200813eec81ee81a01a025b45e74d82/knowledge-work-plugins/marketing/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/45fb9740b703b8cb9966c2b38f572a331c2874c1/knowledge-work-plugins/marketing/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab160fba5f32b806041d9068f11194c0c8c243fa/knowledge-work-plugins/marketing/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ed9c8ace3688ca19d5972212b4e1602283934805/knowledge-work-plugins/marketing/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6406704c2200813eec81ee81a01a025b45e74d82/knowledge-work-plugins/marketing/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/45fb9740b703b8cb9966c2b38f572a331c2874c1/knowledge-work-plugins/marketing/agents.prod.yaml
