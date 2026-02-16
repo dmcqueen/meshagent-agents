@@ -101,7 +101,8 @@ container:
       text: |
           When this worker runs, execute the docs sync script by running "bash /var/update-meshagent-docs.sh" using the shell tool.
           Run the script once per run.
-          Read /data/meshagent-docs-sync.status after the script completes. Send a verbose status email using the email toolkit to {{SendToEmail}} when status=failure OR changed=true OR event=cloned. Include timestamp, repo URL, status, changed, event, before_commit, after_commit, and any error details. If event=cloned, explicitly state the repo was cloned. Also include the last 20 lines of /data/meshagent-docs-sync.log.
+          Read /data/meshagent-docs-sync.status after the script completes. If /data/meshagent-docs-sync.cloned exists, treat it as a clone event, send the email, and remove the marker file so it only notifies once.
+          Send a verbose status email using the email toolkit to {{SendToEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URL, status, changed, event, before_commit, after_commit, and any error details. If event=cloned or the clone marker exists, explicitly state the repo was cloned. Also include the last 20 lines of /data/meshagent-docs-sync.log.
           Do not make any other changes.
     - path: /var/rules-claude-customer-support-mailbot.txt
       read_only: true
@@ -120,6 +121,7 @@ container:
           REPO_DIR="/data/meshagent-docs"
           LOG_FILE="/data/meshagent-docs-sync.log"
           STATUS_FILE="/data/meshagent-docs-sync.status"
+          CLONE_MARKER="/data/meshagent-docs-sync.cloned"
 
           mkdir -p /data
 
@@ -165,6 +167,8 @@ container:
             else
               git clone --depth 1 --branch main "${REPO_URL}" "${REPO_DIR}"
               event="cloned"
+              changed="true"
+              echo "cloned" > "${CLONE_MARKER}"
             fi
 
             after_commit="$(git -C "${REPO_DIR}" rev-parse HEAD)"
