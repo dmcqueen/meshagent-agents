@@ -5,8 +5,7 @@ variables:
     type: email
     description: "Email address used by the mailbot to receive customer support requests."
   - name: AdminEmail
-    type: email
-    description: "Admin email address to receive docs sync status notifications."
+    description: "External, fully user-supplied admin email address to receive docs sync status notifications."
 
 metadata:
   name: claude-customer-support-meshagent
