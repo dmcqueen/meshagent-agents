@@ -11,10 +11,10 @@ An agent that uses Anthropic's sales knowledge work plugin and powered by Claude
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/533607fa00268b320a92c528e57e2fe2c06b0c4b/knowledge-work-plugins/sales/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ed6b531aa832475d1304cbee70f321e64521ef1/knowledge-work-plugins/sales/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d80da31ec7a36af8177124c1062eca9fb372fca3/knowledge-work-plugins/sales/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/597d85d8640263e3c93d7c2f60dac783569003d7/knowledge-work-plugins/sales/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/533607fa00268b320a92c528e57e2fe2c06b0c4b/knowledge-work-plugins/sales/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ed6b531aa832475d1304cbee70f321e64521ef1/knowledge-work-plugins/sales/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d80da31ec7a36af8177124c1062eca9fb372fca3/knowledge-work-plugins/sales/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/597d85d8640263e3c93d7c2f60dac783569003d7/knowledge-work-plugins/sales/agents.prod.yaml
