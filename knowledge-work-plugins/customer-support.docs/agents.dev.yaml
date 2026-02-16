@@ -54,7 +54,7 @@ container:
             cp /var/rules-claude-customer-support-worker.txt /data/agents/claude-customer-support-meshagent/rules-worker.txt
           fi
 
-          bash /var/enqueue-docs-sync.sh
+          bash /var/update-meshagent-docs.sh
 
           exec /usr/bin/meshagent multi join -c "chatbot \
             --agent-name claude-customer-support-meshagent \
@@ -113,54 +113,6 @@ container:
           Make it explicit that you support MeshAgent (product, platform, SDK, CLI, agents, rooms, mailbots, workers, deployments, billing, and policies where documented).
           Use the knowledge-work-plugins skills to draft responses and follow the pattern specified in the skills.
           Keep replies concise, professional, and tailored to the request. If the question is not about MeshAgent, ask a short clarifying question to re-scope to MeshAgent support.
-    - path: /var/enqueue-docs-sync.sh
-      read_only: true
-      text: |
-          #!/bin/bash
-
-          set -e
-
-          queue="docs-sync"
-          payload='{"prompt":"Run the meshagent docs sync workflow from /data/agents/claude-customer-support-meshagent/rules-worker.txt"}'
-          room="${MESHAGENT_ROOM_NAME:-${ROOM_NAME:-${MESHAGENT_ROOM:-}}}"
-          project_id="${MESHAGENT_PROJECT_ID:-}"
-
-          if [ -z "${room}" ] || [ -z "${project_id}" ]; then
-            if [ -n "${MESHAGENT_TOKEN:-}" ]; then
-              token_payload=""
-              token_b64="$(printf '%s' "${MESHAGENT_TOKEN}" | cut -d '.' -f2)"
-              if [ -n "${token_b64}" ]; then
-                pad_len=$(( (4 - ${#token_b64} % 4) % 4 ))
-                if [ "${pad_len}" -eq 1 ]; then
-                  token_b64="${token_b64}="
-                elif [ "${pad_len}" -eq 2 ]; then
-                  token_b64="${token_b64}=="
-                elif [ "${pad_len}" -eq 3 ]; then
-                  token_b64="${token_b64}==="
-                fi
-                token_payload="$(printf '%s' "${token_b64}" | tr '_-' '/+' | base64 -d 2>/dev/null || true)"
-              fi
-              if [ -n "${token_payload}" ]; then
-                if [ -z "${project_id}" ]; then
-                  project_id="$(printf '%s' "${token_payload}" | sed -n 's|.*"project_id":"\\([^"]*\\)".*|\\1|p')"
-                fi
-                if [ -z "${room}" ]; then
-                  room="$(printf '%s' "${token_payload}" | sed -n 's|.*"room":"\\([^"]*\\)".*|\\1|p')"
-                fi
-              fi
-            fi
-          fi
-
-          if [ -z "${room}" ] || [ -z "${project_id}" ]; then
-            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") unable to enqueue docs sync (missing project_id or room)" >> /data/meshagent-docs-sync.log
-            exit 0
-          fi
-
-          /usr/bin/meshagent room queue send \
-            --project-id "${project_id}" \
-            --room "${room}" \
-            --queue "${queue}" \
-            --json "${payload}" >> /data/meshagent-docs-sync.log 2>&1 || true
     - path: /var/update-meshagent-docs.sh
       read_only: true
       text: |
