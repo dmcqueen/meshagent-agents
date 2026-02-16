@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's data knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's data knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-data (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: data-context-extractor, data-exploration, data-validation, data-visualization, interactive-dashboard-builder, sql-queries, statistical-analysis. Rules: analyze.md, build-dashboard.md, create-viz.md, explore-data.md, validate.md, write-query.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e339be39943b0503fa9c22214d8cf1167066957/knowledge-work-plugins/data/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e339be39943b0503fa9c22214d8cf1167066957/knowledge-work-plugins/data/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/96eb9c17115d1cdd726c2d4cabfd2d7c87d93a74/knowledge-work-plugins/data/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/96eb9c17115d1cdd726c2d4cabfd2d7c87d93a74/knowledge-work-plugins/data/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/12827e00b5857d7eadde3c52022c3214a7751093/knowledge-work-plugins/data/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/12827e00b5857d7eadde3c52022c3214a7751093/knowledge-work-plugins/data/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/02e26ea43de35e42d089e7c22e5279638c23af57/knowledge-work-plugins/data/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/02e26ea43de35e42d089e7c22e5279638c23af57/knowledge-work-plugins/data/agents.prod.yaml"
   }
 }
