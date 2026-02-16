@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's product management knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's product management knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-product-management (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: competitive-analysis, feature-spec, metrics-tracking, roadmap-management, stakeholder-comms, user-research-synthesis. Rules: competitive-brief.md, metrics-review.md, roadmap-update.md, stakeholder-update.md, synthesize-research.md, write-spec.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/80dcbb7cbee35163fab34f1729ae350bfab12622/knowledge-work-plugins/product-management/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/80dcbb7cbee35163fab34f1729ae350bfab12622/knowledge-work-plugins/product-management/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cac9b5268928d9541729eb6966e04d55314390b0/knowledge-work-plugins/product-management/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cac9b5268928d9541729eb6966e04d55314390b0/knowledge-work-plugins/product-management/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6b752c24b759162b04262491f68534943e9eb7a5/knowledge-work-plugins/product-management/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6b752c24b759162b04262491f68534943e9eb7a5/knowledge-work-plugins/product-management/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6cd510d2f9d927987cc93f87210e4c968fcd03e4/knowledge-work-plugins/product-management/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6cd510d2f9d927987cc93f87210e4c968fcd03e4/knowledge-work-plugins/product-management/agents.prod.yaml"
   }
 }
