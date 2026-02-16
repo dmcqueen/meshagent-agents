@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's finance knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's finance knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-finance (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: audit-support, close-management, financial-statements, journal-entry-prep, reconciliation, variance-analysis. Rules: income-statement.md, journal-entry.md, reconciliation.md, sox-testing.md, variance-analysis.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ec77f31c9417587db8effe6797ddb94ca203bf5a/knowledge-work-plugins/finance/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ec77f31c9417587db8effe6797ddb94ca203bf5a/knowledge-work-plugins/finance/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ca376ce8ce83110592f26a37e01dd0ef0497bf5e/knowledge-work-plugins/finance/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ca376ce8ce83110592f26a37e01dd0ef0497bf5e/knowledge-work-plugins/finance/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d17444e53ac4cde51d58560c6f7fd29e28dcf0da/knowledge-work-plugins/finance/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d17444e53ac4cde51d58560c6f7fd29e28dcf0da/knowledge-work-plugins/finance/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7da0f663ebcafb7d1dfffe9556812d5fa16ec440/knowledge-work-plugins/finance/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7da0f663ebcafb7d1dfffe9556812d5fa16ec440/knowledge-work-plugins/finance/agents.prod.yaml"
   }
 }
