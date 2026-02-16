@@ -101,8 +101,8 @@ container:
       text: |
           When this worker runs, execute the docs sync script by running "bash /var/update-meshagent-docs.sh" using the shell tool.
           Run the script once per run.
-          Read /data/meshagent-docs-sync.status after the script completes. If /data/meshagent-docs-sync.cloned exists, treat it as a clone event, send the email, and remove the marker file so it only notifies once.
-          Send a verbose status email using the email toolkit to {{SendToEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URLs, status, changed, event, before_commit, after_commit, agents_before_commit, agents_after_commit, agents_changed, cloned_repo, and any error details. If event=cloned or the clone marker exists, explicitly state which repo(s) were cloned. Also include the last 20 lines of /data/meshagent-docs-sync.log.
+          Read /tmp/meshagent-docs-sync.status after the script completes. If /tmp/meshagent-docs-sync.cloned exists, treat it as a clone event, send the email, and remove the marker file so it only notifies once.
+          Send a verbose status email using the email toolkit to {{SendToEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URLs, status, changed, event, before_commit, after_commit, agents_before_commit, agents_after_commit, agents_changed, cloned_repo, and any error details. If event=cloned or the clone marker exists, explicitly state which repo(s) were cloned. Also include the last 20 lines of /data/meshagent-docs-sync.log and /data/meshagent-agents-sync.log.
           Do not make any other changes.
     - path: /var/rules-claude-customer-support-mailbot.txt
       read_only: true
@@ -123,8 +123,9 @@ container:
           AGENTS_REPO_URL="https://github.com/dmcqueen/meshagent-agents.git"
           AGENTS_REPO_DIR="/data/meshagent-agents"
           LOG_FILE="/data/meshagent-docs-sync.log"
-          STATUS_FILE="/data/meshagent-docs-sync.status"
-          CLONE_MARKER="/data/meshagent-docs-sync.cloned"
+          LOG_FILE_AGENTS="/data/meshagent-agents-sync.log"
+          STATUS_FILE="/tmp/meshagent-docs-sync.status"
+          CLONE_MARKER="/tmp/meshagent-docs-sync.cloned"
 
           mkdir -p /data
 
@@ -179,7 +180,7 @@ container:
           trap 'on_error "$?" "$BASH_COMMAND"' ERR
 
           {
-            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") starting"
+            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") starting docs sync"
 
             if [ -d "${DOCS_REPO_DIR}/.git" ]; then
               before_commit="$(git -C "${DOCS_REPO_DIR}" rev-parse HEAD)"
@@ -198,6 +199,12 @@ container:
             if [ -z "${before_commit}" ] || [ "${before_commit}" != "${after_commit}" ]; then
               changed="true"
             fi
+
+            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") completed docs sync"
+          } >> "${LOG_FILE}" 2>&1
+
+          {
+            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") starting agents sync"
 
             if [ -d "${AGENTS_REPO_DIR}/.git" ]; then
               agents_before_commit="$(git -C "${AGENTS_REPO_DIR}" rev-parse HEAD)"
@@ -219,8 +226,8 @@ container:
               changed="true"
             fi
 
-            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") completed"
-          } >> "${LOG_FILE}" 2>&1
+            echo "[sync] $(date -u +"%Y-%m-%dT%H:%M:%SZ") completed agents sync"
+          } >> "${LOG_FILE_AGENTS}" 2>&1
 
           write_status "success"
     - path: /knowledge-work-plugins/commands/draft-response.md
