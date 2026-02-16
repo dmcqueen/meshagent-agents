@@ -42,7 +42,7 @@ container:
           mkdir -p /data/knowledge-work-plugins
           mkdir -p /data/agents/claude-customer-support-meshagent
           if [ -d /knowledge-work-plugins ]; then
-            cp -R -n /knowledge-work-plugins/* /data/knowledge-work-plugins/ 2>/dev/null || true
+            cp -R -n /knowledge-work-plugins/. /data/knowledge-work-plugins/ 2>/dev/null || true
           fi
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules.txt ]]; then
             cp /var/rules-claude-customer-support.txt /data/agents/claude-customer-support-meshagent/rules.txt
@@ -139,7 +139,7 @@ container:
           when a question could be served by a skill, read the skill and follow the pattern specified in the skill
           when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data.
           when using the storage tool to read skills, the path should be prefixed with /data/knowledge-work-plugins (the folder where the plugins are located)
-          You have customizable rules stored in agents/claude-customer-support-meshagent/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.
+          You have customizable rules stored in agents/claude-customer-support-meshagent/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/<any> mime type from attachments or files.
           You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com, /data/meshagent-docs and docs.meshagent.com
           You have some slash commands available
     - path: /var/rules-claude-customer-support-worker.txt
