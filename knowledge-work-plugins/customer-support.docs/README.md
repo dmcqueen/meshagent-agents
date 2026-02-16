@@ -11,10 +11,10 @@ An agent that uses Anthropic's customer support knowledge work plugin with a nig
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d7687aeb624590f0590fa22973b30a1f4db7f674/knowledge-work-plugins/customer-support.docs/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/75b1c84d1c47db5d6743a0102d2a927840557adb/knowledge-work-plugins/customer-support.docs/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3fef3d097474c45999f17bfad81ca1066bbeb9cd/knowledge-work-plugins/customer-support.docs/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b5990993136b37ee315203191387e6b45b6b6cb/knowledge-work-plugins/customer-support.docs/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d7687aeb624590f0590fa22973b30a1f4db7f674/knowledge-work-plugins/customer-support.docs/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/75b1c84d1c47db5d6743a0102d2a927840557adb/knowledge-work-plugins/customer-support.docs/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3fef3d097474c45999f17bfad81ca1066bbeb9cd/knowledge-work-plugins/customer-support.docs/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b5990993136b37ee315203191387e6b45b6b6cb/knowledge-work-plugins/customer-support.docs/agents.prod.yaml
