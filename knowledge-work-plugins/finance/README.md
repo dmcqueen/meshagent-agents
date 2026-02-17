@@ -4,16 +4,16 @@
 
 An agent that uses Anthropic's finance knowledge work plugin
 
-## Long Description
+## Description
 
-An agent that uses Anthropic's finance knowledge work plugin. It defines 1 runtime agent configuration(s): claude-finance (ChatBot). The workflow is shaped by 5 rule file(s) (income-statement.md, journal-entry.md, reconciliation.md, sox-testing.md, variance-analysis.md) and 6 skill directory reference(s) (audit-support, close-management, financial-statements, journal-entry-prep, reconciliation, and 1 more). The bundle includes 5 embedded command doc(s) and 6 embedded skill file(s) from the knowledge-work-plugins package. It is configured to run on image reference(s): us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz.
+This agent helps finance teams analyze questions, summarize reports, and produce structured outputs that support planning, audits, close processes, and stakeholder updates. Users can get clear explanations of financial implications, concise summaries highlighting decision-relevant signals, and prepared items such as journal entries, reconciliations, variance analyses, and testing checklists to streamline review and execution. It’s designed to assist with close management, audit support, and preparation of financial statements by turning raw information into actionable tasks and concise deliverables. Runtime and model details are minimal to users; the focus is on delivering reliable, reviewable financial work products and summaries.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/aa1e9950e0e53e84f06f44ff373beda8bd09e4ea/knowledge-work-plugins/finance/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6296e3a6aceff6a3b4d7f2905184afcfae8f3f11/knowledge-work-plugins/finance/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/da5408fea5e536407b3698168673e3e52e145833/knowledge-work-plugins/finance/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e1607e7c98eb687d03ba9ee70564f10710fd9514/knowledge-work-plugins/finance/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/aa1e9950e0e53e84f06f44ff373beda8bd09e4ea/knowledge-work-plugins/finance/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6296e3a6aceff6a3b4d7f2905184afcfae8f3f11/knowledge-work-plugins/finance/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/da5408fea5e536407b3698168673e3e52e145833/knowledge-work-plugins/finance/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e1607e7c98eb687d03ba9ee70564f10710fd9514/knowledge-work-plugins/finance/agents.prod.yaml
