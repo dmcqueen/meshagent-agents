@@ -60,7 +60,6 @@ container:
           bash /var/update-meshagent-docs.sh
 
           MESHAGENT_TOKEN=$MESHAGENT_TOKEN_SUPPORTAGENT /usr/bin/meshagent task-runner join \
-            --model=gpt-5.3 \
             --require-web-search \
             --require-shell \
             -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt \
@@ -77,7 +76,6 @@ container:
 
           exec /usr/bin/meshagent multi join -c "chatbot \
             --agent-name claude-customer-support-meshagent \
-            --model=gpt-5.3 \
             --require-web-search \
             --require-toolkit=SupportAgent \
             -rr=agents/claude-customer-support-meshagent/rules-chatbot.txt; \
