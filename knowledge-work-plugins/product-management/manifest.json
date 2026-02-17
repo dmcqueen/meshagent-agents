@@ -1,14 +1,14 @@
 {
   "id": "claude-product-management",
   "name": "Claude Product Management",
-  "description": "An agent that uses Anthropic's product management knowledge work plugin and powered by Claude Sonnet 4.5",
-  "long_description": "An agent that uses Anthropic's product management knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-product-management (ChatBot). Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: competitive-analysis, feature-spec, metrics-tracking, roadmap-management, stakeholder-comms, user-research-synthesis. Rules: competitive-brief.md, metrics-review.md, roadmap-update.md, stakeholder-update.md, synthesize-research.md, write-spec.md.",
+  "description": "An agent that uses Anthropic's product management knowledge work plugin",
+  "long_description": "An agent that uses Anthropic's product management knowledge work plugin. It defines 1 runtime agent configuration(s): claude-product-management (ChatBot). The workflow is shaped by 6 rule file(s) (competitive-brief.md, metrics-review.md, roadmap-update.md, stakeholder-update.md, synthesize-research.md, and 1 more) and 6 skill directory reference(s) (competitive-analysis, feature-spec, metrics-tracking, roadmap-management, stakeholder-comms, and 1 more). The bundle includes 6 embedded command doc(s) and 6 embedded skill file(s) from the knowledge-work-plugins package. It is configured to run on image reference(s): us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c99d95a38ce9b5b20824c059e671c818811c0cfa/knowledge-work-plugins/product-management/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c99d95a38ce9b5b20824c059e671c818811c0cfa/knowledge-work-plugins/product-management/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1488307830ef29704254a1a38f4106bfc57f885e/knowledge-work-plugins/product-management/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1488307830ef29704254a1a38f4106bfc57f885e/knowledge-work-plugins/product-management/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7056bd5eb74dd23c7983f2c9cd6a5254cf4165cc/knowledge-work-plugins/product-management/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7056bd5eb74dd23c7983f2c9cd6a5254cf4165cc/knowledge-work-plugins/product-management/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a2706f3d356dd22064bfbf8f4233981bf025ac/knowledge-work-plugins/product-management/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a2706f3d356dd22064bfbf8f4233981bf025ac/knowledge-work-plugins/product-management/agents.prod.yaml"
   }
 }
