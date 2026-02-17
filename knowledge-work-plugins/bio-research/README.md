@@ -10,10 +10,10 @@ This plugin supports bio research workflows and is designed to help users comple
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9660bd916645409bea1c15625aeedc3e8aa4341/knowledge-work-plugins/bio-research/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1d9783dc37a714ca7f888364ee1c59011be112a0/knowledge-work-plugins/bio-research/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1665bae3a33ebe366702a6178d9f49de2f5eb020/knowledge-work-plugins/bio-research/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ad4a354810cc7691a1130a2b7d0a6750487b23ad/knowledge-work-plugins/bio-research/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9660bd916645409bea1c15625aeedc3e8aa4341/knowledge-work-plugins/bio-research/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1d9783dc37a714ca7f888364ee1c59011be112a0/knowledge-work-plugins/bio-research/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1665bae3a33ebe366702a6178d9f49de2f5eb020/knowledge-work-plugins/bio-research/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ad4a354810cc7691a1130a2b7d0a6750487b23ad/knowledge-work-plugins/bio-research/agents.prod.yaml
