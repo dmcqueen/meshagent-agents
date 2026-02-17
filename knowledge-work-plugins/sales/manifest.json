@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's sales knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's sales knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-sales (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: account-research, call-prep, competitive-intelligence, create-an-asset, daily-briefing, draft-outreach. Rules: call-summary.md, forecast.md, pipeline-review.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22b21d502903622a19358bc477077e75c0dca012/knowledge-work-plugins/sales/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22b21d502903622a19358bc477077e75c0dca012/knowledge-work-plugins/sales/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a729eacec141b114ea35f8ddd4388455407b20ee/knowledge-work-plugins/sales/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a729eacec141b114ea35f8ddd4388455407b20ee/knowledge-work-plugins/sales/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c51cc7075ef1a8f4deaa550f6fb8723ad9298c9e/knowledge-work-plugins/sales/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c51cc7075ef1a8f4deaa550f6fb8723ad9298c9e/knowledge-work-plugins/sales/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7957ba05dd644351175f96a56c42ad2af9f9bef0/knowledge-work-plugins/sales/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7957ba05dd644351175f96a56c42ad2af9f9bef0/knowledge-work-plugins/sales/agents.prod.yaml"
   }
 }
