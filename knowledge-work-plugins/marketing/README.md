@@ -5,16 +5,15 @@ An agent that uses Anthropic's marketing knowledge work plugin and powered by Cl
 
 **Details**
 - Agents: claude-marketing (ChatBot)
-- Models: gpt-5
 - Skills: brand-voice, campaign-planning, competitive-analysis, content-creation, performance-analytics
 - Rules: brand-review
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2a5ddd0b70554f9647504afa93f794dfd321be73/knowledge-work-plugins/marketing/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d2cb02734b8b7ae081422cea9c4942a5de2453f9/knowledge-work-plugins/marketing/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/18bcae24a903133e27454e6aa4a5e0bc2ab5c597/knowledge-work-plugins/marketing/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6f03f0e901b1d39b15de605ced6db7048fed3012/knowledge-work-plugins/marketing/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2a5ddd0b70554f9647504afa93f794dfd321be73/knowledge-work-plugins/marketing/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d2cb02734b8b7ae081422cea9c4942a5de2453f9/knowledge-work-plugins/marketing/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/18bcae24a903133e27454e6aa4a5e0bc2ab5c597/knowledge-work-plugins/marketing/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6f03f0e901b1d39b15de605ced6db7048fed3012/knowledge-work-plugins/marketing/agents.prod.yaml
