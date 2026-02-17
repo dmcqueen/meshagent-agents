@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's legal knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's legal knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-legal (ChatBot). Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: canned-responses, compliance, contract-review, legal-risk-assessment, meeting-briefing, nda-triage. Rules: brief.md, respond.md, review-contract.md, triage-nda.md, vendor-check.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bc0b6f78f00e58a398a78cb38afddff641810809/knowledge-work-plugins/legal/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bc0b6f78f00e58a398a78cb38afddff641810809/knowledge-work-plugins/legal/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e02a02dceae06a703e209aa88bbe90f2e69fff8c/knowledge-work-plugins/legal/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e02a02dceae06a703e209aa88bbe90f2e69fff8c/knowledge-work-plugins/legal/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0b5e776fa0b92bbf304b75f350a2f00fdc7ebf8c/knowledge-work-plugins/legal/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0b5e776fa0b92bbf304b75f350a2f00fdc7ebf8c/knowledge-work-plugins/legal/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9a0dbf6eba5a1620c06ccab1e757e74aec8a0000/knowledge-work-plugins/legal/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9a0dbf6eba5a1620c06ccab1e757e74aec8a0000/knowledge-work-plugins/legal/agents.prod.yaml"
   }
 }
