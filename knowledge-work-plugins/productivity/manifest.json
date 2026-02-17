@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-productivity (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: memory-management, task-management. Rules: start.md, update.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e8a041cfc39954b78697ef0677f0cceccdede912/knowledge-work-plugins/productivity/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e8a041cfc39954b78697ef0677f0cceccdede912/knowledge-work-plugins/productivity/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a773032f4559cdfd61eea688c0f7decc554c98f6/knowledge-work-plugins/productivity/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a773032f4559cdfd61eea688c0f7decc554c98f6/knowledge-work-plugins/productivity/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/667f6039c1660abfedad19a61481c1222b010582/knowledge-work-plugins/productivity/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/667f6039c1660abfedad19a61481c1222b010582/knowledge-work-plugins/productivity/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/30a7f1a2e8adb5c265dc0017e1420018c6f7714a/knowledge-work-plugins/productivity/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/30a7f1a2e8adb5c265dc0017e1420018c6f7714a/knowledge-work-plugins/productivity/agents.prod.yaml"
   }
 }
