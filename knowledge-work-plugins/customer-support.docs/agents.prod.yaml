@@ -44,8 +44,8 @@ container:
           if [ -d /knowledge-work-plugins ]; then
             cp -R -n /knowledge-work-plugins/. /data/knowledge-work-plugins/ 2>/dev/null || true
           fi
-          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules.txt ]]; then
-            cp /var/rules-claude-customer-support.txt /data/agents/claude-customer-support-meshagent/rules.txt
+          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-chatbot.txt ]]; then
+            cp /var/rules-claude-customer-support-chatbot.txt /data/agents/claude-customer-support-meshagent/rules-chatbot.txt
           fi
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-mailbot.txt ]]; then
             cp /var/rules-claude-customer-support-mailbot.txt /data/agents/claude-customer-support-meshagent/rules-mailbot.txt
@@ -53,8 +53,8 @@ container:
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-supportagent.txt ]]; then
             cp /var/rules-claude-customer-support-supportagent.txt /data/agents/claude-customer-support-meshagent/rules-supportagent.txt
           fi
-          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-worker.txt ]]; then
-            cp /var/rules-claude-customer-support-worker.txt /data/agents/claude-customer-support-meshagent/rules-worker.txt
+          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-git-worker.txt ]]; then
+            cp /var/rules-claude-customer-support-git-worker.txt /data/agents/claude-customer-support-meshagent/rules-git-worker.txt
           fi
 
           bash /var/update-meshagent-docs.sh
@@ -80,7 +80,7 @@ container:
             --model=gpt-5.2 \
             --require-web-search \
             --require-toolkit=SupportAgent \
-            -rr=agents/claude-customer-support-meshagent/rules.txt; \
+            -rr=agents/claude-customer-support-meshagent/rules-chatbot.txt; \
             mailbot \
             --agent-name claude-customer-support-meshagent \
             --email-address {{MailbotEmail}} \
@@ -95,8 +95,8 @@ container:
             --queue docs-sync \
             --require-shell \
             --require-toolkit=email \
-            --room-rules /agents/claude-customer-support-meshagent/rules-worker.txt"
-    - path: /var/rules-claude-customer-support.txt
+            --room-rules /agents/claude-customer-support-meshagent/rules-git-worker.txt"
+    - path: /var/rules-claude-customer-support-chatbot.txt
       read_only: true
       text: |
           ONLY use the knowledge-work-plugins skills to answer questions and follow the pattern specified in the skill
@@ -109,7 +109,7 @@ container:
           You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com, /data/meshagent-docs and docs.meshagent.com
           Example agent yamls are in /data/meshagent-agents 
           You have some slash commands available
-    - path: /var/rules-claude-customer-support-worker.txt
+    - path: /var/rules-claude-customer-support-git-worker.txt
       read_only: true
       text: |
           When this worker runs, execute the docs sync script by running "bash /var/update-meshagent-docs.sh" using the shell tool.
