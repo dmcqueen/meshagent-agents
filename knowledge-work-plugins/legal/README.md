@@ -1,19 +1,19 @@
 # Claude Legal
 
-**Overview**
-An agent that uses Anthropic's legal knowledge work plugin and powered by Claude Sonnet 4.5
+## Summary
 
-**Details**
-- Agents: claude-legal (ChatBot)
-- Skills: canned-responses, compliance, contract-review, legal-risk-assessment, meeting-briefing, nda-triage
-- Rules: brief
+An agent that uses Anthropic's legal knowledge work plugin
+
+## Long Description
+
+An agent that uses Anthropic's legal knowledge work plugin. It defines 1 runtime agent configuration(s): claude-legal (ChatBot). The workflow is shaped by 5 rule file(s) (brief.md, respond.md, review-contract.md, triage-nda.md, vendor-check.md) and 6 skill directory reference(s) (canned-responses, compliance, contract-review, legal-risk-assessment, meeting-briefing, and 1 more). The bundle includes 5 embedded command doc(s) and 6 embedded skill file(s) from the knowledge-work-plugins package. It is configured to run on image reference(s): us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bdc87765b7c4b2827aff18f7d71f9ca591ede6af/knowledge-work-plugins/legal/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/373b948f17cba877f828706d084ab3607256c708/knowledge-work-plugins/legal/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/95ada294f1b5e73f77845f368d2a8de35d0792bb/knowledge-work-plugins/legal/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e49e294b2ba2af255067d9b13d4b5d9301ea2d3/knowledge-work-plugins/legal/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bdc87765b7c4b2827aff18f7d71f9ca591ede6af/knowledge-work-plugins/legal/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/373b948f17cba877f828706d084ab3607256c708/knowledge-work-plugins/legal/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/95ada294f1b5e73f77845f368d2a8de35d0792bb/knowledge-work-plugins/legal/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e49e294b2ba2af255067d9b13d4b5d9301ea2d3/knowledge-work-plugins/legal/agents.prod.yaml
