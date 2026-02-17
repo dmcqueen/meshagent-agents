@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: claude-cowork-plugin-management
-  description: An agent that uses Anthropic's cowork plugin management knowledge work plugin and powered by Claude Sonnet 4.5
+  description: An agent that uses Anthropic's cowork plugin management knowledge work plugin
   annotations:
     meshagent.service.id: meshagent.claude-cowork-plugin-management
 
