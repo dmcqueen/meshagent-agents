@@ -63,7 +63,6 @@ container:
             --model=gpt-5.2 \
             --require-web-search \
             --require-shell \
-            --script-tool \
             -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt \
             --rules-file /data/knowledge-work-plugins/commands/draft-response.md \
             --rules-file /data/knowledge-work-plugins/commands/escalate.md \
@@ -85,7 +84,7 @@ container:
             mailbot \
             --agent-name claude-customer-support-meshagent \
             --email-address {{MailbotEmail}} \
-            --reply-all \            
+            --reply-all \
             --require-web-search \
             --toolkit-name=email \
             --enable-attachments \
