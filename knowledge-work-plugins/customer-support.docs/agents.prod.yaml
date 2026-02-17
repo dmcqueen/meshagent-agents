@@ -84,7 +84,6 @@ container:
             --reply-all \
             --require-web-search \
             --toolkit-name=email \
-            --enable-attachments \
             --require-toolkit=SupportAgent \
             --rules-file /data/knowledge-work-plugins/commands/draft-response.md \
             --rules-file /data/knowledge-work-plugins/commands/escalate.md \
