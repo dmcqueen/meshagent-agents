@@ -11,10 +11,10 @@ An agent that uses Anthropic's legal knowledge work plugin and powered by Claude
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/59341079b556d186ed391c0a3a768ae45ac1be51/knowledge-work-plugins/legal/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03a7958e84cf55d9fafe78dcfc196ea9d0711693/knowledge-work-plugins/legal/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bc3607ebf4cffdd83eda8f679f75ce2019a0c69c/knowledge-work-plugins/legal/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6536fec2b96938beb01f3ef5517189f6472858c5/knowledge-work-plugins/legal/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/59341079b556d186ed391c0a3a768ae45ac1be51/knowledge-work-plugins/legal/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03a7958e84cf55d9fafe78dcfc196ea9d0711693/knowledge-work-plugins/legal/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bc3607ebf4cffdd83eda8f679f75ce2019a0c69c/knowledge-work-plugins/legal/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6536fec2b96938beb01f3ef5517189f6472858c5/knowledge-work-plugins/legal/agents.prod.yaml
