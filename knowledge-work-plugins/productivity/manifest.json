@@ -2,13 +2,13 @@
   "id": "claude-productivity",
   "name": "Claude Productivity",
   "description": "An agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5",
-  "long_description": "An agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-productivity (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: memory-management, task-management. Rules: start.md, update.md.",
+  "long_description": "An agent that uses Anthropic's productivity knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-productivity (ChatBot). Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: memory-management, task-management. Rules: start.md, update.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0c65b0e228354e3787f293d0ce3be4dcb64ea203/knowledge-work-plugins/productivity/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0c65b0e228354e3787f293d0ce3be4dcb64ea203/knowledge-work-plugins/productivity/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6fc932797f73198e1f1829f88aeedeef0a7b03f7/knowledge-work-plugins/productivity/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6fc932797f73198e1f1829f88aeedeef0a7b03f7/knowledge-work-plugins/productivity/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/09c0b1e7bd5f571c207fa77bf2a1a8a63d6077a9/knowledge-work-plugins/productivity/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/09c0b1e7bd5f571c207fa77bf2a1a8a63d6077a9/knowledge-work-plugins/productivity/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8da89723d5a3f35164aba33fd0b5e4cbb1e0f104/knowledge-work-plugins/productivity/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8da89723d5a3f35164aba33fd0b5e4cbb1e0f104/knowledge-work-plugins/productivity/agents.prod.yaml"
   }
 }
