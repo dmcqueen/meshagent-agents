@@ -1,14 +1,14 @@
 {
   "id": "claude-marketing",
   "name": "Claude Marketing",
-  "description": "An agent that uses Anthropic's marketing knowledge work plugin and powered by Claude Sonnet 4.5",
-  "long_description": "An agent that uses Anthropic's marketing knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-marketing (ChatBot). Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: brand-voice, campaign-planning, competitive-analysis, content-creation, performance-analytics. Rules: brand-review.md, campaign-plan.md, competitive-brief.md, draft-content.md, email-sequence.md, performance-report.md, seo-audit.md.",
+  "description": "An agent that uses Anthropic's marketing knowledge work plugin",
+  "long_description": "An agent that uses Anthropic's marketing knowledge work plugin. It defines 1 runtime agent configuration(s): claude-marketing (ChatBot). The workflow is shaped by 7 rule file(s) (brand-review.md, campaign-plan.md, competitive-brief.md, draft-content.md, email-sequence.md, and 2 more) and 5 skill directory reference(s) (brand-voice, campaign-planning, competitive-analysis, content-creation, performance-analytics). The bundle includes 7 embedded command doc(s) and 5 embedded skill file(s) from the knowledge-work-plugins package. It is configured to run on image reference(s): us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0dce0f050b36035bd17fb3277d98534e7fa6c3ea/knowledge-work-plugins/marketing/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0dce0f050b36035bd17fb3277d98534e7fa6c3ea/knowledge-work-plugins/marketing/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b389f560f692d83718d6eb36e0f1fc46badfa386/knowledge-work-plugins/marketing/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b389f560f692d83718d6eb36e0f1fc46badfa386/knowledge-work-plugins/marketing/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8d02d0a6d8818d123be76ff743daa271734b426b/knowledge-work-plugins/marketing/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8d02d0a6d8818d123be76ff743daa271734b426b/knowledge-work-plugins/marketing/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7a23aae647c20df652d6800d5a4a68ba0caec35e/knowledge-work-plugins/marketing/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7a23aae647c20df652d6800d5a4a68ba0caec35e/knowledge-work-plugins/marketing/agents.prod.yaml"
   }
 }
