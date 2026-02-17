@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: claude-customer-support
-  description: An agent that uses Anthropic's customer support knowledge work plugin and powered by Claude Sonnet 4.5
+  description: An agent that uses Anthropic's customer support knowledge work plugin
   annotations:
     meshagent.service.id: meshagent.claude-customer-support
 
