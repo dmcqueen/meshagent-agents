@@ -1,19 +1,19 @@
 # Claude Product Management
 
-**Overview**
-An agent that uses Anthropic's product management knowledge work plugin and powered by Claude Sonnet 4.5
+## Summary
 
-**Details**
-- Agents: claude-product-management (ChatBot)
-- Skills: competitive-analysis, feature-spec, metrics-tracking, roadmap-management, stakeholder-comms, user-research-synthesis
-- Rules: competitive-brief
+An agent that uses Anthropic's product management knowledge work plugin
+
+## Long Description
+
+An agent that uses Anthropic's product management knowledge work plugin. It defines 1 runtime agent configuration(s): claude-product-management (ChatBot). The workflow is shaped by 6 rule file(s) (competitive-brief.md, metrics-review.md, roadmap-update.md, stakeholder-update.md, synthesize-research.md, and 1 more) and 6 skill directory reference(s) (competitive-analysis, feature-spec, metrics-tracking, roadmap-management, stakeholder-comms, and 1 more). The bundle includes 6 embedded command doc(s) and 6 embedded skill file(s) from the knowledge-work-plugins package. It is configured to run on image reference(s): us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c99d95a38ce9b5b20824c059e671c818811c0cfa/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7056bd5eb74dd23c7983f2c9cd6a5254cf4165cc/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1488307830ef29704254a1a38f4106bfc57f885e/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a2706f3d356dd22064bfbf8f4233981bf025ac/knowledge-work-plugins/product-management/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c99d95a38ce9b5b20824c059e671c818811c0cfa/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7056bd5eb74dd23c7983f2c9cd6a5254cf4165cc/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1488307830ef29704254a1a38f4106bfc57f885e/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a2706f3d356dd22064bfbf8f4233981bf025ac/knowledge-work-plugins/product-management/agents.prod.yaml
