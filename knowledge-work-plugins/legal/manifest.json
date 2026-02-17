@@ -2,13 +2,13 @@
   "id": "claude-legal",
   "name": "Claude Legal",
   "description": "An agent that uses Anthropic's legal knowledge work plugin",
-  "long_description": "An agent that uses Anthropic's legal knowledge work plugin. It defines 1 runtime agent configuration(s): claude-legal (ChatBot). The workflow is shaped by 5 rule file(s) (brief.md, respond.md, review-contract.md, triage-nda.md, vendor-check.md) and 6 skill directory reference(s) (canned-responses, compliance, contract-review, legal-risk-assessment, meeting-briefing, and 1 more). The bundle includes 5 embedded command doc(s) and 6 embedded skill file(s) from the knowledge-work-plugins package. It is configured to run on image reference(s): us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz.",
+  "long_description": "This agent helps legal teams and individuals review contracts and other legal texts to surface key obligations, risks, and compliance issues, enabling faster risk triage and clearer negotiation priorities. It can draft and refine legal-facing language and templated responses so teams produce consistent, structured documents and communications. The agent also summarizes complex legal materials into practical guidance for stakeholders and prepares concise meeting briefs or vendor checks to inform decision-making. Workflows supported include contract review, NDA triage, legal-risk assessment, and creating canned responses for routine legal matters.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/95ada294f1b5e73f77845f368d2a8de35d0792bb/knowledge-work-plugins/legal/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/95ada294f1b5e73f77845f368d2a8de35d0792bb/knowledge-work-plugins/legal/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1eb28ca6430957c59ed8c4c4e940fdf0ea3967e6/knowledge-work-plugins/legal/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1eb28ca6430957c59ed8c4c4e940fdf0ea3967e6/knowledge-work-plugins/legal/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e49e294b2ba2af255067d9b13d4b5d9301ea2d3/knowledge-work-plugins/legal/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e49e294b2ba2af255067d9b13d4b5d9301ea2d3/knowledge-work-plugins/legal/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23f00fee3dc88e323846ed6b8f9c6135014361c9/knowledge-work-plugins/legal/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23f00fee3dc88e323846ed6b8f9c6135014361c9/knowledge-work-plugins/legal/agents.prod.yaml"
   }
 }
