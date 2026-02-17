@@ -60,7 +60,7 @@ container:
           bash /var/update-meshagent-docs.sh
 
           MESHAGENT_TOKEN=$MESHAGENT_TOKEN_SUPPORTAGENT /usr/bin/meshagent task-runner join \
-            --model=gpt-5.2 \
+            --model=gpt-5.3 \
             --require-web-search \
             --require-shell \
             -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt \
@@ -77,7 +77,7 @@ container:
 
           exec /usr/bin/meshagent multi join -c "chatbot \
             --agent-name claude-customer-support-meshagent \
-            --model=gpt-5.2 \
+            --model=gpt-5.3 \
             --require-web-search \
             --require-toolkit=SupportAgent \
             -rr=agents/claude-customer-support-meshagent/rules-chatbot.txt; \
@@ -137,7 +137,7 @@ container:
           Escalate to a human when the request involves billing disputes, security or privacy, data loss, outages, legal requests, or unknown answers.
           Use the knowledge-work-plugins skills and the synced /data/meshagent-docs and /data/meshagent-agents repos to answer questions accurately.
           Provide concise, actionable steps and cite the exact doc path when available.
-          Never write or modify files; read-only storage access.
+          Never write or modify files; read-only.
     - path: /var/update-meshagent-docs.sh
       read_only: true
       text: |
