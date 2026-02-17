@@ -10,10 +10,10 @@ An agent that uses Anthropic's customer support knowledge work plugin and powere
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0f6902f1f12d3bb3a1403ff43cc784dc5e08c0de/knowledge-work-plugins/customer-support/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/08581aee93dd77a0655df9622dcc0e0b944bcfab/knowledge-work-plugins/customer-support/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/627581adf3f0c834a1f07d045961d89a16ef3f44/knowledge-work-plugins/customer-support/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f64d1608435edbeccad49f3eba538d9a6d2c64f/knowledge-work-plugins/customer-support/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0f6902f1f12d3bb3a1403ff43cc784dc5e08c0de/knowledge-work-plugins/customer-support/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/08581aee93dd77a0655df9622dcc0e0b944bcfab/knowledge-work-plugins/customer-support/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/627581adf3f0c834a1f07d045961d89a16ef3f44/knowledge-work-plugins/customer-support/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f64d1608435edbeccad49f3eba538d9a6d2c64f/knowledge-work-plugins/customer-support/agents.prod.yaml
