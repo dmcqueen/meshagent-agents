@@ -60,9 +60,14 @@ container:
           bash /var/update-meshagent-docs.sh
 
           MESHAGENT_TOKEN=$MESHAGENT_TOKEN_SUPPORTAGENT /usr/bin/meshagent task-runner join \
-            --require-web-search \
             --require-shell \
-            -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt \
+            -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt &
+
+          exec /usr/bin/meshagent multi join -c "chatbot \
+            --agent-name claude-customer-support-meshagent \
+            --require-web-search \
+            --require-toolkit=SupportAgent \
+            --room-rules /agents/claude-customer-support-meshagent/rules-chatbot.txt \
             --rules-file /data/knowledge-work-plugins/commands/draft-response.md \
             --rules-file /data/knowledge-work-plugins/commands/escalate.md \
             --rules-file /data/knowledge-work-plugins/commands/kb-article.md \
@@ -72,13 +77,7 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/escalation \
             --skill-dir /data/knowledge-work-plugins/skills/knowledge-management \
             --skill-dir /data/knowledge-work-plugins/skills/response-drafting \
-            --skill-dir /data/knowledge-work-plugins/skills/ticket-triage &
-
-          exec /usr/bin/meshagent multi join -c "chatbot \
-            --agent-name claude-customer-support-meshagent \
-            --require-web-search \
-            --require-toolkit=SupportAgent \
-            -rr=agents/claude-customer-support-meshagent/rules-chatbot.txt; \
+            --skill-dir /data/knowledge-work-plugins/skills/ticket-triage; \
             mailbot \
             --agent-name claude-customer-support-meshagent \
             --email-address {{MailbotEmail}} \
@@ -87,6 +86,16 @@ container:
             --toolkit-name=email \
             --enable-attachments \
             --require-toolkit=SupportAgent \
+            --rules-file /data/knowledge-work-plugins/commands/draft-response.md \
+            --rules-file /data/knowledge-work-plugins/commands/escalate.md \
+            --rules-file /data/knowledge-work-plugins/commands/kb-article.md \
+            --rules-file /data/knowledge-work-plugins/commands/research.md \
+            --rules-file /data/knowledge-work-plugins/commands/triage.md \
+            --skill-dir /data/knowledge-work-plugins/skills/customer-research \
+            --skill-dir /data/knowledge-work-plugins/skills/escalation \
+            --skill-dir /data/knowledge-work-plugins/skills/knowledge-management \
+            --skill-dir /data/knowledge-work-plugins/skills/response-drafting \
+            --skill-dir /data/knowledge-work-plugins/skills/ticket-triage \
             --room-rules /agents/claude-customer-support-meshagent/rules-mailbot.txt; \
             worker \
             --agent-name claude-customer-support-meshagent \
@@ -98,9 +107,11 @@ container:
       read_only: true
       text: |
           You are the MeshAgent customer support chatbot.
-          For MeshAgent support questions, prefer using the SupportAgent tool.
+          For MeshAgent support questions, use skills in /data/knowledge-work-plugins to structure the response.
+          Use the SupportAgent tool to fetch factual product/documentation details from the downloaded docs.
+          Keep responses concise, actionable, and customer-ready.
           If a question is not clearly about MeshAgent, ask a short clarifying question.
-          Keep replies concise and focused on routing support questions to SupportAgent.
+          If SupportAgent cannot find an answer in docs, say so and provide a clarification question instead of guessing.
     - path: /var/rules-claude-customer-support-git-worker.txt
       read_only: true
       text: |
@@ -114,26 +125,30 @@ container:
       read_only: true
       text: |
           You are the mailbot for the claude-customer-support-meshagent service. You provide customer support for MeshAgent users.
-          Make it explicit that you support MeshAgent (product, platform, SDK, CLI, agents, rooms, mailbots, workers, deployments, billing, and policies where documented).
-          For MeshAgent support questions, prefer using the SupportAgent tool.
-          Keep replies concise, professional, and tailored to the request. If the question is not about MeshAgent, ask a short clarifying question to re-scope to MeshAgent support.
+          Make it explicit that you support MeshAgent (product, platform, SDK, CLI, agents, rooms, mailbots, workers, deployments, billing, and documented policies).
+          For MeshAgent support questions, use skills in /data/knowledge-work-plugins for drafting and response quality.
+          Use the SupportAgent tool for factual details from downloaded docs before finalizing answers.
+          Keep replies concise, professional, and tailored to the request.
+          If the question is not about MeshAgent, ask a short clarifying question to re-scope to MeshAgent support.
+          If SupportAgent cannot find an answer in docs, say so and ask a targeted follow-up question.
           Never attach or quote files from storage unless the user explicitly requests it.
     - path: /var/rules-claude-customer-support-supportagent.txt
       read_only: true
       text: |
           You are SupportAgent, a task runner tool for MeshAgent customer support.
           MeshAgent is an agent operating system. You can find out more at www.meshagent.com.
-          Focus on MeshAgent product, platform, SDK, CLI, agents, rooms, mailbots, workers, deployments, billing, and documented policies.
+          Focus on MeshAgent product, platform, SDK, CLI, agents, rooms, mailbots, workers, deployments, billing, and documented policies using downloaded docs in room storage.
           Answer only MeshAgent support questions. If not enough info, respond with a brief clarification request.
-          ONLY use the knowledge-work-plugins skills at /data/knowledge-work-plugins to answer questions and follow the pattern specified in the skill.
           You have customizable rules stored in agents/claude-customer-support-meshagent/rules-supportagent.txt, you can use the shell tool to read your rules.
           MeshAgent docs are in /data/meshagent-docs.
           Example agent yamls are in /data/meshagent-agents.
           Prefer /data/meshagent-docs over /data/meshagent-agents when both cover a topic.
+          Do not use /data/knowledge-work-plugins skills for final response drafting; focus on doc lookup and factual extraction.
+          Return facts, exact doc paths, and concise implementation steps only.
           If the answer is not in docs, say so and ask a clarifying question. Do not guess.
           Ask for MeshAgent version, deployment type (cloud or on-prem), and environment when relevant.
           Escalate to a human when the request involves billing disputes, security or privacy, data loss, outages, legal requests, or unknown answers.
-          Use the knowledge-work-plugins skills and the synced /data/meshagent-docs and /data/meshagent-agents repos to answer questions accurately.
+          Use the synced /data/meshagent-docs and /data/meshagent-agents repos to answer questions accurately.
           Provide concise, actionable steps and cite the exact doc path when available.
           Never write or modify files; read-only.
     - path: /var/update-meshagent-docs.sh
