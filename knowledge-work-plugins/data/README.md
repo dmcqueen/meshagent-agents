@@ -5,16 +5,15 @@ An agent that uses Anthropic's data knowledge work plugin and powered by Claude 
 
 **Details**
 - Agents: claude-data (ChatBot)
-- Models: gpt-5
 - Skills: data-context-extractor, data-exploration, data-validation, data-visualization, interactive-dashboard-builder, sql-queries, statistical-analysis
 - Rules: analyze
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05e8a15c68cdc019bd3ad14a25b8dc377c32c4af/knowledge-work-plugins/data/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e6d1c03b84e6881b028574dab848d190960435f7/knowledge-work-plugins/data/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8de455dcbb0fe2c4b0f5f361a5014df30e69eff0/knowledge-work-plugins/data/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/60ec618e3313cc0647af29baa53d3a781c97837d/knowledge-work-plugins/data/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05e8a15c68cdc019bd3ad14a25b8dc377c32c4af/knowledge-work-plugins/data/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e6d1c03b84e6881b028574dab848d190960435f7/knowledge-work-plugins/data/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8de455dcbb0fe2c4b0f5f361a5014df30e69eff0/knowledge-work-plugins/data/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/60ec618e3313cc0647af29baa53d3a781c97837d/knowledge-work-plugins/data/agents.prod.yaml
