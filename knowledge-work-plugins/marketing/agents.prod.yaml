@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: claude-marketing
-  description: An agent that uses Anthropic's marketing knowledge work plugin and powered by Claude Sonnet 4.5
+  description: An agent that uses Anthropic's marketing knowledge work plugin
   annotations:
     meshagent.service.id: meshagent.claude-marketing
 
