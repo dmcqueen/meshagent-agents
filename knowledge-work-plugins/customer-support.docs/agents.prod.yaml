@@ -4,7 +4,7 @@ variables:
   - name: MailbotEmail
     type: email
     description: "Email address used by the mailbot to receive customer support requests."
-  - name: SendToEmail
+  - name: AdminEmail
     description: "External, fully user-supplied email address to receive docs sync status notifications."
 
 metadata:
@@ -119,7 +119,7 @@ container:
           When this worker runs, execute the docs sync script by running "bash /var/update-meshagent-docs.sh" using the shell tool.
           Run the script once per run.
           Read /data/.runtime/meshagent-docs-sync.status after the script completes. If /data/.runtime/meshagent-docs-sync.cloned exists, treat it as a clone event, send the email, and remove the marker file so it only notifies once.
-          Send a verbose status email using the email toolkit to {{SendToEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URLs, status, changed, event, before_commit, after_commit, agents_before_commit, agents_after_commit, agents_changed, cloned_repo, and any error details. If event=cloned or the clone marker exists, explicitly state which repo(s) were cloned. 
+          Send a verbose status email using the email toolkit to {{AdminEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URLs, status, changed, event, before_commit, after_commit, agents_before_commit, agents_after_commit, agents_changed, cloned_repo, and any error details. If event=cloned or the clone marker exists, explicitly state which repo(s) were cloned. 
           After sending (or deciding not to send), delete /data/.runtime/meshagent-docs-sync.status to avoid keeping status files in room storage.
           Do not make any other changes.
     - path: /var/rules-claude-customer-support-mailbot.txt
