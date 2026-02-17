@@ -11,10 +11,10 @@ An agent that uses Anthropic's finance knowledge work plugin and powered by Clau
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4d58b4eb1255b4eeb2c4097e15ea05ef0efc1fe2/knowledge-work-plugins/finance/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/17db8a4da00f7abb9b7b25f5a85a46483f509a79/knowledge-work-plugins/finance/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9321e3e89b39949f4f4f228666d83a1e8fcc66e6/knowledge-work-plugins/finance/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/70f2f25188e37c1a36a74bfb0a0bbf1a1476fdc9/knowledge-work-plugins/finance/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4d58b4eb1255b4eeb2c4097e15ea05ef0efc1fe2/knowledge-work-plugins/finance/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/17db8a4da00f7abb9b7b25f5a85a46483f509a79/knowledge-work-plugins/finance/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9321e3e89b39949f4f4f228666d83a1e8fcc66e6/knowledge-work-plugins/finance/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/70f2f25188e37c1a36a74bfb0a0bbf1a1476fdc9/knowledge-work-plugins/finance/agents.prod.yaml
