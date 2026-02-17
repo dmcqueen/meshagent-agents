@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's bio research knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's bio research knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-bio-research (ChatBot). Models: gpt-5.2, scvi`, scvi. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: instrument-data-to-allotrope, nextflow-development, scientific-problem-selection, scvi-tools, single-cell-rna-qc. Rules: start.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cd58f1bf5ee9ac168b44669270685ddacde6fb76/knowledge-work-plugins/bio-research/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cd58f1bf5ee9ac168b44669270685ddacde6fb76/knowledge-work-plugins/bio-research/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1e660542acf52cddef6d3bb33539eb69d34cdb49/knowledge-work-plugins/bio-research/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1e660542acf52cddef6d3bb33539eb69d34cdb49/knowledge-work-plugins/bio-research/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e4cee54add55c1aaad8e4dd408b93e02a0266455/knowledge-work-plugins/bio-research/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e4cee54add55c1aaad8e4dd408b93e02a0266455/knowledge-work-plugins/bio-research/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2b50277dc66c371eb64e25122f206287b2bda405/knowledge-work-plugins/bio-research/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2b50277dc66c371eb64e25122f206287b2bda405/knowledge-work-plugins/bio-research/agents.prod.yaml"
   }
 }
