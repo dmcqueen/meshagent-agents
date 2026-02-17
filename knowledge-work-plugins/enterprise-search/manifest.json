@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's enterprise search knowledge work plugin and powered by Claude Sonnet 4.5",
   "long_description": "An agent that uses Anthropic's enterprise search knowledge work plugin and powered by Claude Sonnet 4.5. Agents: claude-enterprise-search (ChatBot). Models: gpt-5.2. Images: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz. Skills: knowledge-synthesis, search-strategy, source-management. Rules: digest.md, search.md.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d1a518fdd81b8b273759914d5210a059351f62a4/knowledge-work-plugins/enterprise-search/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d1a518fdd81b8b273759914d5210a059351f62a4/knowledge-work-plugins/enterprise-search/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fbbd985f7971df7c39eec6bb278a070f6eda4a56/knowledge-work-plugins/enterprise-search/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fbbd985f7971df7c39eec6bb278a070f6eda4a56/knowledge-work-plugins/enterprise-search/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b8ed0d13a25fb38ec683500615b7e3215230215d/knowledge-work-plugins/enterprise-search/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b8ed0d13a25fb38ec683500615b7e3215230215d/knowledge-work-plugins/enterprise-search/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b91f4762b1aeb6ce5dca68d7a2bb67716ef6e6fa/knowledge-work-plugins/enterprise-search/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b91f4762b1aeb6ce5dca68d7a2bb67716ef6e6fa/knowledge-work-plugins/enterprise-search/agents.prod.yaml"
   }
 }
