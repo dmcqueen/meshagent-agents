@@ -11,10 +11,10 @@ An agent that uses Anthropic's productivity knowledge work plugin and powered by
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd8c3d1f92854550d9ae065fc3bf2425623ecc70/knowledge-work-plugins/productivity/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a77828022c1b482f0e0b29feaab49dc3ba600fd7/knowledge-work-plugins/productivity/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0c65b0e228354e3787f293d0ce3be4dcb64ea203/knowledge-work-plugins/productivity/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/09c0b1e7bd5f571c207fa77bf2a1a8a63d6077a9/knowledge-work-plugins/productivity/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd8c3d1f92854550d9ae065fc3bf2425623ecc70/knowledge-work-plugins/productivity/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a77828022c1b482f0e0b29feaab49dc3ba600fd7/knowledge-work-plugins/productivity/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0c65b0e228354e3787f293d0ce3be4dcb64ea203/knowledge-work-plugins/productivity/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/09c0b1e7bd5f571c207fa77bf2a1a8a63d6077a9/knowledge-work-plugins/productivity/agents.prod.yaml
