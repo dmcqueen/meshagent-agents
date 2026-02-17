@@ -50,19 +50,21 @@ container:
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-mailbot.txt ]]; then
             cp /var/rules-claude-customer-support-mailbot.txt /data/agents/claude-customer-support-meshagent/rules-mailbot.txt
           fi
+          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-supportagent.txt ]]; then
+            cp /var/rules-claude-customer-support-supportagent.txt /data/agents/claude-customer-support-meshagent/rules-supportagent.txt
+          fi
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-worker.txt ]]; then
             cp /var/rules-claude-customer-support-worker.txt /data/agents/claude-customer-support-meshagent/rules-worker.txt
           fi
 
           bash /var/update-meshagent-docs.sh
 
-          exec /usr/bin/meshagent multi join -c "chatbot \
-            --agent-name claude-customer-support-meshagent \
+          MESHAGENT_TOKEN=$MESHAGENT_TOKEN_SUPPORTAGENT /usr/bin/meshagent task-runner join \
             --model=gpt-5.2 \
             --require-web-search \
             --require-shell \
             --script-tool \
-            -rr=agents/claude-customer-support-meshagent/rules.txt \
+            -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt \
             --rules-file /data/knowledge-work-plugins/commands/draft-response.md \
             --rules-file /data/knowledge-work-plugins/commands/escalate.md \
             --rules-file /data/knowledge-work-plugins/commands/kb-article.md \
@@ -72,13 +74,22 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/escalation \
             --skill-dir /data/knowledge-work-plugins/skills/knowledge-management \
             --skill-dir /data/knowledge-work-plugins/skills/response-drafting \
-            --skill-dir /data/knowledge-work-plugins/skills/ticket-triage; \
+            --skill-dir /data/knowledge-work-plugins/skills/ticket-triage &
+
+          exec /usr/bin/meshagent multi join -c "chatbot \
+            --agent-name claude-customer-support-meshagent \
+            --model=gpt-5.2 \
+            --require-web-search \
+            --require-toolkit=SupportAgent \
+            -rr=agents/claude-customer-support-meshagent/rules.txt; \
             mailbot \
             --agent-name claude-customer-support-meshagent \
             --email-address {{MailbotEmail}} \
+            --reply-all \            
+            --require-web-search \
             --toolkit-name=email \
             --enable-attachments \
-            --require-storage \
+            --require-toolkit=SupportAgent \
             --room-rules /agents/claude-customer-support-meshagent/rules-mailbot.txt; \
             worker \
             --agent-name claude-customer-support-meshagent \
@@ -90,6 +101,7 @@ container:
       read_only: true
       text: |
           ONLY use the knowledge-work-plugins skills to answer questions and follow the pattern specified in the skill
+          For MeshAgent support questions, prefer using the SupportAgent tool.
           you can use the storage tool to read skills not just the shell tool
           when a question could be served by a skill, read the skill and follow the pattern specified in the skill
           when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data.
@@ -112,8 +124,16 @@ container:
       text: |
           You are the mailbot for the claude-customer-support-meshagent service. You provide customer support for MeshAgent users.
           Make it explicit that you support MeshAgent (product, platform, SDK, CLI, agents, rooms, mailbots, workers, deployments, billing, and policies where documented).
+          For MeshAgent support questions, prefer using the SupportAgent tool.
           Use the knowledge-work-plugins skills to draft responses and follow the pattern specified in the skills.
           Keep replies concise, professional, and tailored to the request. If the question is not about MeshAgent, ask a short clarifying question to re-scope to MeshAgent support.
+    - path: /var/rules-claude-customer-support-supportagent.txt
+      read_only: true
+      text: |
+          You are SupportAgent, a task runner tool for MeshAgent customer support.
+          Focus on MeshAgent product, platform, SDK, CLI, agents, rooms, mailbots, workers, deployments, billing, and documented policies.
+          Use the knowledge-work-plugins skills and the synced docs in /data/meshagent-docs and /data/meshagent-agents to answer accurately.
+          Provide concise, actionable steps and cite the specific doc or source section when possible.
     - path: /var/update-meshagent-docs.sh
       read_only: true
       text: |
@@ -1993,6 +2013,35 @@ container:
     - name: MESHAGENT_TOKEN
       token:  
         identity: claude-customer-support-meshagent
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
+
+    - name: MESHAGENT_TOKEN_SUPPORTAGENT
+      token:  
+        identity: SupportAgent
         api:
           livekit: {}
           queues:
