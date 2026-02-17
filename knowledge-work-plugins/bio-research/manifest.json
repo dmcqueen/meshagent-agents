@@ -2,13 +2,13 @@
   "id": "claude-bio-research",
   "name": "Claude Bio Research",
   "description": "An agent that uses Anthropic's bio research knowledge work plugin",
-  "long_description": "An agent that uses Anthropic's bio research knowledge work plugin. It defines 1 runtime agent configuration(s): claude-bio-research (ChatBot). The run command targets model configuration(s) including scvi`, scvi. The workflow is shaped by 1 rule file(s) (start.md) and 5 skill directory reference(s) (instrument-data-to-allotrope, nextflow-development, scientific-problem-selection, scvi-tools, single-cell-rna-qc). The bundle includes 1 embedded command doc(s) and 47 embedded skill file(s) from the knowledge-work-plugins package. It is configured to run on image reference(s): us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz.",
+  "long_description": "This plugin supports bio research workflows and is designed to help users complete practical work with less manual effort. It can support research exploration across biomedical topics, synthesize scientific context into focused, usable summaries, and assist with hypothesis framing and evidence-oriented analysis. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for bio research decisions, analysis, and communication.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6bb054a7f7ff58f5b95dc385a181aca267914dd8/knowledge-work-plugins/bio-research/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6bb054a7f7ff58f5b95dc385a181aca267914dd8/knowledge-work-plugins/bio-research/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f4cfc08a05d588190c4494f9101782f2fb8d7718/knowledge-work-plugins/bio-research/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f4cfc08a05d588190c4494f9101782f2fb8d7718/knowledge-work-plugins/bio-research/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7d0d9a1e9ced7b95d0a0f1041905960caf9b620f/knowledge-work-plugins/bio-research/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7d0d9a1e9ced7b95d0a0f1041905960caf9b620f/knowledge-work-plugins/bio-research/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/575c6e28edb7af8c65f07ef98e9ca9135b813732/knowledge-work-plugins/bio-research/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/575c6e28edb7af8c65f07ef98e9ca9135b813732/knowledge-work-plugins/bio-research/agents.prod.yaml"
   }
 }
