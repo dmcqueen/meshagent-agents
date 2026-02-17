@@ -11,10 +11,10 @@ An agent that uses Anthropic's enterprise search knowledge work plugin and power
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cdfa7caf8a3f3f1c248dc7dccd817ad21dd069c1/knowledge-work-plugins/enterprise-search/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/27e4c98a594d1cc09907ef4721e0122b366cd533/knowledge-work-plugins/enterprise-search/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f538b5ce0f412d5b789058f88abca8fef32c2635/knowledge-work-plugins/enterprise-search/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/77bb7be7cb6be1fadce8dd1722d9fb1ace13f7e0/knowledge-work-plugins/enterprise-search/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cdfa7caf8a3f3f1c248dc7dccd817ad21dd069c1/knowledge-work-plugins/enterprise-search/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/27e4c98a594d1cc09907ef4721e0122b366cd533/knowledge-work-plugins/enterprise-search/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f538b5ce0f412d5b789058f88abca8fef32c2635/knowledge-work-plugins/enterprise-search/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/77bb7be7cb6be1fadce8dd1722d9fb1ace13f7e0/knowledge-work-plugins/enterprise-search/agents.prod.yaml
