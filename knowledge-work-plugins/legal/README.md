@@ -6,14 +6,14 @@ An agent that uses Anthropic's legal knowledge work plugin
 
 ## Description
 
-This agent helps legal teams and individuals review contracts and other legal texts to surface key obligations, risks, and compliance issues, enabling faster risk triage and clearer negotiation priorities. It can draft and refine legal-facing language and templated responses so teams produce consistent, structured documents and communications. The agent also summarizes complex legal materials into practical guidance for stakeholders and prepares concise meeting briefs or vendor checks to inform decision-making. Workflows supported include contract review, NDA triage, legal-risk assessment, and creating canned responses for routine legal matters.
+This plugin supports legal workflows and is designed to help users complete practical work with less manual effort. It can review legal text and surface key obligations or risks, draft and refine legal-facing language with clear structure, and summarize complex legal material into practical guidance. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for legal decisions, analysis, and communication.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1eb28ca6430957c59ed8c4c4e940fdf0ea3967e6/knowledge-work-plugins/legal/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23f00fee3dc88e323846ed6b8f9c6135014361c9/knowledge-work-plugins/legal/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/83711d9778a39b68535762b8b303910cc3347c10/knowledge-work-plugins/legal/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e111441b541ad4189da686538303d330854f563f/knowledge-work-plugins/legal/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1eb28ca6430957c59ed8c4c4e940fdf0ea3967e6/knowledge-work-plugins/legal/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23f00fee3dc88e323846ed6b8f9c6135014361c9/knowledge-work-plugins/legal/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/83711d9778a39b68535762b8b303910cc3347c10/knowledge-work-plugins/legal/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e111441b541ad4189da686538303d330854f563f/knowledge-work-plugins/legal/agents.prod.yaml
