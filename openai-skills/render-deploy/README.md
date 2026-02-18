@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's render-deploy skill and powered by gpt-5.2
+An agent that uses OpenAI's render-deploy skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps teams and users translate render-deploy needs into concrete, ac
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9614af166ee2aed61a36f1707362ffd03c74ff70/openai-skills/render-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/656fb2760ddad8b38c790dba8dab719adb5d9aa6/openai-skills/render-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/122ad2fbe4488f32976e4046cff095d9a0470fc6/openai-skills/render-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/74433f5164f832820b21f2c39d19d88b78727918/openai-skills/render-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9614af166ee2aed61a36f1707362ffd03c74ff70/openai-skills/render-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/656fb2760ddad8b38c790dba8dab719adb5d9aa6/openai-skills/render-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/122ad2fbe4488f32976e4046cff095d9a0470fc6/openai-skills/render-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/74433f5164f832820b21f2c39d19d88b78727918/openai-skills/render-deploy/agents.prod.yaml
