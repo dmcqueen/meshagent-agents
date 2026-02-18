@@ -10,10 +10,10 @@ This agent helps research teams explore biomedical topics and convert complex sc
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ba27a8dbba17317d35e3dbcddc97d5cf797a7041/knowledge-work-plugins/bio-research/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9fa2d39ea07d636cde2f02493e31ab1161701824/knowledge-work-plugins/bio-research/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/455f0f7be7d3bfb0d98fff2cd2c15cdeb7159735/knowledge-work-plugins/bio-research/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/391627faccf5257843e42980190065514322e26e/knowledge-work-plugins/bio-research/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ba27a8dbba17317d35e3dbcddc97d5cf797a7041/knowledge-work-plugins/bio-research/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9fa2d39ea07d636cde2f02493e31ab1161701824/knowledge-work-plugins/bio-research/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/455f0f7be7d3bfb0d98fff2cd2c15cdeb7159735/knowledge-work-plugins/bio-research/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/391627faccf5257843e42980190065514322e26e/knowledge-work-plugins/bio-research/agents.prod.yaml
