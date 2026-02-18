@@ -6,14 +6,14 @@ An agent that uses OpenAI's gh-fix-ci skill and powered by gpt-5.2
 
 ## Description
 
-This plugin supports gh-fix-ci workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in gh-fix-ci work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for gh-fix-ci decisions, analysis, and communication.
+This agent helps teams diagnose and resolve continuous integration issues by interpreting CI failures, translating vague problem reports into concrete debugging steps, and suggesting actionable fixes that align with project goals and constraints. Users can ask targeted questions about CI problems and receive prioritized remediation plans, including tests to run, likely root causes, and recommended code or configuration changes to restore healthy builds. The agent adapts its guidance to the user’s context and objectives so teams can reduce build downtime and accelerate reliable deployments. It operates as a conversational assistant focused on practical, task-oriented outcomes for CI troubleshooting.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d588d16e383f0ae0b4dd0997afc7fe4d59475f23/openai-skills/gh-fix-ci/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a003b8f4c8da5ac6a39f7a5202599b16815cbd08/openai-skills/gh-fix-ci/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eb87575f8d39b63f48975b76df4639161cb0e1cc/openai-skills/gh-fix-ci/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/186f43dccb7b091b0d42f3ccb6777dd18f6d882c/openai-skills/gh-fix-ci/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d588d16e383f0ae0b4dd0997afc7fe4d59475f23/openai-skills/gh-fix-ci/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a003b8f4c8da5ac6a39f7a5202599b16815cbd08/openai-skills/gh-fix-ci/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eb87575f8d39b63f48975b76df4639161cb0e1cc/openai-skills/gh-fix-ci/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/186f43dccb7b091b0d42f3ccb6777dd18f6d882c/openai-skills/gh-fix-ci/agents.prod.yaml
