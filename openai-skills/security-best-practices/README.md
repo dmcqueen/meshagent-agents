@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's security-best-practices skill and powered by gpt-5.2
+An agent that uses OpenAI's security-best-practices skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps teams and users get clear, actionable guidance on security best
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/24182bc27538132a8bec2f2319f742961539c6b0/openai-skills/security-best-practices/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/858cca1712ea0b4c4df8a57fbd86fc6863651cae/openai-skills/security-best-practices/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fd1459ff23b584068be12e46aecafae46867bb28/openai-skills/security-best-practices/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cb17e2d738145decf25b73ede51340c6082a4acd/openai-skills/security-best-practices/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/24182bc27538132a8bec2f2319f742961539c6b0/openai-skills/security-best-practices/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/858cca1712ea0b4c4df8a57fbd86fc6863651cae/openai-skills/security-best-practices/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fd1459ff23b584068be12e46aecafae46867bb28/openai-skills/security-best-practices/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cb17e2d738145decf25b73ede51340c6082a4acd/openai-skills/security-best-practices/agents.prod.yaml
