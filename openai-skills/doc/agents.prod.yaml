@@ -62,17 +62,17 @@ container:
           Apache License
           Version 2.0, January 2004
           http://www.apache.org/licenses/
-          
+
           TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-          
+
           1. Definitions.
-          
+
              "License" shall mean the terms and conditions for use, reproduction,
              and distribution as defined by Sections 1 through 9 of this document.
-          
+
              "Licensor" shall mean the copyright owner or entity authorized by
              the copyright owner that is granting the License.
-          
+
              "Legal Entity" shall mean the union of the acting entity and all
              other entities that control, are controlled by, or are under common
              control with that entity. For the purposes of this definition,
@@ -80,24 +80,24 @@ container:
              direction or management of such entity, whether by contract or
              otherwise, or (ii) ownership of fifty percent (50%) or more of the
              outstanding shares, or (iii) beneficial ownership of such entity.
-          
+
              "You" (or "Your") shall mean an individual or Legal Entity
              exercising permissions granted by this License.
-          
+
              "Source" form shall mean the preferred form for making modifications,
              including but not limited to software source code, documentation
              source, and configuration files.
-          
+
              "Object" form shall mean any form resulting from mechanical
              transformation or translation of a Source form, including but
              not limited to compiled object code, generated documentation,
              and conversions to other media types.
-          
+
              "Work" shall mean the work of authorship, whether in Source or
              Object form, made available under the License, as indicated by a
              copyright notice that is included in or attached to the work
              (an example is provided in the Appendix below).
-          
+
              "Derivative Works" shall mean any work, whether in Source or Object
              form, that is based on (or derived from) the Work and for which the
              editorial revisions, annotations, elaborations, or other modifications
@@ -105,7 +105,7 @@ container:
              of this License, Derivative Works shall not include works that remain
              separable from, or merely link (or bind by name) to the interfaces of,
              the Work and Derivative Works thereof.
-          
+
              "Contribution" shall mean any work of authorship, including
              the original version of the Work and any modifications or additions
              to that Work or Derivative Works thereof, that is intentionally
@@ -119,18 +119,18 @@ container:
              Licensor for the purpose of discussing and improving the Work, but
              excluding communication that is conspicuously marked or otherwise
              designated in writing by the copyright owner as "Not a Contribution."
-          
+
              "Contributor" shall mean Licensor and any individual or Legal Entity
              on behalf of whom a Contribution has been received by Licensor and
              subsequently incorporated within the Work.
-          
+
           2. Grant of Copyright License. Subject to the terms and conditions of
              this License, each Contributor hereby grants to You a perpetual,
              worldwide, non-exclusive, no-charge, royalty-free, irrevocable
              copyright license to reproduce, prepare Derivative Works of,
              publicly display, publicly perform, sublicense, and distribute the
              Work and such Derivative Works in Source or Object form.
-          
+
           3. Grant of Patent License. Subject to the terms and conditions of
              this License, each Contributor hereby grants to You a perpetual,
              worldwide, non-exclusive, no-charge, royalty-free, irrevocable
@@ -146,24 +146,24 @@ container:
              or contributory patent infringement, then any patent licenses
              granted to You under this License for that Work shall terminate
              as of the date such litigation is filed.
-          
+
           4. Redistribution. You may reproduce and distribute copies of the
              Work or Derivative Works thereof in any medium, with or without
              modifications, and in Source or Object form, provided that You
              meet the following conditions:
-          
+
              (a) You must give any other recipients of the Work or
                  Derivative Works a copy of this License; and
-          
+
              (b) You must cause any modified files to carry prominent notices
                  stating that You changed the files; and
-          
+
              (c) You must retain, in the Source form of any Derivative Works
                  that You distribute, all copyright, patent, trademark, and
                  attribution notices from the Source form of the Work,
                  excluding those notices that do not pertain to any part of
                  the Derivative Works; and
-          
+
              (d) If the Work includes a "NOTICE" text file as part of its
                  distribution, then any Derivative Works that You distribute must
                  include a readable copy of the attribution notices contained
@@ -180,14 +180,14 @@ container:
                  or as an addendum to the NOTICE text from the Work, provided
                  that such additional attribution notices cannot be construed
                  as modifying the License.
-          
+
              You may add Your own copyright statement to Your modifications and
              may provide additional or different license terms and conditions
              for use, reproduction, or distribution of Your modifications, or
              for any such Derivative Works as a whole, provided Your use,
              reproduction, and distribution of the Work otherwise complies with
              the conditions stated in this License.
-          
+
           5. Submission of Contributions. Unless You explicitly state otherwise,
              any Contribution intentionally submitted for inclusion in the Work
              by You to the Licensor shall be under the terms and conditions of
@@ -195,12 +195,12 @@ container:
              Notwithstanding the above, nothing herein shall supersede or modify
              the terms of any separate license agreement you may have executed
              with Licensor regarding such Contributions.
-          
+
           6. Trademarks. This License does not grant permission to use the trade
              names, trademarks, service marks, or product names of the Licensor,
              except as required for reasonable and customary use in describing the
              origin of the Work and reproducing the content of the NOTICE file.
-          
+
           7. Disclaimer of Warranty. Unless required by applicable law or
              agreed to in writing, Licensor provides the Work (and each
              Contributor provides its Contributions) on an "AS IS" BASIS,
@@ -210,7 +210,7 @@ container:
              PARTICULAR PURPOSE. You are solely responsible for determining the
              appropriateness of using or redistributing the Work and assume any
              risks associated with Your exercise of permissions under this License.
-          
+
           8. Limitation of Liability. In no event and under no legal theory,
              whether in tort (including negligence), contract, or otherwise,
              unless required by applicable law (such as deliberate and grossly
@@ -222,7 +222,7 @@ container:
              work stoppage, computer failure or malfunction, or any and all
              other commercial damages or losses), even if such Contributor
              has been advised of the possibility of such damages.
-          
+
           9. Accepting Warranty or Additional Liability. While redistributing
              the Work or Derivative Works thereof, You may choose to offer,
              and charge a fee for, acceptance of support, warranty, indemnity,
@@ -233,11 +233,11 @@ container:
              defend, and hold each Contributor harmless for any liability
              incurred by, or claims asserted against, such Contributor by reason
              of your accepting any such warranty or additional liability.
-          
+
           END OF TERMS AND CONDITIONS
-          
+
           APPENDIX: How to apply the Apache License to your work.
-          
+
              To apply the Apache License to your work, attach the following
              boilerplate notice, with the fields enclosed by brackets "[]"
              replaced with your own identifying information. (Don\'t include
@@ -246,15 +246,15 @@ container:
              file or class name and description of purpose be included on the
              same "printed page" as the copyright notice for easier
              identification within third-party archives.
-          
+
           Copyright [yyyy] [name of copyright owner]
-          
+
           Licensed under the Apache License, Version 2.0 (the "License");
           you may not use this file except in compliance with the License.
           You may obtain a copy of the License at
-          
+
               http://www.apache.org/licenses/LICENSE-2.0
-          
+
           Unless required by applicable law or agreed to in writing, software
           distributed under the License is distributed on an "AS IS" BASIS,
           WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -266,15 +266,15 @@ container:
           name: "doc"
           description: "Use when the task involves reading, creating, or editing `.docx` documents, especially when formatting or layout fidelity matters; prefer `python-docx` plus the bundled `scripts/render_docx.py` for visual checks."
           ---
-          
-          
+
+
           # DOCX Skill
-          
+
           ## When to use
           - Read or review DOCX content where layout matters (tables, diagrams, pagination).
           - Create or edit DOCX files with professional formatting.
           - Validate visual layout before delivery.
-          
+
           ## Workflow
           1. Prefer visual review (layout, tables, diagrams).
              - If `soffice` and `pdftoppm` are available, convert DOCX -> PDF -> PNGs.
@@ -284,15 +284,15 @@ container:
           3. After each meaningful change, re-render and inspect the pages.
           4. If visual review is not possible, extract text with `python-docx` as a fallback and call out layout risk.
           5. Keep intermediate outputs organized and clean up after final approval.
-          
+
           ## Temp and output conventions
           - Use `tmp/docs/` for intermediate files; delete when done.
           - Write final artifacts under `output/doc/` when working in this repo.
           - Keep filenames stable and descriptive.
-          
+
           ## Dependencies (install if missing)
           Prefer `uv` for dependency management.
-          
+
           Python packages:
           ```
           uv pip install python-docx pdf2image
@@ -305,39 +305,39 @@ container:
           ```
           # macOS (Homebrew)
           brew install libreoffice poppler
-          
+
           # Ubuntu/Debian
           sudo apt-get install -y libreoffice poppler-utils
           ```
-          
+
           If installation isn't possible in this environment, tell the user which dependency is missing and how to install it locally.
-          
+
           ## Environment
           No required environment variables.
-          
+
           ## Rendering commands
           DOCX -> PDF:
           ```
           soffice -env:UserInstallation=file:///tmp/lo_profile_$$ --headless --convert-to pdf --outdir $OUTDIR $INPUT_DOCX
           ```
-          
+
           PDF -> PNGs:
           ```
           pdftoppm -png $OUTDIR/$BASENAME.pdf $OUTDIR/$BASENAME
           ```
-          
+
           Bundled helper:
           ```
           python3 scripts/render_docx.py /path/to/file.docx --output_dir /tmp/docx_pages
           ```
-          
+
           ## Quality expectations
           - Deliver a client-ready document: consistent typography, spacing, margins, and clear hierarchy.
           - Avoid formatting defects: clipped/overlapping text, broken tables, unreadable characters, or default-template styling.
           - Charts, tables, and visuals must be legible in rendered pages with correct alignment.
           - Use ASCII hyphens only. Avoid U+2011 (non-breaking hyphen) and other Unicode dashes.
           - Citations and references must be human-readable; never leave tool tokens or placeholder strings.
-          
+
           ## Final checks
           - Re-render and inspect every page at 100% zoom before final delivery.
           - Fix any spacing, alignment, or pagination issues and repeat the render loop.
@@ -393,12 +393,12 @@ container:
           import sys
           from typing import Sequence, cast
           from zipfile import ZipFile
-          
+
           from pdf2image import convert_from_path, pdfinfo_from_path
-          
+
           TWIPS_PER_INCH: int = 1440
-          
-          
+
+
           def ensure_system_tools() -> None:
               missing: list[str] = []
               for tool in ("soffice", "pdftoppm"):
@@ -409,11 +409,11 @@ container:
                   raise RuntimeError(
                       f"Missing required system tool(s): {tools}. Install LibreOffice and Poppler, then retry."
                   )
-          
-          
+
+
           def calc_dpi_via_ooxml_docx(input_path: str, max_w_px: int, max_h_px: int) -> int:
               """Calculate DPI from OOXML `word/document.xml` page size (w:pgSz in twips).
-          
+
               DOCX stores page dimensions in section properties as twips (1/1440 inch).
               We read the first encountered section's page size and compute an isotropic DPI
               that fits within the target max pixel dimensions.
@@ -422,7 +422,7 @@ container:
                   xml = zf.read("word/document.xml")
               root = ET.fromstring(xml)
               ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
-          
+
               # Common placements: w:body/w:sectPr or w:body/w:p/w:pPr/w:sectPr
               sect_pr = root.find(".//w:sectPr", ns)
               if sect_pr is None:
@@ -430,7 +430,7 @@ container:
               pg_sz = sect_pr.find("w:pgSz", ns)
               if pg_sz is None:
                   raise RuntimeError("Page size not found in section properties")
-          
+
               # Values are in twips
               w_twips_str = pg_sz.get(
                   "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}w"
@@ -438,17 +438,17 @@ container:
               h_twips_str = pg_sz.get(
                   "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}h"
               ) or pg_sz.get("h")
-          
+
               if not w_twips_str or not h_twips_str:
                   raise RuntimeError("Page size attributes missing in pgSz")
-          
+
               width_in = int(w_twips_str) / TWIPS_PER_INCH
               height_in = int(h_twips_str) / TWIPS_PER_INCH
               if width_in <= 0 or height_in <= 0:
                   raise RuntimeError("Invalid page size values in document.xml")
               return round(min(max_w_px / width_in, max_h_px / height_in))
-          
-          
+
+
           def calc_dpi_via_pdf(input_path: str, max_w_px: int, max_h_px: int) -> int:
               """Convert input to PDF and compute DPI from its page size."""
               with tempfile.TemporaryDirectory(prefix="soffice_profile_") as user_profile:
@@ -457,7 +457,7 @@ container:
                       pdf_path = convert_to_pdf(input_path, user_profile, convert_tmp_dir, stem)
                       if not (pdf_path and exists(pdf_path)):
                           raise RuntimeError("Failed to convert input to PDF for DPI computation.")
-          
+
                       info = pdfinfo_from_path(pdf_path)
                       size_val = info.get("Page size")
                       if not size_val:
@@ -467,7 +467,7 @@ container:
                                   break
                       if not isinstance(size_val, str):
                           raise RuntimeError("Failed to read PDF page size for DPI computation.")
-          
+
                       m = re.search(r"(\d+)\s*x\s*(\d+)\s*pts", size_val)
                       if not m:
                           raise RuntimeError("Unrecognized PDF page size format.")
@@ -478,8 +478,8 @@ container:
                       if width_in <= 0 or height_in <= 0:
                           raise RuntimeError("Invalid PDF page size values.")
                       return round(min(max_w_px / width_in, max_h_px / height_in))
-          
-          
+
+
           def run_cmd_no_check(cmd: list[str]) -> None:
               subprocess.run(
                   cmd,
@@ -488,8 +488,8 @@ container:
                   stderr=subprocess.DEVNULL,
                   env=os.environ.copy(),
               )
-          
-          
+
+
           def convert_to_pdf(
               doc_path: str,
               user_profile: str,
@@ -510,11 +510,11 @@ container:
                   doc_path,
               ]
               run_cmd_no_check(cmd_pdf)
-          
+
               pdf_path = join(convert_tmp_dir, f"{stem}.pdf")
               if exists(pdf_path):
                   return pdf_path
-          
+
               # Fallback: DOCX -> ODT, then ODT -> PDF
               cmd_odt = [
                   "soffice",
@@ -529,9 +529,9 @@ container:
                   doc_path,
               ]
               run_cmd_no_check(cmd_odt)
-          
+
               odt_path = join(convert_tmp_dir, f"{stem}.odt")
-          
+
               if exists(odt_path):
                   cmd_odt_pdf = [
                       "soffice",
@@ -548,23 +548,23 @@ container:
                   run_cmd_no_check(cmd_odt_pdf)
                   if exists(pdf_path):
                       return pdf_path
-          
+
               return ""
-          
-          
+
+
           def rasterize(
               doc_path: str,
               out_dir: str,
               dpi: int,
           ) -> Sequence[str]:
               """Rasterise DOCX (or similar) to images placed in out_dir and return their paths.
-          
+
               Images are named as page-<N>.<ext> with pages starting at 1.
               """
               makedirs(out_dir, exist_ok=True)
               doc_path = abspath(doc_path)
               stem = splitext(basename(doc_path))[0]
-          
+
               # Use a unique user profile to avoid LibreOffice profile lock when running concurrently
               with tempfile.TemporaryDirectory(prefix="soffice_profile_") as user_profile:
                   # Write conversion outputs into a temp directory to avoid any IO oddities
@@ -575,7 +575,7 @@ container:
                           convert_tmp_dir,
                           stem,
                       )
-          
+
                       if not pdf_path or not exists(pdf_path):
                           raise RuntimeError(
                               "Failed to produce PDF for rasterization (direct and ODT fallback)."
@@ -592,7 +592,7 @@ container:
                               output_file="page",
                           ),
                       )
-          
+
               # Rename convert_from_path's output format f'page{thread_id:04d}-{page_num:02d}.<ext>' to 'page-<num>.<ext>'
               pages: list[tuple[int, str]] = []
               for src_path in paths_raw:
@@ -605,8 +605,8 @@ container:
               pages.sort(key=lambda t: t[0])
               final_paths = [path for _, path in pages]
               return final_paths
-          
-          
+
+
           def main() -> None:
               parser = argparse.ArgumentParser(description="Render DOCX-like file to PNG images.")
               parser.add_argument(
@@ -648,15 +648,15 @@ container:
                   help=("Override computed DPI. If provided, skips DOCX/PDF-based DPI calculation."),
               )
               args = parser.parse_args()
-          
+
               try:
                   ensure_system_tools()
-          
+
                   input_path = abspath(expanduser(args.input_path))
                   out_dir = (
                       abspath(expanduser(args.output_dir)) if args.output_dir else splitext(input_path)[0]
                   )
-          
+
                   if args.dpi is not None:
                       dpi = int(args.dpi)
                   else:
@@ -667,14 +667,14 @@ container:
                               raise RuntimeError("Skip OOXML DPI; not a DOCX container")
                       except Exception:
                           dpi = calc_dpi_via_pdf(input_path, args.width, args.height)
-          
+
                   rasterize(input_path, out_dir, dpi)
                   print("Pages rendered to " + out_dir)
               except RuntimeError as exc:
                   print(f"Error: {exc}", file=sys.stderr)
                   raise SystemExit(1)
-          
-          
+
+
           if __name__ == "__main__":
               main()
   environment:
