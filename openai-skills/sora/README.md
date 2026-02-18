@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's sora skill and powered by gpt-5.2
+An agent that uses OpenAI's sora skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps users and teams interact with the Sora domain by answering doma
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ae52c0d6f903ea1bac84a206d1bcd9afe5f03ab0/openai-skills/sora/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e827443503737efb0210fc8ae0ac7727f9deed8f/openai-skills/sora/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05f4c9ec7ab9d0450aabdeeb98130ee56321470f/openai-skills/sora/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f47d7b6c3a2da82d6f27b736d14b545c8a5873c2/openai-skills/sora/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ae52c0d6f903ea1bac84a206d1bcd9afe5f03ab0/openai-skills/sora/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e827443503737efb0210fc8ae0ac7727f9deed8f/openai-skills/sora/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05f4c9ec7ab9d0450aabdeeb98130ee56321470f/openai-skills/sora/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f47d7b6c3a2da82d6f27b736d14b545c8a5873c2/openai-skills/sora/agents.prod.yaml
