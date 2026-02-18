@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's linear skill and powered by gpt-5.2
+An agent that uses OpenAI's linear skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent enables users and teams to interact with a specialized linear-focused
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/67af4308b8326421c5a1836d0a8e07ca721fd3b3/openai-skills/linear/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e4bb6d9dd784d4c48b3fe8f530b4d0cc62128cde/openai-skills/linear/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/97844c44ee29189ed410918331a1299ec5837950/openai-skills/linear/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/56f04ddf0b6e12807cf88314da0b4505c3bf56a8/openai-skills/linear/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/67af4308b8326421c5a1836d0a8e07ca721fd3b3/openai-skills/linear/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e4bb6d9dd784d4c48b3fe8f530b4d0cc62128cde/openai-skills/linear/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/97844c44ee29189ed410918331a1299ec5837950/openai-skills/linear/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/56f04ddf0b6e12807cf88314da0b4505c3bf56a8/openai-skills/linear/agents.prod.yaml
