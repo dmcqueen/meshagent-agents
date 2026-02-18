@@ -10,10 +10,10 @@ This plugin supports pdf workflows and is designed to help users complete practi
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/efd30b5167e1783f8312f9181a647e94a37b7832/openai-skills/pdf/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/371048c645eff23b166210a59e121f78cfc4f3ad/openai-skills/pdf/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/72a5b623f8d314199f4f393b40aa0d7afadbc454/openai-skills/pdf/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ee33c389e91aec15ee62b4272b3bd1795cc502e6/openai-skills/pdf/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/efd30b5167e1783f8312f9181a647e94a37b7832/openai-skills/pdf/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/371048c645eff23b166210a59e121f78cfc4f3ad/openai-skills/pdf/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/72a5b623f8d314199f4f393b40aa0d7afadbc454/openai-skills/pdf/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ee33c389e91aec15ee62b4272b3bd1795cc502e6/openai-skills/pdf/agents.prod.yaml
