@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-jupyter-notebook
-  description: An agent that uses OpenAI's jupyter-notebook skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's jupyter-notebook skill
   annotations:
     meshagent.service.id: meshagent.openai-jupyter-notebook
 
