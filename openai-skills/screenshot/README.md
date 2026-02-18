@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's screenshot skill and powered by gpt-5.2
+An agent that uses OpenAI's screenshot skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps users and teams capture, analyze, and act on screenshots by ans
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a7f8d688c7fd05a4b6c1f77fc71276a491fc513f/openai-skills/screenshot/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22550eac58c76ad8cb464b329483d8658da127fa/openai-skills/screenshot/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e06bae90a33b0c6ecb70d0f45a739f28665262cf/openai-skills/screenshot/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0effea3e5da100be6db55edbdc53f41974def929/openai-skills/screenshot/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a7f8d688c7fd05a4b6c1f77fc71276a491fc513f/openai-skills/screenshot/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22550eac58c76ad8cb464b329483d8658da127fa/openai-skills/screenshot/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e06bae90a33b0c6ecb70d0f45a739f28665262cf/openai-skills/screenshot/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0effea3e5da100be6db55edbdc53f41974def929/openai-skills/screenshot/agents.prod.yaml
