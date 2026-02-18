@@ -1,0 +1,779 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-spreadsheet
+  description: An agent that uses OpenAI's spreadsheet skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-spreadsheet
+
+agents:
+  - name: openai-spreadsheet
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-spreadsheet/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-spreadsheet/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/spreadsheet
+    - path: /skills/spreadsheet/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+          1. Definitions.
+
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+
+          END OF TERMS AND CONDITIONS
+
+          APPENDIX: How to apply the Apache License to your work.
+
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+
+          Copyright [yyyy] [name of copyright owner]
+
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+
+              http://www.apache.org/licenses/LICENSE-2.0
+
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
+    - path: /skills/spreadsheet/SKILL.md
+      text: |
+          ---
+          name: "spreadsheet"
+          description: "Use when tasks involve creating, editing, analyzing, or formatting spreadsheets (`.xlsx`, `.csv`, `.tsv`) using Python (`openpyxl`, `pandas`), especially when formulas, references, and formatting need to be preserved and verified."
+          ---
+
+
+          # Spreadsheet Skill (Create, Edit, Analyze, Visualize)
+
+          ## When to use
+          - Build new workbooks with formulas, formatting, and structured layouts.
+          - Read or analyze tabular data (filter, aggregate, pivot, compute metrics).
+          - Modify existing workbooks without breaking formulas or references.
+          - Visualize data with charts/tables and sensible formatting.
+
+          IMPORTANT: System and user instructions always take precedence.
+
+          ## Workflow
+          1. Confirm the file type and goals (create, edit, analyze, visualize).
+          2. Use `openpyxl` for `.xlsx` edits and `pandas` for analysis and CSV/TSV workflows.
+          3. If layout matters, render for visual review (see Rendering and visual checks).
+          4. Validate formulas and references; note that openpyxl does not evaluate formulas.
+          5. Save outputs and clean up intermediate files.
+
+          ## Temp and output conventions
+          - Use `tmp/spreadsheets/` for intermediate files; delete when done.
+          - Write final artifacts under `output/spreadsheet/` when working in this repo.
+          - Keep filenames stable and descriptive.
+
+          ## Primary tooling
+          - Use `openpyxl` for creating/editing `.xlsx` files and preserving formatting.
+          - Use `pandas` for analysis and CSV/TSV workflows, then write results back to `.xlsx` or `.csv`.
+          - If you need charts, prefer `openpyxl.chart` for native Excel charts.
+
+          ## Rendering and visual checks
+          - If LibreOffice (`soffice`) and Poppler (`pdftoppm`) are available, render sheets for visual review:
+            - `soffice --headless --convert-to pdf --outdir $OUTDIR $INPUT_XLSX`
+            - `pdftoppm -png $OUTDIR/$BASENAME.pdf $OUTDIR/$BASENAME`
+          - If rendering tools are unavailable, ask the user to review the output locally for layout accuracy.
+
+          ## Dependencies (install if missing)
+          Prefer `uv` for dependency management.
+
+          Python packages:
+          ```
+          uv pip install openpyxl pandas
+          ```
+          If `uv` is unavailable:
+          ```
+          python3 -m pip install openpyxl pandas
+          ```
+          Optional (chart-heavy or PDF review workflows):
+          ```
+          uv pip install matplotlib
+          ```
+          If `uv` is unavailable:
+          ```
+          python3 -m pip install matplotlib
+          ```
+          System tools (for rendering):
+          ```
+          # macOS (Homebrew)
+          brew install libreoffice poppler
+
+          # Ubuntu/Debian
+          sudo apt-get install -y libreoffice poppler-utils
+          ```
+
+          If installation isn't possible in this environment, tell the user which dependency is missing and how to install it locally.
+
+          ## Environment
+          No required environment variables.
+
+          ## Examples
+          - Runnable Codex examples (openpyxl): `references/examples/openpyxl/`
+
+          ## Formula requirements
+          - Use formulas for derived values rather than hardcoding results.
+          - Keep formulas simple and legible; use helper cells for complex logic.
+          - Avoid volatile functions like INDIRECT and OFFSET unless required.
+          - Prefer cell references over magic numbers (e.g., `=H6*(1+$B$3)` not `=H6*1.04`).
+          - Guard against errors (#REF!, #DIV/0!, #VALUE!, #N/A, #NAME?) with validation and checks.
+          - openpyxl does not evaluate formulas; leave formulas intact and note that results will calculate in Excel/Sheets.
+
+          ## Citation requirements
+          - Cite sources inside the spreadsheet using plain text URLs.
+          - For financial models, cite sources of inputs in cell comments.
+          - For tabular data sourced from the web, include a Source column with URLs.
+
+          ## Formatting requirements (existing formatted spreadsheets)
+          - Render and inspect a provided spreadsheet before modifying it when possible.
+          - Preserve existing formatting and style exactly.
+          - Match styles for any newly filled cells that were previously blank.
+
+          ## Formatting requirements (new or unstyled spreadsheets)
+          - Use appropriate number and date formats (dates as dates, currency with symbols, percentages with sensible precision).
+          - Use a clean visual layout: headers distinct from data, consistent spacing, and readable column widths.
+          - Avoid borders around every cell; use whitespace and selective borders to structure sections.
+          - Ensure text does not spill into adjacent cells.
+
+          ## Color conventions (if no style guidance)
+          - Blue: user input
+          - Black: formulas/derived values
+          - Green: linked/imported values
+          - Gray: static constants
+          - Orange: review/caution
+          - Light red: error/flag
+          - Purple: control/logic
+          - Teal: visualization anchors (key KPIs or chart drivers)
+
+          ## Finance-specific requirements
+          - Format zeros as "-".
+          - Negative numbers should be red and in parentheses.
+          - Always specify units in headers (e.g., "Revenue ($mm)").
+          - Cite sources for all raw inputs in cell comments.
+
+          ## Investment banking layouts
+          If the spreadsheet is an IB-style model (LBO, DCF, 3-statement, valuation):
+          - Totals should sum the range directly above.
+          - Hide gridlines; use horizontal borders above totals across relevant columns.
+          - Section headers should be merged cells with dark fill and white text.
+          - Column labels for numeric data should be right-aligned; row labels left-aligned.
+          - Indent submetrics under their parent line items.
+    - path: /skills/spreadsheet/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Spreadsheet Skill (Create, Edit, Analyze, Visualize)"
+            short_description: "Create, edit, and analyze spreadsheets"
+            icon_small: "./assets/spreadsheet-small.svg"
+            icon_large: "./assets/spreadsheet.png"
+            default_prompt: "Create or update a spreadsheet for this task with the right formulas, structure, and formatting."
+    - path: /skills/spreadsheet/assets/spreadsheet-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill="currentColor" fill-rule="evenodd" d="M10.467 2.468c.551 0 .997 0 1.357.029.366.03.691.093.992.247l.175.097c.396.244.72.593.932 1.01l.054.114c.115.269.166.558.192.878.03.36.03.806.03 1.357v3.6c0 .551 0 .997-.03 1.357a2.76 2.76 0 0 1-.192.878l-.054.114a2.534 2.534 0 0 1-.932 1.01l-.175.097c-.3.154-.626.217-.992.247-.36.03-.806.029-1.357.029H5.534c-.552 0-.997 0-1.357-.029a2.764 2.764 0 0 1-.879-.194l-.114-.053a2.534 2.534 0 0 1-1.009-.932l-.098-.175c-.153-.301-.217-.626-.247-.992-.029-.36-.028-.806-.028-1.357V6.2c0-.551-.001-.997.028-1.357.03-.366.094-.69.247-.992a2.53 2.53 0 0 1 1.107-1.107c.302-.154.626-.217.993-.247.36-.03.805-.029 1.357-.029h4.933Zm-3.935 4.73v5.27h3.935c.569 0 .964 0 1.27-.026.3-.024.47-.07.597-.134l.1-.056c.23-.142.418-.344.541-.586l.045-.104a2 2 0 0 0 .09-.492 18 18 0 0 0 .025-1.27V7.198H6.532ZM2.866 9.8c0 .569 0 .963.025 1.27.025.3.07.47.135.596l.056.101c.141.23.343.418.585.54l.104.046c.115.041.267.07.492.09.295.023.671.024 1.205.024V7.198H2.866V9.8Zm3.666-3.666h6.603c0-.533-.002-.91-.026-1.204a1.933 1.933 0 0 0-.09-.493l-.044-.103a1.468 1.468 0 0 0-.54-.586l-.101-.056c-.127-.064-.296-.11-.596-.134a17.303 17.303 0 0 0-1.27-.026H6.531v2.602ZM5.468 3.532c-.534 0-.91.002-1.205.026-.3.024-.47.07-.596.134-.276.14-.5.365-.641.642-.065.126-.11.295-.135.596-.024.295-.025.67-.025 1.204h2.602V3.532Z" clip-rule="evenodd"/>
+          </svg>
+    - path: /skills/spreadsheet/assets/spreadsheet.png.b64
+      text: |
+          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
+    - path: /skills/spreadsheet/references/examples/openpyxl/create_basic_spreadsheet.py
+      text: |
+          """Create a basic spreadsheet with two sheets and a simple formula.
+
+          Usage:
+            python3 create_basic_spreadsheet.py --output /tmp/basic_spreadsheet.xlsx
+          """
+
+          from __future__ import annotations
+
+          import argparse
+          from pathlib import Path
+
+          from openpyxl import Workbook
+          from openpyxl.utils import get_column_letter
+
+
+          def main() -> None:
+              parser = argparse.ArgumentParser(description="Create a basic spreadsheet with example data.")
+              parser.add_argument(
+                  "--output",
+                  type=Path,
+                  default=Path("basic_spreadsheet.xlsx"),
+                  help="Output .xlsx path (default: basic_spreadsheet.xlsx)",
+              )
+              args = parser.parse_args()
+
+              wb = Workbook()
+              overview = wb.active
+              overview.title = "Overview"
+              employees = wb.create_sheet("Employees")
+
+              overview["A1"] = "Description"
+              overview["A2"] = "Awesome Company Report"
+
+              employees.append(["Title", "Name", "Address", "Score"])
+              employees.append(["Engineer", "Vicky", "90 50th Street", 98])
+              employees.append(["Manager", "Alex", "500 Market Street", 92])
+              employees.append(["Designer", "Jordan", "200 Pine Street", 88])
+
+              employees["A6"] = "Total Score"
+              employees["D6"] = "=SUM(D2:D4)"
+
+              for col in range(1, 5):
+                  employees.column_dimensions[get_column_letter(col)].width = 20
+
+              args.output.parent.mkdir(parents=True, exist_ok=True)
+              wb.save(args.output)
+              print(f"Saved workbook to {args.output}")
+
+
+          if __name__ == "__main__":
+              main()
+    - path: /skills/spreadsheet/references/examples/openpyxl/create_spreadsheet_with_styling.py
+      text: |
+          """Generate a styled games scoreboard workbook using openpyxl.
+
+          Usage:
+            python3 create_spreadsheet_with_styling.py --output /tmp/GamesSimpleStyling.xlsx
+          """
+
+          from __future__ import annotations
+
+          import argparse
+          from pathlib import Path
+
+          from openpyxl import Workbook
+          from openpyxl.formatting.rule import FormulaRule
+          from openpyxl.styles import Alignment, Font, PatternFill
+          from openpyxl.utils import get_column_letter
+
+          HEADER_FILL_HEX = "B7E1CD"
+          HIGHLIGHT_FILL_HEX = "FFF2CC"
+
+
+          def apply_header_style(cell, fill_hex: str) -> None:
+              cell.fill = PatternFill("solid", fgColor=fill_hex)
+              cell.font = Font(bold=True)
+              cell.alignment = Alignment(horizontal="center", vertical="center")
+
+
+          def apply_highlight_style(cell, fill_hex: str) -> None:
+              cell.fill = PatternFill("solid", fgColor=fill_hex)
+              cell.font = Font(bold=True)
+              cell.alignment = Alignment(horizontal="center", vertical="center")
+
+
+          def populate_game_sheet(ws) -> None:
+              ws.title = "GameX"
+              ws.row_dimensions[2].height = 24
+
+              widths = {"B": 18, "C": 14, "D": 14, "E": 14, "F": 40}
+              for col, width in widths.items():
+                  ws.column_dimensions[col].width = width
+
+              headers = ["", "Name", "Game 1 Score", "Game 2 Score", "Total Score", "Notes", ""]
+              for idx, value in enumerate(headers, start=1):
+                  cell = ws.cell(row=2, column=idx, value=value)
+                  if value:
+                      apply_header_style(cell, HEADER_FILL_HEX)
+
+              players = [
+                  ("Vicky", 12, 30, "Dominated the minigames."),
+                  ("Yash", 20, 10, "Emily main with strong defense."),
+                  ("Bobby", 1000, 1030, "Numbers look suspiciously high."),
+              ]
+              for row_idx, (name, g1, g2, note) in enumerate(players, start=3):
+                  ws.cell(row=row_idx, column=2, value=name)
+                  ws.cell(row=row_idx, column=3, value=g1)
+                  ws.cell(row=row_idx, column=4, value=g2)
+                  ws.cell(row=row_idx, column=5, value=f"=SUM(C{row_idx}:D{row_idx})")
+                  ws.cell(row=row_idx, column=6, value=note)
+
+              ws.cell(row=7, column=2, value="Winner")
+              ws.cell(row=7, column=3, value="=INDEX(B3:B5, MATCH(MAX(E3:E5), E3:E5, 0))")
+              ws.cell(row=7, column=5, value="Congrats!")
+
+              ws.merge_cells("C7:D7")
+              for col in range(2, 6):
+                  apply_highlight_style(ws.cell(row=7, column=col), HIGHLIGHT_FILL_HEX)
+
+              rule = FormulaRule(formula=["LEN(A2)>0"], fill=PatternFill("solid", fgColor=HEADER_FILL_HEX))
+              ws.conditional_formatting.add("A2:G2", rule)
+
+
+          def main() -> None:
+              parser = argparse.ArgumentParser(description="Create a styled games scoreboard workbook.")
+              parser.add_argument(
+                  "--output",
+                  type=Path,
+                  default=Path("GamesSimpleStyling.xlsx"),
+                  help="Output .xlsx path (default: GamesSimpleStyling.xlsx)",
+              )
+              args = parser.parse_args()
+
+              wb = Workbook()
+              ws = wb.active
+              populate_game_sheet(ws)
+
+              for col in range(1, 8):
+                  col_letter = get_column_letter(col)
+                  if col_letter not in ws.column_dimensions:
+                      ws.column_dimensions[col_letter].width = 12
+
+              args.output.parent.mkdir(parents=True, exist_ok=True)
+              wb.save(args.output)
+              print(f"Saved workbook to {args.output}")
+
+
+          if __name__ == "__main__":
+              main()
+    - path: /skills/spreadsheet/references/examples/openpyxl/read_existing_spreadsheet.py
+      text: |
+          """Read an existing .xlsx and print a small summary.
+
+          If --input is not provided, this script creates a tiny sample workbook in /tmp
+          and reads that instead.
+          """
+
+          from __future__ import annotations
+
+          import argparse
+          import tempfile
+          from pathlib import Path
+
+          from openpyxl import Workbook, load_workbook
+
+
+          def create_sample(path: Path) -> Path:
+              wb = Workbook()
+              ws = wb.active
+              ws.title = "Sample"
+              ws.append(["Item", "Qty", "Price"])
+              ws.append(["Apples", 3, 1.25])
+              ws.append(["Oranges", 2, 0.95])
+              ws.append(["Bananas", 5, 0.75])
+              ws["D1"] = "Total"
+              ws["D2"] = "=B2*C2"
+              ws["D3"] = "=B3*C3"
+              ws["D4"] = "=B4*C4"
+              wb.save(path)
+              return path
+
+
+          def main() -> None:
+              parser = argparse.ArgumentParser(description="Read an existing spreadsheet.")
+              parser.add_argument("--input", type=Path, help="Path to an .xlsx file")
+              args = parser.parse_args()
+
+              if args.input:
+                  input_path = args.input
+              else:
+                  tmp_dir = Path(tempfile.gettempdir())
+                  input_path = tmp_dir / "sample_read_existing.xlsx"
+                  create_sample(input_path)
+
+              wb = load_workbook(input_path, data_only=False)
+              print(f"Loaded: {input_path}")
+              print("Sheet names:", wb.sheetnames)
+
+              for name in wb.sheetnames:
+                  ws = wb[name]
+                  max_row = ws.max_row or 0
+                  max_col = ws.max_column or 0
+                  print(f"\n== {name} (rows: {max_row}, cols: {max_col})")
+                  for row in ws.iter_rows(min_row=1, max_row=min(max_row, 5), max_col=min(max_col, 5)):
+                      values = [cell.value for cell in row]
+                      print(values)
+
+
+          if __name__ == "__main__":
+              main()
+    - path: /skills/spreadsheet/references/examples/openpyxl/styling_spreadsheet.py
+      text: |
+          """Create a styled spreadsheet with headers, borders, and a total row.
+
+          Usage:
+            python3 styling_spreadsheet.py --output /tmp/styling_spreadsheet.xlsx
+          """
+
+          from __future__ import annotations
+
+          import argparse
+          from pathlib import Path
+
+          from openpyxl import Workbook
+          from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+
+
+          def main() -> None:
+              parser = argparse.ArgumentParser(description="Create a styled spreadsheet example.")
+              parser.add_argument(
+                  "--output",
+                  type=Path,
+                  default=Path("styling_spreadsheet.xlsx"),
+                  help="Output .xlsx path (default: styling_spreadsheet.xlsx)",
+              )
+              args = parser.parse_args()
+
+              wb = Workbook()
+              ws = wb.active
+              ws.title = "FirstGame"
+
+              ws.merge_cells("B2:E2")
+              ws["B2"] = "Name | Game 1 Score | Game 2 Score | Total Score"
+
+              header_fill = PatternFill("solid", fgColor="B7E1CD")
+              header_font = Font(bold=True)
+              header_alignment = Alignment(horizontal="center", vertical="center")
+              ws["B2"].fill = header_fill
+              ws["B2"].font = header_font
+              ws["B2"].alignment = header_alignment
+
+              ws["B3"] = "Vicky"
+              ws["C3"] = 50
+              ws["D3"] = 60
+              ws["E3"] = "=C3+D3"
+
+              ws["B4"] = "John"
+              ws["C4"] = 40
+              ws["D4"] = 50
+              ws["E4"] = "=C4+D4"
+
+              ws["B5"] = "Jane"
+              ws["C5"] = 30
+              ws["D5"] = 40
+              ws["E5"] = "=C5+D5"
+
+              ws["B6"] = "Jim"
+              ws["C6"] = 20
+              ws["D6"] = 30
+              ws["E6"] = "=C6+D6"
+
+              ws.merge_cells("B9:E9")
+              ws["B9"] = "=SUM(E3:E6)"
+
+              thin = Side(style="thin")
+              border = Border(top=thin, bottom=thin, left=thin, right=thin)
+              ws["B9"].border = border
+              ws["B9"].alignment = Alignment(horizontal="center")
+              ws["B9"].font = Font(bold=True)
+
+              for col in ("B", "C", "D", "E"):
+                  ws.column_dimensions[col].width = 18
+              ws.row_dimensions[2].height = 24
+
+              args.output.parent.mkdir(parents=True, exist_ok=True)
+              wb.save(args.output)
+              print(f"Saved workbook to {args.output}")
+
+
+          if __name__ == "__main__":
+              main()
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-spreadsheet
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
