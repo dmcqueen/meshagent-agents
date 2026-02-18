@@ -10,10 +10,10 @@ This agent enables users and teams to interact with a specialized linear-focused
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/936140043aecd16c7d9210e5d896b3ddaf6fd564/openai-skills/linear/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/96f7c1579d9bb4dd8ef7590bba7b4ebfb392f611/openai-skills/linear/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f1ad2d64b2fe7d279be67c1a5af68546393c4bf2/openai-skills/linear/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a4e9787957caf69ebc227d7887f29cab6450191/openai-skills/linear/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/936140043aecd16c7d9210e5d896b3ddaf6fd564/openai-skills/linear/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/96f7c1579d9bb4dd8ef7590bba7b4ebfb392f611/openai-skills/linear/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f1ad2d64b2fe7d279be67c1a5af68546393c4bf2/openai-skills/linear/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a4e9787957caf69ebc227d7887f29cab6450191/openai-skills/linear/agents.prod.yaml
