@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's notion-research-documentation skill and powered by gpt-5.2
+An agent that uses OpenAI's notion-research-documentation skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps users interact with and produce research-focused documentation 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/94b56b15d298b9d80232eaadebd32050581f5d02/openai-skills/notion-research-documentation/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1c7b3ef07ee7b81c4027717401193529c95c38e1/openai-skills/notion-research-documentation/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/44e59b537dd67666e372cdda631577d7511f2730/openai-skills/notion-research-documentation/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/731beb2de3263fc5527879141d4b2f5116f19ec7/openai-skills/notion-research-documentation/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/94b56b15d298b9d80232eaadebd32050581f5d02/openai-skills/notion-research-documentation/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1c7b3ef07ee7b81c4027717401193529c95c38e1/openai-skills/notion-research-documentation/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/44e59b537dd67666e372cdda631577d7511f2730/openai-skills/notion-research-documentation/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/731beb2de3263fc5527879141d4b2f5116f19ec7/openai-skills/notion-research-documentation/agents.prod.yaml
