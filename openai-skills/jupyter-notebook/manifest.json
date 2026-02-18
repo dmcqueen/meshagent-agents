@@ -2,13 +2,13 @@
   "id": "openai-jupyter-notebook",
   "name": "OpenAI Jupyter Notebook",
   "description": "An agent that uses OpenAI's jupyter-notebook skill and powered by gpt-5.2",
-  "long_description": "This plugin supports jupyter-notebook workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in jupyter-notebook work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for jupyter-notebook decisions, analysis, and communication.",
+  "long_description": "This agent helps users and teams work effectively with Jupyter Notebook tasks by answering domain-specific questions, turning ambiguous requests into concrete, actionable steps, and adapting guidance to users\u2019 goals and constraints. It is useful for clarifying notebook workflows, producing step-by-step instructions for analyses or notebook setups, and helping translate high-level objectives into reproducible notebook actions. Teams can use it to accelerate collaboration by getting clear, context-aware recommendations and troubleshooting advice tailored to their work in Jupyter Notebooks. The agent operates interactively with a model runtime to generate these practical outcomes.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b14248f95e04cd0fa1af10e47378e9eae65afec/openai-skills/jupyter-notebook/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b14248f95e04cd0fa1af10e47378e9eae65afec/openai-skills/jupyter-notebook/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ffaf1e40f09841821e61c2cb7ff4203fc0ff1bd2/openai-skills/jupyter-notebook/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ffaf1e40f09841821e61c2cb7ff4203fc0ff1bd2/openai-skills/jupyter-notebook/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/de356d159cebf4947fcd03ef4dc573e5714e1a32/openai-skills/jupyter-notebook/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/de356d159cebf4947fcd03ef4dc573e5714e1a32/openai-skills/jupyter-notebook/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/75092e3e0b1e2f11dc48ad472efd0e049bac6ad2/openai-skills/jupyter-notebook/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/75092e3e0b1e2f11dc48ad472efd0e049bac6ad2/openai-skills/jupyter-notebook/agents.prod.yaml"
   }
 }
