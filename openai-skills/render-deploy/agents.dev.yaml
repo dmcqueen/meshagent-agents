@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-render-deploy
-  description: An agent that uses OpenAI's render-deploy skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's render-deploy skill
   annotations:
     meshagent.service.id: meshagent.openai-render-deploy
 
