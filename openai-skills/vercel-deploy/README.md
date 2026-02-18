@@ -10,10 +10,10 @@ This plugin supports vercel-deploy workflows and is designed to help users compl
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c53cff4d339e33d0b60f09d27e84b0f9c36669d/openai-skills/vercel-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61e067751adbbaa91b2f2c13a02a1b6da3f7ec35/openai-skills/vercel-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/83d75bb898499df42cc85c4aa575273de3e57075/openai-skills/vercel-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86499f2b68cc1f555c666b5bbb2a8c6d64dc6a12/openai-skills/vercel-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c53cff4d339e33d0b60f09d27e84b0f9c36669d/openai-skills/vercel-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61e067751adbbaa91b2f2c13a02a1b6da3f7ec35/openai-skills/vercel-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/83d75bb898499df42cc85c4aa575273de3e57075/openai-skills/vercel-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86499f2b68cc1f555c666b5bbb2a8c6d64dc6a12/openai-skills/vercel-deploy/agents.prod.yaml
