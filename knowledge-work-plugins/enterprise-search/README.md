@@ -10,10 +10,10 @@ This agent enables teams to locate and synthesize relevant internal information 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7e8dce816748a01d3ec257b3df8f7286eeb838c6/knowledge-work-plugins/enterprise-search/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d696d3dbe792c17503be77cddab6b69824367b41/knowledge-work-plugins/enterprise-search/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7d2b4f09ac1054c45f8dd267b65806ce1e2a6b86/knowledge-work-plugins/enterprise-search/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5855b79170bbb1caad7c851fb85eea974c377269/knowledge-work-plugins/enterprise-search/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7e8dce816748a01d3ec257b3df8f7286eeb838c6/knowledge-work-plugins/enterprise-search/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d696d3dbe792c17503be77cddab6b69824367b41/knowledge-work-plugins/enterprise-search/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7d2b4f09ac1054c45f8dd267b65806ce1e2a6b86/knowledge-work-plugins/enterprise-search/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5855b79170bbb1caad7c851fb85eea974c377269/knowledge-work-plugins/enterprise-search/agents.prod.yaml
