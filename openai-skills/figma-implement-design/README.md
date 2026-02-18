@@ -10,10 +10,10 @@ This agent helps teams translate design intentions into practical Figma implemen
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03ca36ec3f8982ea770a27d4de1d7edafefcff38/openai-skills/figma-implement-design/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/732653c7f06ddd47b8686c5ef369053a69c58a53/openai-skills/figma-implement-design/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22a9af23d028b557228ff93e0f74f95c05a22faf/openai-skills/figma-implement-design/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5d3cb0b58211364ba741145e37983a592d0e6fac/openai-skills/figma-implement-design/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03ca36ec3f8982ea770a27d4de1d7edafefcff38/openai-skills/figma-implement-design/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/732653c7f06ddd47b8686c5ef369053a69c58a53/openai-skills/figma-implement-design/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22a9af23d028b557228ff93e0f74f95c05a22faf/openai-skills/figma-implement-design/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5d3cb0b58211364ba741145e37983a592d0e6fac/openai-skills/figma-implement-design/agents.prod.yaml
