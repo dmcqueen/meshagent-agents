@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's pdf skill and powered by gpt-5.2",
   "long_description": "This agent enables users and teams to interact with PDF content by answering domain-specific questions, converting unclear requests into concrete, actionable tasks, and tailoring guidance to the user\u2019s goals and constraints. It supports extracting and reasoning over information in PDFs so teams can rapidly find, summarize, and act on relevant document content. The agent is designed for workflows that require clear, context-aware responses and practical next steps derived from PDF materials. It helps reduce time spent manually searching and interpreting documents by producing concise, task-oriented outputs.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/16aecdae9424af685faef1cbdfdeb95a2471d437/openai-skills/pdf/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/16aecdae9424af685faef1cbdfdeb95a2471d437/openai-skills/pdf/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ae2af7aa5d48942867892a107b312b88d92206a1/openai-skills/pdf/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ae2af7aa5d48942867892a107b312b88d92206a1/openai-skills/pdf/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66c46338ec34b83a8b0436b3c7b2cb738b74a4c9/openai-skills/pdf/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66c46338ec34b83a8b0436b3c7b2cb738b74a4c9/openai-skills/pdf/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/13fca06b59f97237929020c778a351529c21a072/openai-skills/pdf/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/13fca06b59f97237929020c778a351529c21a072/openai-skills/pdf/agents.prod.yaml"
   }
 }
