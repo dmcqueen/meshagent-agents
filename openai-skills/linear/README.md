@@ -10,10 +10,10 @@ This plugin supports linear workflows and is designed to help users complete pra
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6c174cd74bf5fe753482d32424897ea01da85005/openai-skills/linear/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/83e92727016ed6750ba381a7e5d991c774c2f0f0/openai-skills/linear/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/96f668e33f510aead90934eb19968fcbf35d73b4/openai-skills/linear/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/15bffdb54772ffc812c1f6c415268af0703846d5/openai-skills/linear/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6c174cd74bf5fe753482d32424897ea01da85005/openai-skills/linear/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/83e92727016ed6750ba381a7e5d991c774c2f0f0/openai-skills/linear/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/96f668e33f510aead90934eb19968fcbf35d73b4/openai-skills/linear/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/15bffdb54772ffc812c1f6c415268af0703846d5/openai-skills/linear/agents.prod.yaml
