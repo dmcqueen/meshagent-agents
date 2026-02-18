@@ -1,14 +1,14 @@
 {
   "id": "openai-cloudflare-deploy",
   "name": "OpenAI Cloudflare Deploy",
-  "description": "An agent that uses OpenAI's cloudflare-deploy skill and powered by gpt-5.2",
+  "description": "An agent that uses OpenAI's cloudflare-deploy skill",
   "long_description": "This agent helps teams deploy and manage Cloudflare-related projects by turning ambiguous requests into clear, actionable deployment steps and targeted guidance tailored to user goals and constraints. Users can ask domain-specific questions about Cloudflare deployments and receive practical recommendations, checklists, and task sequences to move from planning to execution. It is designed to adapt advice based on context so teams can produce reliable deployment plans, troubleshoot common issues, and coordinate work across roles. The agent runs with a model runtime to generate responses and focuses on producing usable outcomes rather than low-level implementation details.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f4e79e0b8e0e3c27d6babed942437163d41f548a/openai-skills/cloudflare-deploy/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f4e79e0b8e0e3c27d6babed942437163d41f548a/openai-skills/cloudflare-deploy/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d19d47fee47e752b15879c91b195b2e27ad3eef0/openai-skills/cloudflare-deploy/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d19d47fee47e752b15879c91b195b2e27ad3eef0/openai-skills/cloudflare-deploy/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a17e4ce250681b707b8f25d199a182235523965/openai-skills/cloudflare-deploy/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a17e4ce250681b707b8f25d199a182235523965/openai-skills/cloudflare-deploy/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9c8686308f2a65a909cba5aa8b14a8c6c17f5eb9/openai-skills/cloudflare-deploy/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9c8686308f2a65a909cba5aa8b14a8c6c17f5eb9/openai-skills/cloudflare-deploy/agents.prod.yaml"
   }
 }
