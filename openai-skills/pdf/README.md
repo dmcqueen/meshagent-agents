@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's pdf skill and powered by gpt-5.2
+An agent that uses OpenAI's pdf skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent enables users and teams to interact with PDF content by answering dom
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e7f789b3b157850ffefd74751b2c777984f1b9c8/openai-skills/pdf/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e823b98abd44a2b862c4b9a3970faa2e6f1f30a6/openai-skills/pdf/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/683f328b3aed02db8b40909f391be213c69b15d4/openai-skills/pdf/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d6338c88f1e6c108576f1c23fec14cafd12863c8/openai-skills/pdf/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e7f789b3b157850ffefd74751b2c777984f1b9c8/openai-skills/pdf/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e823b98abd44a2b862c4b9a3970faa2e6f1f30a6/openai-skills/pdf/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/683f328b3aed02db8b40909f391be213c69b15d4/openai-skills/pdf/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d6338c88f1e6c108576f1c23fec14cafd12863c8/openai-skills/pdf/agents.prod.yaml
