@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-screenshot
-  description: An agent that uses OpenAI's screenshot skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's screenshot skill
   annotations:
     meshagent.service.id: meshagent.openai-screenshot
 
