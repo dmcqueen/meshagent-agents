@@ -10,10 +10,10 @@ This plugin supports figma-implement-design workflows and is designed to help us
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0a34a21153f640898e528f03f808998179819b47/openai-skills/figma-implement-design/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5a45a33b904d4dc30b9a6dcf7052964dd20ea9ab/openai-skills/figma-implement-design/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/59e599c3fbd78ccaf8a94518c46aa1a8dd62befa/openai-skills/figma-implement-design/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d1ad346fbcdd3521581b7f4cf1476c9a2d83b7ac/openai-skills/figma-implement-design/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0a34a21153f640898e528f03f808998179819b47/openai-skills/figma-implement-design/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5a45a33b904d4dc30b9a6dcf7052964dd20ea9ab/openai-skills/figma-implement-design/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/59e599c3fbd78ccaf8a94518c46aa1a8dd62befa/openai-skills/figma-implement-design/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d1ad346fbcdd3521581b7f4cf1476c9a2d83b7ac/openai-skills/figma-implement-design/agents.prod.yaml
