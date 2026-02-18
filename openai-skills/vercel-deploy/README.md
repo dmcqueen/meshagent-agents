@@ -10,10 +10,10 @@ This agent helps teams deploy and manage projects on Vercel by turning high-leve
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c9109ce988236f6fcd5c06a0a46e5db09b7db72f/openai-skills/vercel-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ca9a8e07dcc01727a2b14d81941b02b0da440e26/openai-skills/vercel-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ec1b89166648753260b784dcee8751d3236d28ee/openai-skills/vercel-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/10fcf5e4159c047b38b6ce4fdf9dc9698b80bf6f/openai-skills/vercel-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c9109ce988236f6fcd5c06a0a46e5db09b7db72f/openai-skills/vercel-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ca9a8e07dcc01727a2b14d81941b02b0da440e26/openai-skills/vercel-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ec1b89166648753260b784dcee8751d3236d28ee/openai-skills/vercel-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/10fcf5e4159c047b38b6ce4fdf9dc9698b80bf6f/openai-skills/vercel-deploy/agents.prod.yaml
