@@ -10,10 +10,10 @@ This agent helps users and teams get clear, actionable guidance and answers for 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66f4ccf30368c34108543366b929e028136878ff/openai-skills/yeet/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4863dd31718abc4ad7657645d05280a9f1e34f5a/openai-skills/yeet/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ba610c6a74837c23e9a9d1b13ff13ab4e7845b9/openai-skills/yeet/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd61810b40aeef7279a74041642b7c5446209d08/openai-skills/yeet/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66f4ccf30368c34108543366b929e028136878ff/openai-skills/yeet/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4863dd31718abc4ad7657645d05280a9f1e34f5a/openai-skills/yeet/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ba610c6a74837c23e9a9d1b13ff13ab4e7845b9/openai-skills/yeet/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd61810b40aeef7279a74041642b7c5446209d08/openai-skills/yeet/agents.prod.yaml
