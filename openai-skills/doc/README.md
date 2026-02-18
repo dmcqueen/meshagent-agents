@@ -10,10 +10,10 @@ This plugin supports doc workflows and is designed to help users complete practi
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b2ce7feb148bdfcb68e73e612aeda76315bf7d9a/openai-skills/doc/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f19733b585d05a02768b7a381eb9b8e9448bf040/openai-skills/doc/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d0b6964d4b76d44bfc6535dccf2a8844f875cc8/openai-skills/doc/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8062e755de9a6196ff705ac2add700500037a96a/openai-skills/doc/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b2ce7feb148bdfcb68e73e612aeda76315bf7d9a/openai-skills/doc/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f19733b585d05a02768b7a381eb9b8e9448bf040/openai-skills/doc/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d0b6964d4b76d44bfc6535dccf2a8844f875cc8/openai-skills/doc/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8062e755de9a6196ff705ac2add700500037a96a/openai-skills/doc/agents.prod.yaml
