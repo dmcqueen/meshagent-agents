@@ -1,0 +1,871 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-develop-web-game
+  description: An agent that uses OpenAI's develop-web-game skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-develop-web-game
+
+agents:
+  - name: openai-develop-web-game
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-develop-web-game/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-develop-web-game/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/develop-web-game
+    - path: /skills/develop-web-game/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+          
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+          
+          1. Definitions.
+          
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+          
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+          
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+          
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+          
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+          
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+          
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+          
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+          
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+          
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+          
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+          
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+          
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+          
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+          
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+          
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+          
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+          
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+          
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+          
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+          
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+          
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+          
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+          
+          END OF TERMS AND CONDITIONS
+          
+          APPENDIX: How to apply the Apache License to your work.
+          
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+          
+          Copyright [yyyy] [name of copyright owner]
+          
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+          
+              http://www.apache.org/licenses/LICENSE-2.0
+          
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
+    - path: /skills/develop-web-game/SKILL.md
+      text: |
+          ---
+          name: "develop-web-game"
+          description: "Use when Codex is building or iterating on a web game (HTML/JS) and needs a reliable development + testing loop: implement small changes, run a Playwright-based test script with short input bursts and intentional pauses, inspect screenshots/text, and review console errors with render_game_to_text."
+          ---
+          
+          
+          # Develop Web Game
+          
+          Build games in small steps and validate every change. Treat each iteration as: implement → act → pause → observe → adjust.
+          
+          ## Skill paths (set once)
+          
+          ```bash
+          export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+          export WEB_GAME_CLIENT="$CODEX_HOME/skills/develop-web-game/scripts/web_game_playwright_client.js"
+          export WEB_GAME_ACTIONS="$CODEX_HOME/skills/develop-web-game/references/action_payloads.json"
+          ```
+          
+          User-scoped skills install under `$CODEX_HOME/skills` (default: `~/.codex/skills`).
+          
+          ## Workflow
+          
+          1. **Pick a goal.** Define a single feature or behavior to implement.
+          2. **Implement small.** Make the smallest change that moves the game forward.
+          3. **Ensure integration points.** Provide a single canvas and `window.render_game_to_text` so the test loop can read state.
+          4. **Add `window.advanceTime(ms)`.** Strongly prefer a deterministic step hook so the Playwright script can advance frames reliably; without it, automated tests can be flaky.
+          5. **Initialize progress.md.** If `progress.md` exists, read it first and confirm the original user prompt is recorded at the top (prefix with `Original prompt:`). Also note any TODOs and suggestions left by the previous agent. If missing, create it and write `Original prompt: <prompt>` at the top before appending updates.
+          6. **Verify Playwright availability.** Ensure `playwright` is available (local dependency or global install). If unsure, check `npx` first.
+          7. **Run the Playwright test script.** You must run `$WEB_GAME_CLIENT` after each meaningful change; do not invent a new client unless required.
+          8. **Use the payload reference.** Base actions on `$WEB_GAME_ACTIONS` to avoid guessing keys.
+          9. **Inspect state.** Capture screenshots and text state after each burst.
+          10. **Inspect screenshots.** Open the latest screenshot, verify expected visuals, fix any issues, and rerun the script. Repeat until correct.
+          11. **Verify controls and state (multi-step focus).** Exhaustively exercise all important interactions. For each, think through the full multi-step sequence it implies (cause → intermediate states → outcome) and verify the entire chain works end-to-end. Confirm `render_game_to_text` reflects the same state shown on screen. If anything is off, fix and rerun.
+              Examples of important interactions: move, jump, shoot/attack, interact/use, select/confirm/cancel in menus, pause/resume, restart, and any special abilities or puzzle actions defined by the request. Multi-step examples: shooting an enemy should reduce its health; when health reaches 0 it should disappear and update the score; collecting a key should unlock a door and allow level progression.
+          12. **Check errors.** Review console errors and fix the first new issue before continuing.
+          13. **Reset between scenarios.** Avoid cross-test state when validating distinct features.
+          14. **Iterate with small deltas.** Change one variable at a time (frames, inputs, timing, positions), then repeat steps 7–13 until stable.
+          
+          Example command (actions required):
+          ```
+          node "$WEB_GAME_CLIENT" --url http://localhost:5173 --actions-file "$WEB_GAME_ACTIONS" --click-selector "#start-btn" --iterations 3 --pause-ms 250
+          ```
+          
+          Example actions (inline JSON):
+          ```json
+          {
+            "steps": [
+              { "buttons": ["left_mouse_button"], "frames": 2, "mouse_x": 120, "mouse_y": 80 },
+              { "buttons": [], "frames": 6 },
+              { "buttons": ["right"], "frames": 8 },
+              { "buttons": ["space"], "frames": 4 }
+            ]
+          }
+          ```
+          
+          ## Test Checklist
+          
+          Test any new features added for the request and any areas your logic changes could affect. Identify issues, fix them, and re-run the tests to confirm they’re resolved.
+          
+          Examples of things to test:
+          - Primary movement/interaction inputs (e.g., move, jump, shoot, confirm/select).
+          - Win/lose or success/fail transitions.
+          - Score/health/resource changes.
+          - Boundary conditions (collisions, walls, screen edges).
+          - Menu/pause/start flow if present.
+          - Any special actions tied to the request (powerups, combos, abilities, puzzles, timers).
+          
+          ## Test Artifacts to Review
+          
+          - Latest screenshots from the Playwright run.
+          - Latest `render_game_to_text` JSON output.
+          - Console error logs (fix the first new error before continuing).
+          You must actually open and visually inspect the latest screenshots after running the Playwright script, not just generate them. Ensure everything that should be visible on screen is actually visible. Go beyond the start screen and capture gameplay screenshots that cover all newly added features. Treat the screenshots as the source of truth; if something is missing, it is missing in the build. If you suspect a headless/WebGL capture issue, rerun the Playwright script in headed mode and re-check. Fix and rerun in a tight loop until the screenshots and text state look correct. Once fixes are verified, re-test all important interactions and controls, confirm they work, and ensure your changes did not introduce regressions. If they did, fix them and rerun everything in a loop until interactions, text state, and controls all work as expected. Be exhaustive in testing controls; broken games are not acceptable.
+          
+          ## Core Game Guidelines
+          
+          ### Canvas + Layout
+          - Prefer a single canvas centered in the window.
+          
+          ### Visuals
+          - Keep on-screen text minimal; show controls on a start/menu screen rather than overlaying them during play.
+          - Avoid overly dark scenes unless the design calls for it. Make key elements easy to see.
+          - Draw the background on the canvas itself instead of relying on CSS backgrounds.
+          
+          ### Text State Output (render_game_to_text)
+          Expose a `window.render_game_to_text` function that returns a concise JSON string representing the current game state. The text should include enough information to play the game without visuals.
+          
+          Minimal pattern:
+          ```js
+          function renderGameToText() {
+            const payload = {
+              mode: state.mode,
+              player: { x: state.player.x, y: state.player.y, r: state.player.r },
+              entities: state.entities.map((e) => ({ x: e.x, y: e.y, r: e.r })),
+              score: state.score,
+            };
+            return JSON.stringify(payload);
+          }
+          window.render_game_to_text = renderGameToText;
+          ```
+          
+          Keep the payload succinct and biased toward on-screen/interactive elements. Prefer current, visible entities over full history.
+          Include a clear coordinate system note (origin and axis directions), and encode all player-relevant state: player position/velocity, active obstacles/enemies, collectibles, timers/cooldowns, score, and any mode/state flags needed to make correct decisions. Avoid large histories; only include what's currently relevant and visible.
+          
+          ### Time Stepping Hook
+          Provide a deterministic time-stepping hook so the Playwright client can advance the game in controlled increments. Expose `window.advanceTime(ms)` (or a thin wrapper that forwards to your game update loop) and have the game loop use it when present.
+          The Playwright test script uses this hook to step frames deterministically during automated testing.
+          
+          Minimal pattern:
+          ```js
+          window.advanceTime = (ms) => {
+            const steps = Math.max(1, Math.round(ms / (1000 / 60)));
+            for (let i = 0; i < steps; i++) update(1 / 60);
+            render();
+          };
+          ```
+          
+          ### Fullscreen Toggle
+          - Use a single key (prefer `f`) to toggle fullscreen on/off.
+          - Allow `Esc` to exit fullscreen.
+          - When fullscreen toggles, resize the canvas/rendering so visuals and input mapping stay correct.
+          
+          ## Progress Tracking
+          
+          Create a `progress.md` file if it doesn't exist, and append TODOs, notes, gotchas, and loose ends as you go so another agent can pick up seamlessly.
+          If a `progress.md` file already exists, read it first, including the original user prompt at the top (you may be continuing another agent's work). Do not overwrite the original prompt; preserve it.
+          Update `progress.md` after each meaningful chunk of work (feature added, bug found, test run, or decision made).
+          At the end of your work, leave TODOs and suggestions for the next agent in `progress.md`.
+          
+          ## Playwright Prerequisites
+          
+          - Prefer a local `playwright` dependency if the project already has it.
+          - If unsure whether Playwright is available, check for `npx`:
+            ```
+            command -v npx >/dev/null 2>&1
+            ```
+          - If `npx` is missing, install Node/npm and then install Playwright globally:
+            ```
+            npm install -g @playwright/mcp@latest
+            ```
+          - Do not switch to `@playwright/test` unless explicitly asked; stick to the client script.
+          
+          ## Scripts
+          
+          - `$WEB_GAME_CLIENT` (installed default: `$CODEX_HOME/skills/develop-web-game/scripts/web_game_playwright_client.js`) — Playwright-based action loop with virtual-time stepping, screenshot capture, and console error buffering. You must pass an action burst via `--actions-file`, `--actions-json`, or `--click`.
+          
+          ## References
+          
+          - `$WEB_GAME_ACTIONS` (installed default: `$CODEX_HOME/skills/develop-web-game/references/action_payloads.json`) — example action payloads (keyboard + mouse, per-frame capture). Use these to build your burst.
+    - path: /skills/develop-web-game/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Develop Web Game"
+            short_description: "Web game dev + Playwright test loop"
+            icon_small: "./assets/game-small.svg"
+            icon_large: "./assets/game.png"
+            default_prompt: "Build and iterate a playable web game in this workspace, validating changes with a Playwright loop."
+    - path: /skills/develop-web-game/assets/game-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path fill="currentColor" d="M13.976 9.519a1.052 1.052 0 0 1 .901.52c.094.16.141.333.141.52 0 .188-.047.362-.14.522a1.054 1.054 0 0 1-.902.52c-.187 0-.36-.046-.52-.14a1.051 1.051 0 0 1-.522-.901 1.05 1.05 0 0 1 1.042-1.041ZM6.367 6.227c.229 0 .428.084.595.25.159.16.239.355.239.584v.833h.833c.229 0 .423.083.583.25a.78.78 0 0 1 .25.584.813.813 0 0 1-.25.593.795.795 0 0 1-.583.24H7.2v.833c0 .229-.08.428-.24.594a.831.831 0 0 1-.594.24.795.795 0 0 1-.583-.24.814.814 0 0 1-.25-.594V9.56H4.7a.832.832 0 0 1-.595-.24.83.83 0 0 1-.24-.593c0-.23.08-.425.24-.584a.813.813 0 0 1 .595-.25h.833V7.06c0-.23.083-.424.25-.583a.778.778 0 0 1 .583-.251Zm5.868 1.459a1.053 1.053 0 0 1 .901.52c.094.16.141.333.141.52 0 .188-.047.362-.14.522a1.054 1.054 0 0 1-.902.52c-.187 0-.36-.046-.52-.14a1.051 1.051 0 0 1-.522-.901 1.05 1.05 0 0 1 1.042-1.041Zm3.335 0c.186 0 .36.047.52.14a1.051 1.051 0 0 1 .52.9c0 .188-.047.362-.14.522a1.053 1.053 0 0 1-.9.52c-.188 0-.363-.046-.522-.14a1.051 1.051 0 0 1-.52-.901c0-.188.046-.361.14-.521a1.051 1.051 0 0 1 .901-.52Zm-1.594-1.833a1.053 1.053 0 0 1 .901.52c.094.16.141.333.141.52 0 .188-.047.362-.14.522a1.054 1.054 0 0 1-.902.52c-.187 0-.36-.046-.52-.14a1.051 1.051 0 0 1-.522-.901 1.05 1.05 0 0 1 1.042-1.041Z"/>
+            <path fill="currentColor" fill-rule="evenodd" d="M13.594 2.583c1.354 0 2.527.367 3.448 1.161.927.793 1.47 1.9 1.678 3.245l.844 5.448c.14.896.083 1.74-.205 2.507l.001.001a3.664 3.664 0 0 1-1.435 1.836l-.006.004c-.677.44-1.467.642-2.336.642-.65 0-1.249-.093-1.772-.306a3.31 3.31 0 0 1-1.357-1.03c-.357-.45-.648-1.02-.888-1.679l-.002-.004-.264-.742H8.7l-.265.742-.002.004c-.24.66-.53 1.229-.887 1.679a3.31 3.31 0 0 1-1.358 1.03c-.524.213-1.126.306-1.782.306-.866 0-1.654-.198-2.33-.628l-.004-.002A3.638 3.638 0 0 1 .634 15.01l-.003-.007c-.283-.753-.34-1.582-.206-2.46v-.001L1.28 6.99c.209-1.343.748-2.452 1.668-3.246l.003-.002c.927-.792 2.101-1.159 3.456-1.159h7.188Zm-7.188 1.5c-1.076 0-1.88.286-2.481.8-.593.512-.997 1.264-1.164 2.336l-.853 5.55c-.102.674-.049 1.233.125 1.7l.072.17c.18.384.439.675.777.894l.152.09c.368.194.817.304 1.372.304.524 0 .922-.074 1.218-.195.282-.114.53-.3.746-.573.226-.285.448-.695.652-1.256l.313-.875.008-.02c.07-.18.182-.39.374-.556.248-.223.547-.286.794-.286h2.978c.236 0 .519.059.76.259l.034.027c.192.166.304.377.374.557l.008.02.312.874c.204.56.427.971.653 1.256.216.273.464.458.746.573.296.12.691.195 1.207.195.628 0 1.121-.144 1.513-.398.396-.262.68-.62.856-1.1l.003-.007c.181-.48.236-1.057.127-1.754l-.844-5.45c-.166-1.07-.574-1.823-1.174-2.335l-.002-.003c-.593-.511-1.393-.797-2.469-.797H6.407Z" clip-rule="evenodd"/>
+          </svg>
+    - path: /skills/develop-web-game/assets/game.png.b64
+      text: |
+          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
+          AAAASUVORK5CYII=
+    - path: /skills/develop-web-game/references/action_payloads.json
+      text: |
+          {
+            "steps": [
+              { "buttons": ["left"], "frames": 6 },
+              { "buttons": [], "frames": 4 },
+              { "buttons": ["space"], "frames": 3 }
+            ]
+          }
+    - path: /skills/develop-web-game/scripts/web_game_playwright_client.js
+      text: |
+          import fs from "node:fs";
+          import path from "node:path";
+          import { chromium } from "playwright";
+          
+          function parseArgs(argv) {
+            const args = {
+              url: null,
+              iterations: 3,
+              pauseMs: 250,
+              headless: true,
+              screenshotDir: "output/web-game",
+              actionsFile: null,
+              actionsJson: null,
+              click: null,
+              clickSelector: null,
+            };
+            for (let i = 2; i < argv.length; i++) {
+              const arg = argv[i];
+              const next = argv[i + 1];
+              if (arg === "--url" && next) {
+                args.url = next;
+                i++;
+              } else if (arg === "--iterations" && next) {
+                args.iterations = parseInt(next, 10);
+                i++;
+              } else if (arg === "--pause-ms" && next) {
+                args.pauseMs = parseInt(next, 10);
+                i++;
+              } else if (arg === "--headless" && next) {
+                args.headless = next !== "0" && next !== "false";
+                i++;
+              } else if (arg === "--screenshot-dir" && next) {
+                args.screenshotDir = next;
+                i++;
+              } else if (arg === "--actions-file" && next) {
+                args.actionsFile = next;
+                i++;
+              } else if (arg === "--actions-json" && next) {
+                args.actionsJson = next;
+                i++;
+              } else if (arg === "--click" && next) {
+                const parts = next.split(",").map((v) => parseFloat(v.trim()));
+                if (parts.length === 2 && parts.every((v) => Number.isFinite(v))) {
+                  args.click = { x: parts[0], y: parts[1] };
+                }
+                i++;
+              } else if (arg === "--click-selector" && next) {
+                args.clickSelector = next;
+                i++;
+              }
+            }
+            if (!args.url) {
+              throw new Error("--url is required");
+            }
+            return args;
+          }
+          
+          const buttonNameToKey = {
+            up: "ArrowUp",
+            down: "ArrowDown",
+            left: "ArrowLeft",
+            right: "ArrowRight",
+            enter: "Enter",
+            space: "Space",
+            a: "KeyA",
+            b: "KeyB",
+          };
+          
+          async function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+          }
+          
+          function ensureDir(p) {
+            fs.mkdirSync(p, { recursive: true });
+          }
+          
+          function makeVirtualTimeShim() {
+            return `(() => {
+              const pending = new Set();
+              const origSetTimeout = window.setTimeout.bind(window);
+              const origSetInterval = window.setInterval.bind(window);
+              const origRequestAnimationFrame = window.requestAnimationFrame.bind(window);
+          
+              window.__vt_pending = pending;
+          
+              window.setTimeout = (fn, t, ...rest) => {
+                const task = {};
+                pending.add(task);
+                return origSetTimeout(() => {
+                  pending.delete(task);
+                  fn(...rest);
+                }, t);
+              };
+          
+              window.setInterval = (fn, t, ...rest) => {
+                const task = {};
+                pending.add(task);
+                return origSetInterval(() => {
+                  fn(...rest);
+                }, t);
+              };
+          
+              window.requestAnimationFrame = (fn) => {
+                const task = {};
+                pending.add(task);
+                return origRequestAnimationFrame((ts) => {
+                  pending.delete(task);
+                  fn(ts);
+                });
+              };
+          
+              window.advanceTime = (ms) => {
+                return new Promise((resolve) => {
+                  const start = performance.now();
+                  function step(now) {
+                    if (now - start >= ms) return resolve();
+                    origRequestAnimationFrame(step);
+                  }
+                  origRequestAnimationFrame(step);
+                });
+              };
+          
+              window.__drainVirtualTimePending = () => pending.size;
+            })();`;
+          }
+          
+          async function getCanvasHandle(page) {
+            const handle = await page.evaluateHandle(() => {
+              let best = null;
+              let bestArea = 0;
+              for (const canvas of document.querySelectorAll("canvas")) {
+                const area = (canvas.width || canvas.clientWidth || 0) * (canvas.height || canvas.clientHeight || 0);
+                if (area > bestArea) {
+                  bestArea = area;
+                  best = canvas;
+                }
+              }
+              return best;
+            });
+            return handle.asElement();
+          }
+          
+          async function captureCanvasPngBase64(canvas) {
+            return canvas.evaluate((c) => {
+              if (!c || typeof c.toDataURL !== "function") return "";
+              const data = c.toDataURL("image/png");
+              const idx = data.indexOf(",");
+              return idx === -1 ? "" : data.slice(idx + 1);
+            });
+          }
+          
+          async function isCanvasTransparent(canvas) {
+            if (!canvas) return true;
+            return canvas.evaluate((c) => {
+              try {
+                const w = c.width || c.clientWidth || 0;
+                const h = c.height || c.clientHeight || 0;
+                if (!w || !h) return true;
+                const size = Math.max(1, Math.min(16, w, h));
+                const probe = document.createElement("canvas");
+                probe.width = size;
+                probe.height = size;
+                const ctx = probe.getContext("2d");
+                if (!ctx) return true;
+                ctx.drawImage(c, 0, 0, size, size);
+                const data = ctx.getImageData(0, 0, size, size).data;
+                for (let i = 3; i < data.length; i += 4) {
+                  if (data[i] !== 0) return false;
+                }
+                return true;
+              } catch {
+                return false;
+              }
+            });
+          }
+          
+          async function captureScreenshot(page, canvas, outPath) {
+            let buffer = null;
+            let base64 = canvas ? await captureCanvasPngBase64(canvas) : "";
+            if (base64) {
+              buffer = Buffer.from(base64, "base64");
+              const transparent = canvas ? await isCanvasTransparent(canvas) : false;
+              if (transparent) buffer = null;
+            }
+            if (!buffer && canvas) {
+              try {
+                buffer = await canvas.screenshot({ type: "png" });
+              } catch {
+                buffer = null;
+              }
+            }
+            if (!buffer) {
+              const bbox = canvas ? await canvas.boundingBox() : null;
+              if (bbox) {
+                buffer = await page.screenshot({
+                  type: "png",
+                  omitBackground: false,
+                  clip: bbox,
+                });
+              } else {
+                buffer = await page.screenshot({ type: "png", omitBackground: false });
+              }
+            }
+            fs.writeFileSync(outPath, buffer);
+          }
+          
+          class ConsoleErrorTracker {
+            constructor() {
+              this._seen = new Set();
+              this._errors = [];
+            }
+          
+            ingest(err) {
+              const key = JSON.stringify(err);
+              if (this._seen.has(key)) return;
+              this._seen.add(key);
+              this._errors.push(err);
+            }
+          
+            drain() {
+              const next = [...this._errors];
+              this._errors = [];
+              return next;
+            }
+          }
+          
+          async function doChoreography(page, canvas, steps) {
+            for (const step of steps) {
+              const buttons = new Set(step.buttons || []);
+              for (const button of buttons) {
+                if (button === "left_mouse_button" || button === "right_mouse_button") {
+                  const bbox = canvas ? await canvas.boundingBox() : null;
+                  if (!bbox) continue;
+                  const x = typeof step.mouse_x === "number" ? step.mouse_x : bbox.width / 2;
+                  const y = typeof step.mouse_y === "number" ? step.mouse_y : bbox.height / 2;
+                  await page.mouse.move(bbox.x + x, bbox.y + y);
+                  await page.mouse.down({ button: button === "left_mouse_button" ? "left" : "right" });
+                } else if (buttonNameToKey[button]) {
+                  await page.keyboard.down(buttonNameToKey[button]);
+                }
+              }
+          
+              const frames = step.frames || 1;
+              for (let i = 0; i < frames; i++) {
+                await page.evaluate(async () => {
+                  if (typeof window.advanceTime === "function") {
+                    await window.advanceTime(1000 / 60);
+                  }
+                });
+              }
+          
+              for (const button of buttons) {
+                if (button === "left_mouse_button" || button === "right_mouse_button") {
+                  await page.mouse.up({ button: button === "left_mouse_button" ? "left" : "right" });
+                } else if (buttonNameToKey[button]) {
+                  await page.keyboard.up(buttonNameToKey[button]);
+                }
+              }
+            }
+          }
+          
+          async function main() {
+            const args = parseArgs(process.argv);
+            ensureDir(args.screenshotDir);
+          
+            const browser = await chromium.launch({
+              headless: args.headless,
+              args: ["--use-gl=angle", "--use-angle=swiftshader"],
+            });
+            const page = await browser.newPage();
+            const consoleErrors = new ConsoleErrorTracker();
+          
+            page.on("console", (msg) => {
+              if (msg.type() !== "error") return;
+              consoleErrors.ingest({ type: "console.error", text: msg.text() });
+            });
+            page.on("pageerror", (err) => {
+              consoleErrors.ingest({ type: "pageerror", text: String(err) });
+            });
+          
+            await page.addInitScript({ content: makeVirtualTimeShim() });
+            await page.goto(args.url, { waitUntil: "domcontentloaded" });
+            await page.waitForTimeout(500);
+            await page.evaluate(() => {
+              window.dispatchEvent(new Event("resize"));
+            });
+          
+            let canvas = await getCanvasHandle(page);
+          
+            if (args.clickSelector) {
+              try {
+                await page.click(args.clickSelector, { timeout: 5000 });
+                await page.waitForTimeout(250);
+              } catch (err) {
+                console.warn("Failed to click selector", args.clickSelector, err);
+              }
+            }
+            let steps = null;
+            if (args.actionsFile) {
+              const raw = fs.readFileSync(args.actionsFile, "utf-8");
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) steps = parsed;
+              if (parsed && Array.isArray(parsed.steps)) steps = parsed.steps;
+            } else if (args.actionsJson) {
+              const parsed = JSON.parse(args.actionsJson);
+              if (Array.isArray(parsed)) steps = parsed;
+              if (parsed && Array.isArray(parsed.steps)) steps = parsed.steps;
+            } else if (args.click) {
+              steps = [
+                {
+                  buttons: ["left_mouse_button"],
+                  frames: 2,
+                  mouse_x: args.click.x,
+                  mouse_y: args.click.y,
+                },
+              ];
+            }
+            if (!steps) {
+              throw new Error("Actions are required. Use --actions-file, --actions-json, or --click.");
+            }
+          
+            for (let i = 0; i < args.iterations; i++) {
+              if (!canvas) canvas = await getCanvasHandle(page);
+              await doChoreography(page, canvas, steps);
+              await sleep(args.pauseMs);
+          
+              const shotPath = path.join(args.screenshotDir, `shot-${i}.png`);
+              await captureScreenshot(page, canvas, shotPath);
+          
+              const text = await page.evaluate(() => {
+                if (typeof window.render_game_to_text === "function") {
+                  return window.render_game_to_text();
+                }
+                return null;
+              });
+              if (text) {
+                fs.writeFileSync(path.join(args.screenshotDir, `state-${i}.json`), text);
+              }
+          
+              const freshErrors = consoleErrors.drain();
+              if (freshErrors.length) {
+                fs.writeFileSync(
+                  path.join(args.screenshotDir, `errors-${i}.json`),
+                  JSON.stringify(freshErrors, null, 2)
+                );
+                break;
+              }
+            }
+          
+            await browser.close();
+          }
+          
+          main().catch((err) => {
+            console.error(err);
+            process.exit(1);
+          });
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: WEB_GAME_ACTIONS
+      value: ""
+    - name: WEB_GAME_CLIENT
+      value: "/data/skills/develop-web-game/scripts/web_game_playwright_client.js"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-develop-web-game
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
