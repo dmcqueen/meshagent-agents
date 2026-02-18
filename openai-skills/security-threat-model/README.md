@@ -10,10 +10,10 @@ This agent helps security practitioners and teams convert ambiguous security que
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ac1b80aae5a0770ce2b5d69b871a3530e0b74763/openai-skills/security-threat-model/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3f7270591e9e3fdf2ebc86779cb8952204c0003a/openai-skills/security-threat-model/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86615ef4d798b796a20cc80b2507e7326a36c092/openai-skills/security-threat-model/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b776d04e0383394636eb62c5293b2da36b0a550/openai-skills/security-threat-model/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ac1b80aae5a0770ce2b5d69b871a3530e0b74763/openai-skills/security-threat-model/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3f7270591e9e3fdf2ebc86779cb8952204c0003a/openai-skills/security-threat-model/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86615ef4d798b796a20cc80b2507e7326a36c092/openai-skills/security-threat-model/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b776d04e0383394636eb62c5293b2da36b0a550/openai-skills/security-threat-model/agents.prod.yaml
