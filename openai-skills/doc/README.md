@@ -10,10 +10,10 @@ This agent enables teams to ask domain-specific questions about document work an
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a99fa7b2de1330d830e63d2731e7826a2730aca4/openai-skills/doc/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/335736ebaf9b8cc6e86caff032471e5f2f5def0f/openai-skills/doc/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/290051eecb437cdbd7bfa2b449d5a96c317c97dd/openai-skills/doc/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/abd07e30d217534d14891bd3176fede7c560ee4b/openai-skills/doc/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a99fa7b2de1330d830e63d2731e7826a2730aca4/openai-skills/doc/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/335736ebaf9b8cc6e86caff032471e5f2f5def0f/openai-skills/doc/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/290051eecb437cdbd7bfa2b449d5a96c317c97dd/openai-skills/doc/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/abd07e30d217534d14891bd3176fede7c560ee4b/openai-skills/doc/agents.prod.yaml
