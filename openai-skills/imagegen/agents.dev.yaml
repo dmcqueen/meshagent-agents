@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-imagegen
-  description: An agent that uses OpenAI's imagegen skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's imagegen skill
   annotations:
     meshagent.service.id: meshagent.openai-imagegen
 
