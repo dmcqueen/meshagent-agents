@@ -10,10 +10,10 @@ This agent helps teams and individuals work with Playwright by answering domain-
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f39728ca67aa8b0a8b402d6204412a02b7fe9cdb/openai-skills/playwright/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/68d51ec2ae0ff2fd884184638b87a2ac395876f0/openai-skills/playwright/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5896497923c9865a451d200f1c6ffc856ed63db1/openai-skills/playwright/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1151b1e06085cda4c2d52f7fc357756c6918ddd8/openai-skills/playwright/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f39728ca67aa8b0a8b402d6204412a02b7fe9cdb/openai-skills/playwright/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/68d51ec2ae0ff2fd884184638b87a2ac395876f0/openai-skills/playwright/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5896497923c9865a451d200f1c6ffc856ed63db1/openai-skills/playwright/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1151b1e06085cda4c2d52f7fc357756c6918ddd8/openai-skills/playwright/agents.prod.yaml
