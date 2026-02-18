@@ -1,0 +1,1597 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-screenshot
+  description: An agent that uses OpenAI's screenshot skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-screenshot
+
+agents:
+  - name: openai-screenshot
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-screenshot/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-screenshot/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/screenshot
+    - path: /skills/screenshot/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+          1. Definitions.
+
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+
+          END OF TERMS AND CONDITIONS
+
+          APPENDIX: How to apply the Apache License to your work.
+
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+
+          Copyright [yyyy] [name of copyright owner]
+
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+
+              http://www.apache.org/licenses/LICENSE-2.0
+
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
+    - path: /skills/screenshot/SKILL.md
+      text: |
+          ---
+          name: "screenshot"
+          description: "Use when the user explicitly asks for a desktop or system screenshot (full screen, specific app or window, or a pixel region), or when tool-specific capture capabilities are unavailable and an OS-level capture is needed."
+          ---
+
+
+          # Screenshot Capture
+
+          Follow these save-location rules every time:
+
+          1) If the user specifies a path, save there.
+          2) If the user asks for a screenshot without a path, save to the OS default screenshot location.
+          3) If Codex needs a screenshot for its own inspection, save to the temp directory.
+
+          ## Tool priority
+
+          - Prefer tool-specific screenshot capabilities when available (for example: a Figma MCP/skill for Figma files, or Playwright/agent-browser tools for browsers and Electron apps).
+          - Use this skill when explicitly asked, for whole-system desktop captures, or when a tool-specific capture cannot get what you need.
+          - Otherwise, treat this skill as the default for desktop apps without a better-integrated capture tool.
+
+          ## macOS permission preflight (reduce repeated prompts)
+
+          On macOS, run the preflight helper once before window/app capture. It checks
+          Screen Recording permission, explains why it is needed, and requests it in one
+          place.
+
+          The helpers route Swift's module cache to `$TMPDIR/codex-swift-module-cache`
+          to avoid extra sandbox module-cache prompts.
+
+          ```bash
+          bash <path-to-skill>/scripts/ensure_macos_permissions.sh
+          ```
+
+          To avoid multiple sandbox approval prompts, combine preflight + capture in one
+          command when possible:
+
+          ```bash
+          bash <path-to-skill>/scripts/ensure_macos_permissions.sh && \
+          python3 <path-to-skill>/scripts/take_screenshot.py --app "Codex"
+          ```
+
+          For Codex inspection runs, keep the output in temp:
+
+          ```bash
+          bash <path-to-skill>/scripts/ensure_macos_permissions.sh && \
+          python3 <path-to-skill>/scripts/take_screenshot.py --app "<App>" --mode temp
+          ```
+
+          Use the bundled scripts to avoid re-deriving OS-specific commands.
+
+          ## macOS and Linux (Python helper)
+
+          Run the helper from the repo root:
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py
+          ```
+
+          Common patterns:
+
+          - Default location (user asked for "a screenshot"):
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py
+          ```
+
+          - Temp location (Codex visual check):
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py --mode temp
+          ```
+
+          - Explicit location (user provided a path or filename):
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py --path output/screen.png
+          ```
+
+          - App/window capture by app name (macOS only; substring match is OK; captures all matching windows):
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py --app "Codex"
+          ```
+
+          - Specific window title within an app (macOS only):
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py --app "Codex" --window-name "Settings"
+          ```
+
+          - List matching window ids before capturing (macOS only):
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py --list-windows --app "Codex"
+          ```
+
+          - Pixel region (x,y,w,h):
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py --mode temp --region 100,200,800,600
+          ```
+
+          - Focused/active window (captures only the frontmost window; use `--app` to capture all windows):
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py --mode temp --active-window
+          ```
+
+          - Specific window id (use --list-windows on macOS to discover ids):
+
+          ```bash
+          python3 <path-to-skill>/scripts/take_screenshot.py --window-id 12345
+          ```
+
+          The script prints one path per capture. When multiple windows or displays match, it prints multiple paths (one per line) and adds suffixes like `-w<windowId>` or `-d<display>`. View each path sequentially with the image viewer tool, and only manipulate images if needed or requested.
+
+          ### Workflow examples
+
+          - "Take a look at <App> and tell me what you see": capture to temp, then view each printed path in order.
+
+          ```bash
+          bash <path-to-skill>/scripts/ensure_macos_permissions.sh && \
+          python3 <path-to-skill>/scripts/take_screenshot.py --app "<App>" --mode temp
+          ```
+
+          - "The design from Figma is not matching what is implemented": use a Figma MCP/skill to capture the design first, then capture the running app with this skill (typically to temp) and compare the raw screenshots before any manipulation.
+
+          ### Multi-display behavior
+
+          - On macOS, full-screen captures save one file per display when multiple monitors are connected.
+          - On Linux and Windows, full-screen captures use the virtual desktop (all monitors in one image); use `--region` to isolate a single display when needed.
+
+          ### Linux prerequisites and selection logic
+
+          The helper automatically selects the first available tool:
+
+          1) `scrot`
+          2) `gnome-screenshot`
+          3) ImageMagick `import`
+
+          If none are available, ask the user to install one of them and retry.
+
+          Coordinate regions require `scrot` or ImageMagick `import`.
+
+          `--app`, `--window-name`, and `--list-windows` are macOS-only. On Linux, use
+          `--active-window` or provide `--window-id` when available.
+
+          ## Windows (PowerShell helper)
+
+          Run the PowerShell helper:
+
+          ```powershell
+          powershell -ExecutionPolicy Bypass -File <path-to-skill>/scripts/take_screenshot.ps1
+          ```
+
+          Common patterns:
+
+          - Default location:
+
+          ```powershell
+          powershell -ExecutionPolicy Bypass -File <path-to-skill>/scripts/take_screenshot.ps1
+          ```
+
+          - Temp location (Codex visual check):
+
+          ```powershell
+          powershell -ExecutionPolicy Bypass -File <path-to-skill>/scripts/take_screenshot.ps1 -Mode temp
+          ```
+
+          - Explicit path:
+
+          ```powershell
+          powershell -ExecutionPolicy Bypass -File <path-to-skill>/scripts/take_screenshot.ps1 -Path "C:\Temp\screen.png"
+          ```
+
+          - Pixel region (x,y,w,h):
+
+          ```powershell
+          powershell -ExecutionPolicy Bypass -File <path-to-skill>/scripts/take_screenshot.ps1 -Mode temp -Region 100,200,800,600
+          ```
+
+          - Active window (ask the user to focus it first):
+
+          ```powershell
+          powershell -ExecutionPolicy Bypass -File <path-to-skill>/scripts/take_screenshot.ps1 -Mode temp -ActiveWindow
+          ```
+
+          - Specific window handle (only when provided):
+
+          ```powershell
+          powershell -ExecutionPolicy Bypass -File <path-to-skill>/scripts/take_screenshot.ps1 -WindowHandle 123456
+          ```
+
+          ## Direct OS commands (fallbacks)
+
+          Use these when you cannot run the helpers.
+
+          ### macOS
+
+          - Full screen to a specific path:
+
+          ```bash
+          screencapture -x output/screen.png
+          ```
+
+          - Pixel region:
+
+          ```bash
+          screencapture -x -R100,200,800,600 output/region.png
+          ```
+
+          - Specific window id:
+
+          ```bash
+          screencapture -x -l12345 output/window.png
+          ```
+
+          - Interactive selection or window pick:
+
+          ```bash
+          screencapture -x -i output/interactive.png
+          ```
+
+          ### Linux
+
+          - Full screen:
+
+          ```bash
+          scrot output/screen.png
+          ```
+
+          ```bash
+          gnome-screenshot -f output/screen.png
+          ```
+
+          ```bash
+          import -window root output/screen.png
+          ```
+
+          - Pixel region:
+
+          ```bash
+          scrot -a 100,200,800,600 output/region.png
+          ```
+
+          ```bash
+          import -window root -crop 800x600+100+200 output/region.png
+          ```
+
+          - Active window:
+
+          ```bash
+          scrot -u output/window.png
+          ```
+
+          ```bash
+          gnome-screenshot -w -f output/window.png
+          ```
+
+          ## Error handling
+
+          - On macOS, run `bash <path-to-skill>/scripts/ensure_macos_permissions.sh` first to request Screen Recording in one place.
+          - If you see "screen capture checks are blocked in the sandbox", "could not create image from display", or Swift `ModuleCache` permission errors in a sandboxed run, rerun the command with escalated permissions.
+          - If macOS app/window capture returns no matches, run `--list-windows --app "AppName"` and retry with `--window-id`, and make sure the app is visible on screen.
+          - If Linux region/window capture fails, check tool availability with `command -v scrot`, `command -v gnome-screenshot`, and `command -v import`.
+          - If saving to the OS default location fails with permission errors in a sandbox, rerun the command with escalated permissions.
+          - Always report the saved file path in the response.
+    - path: /skills/screenshot/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Screenshot Capture"
+            short_description: "Capture screenshots"
+            icon_small: "./assets/screenshot-small.svg"
+            icon_large: "./assets/screenshot.png"
+            default_prompt: "Capture the right screenshot for this task (target, area, and output path)."
+    - path: /skills/screenshot/assets/screenshot-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill="currentColor" d="M2.666 10.134c.294 0 .532.239.532.532v.667c0 .81.658 1.468 1.468 1.468h.667l.108.01a.533.533 0 0 1 0 1.043l-.108.01h-.667a2.532 2.532 0 0 1-2.532-2.531v-.667c0-.293.239-.532.532-.532Zm10.667 0c.293 0 .532.239.532.532v.667a2.532 2.532 0 0 1-2.532 2.532h-.667a.532.532 0 0 1 0-1.064h.667c.81 0 1.468-.657 1.468-1.468v-.667c0-.293.238-.531.532-.532Z"/>
+            <path fill="currentColor" fill-rule="evenodd" d="M8 5.468a2.532 2.532 0 1 1 0 5.064 2.532 2.532 0 0 1 0-5.064Zm0 1.064a1.468 1.468 0 1 0 0 2.936 1.468 1.468 0 0 0 0-2.936Z" clip-rule="evenodd"/>
+            <path fill="currentColor" d="M5.44 2.145a.532.532 0 0 1 0 1.043l-.107.01h-.667a1.47 1.47 0 0 0-1.468 1.468v.667a.532.532 0 0 1-1.064 0v-.667a2.532 2.532 0 0 1 2.532-2.532h.667l.108.011Zm5.893-.011a2.532 2.532 0 0 1 2.532 2.532v.667a.532.532 0 0 1-1.064 0v-.667c0-.81-.658-1.468-1.468-1.468h-.667a.532.532 0 0 1 0-1.064h.667Z"/>
+          </svg>
+    - path: /skills/screenshot/assets/screenshot.png.b64
+      text: |
+          iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
+          AXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAALxSURBVHgB7dtNbxJRGIbhFyNFbMG0pFZtE13U
+          hSZ24cZ/68o/48aFLlx040JMWgJqUdBCW+eFEAeYDucMLu6xz5UY02E4DnPPxxlSK0evr65MMG6Z
+          oCgIjILAKAiMgsAoCIyCwCgIjILAKAjMbSugmmR8cs9s545ZPRlhdGnWPzc7/mo2HIeN4e/zMfbu
+          Tn/297V/mH3uW7BW3exx06y5Mf35LNmG00HcGDTRQXxHvnqY/F1NLUv+NGtm9zfNPpyanQzyxzho
+          mD1rJf946vz08XaSgQ63zd5+WR32aNdsv7GwbckYe5vTbfSDo4yiLll+ZizGWHz95YO/R2wWP6pf
+          7M7HSJsEfzQd6zpPt5djpHlUX6eMooJMjr7q6vX86C/y2szscnbda4cBO9vXqZbwDhm1yftbYev5
+          pSdrZ/iyxoYF8ftTFj8oQuWdRVRRQeoRd5xGbXlZs2bB8i6Lof77MyTG+GJ52WBkwUYXdiNFBVk1
+          e5rxGZJPQbOWjy8tSP88e3l3aMG6v6x0ooJ8+h62Xt6Uc90xeslO7gVE8fi9iHgUUUH8Q37s5q/j
+          D2XtnAcz39HtFQ9u7zv5zyGT10f52+nPMmVUKfJLDj4Det6av3H7pch3dugZ4NPSg635m7cf0cff
+          wo5sn2AsPo/4Npz8jPvGgKayzm+dTKaxtemHH0bcsNN85uUPiUXHmG2Dx/D3jwLvUVSFvsua8Q+/
+          7nX67Let5V9sA4m+7YVREBgFgVEQGAWBURAYBYFREBgFgam8edfXf9gBqXQ6HQUB0SULRkFgFARG
+          QWAUBEZBYBQERkFgFARGQWAUBEZBYBQERkFgFARGQWAUBEZBYBQERkFgFARGQWAUBEZBYBQERkFg
+          FARGQWAUBEZBYBQERkFgFARGQWAUBEZBYBQERkFgFARGQWAUBEZBYBQERkFgFARGQWAUBEZBYBQE
+          RkFgFARGQWAUBEZBYBQERkFgFARGQWAUBEZBYBQERkFgFARGQWAUBOYPgcKaEq6U1yAAAAAASUVO
+          RK5CYII=
+    - path: /skills/screenshot/scripts/ensure_macos_permissions.sh
+      text: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          if [[ "$(uname)" != "Darwin" ]]; then
+            echo "ensure_macos_permissions.sh only supports macOS" >&2
+            exit 1
+          fi
+
+          if ! command -v swift >/dev/null 2>&1; then
+            echo "swift is required to check macOS screen capture permissions" >&2
+            exit 1
+          fi
+
+          SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          PERM_SWIFT="$SCRIPT_DIR/macos_permissions.swift"
+          MODULE_CACHE="${TMPDIR:-/tmp}/codex-swift-module-cache"
+          mkdir -p "$MODULE_CACHE"
+
+          screen_capture_status() {
+            local json
+            json="$(swift -module-cache-path "$MODULE_CACHE" "$PERM_SWIFT" "$@")"
+            python3 -c 'import json, sys; data=json.loads(sys.argv[1]); print("1" if data.get("screenCapture") else "0")' "$json"
+          }
+
+          if [[ -n "${CODEX_SANDBOX:-}" ]]; then
+            echo "Screen capture checks are blocked in the sandbox; rerun with escalated permissions." >&2
+            exit 3
+          fi
+
+          if [[ "$(screen_capture_status)" == "1" ]]; then
+            echo "Screen Recording permission already granted."
+            exit 0
+          fi
+
+          cat <<'MSG'
+          This workflow needs macOS Screen Recording permission to capture screenshots.
+          macOS will show a single system prompt for Screen Recording. Approve it, then
+          return here. If macOS opens System Settings instead of prompting, enable Screen
+          Recording for your terminal and rerun the command.
+          MSG
+
+          # Request permission once after explaining why it is needed.
+          screen_capture_status --request >/dev/null || true
+
+          if [[ "$(screen_capture_status)" != "1" ]]; then
+            cat <<'MSG'
+          Screen Recording is still not granted.
+          Open System Settings > Privacy & Security > Screen Recording and enable it for
+          your terminal (and Codex if needed), then rerun your screenshot command.
+          MSG
+            exit 2
+          fi
+
+          echo "Screen Recording permission granted."
+    - path: /skills/screenshot/scripts/macos_display_info.swift
+      text: |
+          import AppKit
+          import Foundation
+
+          struct Response: Encodable {
+            let count: Int
+            let displays: [Int]
+          }
+
+          let count = max(NSScreen.screens.count, 1)
+          let displays = Array(1...count)
+
+          let response = Response(count: count, displays: displays)
+          let encoder = JSONEncoder()
+          encoder.outputFormatting = [.sortedKeys]
+
+          if let data = try? encoder.encode(response),
+             let json = String(data: data, encoding: .utf8) {
+            print(json)
+          } else {
+            fputs("{\"count\":\(count)}\n", stderr)
+            exit(1)
+          }
+    - path: /skills/screenshot/scripts/macos_permissions.swift
+      text: |
+          import CoreGraphics
+          import Foundation
+
+          struct Status: Encodable {
+            let screenCapture: Bool
+            let requested: Bool
+          }
+
+          let shouldRequest = CommandLine.arguments.contains("--request")
+
+          @available(macOS 10.15, *)
+          func screenCaptureGranted(request: Bool) -> Bool {
+            if CGPreflightScreenCaptureAccess() {
+              return true
+            }
+            if request {
+              _ = CGRequestScreenCaptureAccess()
+              return CGPreflightScreenCaptureAccess()
+            }
+            return false
+          }
+
+          let granted: Bool
+          if #available(macOS 10.15, *) {
+            granted = screenCaptureGranted(request: shouldRequest)
+          } else {
+            granted = true
+          }
+
+          let status = Status(screenCapture: granted, requested: shouldRequest)
+          let encoder = JSONEncoder()
+          encoder.outputFormatting = [.sortedKeys]
+
+          if let data = try? encoder.encode(status),
+             let json = String(data: data, encoding: .utf8) {
+            print(json)
+          } else {
+            fputs("{\"requested\":\(shouldRequest),\"screenCapture\":\(granted)}\n", stderr)
+            exit(1)
+          }
+    - path: /skills/screenshot/scripts/macos_window_info.swift
+      text: |
+          import AppKit
+          import CoreGraphics
+          import Foundation
+
+          struct Bounds: Encodable {
+            let x: Int
+            let y: Int
+            let width: Int
+            let height: Int
+          }
+
+          struct WindowInfo: Encodable {
+            let id: Int
+            let owner: String
+            let name: String
+            let layer: Int
+            let bounds: Bounds
+            let area: Int
+          }
+
+          struct Response: Encodable {
+            let count: Int
+            let selected: WindowInfo?
+            let windows: [WindowInfo]?
+          }
+
+          func value(for flag: String) -> String? {
+            guard let idx = CommandLine.arguments.firstIndex(of: flag) else {
+              return nil
+            }
+            let next = CommandLine.arguments.index(after: idx)
+            guard next < CommandLine.arguments.endIndex else {
+              return nil
+            }
+            return CommandLine.arguments[next]
+          }
+
+          let frontmostFlag = CommandLine.arguments.contains("--frontmost")
+          let explicitApp = value(for: "--app")
+          let frontmostName = frontmostFlag ? NSWorkspace.shared.frontmostApplication?.localizedName : nil
+          if frontmostFlag && frontmostName == nil {
+            fputs("{\"count\":0}\n", stderr)
+            exit(1)
+          }
+          let appFilter = (explicitApp ?? frontmostName)?.lowercased()
+          let nameFilter = value(for: "--window-name")?.lowercased()
+          let includeList = CommandLine.arguments.contains("--list")
+
+          let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
+          guard let raw = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
+            fputs("{\"count\":0}\n", stderr)
+            exit(1)
+          }
+
+          var exactMatches: [WindowInfo] = []
+          var partialMatches: [WindowInfo] = []
+          exactMatches.reserveCapacity(raw.count)
+          partialMatches.reserveCapacity(raw.count)
+
+          for entry in raw {
+            guard let owner = entry[kCGWindowOwnerName as String] as? String else { continue }
+            let ownerLower = owner.lowercased()
+            if let appFilter, !ownerLower.contains(appFilter) { continue }
+
+            let name = (entry[kCGWindowName as String] as? String) ?? ""
+            if let nameFilter, !name.lowercased().contains(nameFilter) { continue }
+
+            guard let number = entry[kCGWindowNumber as String] as? Int else { continue }
+            let layer = (entry[kCGWindowLayer as String] as? Int) ?? 0
+
+            guard let boundsDict = entry[kCGWindowBounds as String] as? [String: Any] else { continue }
+            let x = Int((boundsDict["X"] as? Double) ?? 0)
+            let y = Int((boundsDict["Y"] as? Double) ?? 0)
+            let width = Int((boundsDict["Width"] as? Double) ?? 0)
+            let height = Int((boundsDict["Height"] as? Double) ?? 0)
+            if width <= 0 || height <= 0 { continue }
+
+            let bounds = Bounds(x: x, y: y, width: width, height: height)
+            let area = width * height
+            let info = WindowInfo(id: number, owner: owner, name: name, layer: layer, bounds: bounds, area: area)
+            if let appFilter, ownerLower == appFilter {
+              exactMatches.append(info)
+            } else {
+              partialMatches.append(info)
+            }
+          }
+
+          let windows: [WindowInfo]
+          if appFilter != nil && !exactMatches.isEmpty {
+            windows = exactMatches
+          } else {
+            windows = partialMatches
+          }
+
+          func rank(_ window: WindowInfo) -> (Int, Int) {
+            // Prefer normal-layer windows, then larger area.
+            let layerScore = window.layer == 0 ? 0 : 1
+            return (layerScore, -window.area)
+          }
+
+          let ordered: [WindowInfo]
+          if frontmostFlag {
+            ordered = windows
+          } else {
+            ordered = windows.sorted { rank($0) < rank($1) }
+          }
+          let selected = ordered.first
+
+          let list: [WindowInfo]?
+          if includeList {
+            list = ordered
+          } else {
+            list = nil
+          }
+
+          let response = Response(count: windows.count, selected: selected, windows: list)
+          let encoder = JSONEncoder()
+          encoder.outputFormatting = [.sortedKeys]
+
+          if let data = try? encoder.encode(response),
+             let json = String(data: data, encoding: .utf8) {
+            print(json)
+          } else {
+            fputs("{\"count\":\(windows.count)}\n", stderr)
+            exit(1)
+          }
+    - path: /skills/screenshot/scripts/take_screenshot.ps1
+      text: |
+          param(
+            [string]$Path,
+            [ValidateSet("default", "temp")][string]$Mode = "default",
+            [string]$Format = "png",
+            [string]$Region,
+            [switch]$ActiveWindow,
+            [int]$WindowHandle
+          )
+
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = "Stop"
+
+          function Get-Timestamp {
+            Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+          }
+
+          function Get-DefaultDirectory {
+            $home = [Environment]::GetFolderPath("UserProfile")
+            $pictures = Join-Path $home "Pictures"
+            $screenshots = Join-Path $pictures "Screenshots"
+            if (Test-Path $screenshots) { return $screenshots }
+            if (Test-Path $pictures) { return $pictures }
+            return $home
+          }
+
+          function New-DefaultFilename {
+            param([string]$Prefix)
+            if (-not $Prefix) { $Prefix = "screenshot" }
+            "$Prefix-$(Get-Timestamp).$Format"
+          }
+
+          function Resolve-OutputPath {
+            if ($Path) {
+              $expanded = [Environment]::ExpandEnvironmentVariables($Path)
+              $homeDir = [Environment]::GetFolderPath("UserProfile")
+              if ($expanded -eq "~") {
+                $expanded = $homeDir
+              } elseif ($expanded.StartsWith("~/") -or $expanded.StartsWith("~\\")) {
+                $expanded = Join-Path $homeDir $expanded.Substring(2)
+              }
+              $full = [System.IO.Path]::GetFullPath($expanded)
+              if ((Test-Path $full) -and (Get-Item $full).PSIsContainer) {
+                $full = Join-Path $full (New-DefaultFilename "")
+              } elseif (($expanded.EndsWith("\") -or $expanded.EndsWith("/")) -and -not (Test-Path $full)) {
+                New-Item -ItemType Directory -Path $full -Force | Out-Null
+                $full = Join-Path $full (New-DefaultFilename "")
+              } elseif ([System.IO.Path]::GetExtension($full) -eq "") {
+                $full = "$full.$Format"
+              }
+              $parent = Split-Path -Parent $full
+              if ($parent) {
+                New-Item -ItemType Directory -Path $parent -Force | Out-Null
+              }
+              return $full
+            }
+
+            if ($Mode -eq "temp") {
+              $tmp = [System.IO.Path]::GetTempPath()
+              return Join-Path $tmp (New-DefaultFilename "codex-shot")
+            }
+
+            $dest = Get-DefaultDirectory
+            return Join-Path $dest (New-DefaultFilename "")
+          }
+
+          function Parse-Region {
+            if (-not $Region) { return $null }
+            $parts = $Region.Split(",") | ForEach-Object { $_.Trim() }
+            if ($parts.Length -ne 4) {
+              throw "Region must be x,y,w,h"
+            }
+            $values = $parts | ForEach-Object {
+              $out = 0
+              if (-not [int]::TryParse($_, [ref]$out)) {
+                throw "Region values must be integers"
+              }
+              $out
+            }
+            if ($values[2] -le 0 -or $values[3] -le 0) {
+              throw "Region width and height must be positive"
+            }
+            return $values
+          }
+
+          if ($Region -and $ActiveWindow) {
+            throw "Choose either -Region or -ActiveWindow"
+          }
+          if ($Region -and $WindowHandle) {
+            throw "Choose either -Region or -WindowHandle"
+          }
+          if ($ActiveWindow -and $WindowHandle) {
+            throw "Choose either -ActiveWindow or -WindowHandle"
+          }
+
+          $regionValues = Parse-Region
+          $outputPath = Resolve-OutputPath
+
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+
+          $imageFormat = switch ($Format.ToLowerInvariant()) {
+            "png" { [System.Drawing.Imaging.ImageFormat]::Png }
+            "jpg" { [System.Drawing.Imaging.ImageFormat]::Jpeg }
+            "jpeg" { [System.Drawing.Imaging.ImageFormat]::Jpeg }
+            "bmp" { [System.Drawing.Imaging.ImageFormat]::Bmp }
+            default { throw "Unsupported format: $Format" }
+          }
+
+          Add-Type @"
+          using System;
+          using System.Runtime.InteropServices;
+          public static class NativeMethods {
+            [StructLayout(LayoutKind.Sequential)]
+            public struct RECT {
+              public int Left;
+              public int Top;
+              public int Right;
+              public int Bottom;
+            }
+
+            [DllImport("user32.dll")]
+            public static extern IntPtr GetForegroundWindow();
+
+            [DllImport("user32.dll")]
+            public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+          }
+          "@
+
+          if ($regionValues) {
+            $x = $regionValues[0]
+            $y = $regionValues[1]
+            $w = $regionValues[2]
+            $h = $regionValues[3]
+            $bounds = New-Object System.Drawing.Rectangle($x, $y, $w, $h)
+          } elseif ($ActiveWindow -or $WindowHandle) {
+            $handle = if ($WindowHandle) { [IntPtr]$WindowHandle } else { [NativeMethods]::GetForegroundWindow() }
+            $rect = New-Object NativeMethods+RECT
+            if (-not [NativeMethods]::GetWindowRect($handle, [ref]$rect)) {
+              throw "Failed to get window bounds"
+            }
+            $width = $rect.Right - $rect.Left
+            $height = $rect.Bottom - $rect.Top
+            $bounds = New-Object System.Drawing.Rectangle($rect.Left, $rect.Top, $width, $height)
+          } else {
+            $vs = [System.Windows.Forms.SystemInformation]::VirtualScreen
+            $bounds = New-Object System.Drawing.Rectangle($vs.Left, $vs.Top, $vs.Width, $vs.Height)
+          }
+
+          $bitmap = New-Object System.Drawing.Bitmap($bounds.Width, $bounds.Height)
+          $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+
+          try {
+            $source = New-Object System.Drawing.Point($bounds.Left, $bounds.Top)
+            $target = [System.Drawing.Point]::Empty
+            $size = New-Object System.Drawing.Size($bounds.Width, $bounds.Height)
+            $graphics.CopyFromScreen($source, $target, $size)
+            $bitmap.Save($outputPath, $imageFormat)
+          } finally {
+            $graphics.Dispose()
+            $bitmap.Dispose()
+          }
+
+          Write-Output $outputPath
+    - path: /skills/screenshot/scripts/take_screenshot.py
+      text: |
+          #!/usr/bin/env python3
+          """Cross-platform screenshot helper for Codex skills."""
+
+          from __future__ import annotations
+
+          import argparse
+          import datetime as dt
+          import json
+          import os
+          import platform
+          import shutil
+          import subprocess
+          import tempfile
+          from pathlib import Path
+
+          SCRIPT_DIR = Path(__file__).resolve().parent
+          MAC_PERM_SCRIPT = SCRIPT_DIR / "macos_permissions.swift"
+          MAC_PERM_HELPER = SCRIPT_DIR / "ensure_macos_permissions.sh"
+          MAC_WINDOW_SCRIPT = SCRIPT_DIR / "macos_window_info.swift"
+          MAC_DISPLAY_SCRIPT = SCRIPT_DIR / "macos_display_info.swift"
+          TEST_MODE_ENV = "CODEX_SCREENSHOT_TEST_MODE"
+          TEST_PLATFORM_ENV = "CODEX_SCREENSHOT_TEST_PLATFORM"
+          TEST_WINDOWS_ENV = "CODEX_SCREENSHOT_TEST_WINDOWS"
+          TEST_DISPLAYS_ENV = "CODEX_SCREENSHOT_TEST_DISPLAYS"
+          TEST_PNG = (
+              b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+              b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0cIDAT\x08\xd7c"
+              b"\xf8\xff\xff?\x00\x05\xfe\x02\xfeA\xad\x1c\x1c\x00\x00\x00\x00IEND"
+              b"\xaeB`\x82"
+          )
+
+
+          def parse_region(value: str) -> tuple[int, int, int, int]:
+              parts = [p.strip() for p in value.split(",")]
+              if len(parts) != 4:
+                  raise argparse.ArgumentTypeError("region must be x,y,w,h")
+              try:
+                  x, y, w, h = (int(p) for p in parts)
+              except ValueError as exc:
+                  raise argparse.ArgumentTypeError("region values must be integers") from exc
+              if w <= 0 or h <= 0:
+                  raise argparse.ArgumentTypeError("region width and height must be positive")
+              return x, y, w, h
+
+
+          def test_mode_enabled() -> bool:
+              value = os.environ.get(TEST_MODE_ENV, "")
+              return value.lower() in {"1", "true", "yes", "on"}
+
+
+          def normalize_platform(value: str) -> str:
+              lowered = value.strip().lower()
+              if lowered in {"darwin", "mac", "macos", "osx"}:
+                  return "Darwin"
+              if lowered in {"linux", "ubuntu"}:
+                  return "Linux"
+              if lowered in {"windows", "win"}:
+                  return "Windows"
+              return value
+
+
+          def test_platform_override() -> str | None:
+              value = os.environ.get(TEST_PLATFORM_ENV)
+              if value:
+                  return normalize_platform(value)
+              return None
+
+
+          def parse_int_list(value: str) -> list[int]:
+              results: list[int] = []
+              for part in value.split(","):
+                  part = part.strip()
+                  if not part:
+                      continue
+                  try:
+                      results.append(int(part))
+                  except ValueError:
+                      continue
+              return results
+
+
+          def test_window_ids() -> list[int]:
+              value = os.environ.get(TEST_WINDOWS_ENV, "101,102")
+              ids = parse_int_list(value)
+              return ids or [101]
+
+
+          def test_display_ids() -> list[int]:
+              value = os.environ.get(TEST_DISPLAYS_ENV, "1,2")
+              ids = parse_int_list(value)
+              return ids or [1]
+
+
+          def write_test_png(path: Path) -> None:
+              ensure_parent(path)
+              path.write_bytes(TEST_PNG)
+
+
+          def timestamp() -> str:
+              return dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+
+          def default_filename(fmt: str, prefix: str = "screenshot") -> str:
+              return f"{prefix}-{timestamp()}.{fmt}"
+
+
+          def mac_default_dir() -> Path:
+              desktop = Path.home() / "Desktop"
+              try:
+                  proc = subprocess.run(
+                      ["defaults", "read", "com.apple.screencapture", "location"],
+                      check=False,
+                      capture_output=True,
+                      text=True,
+                  )
+                  location = proc.stdout.strip()
+                  if location:
+                      return Path(location).expanduser()
+              except OSError:
+                  pass
+              return desktop
+
+
+          def default_dir(system: str) -> Path:
+              home = Path.home()
+              if system == "Darwin":
+                  return mac_default_dir()
+              if system == "Windows":
+                  pictures = home / "Pictures"
+                  screenshots = pictures / "Screenshots"
+                  if screenshots.exists():
+                      return screenshots
+                  if pictures.exists():
+                      return pictures
+                  return home
+              pictures = home / "Pictures"
+              screenshots = pictures / "Screenshots"
+              if screenshots.exists():
+                  return screenshots
+              if pictures.exists():
+                  return pictures
+              return home
+
+
+          def ensure_parent(path: Path) -> None:
+              try:
+                  path.parent.mkdir(parents=True, exist_ok=True)
+              except OSError:
+                  # Fall back to letting the capture command report a clearer error.
+                  pass
+
+
+          def resolve_output_path(
+              requested_path: str | None, mode: str, fmt: str, system: str
+          ) -> Path:
+              if requested_path:
+                  path = Path(requested_path).expanduser()
+                  if path.exists() and path.is_dir():
+                      path = path / default_filename(fmt)
+                  elif requested_path.endswith(("/", "\\")) and not path.exists():
+                      path.mkdir(parents=True, exist_ok=True)
+                      path = path / default_filename(fmt)
+                  elif path.suffix == "":
+                      path = path.with_suffix(f".{fmt}")
+                  ensure_parent(path)
+                  return path
+
+              if mode == "temp":
+                  tmp_dir = Path(tempfile.gettempdir())
+                  tmp_path = tmp_dir / default_filename(fmt, prefix="codex-shot")
+                  ensure_parent(tmp_path)
+                  return tmp_path
+
+              dest_dir = default_dir(system)
+              dest_path = dest_dir / default_filename(fmt)
+              ensure_parent(dest_path)
+              return dest_path
+
+
+          def multi_output_paths(base: Path, suffixes: list[str]) -> list[Path]:
+              if len(suffixes) <= 1:
+                  return [base]
+              paths: list[Path] = []
+              for suffix in suffixes:
+                  candidate = base.with_name(f"{base.stem}-{suffix}{base.suffix}")
+                  ensure_parent(candidate)
+                  paths.append(candidate)
+              return paths
+
+
+          def run(cmd: list[str]) -> None:
+              try:
+                  subprocess.run(cmd, check=True)
+              except FileNotFoundError as exc:
+                  raise SystemExit(f"required command not found: {cmd[0]}") from exc
+              except subprocess.CalledProcessError as exc:
+                  raise SystemExit(f"command failed ({exc.returncode}): {' '.join(cmd)}") from exc
+
+
+          def swift_json(script: Path, extra_args: list[str] | None = None) -> dict:
+              module_cache = Path(tempfile.gettempdir()) / "codex-swift-module-cache"
+              module_cache.mkdir(parents=True, exist_ok=True)
+              cmd = ["swift", "-module-cache-path", str(module_cache), str(script)]
+              if extra_args:
+                  cmd.extend(extra_args)
+              try:
+                  proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
+              except FileNotFoundError as exc:
+                  raise SystemExit("swift not found; install Xcode command line tools") from exc
+              except subprocess.CalledProcessError as exc:
+                  stderr = (exc.stderr or "").strip()
+                  if "ModuleCache" in stderr and "Operation not permitted" in stderr:
+                      raise SystemExit(
+                          "swift needs module-cache access; rerun with escalated permissions"
+                      ) from exc
+                  msg = stderr or (exc.stdout or "").strip() or "swift helper failed"
+                  raise SystemExit(msg) from exc
+              try:
+                  return json.loads(proc.stdout)
+              except json.JSONDecodeError as exc:
+                  raise SystemExit(f"swift helper returned invalid JSON: {proc.stdout.strip()}") from exc
+
+
+          def macos_screen_capture_granted(request: bool = False) -> bool:
+              args = ["--request"] if request else []
+              payload = swift_json(MAC_PERM_SCRIPT, args)
+              return bool(payload.get("screenCapture"))
+
+
+          def ensure_macos_permissions() -> None:
+              if os.environ.get("CODEX_SANDBOX"):
+                  raise SystemExit(
+                      "screen capture checks are blocked in the sandbox; rerun with escalated permissions"
+                  )
+              if macos_screen_capture_granted():
+                  return
+              subprocess.run(["bash", str(MAC_PERM_HELPER)], check=False)
+              if not macos_screen_capture_granted():
+                  raise SystemExit(
+                      "Screen Recording permission is required; enable it in System Settings and retry"
+                  )
+
+
+          def activate_app(app: str) -> None:
+              safe_app = app.replace('"', '\\"')
+              script = f'tell application "{safe_app}" to activate'
+              subprocess.run(["osascript", "-e", script], check=False, capture_output=True, text=True)
+
+
+          def macos_window_payload(args: argparse.Namespace, frontmost: bool, include_list: bool) -> dict:
+              flags: list[str] = []
+              if frontmost:
+                  flags.append("--frontmost")
+              if args.app:
+                  flags.extend(["--app", args.app])
+              if args.window_name:
+                  flags.extend(["--window-name", args.window_name])
+              if include_list:
+                  flags.append("--list")
+              return swift_json(MAC_WINDOW_SCRIPT, flags)
+
+
+          def macos_display_indexes() -> list[int]:
+              payload = swift_json(MAC_DISPLAY_SCRIPT)
+              displays = payload.get("displays") or []
+              indexes: list[int] = []
+              for item in displays:
+                  try:
+                      value = int(item)
+                  except (TypeError, ValueError):
+                      continue
+                  if value > 0:
+                      indexes.append(value)
+              return indexes or [1]
+
+
+          def macos_window_ids(args: argparse.Namespace, capture_all: bool) -> list[int]:
+              payload = macos_window_payload(
+                  args,
+                  frontmost=args.active_window,
+                  include_list=capture_all,
+              )
+              if capture_all:
+                  windows = payload.get("windows") or []
+                  ids: list[int] = []
+                  for item in windows:
+                      win_id = item.get("id")
+                      if win_id is None:
+                          continue
+                      try:
+                          ids.append(int(win_id))
+                      except (TypeError, ValueError):
+                          continue
+                  if ids:
+                      return ids
+              selected = payload.get("selected") or {}
+              win_id = selected.get("id")
+              if win_id is not None:
+                  try:
+                      return [int(win_id)]
+                  except (TypeError, ValueError):
+                      pass
+              raise SystemExit("no matching macOS window found; try --list-windows to inspect ids")
+
+
+          def list_macos_windows(args: argparse.Namespace) -> None:
+              payload = macos_window_payload(args, frontmost=args.active_window, include_list=True)
+              windows = payload.get("windows") or []
+              if not windows:
+                  print("no matching windows found")
+                  return
+              for item in windows:
+                  bounds = item.get("bounds") or {}
+                  name = item.get("name") or ""
+                  width = bounds.get("width", 0)
+                  height = bounds.get("height", 0)
+                  x = bounds.get("x", 0)
+                  y = bounds.get("y", 0)
+                  print(f"{item.get('id')}\t{item.get('owner')}\t{name}\t{width}x{height}+{x}+{y}")
+
+
+          def list_test_macos_windows(args: argparse.Namespace) -> None:
+              owner = args.app or "TestApp"
+              name = args.window_name or ""
+              ids = test_window_ids()
+              if args.active_window and ids:
+                  ids = [ids[0]]
+              for idx, win_id in enumerate(ids, start=1):
+                  window_name = name or f"Window {idx}"
+                  print(f"{win_id}\t{owner}\t{window_name}\t800x600+0+0")
+
+
+          def resolve_macos_windows(args: argparse.Namespace) -> list[int]:
+              if args.app:
+                  activate_app(args.app)
+              capture_all = not args.active_window
+              return macos_window_ids(args, capture_all=capture_all)
+
+
+          def resolve_test_macos_windows(args: argparse.Namespace) -> list[int]:
+              ids = test_window_ids()
+              if args.active_window and ids:
+                  return [ids[0]]
+              return ids
+
+
+          def capture_macos(
+              args: argparse.Namespace,
+              output: Path,
+              *,
+              window_id: int | None = None,
+              display: int | None = None,
+          ) -> None:
+              cmd = ["screencapture", "-x", f"-t{args.format}"]
+              if args.interactive:
+                  cmd.append("-i")
+              if display is not None:
+                  cmd.append(f"-D{display}")
+              effective_window_id = window_id if window_id is not None else args.window_id
+              if effective_window_id is not None:
+                  cmd.append(f"-l{effective_window_id}")
+              elif args.region is not None:
+                  x, y, w, h = args.region
+                  cmd.append(f"-R{x},{y},{w},{h}")
+              cmd.append(str(output))
+              run(cmd)
+
+
+          def capture_linux(args: argparse.Namespace, output: Path) -> None:
+              scrot = shutil.which("scrot")
+              gnome = shutil.which("gnome-screenshot")
+              imagemagick = shutil.which("import")
+              xdotool = shutil.which("xdotool")
+
+              if args.region is not None:
+                  x, y, w, h = args.region
+                  if scrot:
+                      run(["scrot", "-a", f"{x},{y},{w},{h}", str(output)])
+                      return
+                  if imagemagick:
+                      geometry = f"{w}x{h}+{x}+{y}"
+                      run(["import", "-window", "root", "-crop", geometry, str(output)])
+                      return
+                  raise SystemExit("region capture requires scrot or ImageMagick (import)")
+
+              if args.window_id is not None:
+                  if imagemagick:
+                      run(["import", "-window", str(args.window_id), str(output)])
+                      return
+                  raise SystemExit("window-id capture requires ImageMagick (import)")
+
+              if args.active_window:
+                  if scrot:
+                      run(["scrot", "-u", str(output)])
+                      return
+                  if gnome:
+                      run(["gnome-screenshot", "-w", "-f", str(output)])
+                      return
+                  if imagemagick and xdotool:
+                      win_id = (
+                          subprocess.check_output(["xdotool", "getactivewindow"], text=True)
+                          .strip()
+                      )
+                      run(["import", "-window", win_id, str(output)])
+                      return
+                  raise SystemExit("active-window capture requires scrot, gnome-screenshot, or import+xdotool")
+
+              if scrot:
+                  run(["scrot", str(output)])
+                  return
+              if gnome:
+                  run(["gnome-screenshot", "-f", str(output)])
+                  return
+              if imagemagick:
+                  run(["import", "-window", "root", str(output)])
+                  return
+              raise SystemExit("no supported screenshot tool found (scrot, gnome-screenshot, or import)")
+
+
+          def main() -> None:
+              parser = argparse.ArgumentParser(description=__doc__)
+              parser.add_argument(
+                  "--path",
+                  help="output file path or directory; overrides --mode",
+              )
+              parser.add_argument(
+                  "--mode",
+                  choices=("default", "temp"),
+                  default="default",
+                  help="default saves to the OS screenshot location; temp saves to the temp dir",
+              )
+              parser.add_argument(
+                  "--format",
+                  default="png",
+                  help="image format/extension (default: png)",
+              )
+              parser.add_argument(
+                  "--app",
+                  help="macOS only: capture all matching on-screen windows for this app name",
+              )
+              parser.add_argument(
+                  "--window-name",
+                  help="macOS only: substring match for a window title (optionally scoped by --app)",
+              )
+              parser.add_argument(
+                  "--list-windows",
+                  action="store_true",
+                  help="macOS only: list matching window ids instead of capturing",
+              )
+              parser.add_argument(
+                  "--region",
+                  type=parse_region,
+                  help="capture region as x,y,w,h (pixel coordinates)",
+              )
+              parser.add_argument(
+                  "--window-id",
+                  type=int,
+                  help="capture a specific window id when supported",
+              )
+              parser.add_argument(
+                  "--active-window",
+                  action="store_true",
+                  help="capture the focused/active window only when supported",
+              )
+              parser.add_argument(
+                  "--interactive",
+                  action="store_true",
+                  help="use interactive selection where the OS tool supports it",
+              )
+              args = parser.parse_args()
+
+              if args.region and args.window_id is not None:
+                  raise SystemExit("choose either --region or --window-id, not both")
+              if args.region and args.active_window:
+                  raise SystemExit("choose either --region or --active-window, not both")
+              if args.window_id is not None and args.active_window:
+                  raise SystemExit("choose either --window-id or --active-window, not both")
+              if args.app and args.window_id is not None:
+                  raise SystemExit("choose either --app or --window-id, not both")
+              if args.region and args.app:
+                  raise SystemExit("choose either --region or --app, not both")
+              if args.region and args.window_name:
+                  raise SystemExit("choose either --region or --window-name, not both")
+              if args.interactive and args.app:
+                  raise SystemExit("choose either --interactive or --app, not both")
+              if args.interactive and args.window_name:
+                  raise SystemExit("choose either --interactive or --window-name, not both")
+              if args.interactive and args.window_id is not None:
+                  raise SystemExit("choose either --interactive or --window-id, not both")
+              if args.interactive and args.active_window:
+                  raise SystemExit("choose either --interactive or --active-window, not both")
+              if args.list_windows and (args.region or args.window_id is not None or args.interactive):
+                  raise SystemExit("--list-windows only supports --app, --window-name, and --active-window")
+
+              test_mode = test_mode_enabled()
+              system = platform.system()
+              if test_mode:
+                  override = test_platform_override()
+                  if override:
+                      system = override
+              window_ids: list[int] = []
+              display_ids: list[int] = []
+
+              if system != "Darwin" and (args.app or args.window_name or args.list_windows):
+                  raise SystemExit("--app/--window-name/--list-windows are supported on macOS only")
+
+              if system == "Darwin":
+                  if test_mode:
+                      if args.list_windows:
+                          list_test_macos_windows(args)
+                          return
+                      if args.window_id is not None:
+                          window_ids = [args.window_id]
+                      elif args.app or args.window_name or args.active_window:
+                          window_ids = resolve_test_macos_windows(args)
+                      elif args.region is None and not args.interactive:
+                          display_ids = test_display_ids()
+                  else:
+                      ensure_macos_permissions()
+                      if args.list_windows:
+                          list_macos_windows(args)
+                          return
+                      if args.window_id is not None:
+                          window_ids = [args.window_id]
+                      elif args.app or args.window_name or args.active_window:
+                          window_ids = resolve_macos_windows(args)
+                      elif args.region is None and not args.interactive:
+                          display_ids = macos_display_indexes()
+
+              output = resolve_output_path(args.path, args.mode, args.format, system)
+
+              if test_mode:
+                  if system == "Darwin":
+                      if window_ids:
+                          suffixes = [f"w{wid}" for wid in window_ids]
+                          paths = multi_output_paths(output, suffixes)
+                          for path in paths:
+                              write_test_png(path)
+                          for path in paths:
+                              print(path)
+                          return
+                      if len(display_ids) > 1:
+                          suffixes = [f"d{did}" for did in display_ids]
+                          paths = multi_output_paths(output, suffixes)
+                          for path in paths:
+                              write_test_png(path)
+                          for path in paths:
+                              print(path)
+                          return
+                  write_test_png(output)
+                  print(output)
+                  return
+
+              if system == "Darwin":
+                  if window_ids:
+                      suffixes = [f"w{wid}" for wid in window_ids]
+                      paths = multi_output_paths(output, suffixes)
+                      for wid, path in zip(window_ids, paths):
+                          capture_macos(args, path, window_id=wid)
+                      for path in paths:
+                          print(path)
+                      return
+                  if len(display_ids) > 1:
+                      suffixes = [f"d{did}" for did in display_ids]
+                      paths = multi_output_paths(output, suffixes)
+                      for did, path in zip(display_ids, paths):
+                          capture_macos(args, path, display=did)
+                      for path in paths:
+                          print(path)
+                      return
+                  capture_macos(args, output)
+              elif system == "Linux":
+                  capture_linux(args, output)
+              elif system == "Windows":
+                  raise SystemExit(
+                      "Windows support lives in scripts/take_screenshot.ps1; run it with PowerShell"
+                  )
+              else:
+                  raise SystemExit(f"unsupported platform: {system}")
+
+              print(output)
+
+
+          if __name__ == "__main__":
+              main()
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-screenshot
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
