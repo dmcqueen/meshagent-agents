@@ -6,14 +6,14 @@ An agent that uses OpenAI's notion-spec-to-implementation skill and powered by g
 
 ## Description
 
-This plugin supports notion-spec-to-implementation workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in notion-spec-to-implementation work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for notion-spec-to-implementation decisions, analysis, and communication.
+This agent helps teams turn Notion specifications into concrete, actionable implementation plans and answers domain-specific questions about that workflow. Users can upload or describe ambiguous requirements and receive clarified task breakdowns, prioritized deliverables, and practical next steps tailored to their goals and constraints. It streamlines the transition from high-level product notes to developer-ready tasks, acceptance criteria, and rollout guidance so teams can move faster from planning to execution. The agent adapts its recommendations to the project context and constraints to produce usable outputs for product managers, designers, and engineers.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a43b6d59a490eb648f9f8e066820e3cf24e29910/openai-skills/notion-spec-to-implementation/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23957f19373d4c4299040f6c1400fc9be972644a/openai-skills/notion-spec-to-implementation/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e6fd76cfec19b789242db9f791e90507cc97ade3/openai-skills/notion-spec-to-implementation/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e075c403c05a430bf32db047d3816767bf6fcf46/openai-skills/notion-spec-to-implementation/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a43b6d59a490eb648f9f8e066820e3cf24e29910/openai-skills/notion-spec-to-implementation/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23957f19373d4c4299040f6c1400fc9be972644a/openai-skills/notion-spec-to-implementation/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e6fd76cfec19b789242db9f791e90507cc97ade3/openai-skills/notion-spec-to-implementation/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e075c403c05a430bf32db047d3816767bf6fcf46/openai-skills/notion-spec-to-implementation/agents.prod.yaml
