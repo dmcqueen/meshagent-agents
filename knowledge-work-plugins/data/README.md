@@ -6,14 +6,14 @@ An agent that uses Anthropic's data knowledge work plugin
 
 ## Description
 
-This agent helps users and teams turn data questions into clear, actionable analytical work by guiding the process from exploration and validation through statistical analysis and concise interpretation. Users can ask it to extract context from datasets, generate and refine SQL queries, perform data validation and statistical checks, and produce visualizations or interactive dashboard designs to communicate findings. It is useful for structuring reproducible analytical workflows, ensuring data quality, and creating stakeholder-ready summaries and visual outputs that support decision-making. The agent operates as a conversational assistant focused on data tasks and delivering interpretable results rather than executing infrastructure-level operations.
+This plugin supports data workflows and is designed to help users complete practical work with less manual effort. It can analyze data-related questions and interpret findings clearly, help structure analytical workflows from question to conclusion, and produce concise explanations and summaries for stakeholders. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for data decisions, analysis, and communication.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/828afa43c203dc7b8ddc8c485bce0e5f01663318/knowledge-work-plugins/data/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d028771e6640577195e512c2a95a8f50e6f6f01/knowledge-work-plugins/data/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cb847c3991ca31b0b78d8553b606e3c2dd27ecb1/knowledge-work-plugins/data/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/114d63fffac1c0e428b05dc57a91443ec63c7bfe/knowledge-work-plugins/data/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/828afa43c203dc7b8ddc8c485bce0e5f01663318/knowledge-work-plugins/data/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d028771e6640577195e512c2a95a8f50e6f6f01/knowledge-work-plugins/data/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cb847c3991ca31b0b78d8553b606e3c2dd27ecb1/knowledge-work-plugins/data/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/114d63fffac1c0e428b05dc57a91443ec63c7bfe/knowledge-work-plugins/data/agents.prod.yaml
