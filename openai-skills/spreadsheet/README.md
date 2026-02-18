@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's spreadsheet skill and powered by gpt-5.2
+An agent that uses OpenAI's spreadsheet skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent lets individuals and teams work directly with spreadsheet-related tas
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/abad47c4041853ab67168009770de8d43ef857ce/openai-skills/spreadsheet/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a95bfde494acffbc85f9c1cf7571a94e2648cdde/openai-skills/spreadsheet/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/74afffc7a4549d22b2c0fe4942b4c36d45ebccb2/openai-skills/spreadsheet/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6fd4df5486d04fafd8f14806cf28f6aee95ebe0f/openai-skills/spreadsheet/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/abad47c4041853ab67168009770de8d43ef857ce/openai-skills/spreadsheet/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a95bfde494acffbc85f9c1cf7571a94e2648cdde/openai-skills/spreadsheet/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/74afffc7a4549d22b2c0fe4942b4c36d45ebccb2/openai-skills/spreadsheet/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6fd4df5486d04fafd8f14806cf28f6aee95ebe0f/openai-skills/spreadsheet/agents.prod.yaml
