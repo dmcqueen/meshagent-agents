@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's sora skill and powered by gpt-5.2",
   "long_description": "This agent helps users and teams interact with the Sora domain by answering domain-specific questions, turning ambiguous requests into clear, actionable plans, and adapting guidance to the user\u2019s goals, constraints, and context. Teams can use it to generate step-by-step recommendations, clarify requirements, and produce practical next actions that move work forward within Sora-related workflows. It supports iterative clarification so outputs can be refined to match evolving priorities and constraints. The agent runs on models designed for the Sora skill to deliver concise, context-aware responses.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e037e00b9da08b842279bfb643d3bfa0eeb840e2/openai-skills/sora/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e037e00b9da08b842279bfb643d3bfa0eeb840e2/openai-skills/sora/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/54cefa0a55fd51ff91e60ad391b977c42ef55e0a/openai-skills/sora/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/54cefa0a55fd51ff91e60ad391b977c42ef55e0a/openai-skills/sora/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/268f70df4ff6a4081b39e58547db3b1f3c107466/openai-skills/sora/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/268f70df4ff6a4081b39e58547db3b1f3c107466/openai-skills/sora/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ddfd5577b4d3a684424925a75ce6181ef1761ad/openai-skills/sora/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ddfd5577b4d3a684424925a75ce6181ef1761ad/openai-skills/sora/agents.prod.yaml"
   }
 }
