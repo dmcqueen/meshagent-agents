@@ -2,13 +2,13 @@
   "id": "openai-gh-address-comments",
   "name": "OpenAI Gh Address Comments",
   "description": "An agent that uses OpenAI's gh-address-comments skill and powered by gpt-5.2",
-  "long_description": "This plugin supports gh-address-comments workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in gh-address-comments work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for gh-address-comments decisions, analysis, and communication.",
+  "long_description": "This agent helps teams manage and act on GitHub comment-related tasks by turning ambiguous or high-level requests into clear, actionable steps for addressing comments, resolving feedback, and coordinating follow-up work. Users can ask domain-specific questions about comment threads, get prioritized action lists, and receive concise summaries or suggested replies to streamline review and collaboration. It adapts recommendations to the user\u2019s goals, constraints, and context so teams can move from discussion to concrete outcomes more quickly. The agent runs as an assistant skill and is intended to be used interactively to improve comment handling and review workflows.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4c72397eb94cccee4e07bea76379276a0ba23fce/openai-skills/gh-address-comments/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4c72397eb94cccee4e07bea76379276a0ba23fce/openai-skills/gh-address-comments/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4feb2d3560c34ba88e36bab923aa5eddb7841e34/openai-skills/gh-address-comments/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4feb2d3560c34ba88e36bab923aa5eddb7841e34/openai-skills/gh-address-comments/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05632a11b07658779d0dbbcb7f6910a8b06ddef3/openai-skills/gh-address-comments/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05632a11b07658779d0dbbcb7f6910a8b06ddef3/openai-skills/gh-address-comments/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3d0f2a2749c6bb5747aadde1b040c8d47089e752/openai-skills/gh-address-comments/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3d0f2a2749c6bb5747aadde1b040c8d47089e752/openai-skills/gh-address-comments/agents.prod.yaml"
   }
 }
