@@ -10,10 +10,10 @@ This plugin supports spreadsheet workflows and is designed to help users complet
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8d1b742a12a99704df8635d66995a5de6dc7cbba/openai-skills/spreadsheet/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b2405c98f8cc3bb44dd1c316ed44f453b28e6f3/openai-skills/spreadsheet/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9a69d5f7e566c48603f10b96c2f5f26b8de0b0ab/openai-skills/spreadsheet/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f45b6963a03e2a5e4c34cbf67ec6431d5e516c2e/openai-skills/spreadsheet/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8d1b742a12a99704df8635d66995a5de6dc7cbba/openai-skills/spreadsheet/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b2405c98f8cc3bb44dd1c316ed44f453b28e6f3/openai-skills/spreadsheet/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9a69d5f7e566c48603f10b96c2f5f26b8de0b0ab/openai-skills/spreadsheet/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f45b6963a03e2a5e4c34cbf67ec6431d5e516c2e/openai-skills/spreadsheet/agents.prod.yaml
