@@ -6,14 +6,14 @@ An agent that uses Anthropic's finance knowledge work plugin
 
 ## Description
 
-This agent helps finance teams and analysts analyze financial questions, summarize reports, and extract the decision-relevant signals needed for planning, reviews, and stakeholder updates. It can prepare structured outputs such as reconciliations, journal-entry drafts, variance analyses, and audit-support materials to speed close management and testing activities. Users can rely on it to clarify implications of statements and recommend next steps for month-end, SOX testing, and reconciliation workflows. The agent’s outputs are designed to reduce review time and make financial issues and remediation actions clear and actionable.
+This plugin supports finance workflows and is designed to help users complete practical work with less manual effort. It can analyze financial questions and explain implications clearly, summarize reports and highlight the most decision-relevant signals, and prepare structured outputs for planning, review, and stakeholder updates. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for finance decisions, analysis, and communication.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b4e40c8a4abd18cbf5f40fab4d8fcf1a50fc0676/knowledge-work-plugins/finance/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c0b4f368ef4652413ac54fdf599c246949cf166b/knowledge-work-plugins/finance/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0d1e31652283d906bbf03f8b7bd286cbb6771228/knowledge-work-plugins/finance/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ac1449486fce176341b1702d7218891f8a427781/knowledge-work-plugins/finance/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b4e40c8a4abd18cbf5f40fab4d8fcf1a50fc0676/knowledge-work-plugins/finance/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c0b4f368ef4652413ac54fdf599c246949cf166b/knowledge-work-plugins/finance/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0d1e31652283d906bbf03f8b7bd286cbb6771228/knowledge-work-plugins/finance/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ac1449486fce176341b1702d7218891f8a427781/knowledge-work-plugins/finance/agents.prod.yaml
