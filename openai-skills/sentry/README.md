@@ -10,10 +10,10 @@ This plugin supports sentry workflows and is designed to help users complete pra
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/caacbe957499d796ecd471ec9a19f4155d1f4f74/openai-skills/sentry/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3d1b3885df94848cbecfd207fbc601dab3513f93/openai-skills/sentry/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f30de306400a362419c116183f8fed29d6318d5/openai-skills/sentry/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1a6ba4f735b3ea0e102a49132521f61d38a7f6b2/openai-skills/sentry/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/caacbe957499d796ecd471ec9a19f4155d1f4f74/openai-skills/sentry/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3d1b3885df94848cbecfd207fbc601dab3513f93/openai-skills/sentry/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f30de306400a362419c116183f8fed29d6318d5/openai-skills/sentry/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1a6ba4f735b3ea0e102a49132521f61d38a7f6b2/openai-skills/sentry/agents.prod.yaml
