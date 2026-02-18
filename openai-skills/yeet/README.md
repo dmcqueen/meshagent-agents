@@ -10,10 +10,10 @@ This plugin supports yeet workflows and is designed to help users complete pract
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c267b20629fa7b1c873ff544c1f7861b6b5e6fb2/openai-skills/yeet/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dfbf5e61832dc318fdb5e511c49ec254fcf04684/openai-skills/yeet/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66e370dcba21f1f56bd0b609d189fd479a30bbec/openai-skills/yeet/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05b535a0d9dec701a400052a88b1de9bdfe2f1a1/openai-skills/yeet/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c267b20629fa7b1c873ff544c1f7861b6b5e6fb2/openai-skills/yeet/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dfbf5e61832dc318fdb5e511c49ec254fcf04684/openai-skills/yeet/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66e370dcba21f1f56bd0b609d189fd479a30bbec/openai-skills/yeet/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05b535a0d9dec701a400052a88b1de9bdfe2f1a1/openai-skills/yeet/agents.prod.yaml
