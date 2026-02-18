@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's figma-implement-design skill and powered by gpt-5.2",
   "long_description": "This agent helps teams translate design intentions into practical Figma implementation steps by interpreting ambiguous requests, producing actionable task lists, and adapting guidance to project goals and constraints. Users can ask domain-specific questions about implementing designs in Figma and receive clear, prioritized recommendations that support handoff, component creation, and layout adjustments. It is intended to streamline collaboration between designers and developers by turning high-level requirements into concrete implementation plans and checklists. The agent uses a conversational model to iteratively refine outputs based on feedback and context.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03ca36ec3f8982ea770a27d4de1d7edafefcff38/openai-skills/figma-implement-design/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03ca36ec3f8982ea770a27d4de1d7edafefcff38/openai-skills/figma-implement-design/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22a9af23d028b557228ff93e0f74f95c05a22faf/openai-skills/figma-implement-design/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/22a9af23d028b557228ff93e0f74f95c05a22faf/openai-skills/figma-implement-design/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/732653c7f06ddd47b8686c5ef369053a69c58a53/openai-skills/figma-implement-design/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/732653c7f06ddd47b8686c5ef369053a69c58a53/openai-skills/figma-implement-design/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5d3cb0b58211364ba741145e37983a592d0e6fac/openai-skills/figma-implement-design/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5d3cb0b58211364ba741145e37983a592d0e6fac/openai-skills/figma-implement-design/agents.prod.yaml"
   }
 }
