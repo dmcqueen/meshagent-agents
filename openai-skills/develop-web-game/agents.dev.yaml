@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-develop-web-game
-  description: An agent that uses OpenAI's develop-web-game skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's develop-web-game skill
   annotations:
     meshagent.service.id: meshagent.openai-develop-web-game
 
