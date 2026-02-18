@@ -10,10 +10,10 @@ This plugin supports playwright workflows and is designed to help users complete
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e8126ab10a8fc7745312122f2d5872c3835065ce/openai-skills/playwright/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1353fdf62092d42795abc435c264854fb26981f5/openai-skills/playwright/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ce3e4f8e854d305c38840f828159cb45ac51929c/openai-skills/playwright/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cde826b0b802158e2a47274576a48e02b03e6075/openai-skills/playwright/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e8126ab10a8fc7745312122f2d5872c3835065ce/openai-skills/playwright/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1353fdf62092d42795abc435c264854fb26981f5/openai-skills/playwright/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ce3e4f8e854d305c38840f828159cb45ac51929c/openai-skills/playwright/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cde826b0b802158e2a47274576a48e02b03e6075/openai-skills/playwright/agents.prod.yaml
