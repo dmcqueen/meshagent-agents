@@ -10,10 +10,10 @@ This plugin supports notion-spec-to-implementation workflows and is designed to 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/db27ffe9b4762967f74bb1eca52ef2c3d71e3de9/openai-skills/notion-spec-to-implementation/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd77117d56dd4a93832fc43b2b956616dbb3a43c/openai-skills/notion-spec-to-implementation/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a43b6d59a490eb648f9f8e066820e3cf24e29910/openai-skills/notion-spec-to-implementation/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23957f19373d4c4299040f6c1400fc9be972644a/openai-skills/notion-spec-to-implementation/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/db27ffe9b4762967f74bb1eca52ef2c3d71e3de9/openai-skills/notion-spec-to-implementation/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd77117d56dd4a93832fc43b2b956616dbb3a43c/openai-skills/notion-spec-to-implementation/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a43b6d59a490eb648f9f8e066820e3cf24e29910/openai-skills/notion-spec-to-implementation/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23957f19373d4c4299040f6c1400fc9be972644a/openai-skills/notion-spec-to-implementation/agents.prod.yaml
