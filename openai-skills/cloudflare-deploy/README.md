@@ -10,10 +10,10 @@ This agent helps teams deploy and manage Cloudflare-related projects by turning 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/52cd9331eeda11a7913466c49cd0248cddce4286/openai-skills/cloudflare-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7cca9a1d739e1f1a2fe6285b09bd5d5bc6fc26e5/openai-skills/cloudflare-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/70bef8db9c9f411c206a25f016c42bac57d98a90/openai-skills/cloudflare-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/260022c275d86479ab3a8d34e28318a051d1de14/openai-skills/cloudflare-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/52cd9331eeda11a7913466c49cd0248cddce4286/openai-skills/cloudflare-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7cca9a1d739e1f1a2fe6285b09bd5d5bc6fc26e5/openai-skills/cloudflare-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/70bef8db9c9f411c206a25f016c42bac57d98a90/openai-skills/cloudflare-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/260022c275d86479ab3a8d34e28318a051d1de14/openai-skills/cloudflare-deploy/agents.prod.yaml
