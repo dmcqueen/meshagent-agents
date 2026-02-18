@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's gh-fix-ci skill and powered by gpt-5.2
+An agent that uses OpenAI's gh-fix-ci skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps teams diagnose and resolve continuous integration issues by int
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/914254e413e0f0968d7d8dc2b8ab3d78cc7af592/openai-skills/gh-fix-ci/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c6b62ee07eef64dcaaa7633f3667a55f12dfbd73/openai-skills/gh-fix-ci/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dc0a8ae512843c73b89a9446daaa006d8b13f42b/openai-skills/gh-fix-ci/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9fd198bff9bf3bc867f01ece0ab45ae35c7c811e/openai-skills/gh-fix-ci/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/914254e413e0f0968d7d8dc2b8ab3d78cc7af592/openai-skills/gh-fix-ci/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c6b62ee07eef64dcaaa7633f3667a55f12dfbd73/openai-skills/gh-fix-ci/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dc0a8ae512843c73b89a9446daaa006d8b13f42b/openai-skills/gh-fix-ci/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9fd198bff9bf3bc867f01ece0ab45ae35c7c811e/openai-skills/gh-fix-ci/agents.prod.yaml
