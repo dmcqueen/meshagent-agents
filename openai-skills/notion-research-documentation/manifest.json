@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's notion-research-documentation skill",
   "long_description": "This agent helps users interact with and produce research-focused documentation in a collaborative note environment: ask domain-specific questions about research documentation, convert vague or high-level requests into concrete, actionable documentation tasks, and receive tailored guidance that aligns with project goals and constraints. Teams can use it to refine research notes into structured documents, generate clear outlines or summaries, and adapt content to specific audiences or formats. It supports iterative improvement of documentation by providing contextual suggestions and next steps that move work from draft to publishable states. The agent operates as a conversational assistant and is intended to streamline the creation, organization, and clarification of research documentation.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d9b41b9013eab4e5267315cdccbd7c0971c1b2d4/openai-skills/notion-research-documentation/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d9b41b9013eab4e5267315cdccbd7c0971c1b2d4/openai-skills/notion-research-documentation/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cd4aafa08b70f3f10fb820ba56d6ad97d651fdc9/openai-skills/notion-research-documentation/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cd4aafa08b70f3f10fb820ba56d6ad97d651fdc9/openai-skills/notion-research-documentation/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9b9a5136a386b7a8f99948a9eb9b6bade18b2515/openai-skills/notion-research-documentation/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9b9a5136a386b7a8f99948a9eb9b6bade18b2515/openai-skills/notion-research-documentation/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6de8e3c0ca7eeebfb5c98304de223cb1d7336e7b/openai-skills/notion-research-documentation/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6de8e3c0ca7eeebfb5c98304de223cb1d7336e7b/openai-skills/notion-research-documentation/agents.prod.yaml"
   }
 }
