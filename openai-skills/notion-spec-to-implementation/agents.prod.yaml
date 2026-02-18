@@ -42,7 +42,6 @@ container:
           fi
           
           exec /usr/bin/meshagent chatbot join \
-            --model=gpt-5.2 \
             --require-storage \
             --require-web-search \
             --rule="you can use the storage tool to read skills not just the shell tool" \
