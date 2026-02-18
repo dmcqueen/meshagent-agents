@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's speech skill and powered by gpt-5.2
+An agent that uses OpenAI's speech skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent lets users and teams work with speech-related tasks by answering doma
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9a3e2ad64915fd24ec24a92c16641cd1408ce941/openai-skills/speech/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c89b8de83be46e69f081975792db8292aff7ea61/openai-skills/speech/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8c5b1ebd44d3198701628d070278e8f98f48c36d/openai-skills/speech/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/158f4e405633c849aff4794a28c9d332ea9d0d80/openai-skills/speech/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9a3e2ad64915fd24ec24a92c16641cd1408ce941/openai-skills/speech/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c89b8de83be46e69f081975792db8292aff7ea61/openai-skills/speech/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8c5b1ebd44d3198701628d070278e8f98f48c36d/openai-skills/speech/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/158f4e405633c849aff4794a28c9d332ea9d0d80/openai-skills/speech/agents.prod.yaml
