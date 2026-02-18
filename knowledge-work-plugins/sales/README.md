@@ -10,10 +10,10 @@ This agent helps salespeople and teams streamline prospecting, account research,
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c6af8b933e286a6eef6f3ef57e3cae64a3c27aa1/knowledge-work-plugins/sales/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d720fb8e049e05468f445d0c5ed4554ab3c57d1/knowledge-work-plugins/sales/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/50b23468968c417a626c361780825b301da38d07/knowledge-work-plugins/sales/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/93aa8b01abcfb95977f9b31d808fbb476938c9c3/knowledge-work-plugins/sales/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c6af8b933e286a6eef6f3ef57e3cae64a3c27aa1/knowledge-work-plugins/sales/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d720fb8e049e05468f445d0c5ed4554ab3c57d1/knowledge-work-plugins/sales/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/50b23468968c417a626c361780825b301da38d07/knowledge-work-plugins/sales/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/93aa8b01abcfb95977f9b31d808fbb476938c9c3/knowledge-work-plugins/sales/agents.prod.yaml
