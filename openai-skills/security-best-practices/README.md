@@ -10,10 +10,10 @@ This plugin supports security-best-practices workflows and is designed to help u
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/afe2999c52b3a8c6877d33003ce4cf8ee74df44d/openai-skills/security-best-practices/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/857308f2acfe803cfa1e33ecb3e9c067dfe3fbaf/openai-skills/security-best-practices/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab1f4887f3bb310f53a4ef400779b8da41c1e63b/openai-skills/security-best-practices/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1228df4f5acb3c5e8d711ec8ffd329846cb1f56c/openai-skills/security-best-practices/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/afe2999c52b3a8c6877d33003ce4cf8ee74df44d/openai-skills/security-best-practices/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/857308f2acfe803cfa1e33ecb3e9c067dfe3fbaf/openai-skills/security-best-practices/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab1f4887f3bb310f53a4ef400779b8da41c1e63b/openai-skills/security-best-practices/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1228df4f5acb3c5e8d711ec8ffd329846cb1f56c/openai-skills/security-best-practices/agents.prod.yaml
