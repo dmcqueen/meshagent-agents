@@ -1,0 +1,705 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-transcribe
+  description: An agent that uses OpenAI's transcribe skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-transcribe
+
+agents:
+  - name: openai-transcribe
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-web-search \
+            --require-shell \
+            --delegate-shell-token \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-transcribe/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-transcribe/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/transcribe
+    - path: /skills/transcribe/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+          1. Definitions.
+
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+
+          END OF TERMS AND CONDITIONS
+
+          APPENDIX: How to apply the Apache License to your work.
+
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+
+          Copyright [yyyy] [name of copyright owner]
+
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+
+              http://www.apache.org/licenses/LICENSE-2.0
+
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
+    - path: /skills/transcribe/SKILL.md
+      text: |
+          ---
+          name: "transcribe"
+          description: "Transcribe audio files to text with optional diarization and known-speaker hints. Use when a user asks to transcribe speech from audio/video, extract text from recordings, or label speakers in interviews or meetings."
+          ---
+
+
+          # Audio Transcribe
+
+          Transcribe audio using OpenAI, with optional speaker diarization when requested. Prefer the bundled CLI for deterministic, repeatable runs.
+
+          ## Workflow
+          1. Collect inputs: audio file path(s), desired response format (text/json/diarized_json), optional language hint, and any known speaker references.
+          2. Verify `OPENAI_API_KEY` is set. If missing, ask the user to set it locally (do not ask them to paste the key).
+          3. Run the bundled `transcribe_diarize.py` CLI with sensible defaults (fast text transcription).
+          4. Validate the output: transcription quality, speaker labels, and segment boundaries; iterate with a single targeted change if needed.
+          5. Save outputs under `output/transcribe/` when working in this repo.
+
+          ## Decision rules
+          - Default to `gpt-4o-mini-transcribe` with `--response-format text` for fast transcription.
+          - If the user wants speaker labels or diarization, use `--model gpt-4o-transcribe-diarize --response-format diarized_json`.
+          - If audio is longer than ~30 seconds, keep `--chunking-strategy auto`.
+          - Prompting is not supported for `gpt-4o-transcribe-diarize`.
+
+          ## Output conventions
+          - Use `output/transcribe/<job-id>/` for evaluation runs.
+          - Use `--out-dir` for multiple files to avoid overwriting.
+
+          ## Dependencies (install if missing)
+          Prefer `uv` for dependency management.
+
+          ```
+          uv pip install openai
+          ```
+          If `uv` is unavailable:
+          ```
+          python3 -m pip install openai
+          ```
+
+          ## Environment
+          - `OPENAI_API_KEY` must be set for live API calls.
+          - If the key is missing, instruct the user to create one in the OpenAI platform UI and export it in their shell.
+          - Never ask the user to paste the full key in chat.
+
+          ## Skill path (set once)
+
+          ```bash
+          export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+          export TRANSCRIBE_CLI="$CODEX_HOME/skills/transcribe/scripts/transcribe_diarize.py"
+          ```
+
+          User-scoped skills install under `$CODEX_HOME/skills` (default: `~/.codex/skills`).
+
+          ## CLI quick start
+          Single file (fast text default):
+          ```
+          python3 "$TRANSCRIBE_CLI" \
+            path/to/audio.wav \
+            --out transcript.txt
+          ```
+
+          Diarization with known speakers (up to 4):
+          ```
+          python3 "$TRANSCRIBE_CLI" \
+            meeting.m4a \
+            --model gpt-4o-transcribe-diarize \
+            --known-speaker "Alice=refs/alice.wav" \
+            --known-speaker "Bob=refs/bob.wav" \
+            --response-format diarized_json \
+            --out-dir output/transcribe/meeting
+          ```
+
+          Plain text output (explicit):
+          ```
+          python3 "$TRANSCRIBE_CLI" \
+            interview.mp3 \
+            --response-format text \
+            --out interview.txt
+          ```
+
+          ## Reference map
+          - `references/api.md`: supported formats, limits, response formats, and known-speaker notes.
+    - path: /skills/transcribe/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Audio Transcribe"
+            short_description: "Transcribe audio using OpenAI, with optional speaker diarization when requested. Prefer the bundled CLI for deterministic, repeatable runs."
+            icon_small: "./assets/transcribe-small.svg"
+            icon_large: "./assets/transcribe.png"
+            default_prompt: "Transcribe this audio or video, include speaker labels when possible, and provide a clean summary."
+    - path: /skills/transcribe/assets/transcribe-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path fill="currentColor" d="M17.919 9.335c.367 0 .665.298.665.665v1.296a.665.665 0 0 1-1.33 0v-.631H15.25v5.337h.585l.135.014a.665.665 0 0 1 0 1.302l-.135.014h-2.5a.666.666 0 0 1 0-1.33h.585v-5.337h-2.003v.63a.665.665 0 0 1-1.33 0V10c0-.367.298-.665.665-.665h6.667Zm-12.5-6.667c.367 0 .665.298.665.665v10a.665.665 0 0 1-1.33 0v-10c0-.367.298-.665.665-.665Zm2.916 2.5c.367 0 .665.298.665.665v5a.665.665 0 0 1-1.33 0v-5c0-.367.298-.665.665-.665ZM2.502 6.835c.367 0 .665.298.665.665v1.666a.665.665 0 0 1-1.33 0V7.5c0-.367.298-.665.665-.665Zm8.75-3.334c.367 0 .665.298.665.665v2.917a.665.665 0 0 1-1.33 0V4.166c0-.367.298-.665.665-.665Z"/>
+          </svg>
+    - path: /skills/transcribe/assets/transcribe.png.b64
+      text: |
+          iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
+          AXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAASdSURBVHgB7Z1NSFRRFMdPZtnHWJZSVgZTKork
+          Rx+LVEJb1C6w2ibaspUGtTbXBeKqdmW6jWrrJoNylWQmkaY1oOlIjk06mpJl9zwcUefNzFXf6P+9
+          d34wqG8+GOfHPfeec8/VbQsKEmBIIgEKEQKGCAFDhIAhQsAQIWCIEDBECBgiBAwRAoYIAUOEgJFM
+          m0DPTJDaJ/3G90W70+jy/kwSzEm4kNaAj1rHfUs/t//y09j8LFWne0mIJKEhK/RvfoWMMHyNR40Q
+          SUKFfJ0NRb3P/2eWhEg2ZQ7ZCnh0tgf9NK2+Fu9JoyJ1swOOFMKj7+5QN40tjsLWANHVA1l061AO
+          oePIZW/j994lGWGe/xy2xbzlSCGDc+Zz19vQOKHjOCFjMRYLPJ+gI5k6GCIEDBEChi2E8LwQskH8
+          twLoPIQLkg/HBpYmY7vkEhsBdoRwcvdg9POKlRHnEma1MScBK4Q//LVcdwqwQqb/ms8ZTp9LZJUF
+          hggBQ4SAIULA0M5DBtTu34vgsFFJzU7x0A21J565YxcJ1qIlJLzhE84JBpWczqlxun+8hLJ3eQiJ
+          vdvtveemFbLaVDK2unTNy8+2gI/Q8CQlGzczuAUJHS0h0TZ8BuZChMidI/kR1zi82qEfTGt82y0Z
+          K/Nk0CPvOXr6w2f8zGH12sEssgOO7To5qRYe97JOkd2QZS8YIgQMEQKGCAFDhIAhQsDQWvbmqCWk
+          WQNaZjJ2Lat7cpy6pwK01aQl7yTv7lQq2ZcR97FaQkpVomXWhnkJNPP1zUzRzZ4O6pgYISRqs/Ko
+          qaBUCUqJ+hitkMUlBz7xFK4R8Vfu/kAtRTQOdMHJYJ4M91Hzt96Yj9HO1KszvMaNQ5dHVVT3JuEm
+          +fyLo8LvrSH3bNT71/ypHgbfA/H9niI7I6ssMEQIGI6t9ppRmX6EatRKJx6vAyMq1veb3sfx37sn
+          Nd5LUGN/17rCp6uEcC5Qeyy+EFqgqEIq049S5cGjFI+Wob51CYENWdFOzRbbYBt2I8AK4RyHu92X
+          w9uwZtuzy4mVdNkB6JDFyWe5qhJ8mAkay+3y1Iy4+U/ajp2GlOD8XMR9FRqhxiq4TNIxMRpxncNm
+          LOBXWRy6OCHlEaObjDbknom4ZswfGhO6VdSdKDT98JsKymI+z5GTev2JIjVSUqhlMWOvUBNxvfqA
+          NhOW8er8FWr88s6orfH7YUkl+9JjPs+xqyweDZs5IsxgKY+LLq7pOZIYgiFCwBAhYIgQMEQIGCIE
+          jIQKibWZ5QHecdxKEi6EO9FXwzWpstT4HRhuJOEhi4uBXCQMH6Thai2fvBLMSXjcCHeoOP1vlFiF
+          TOpgiBAwRAgYIgQMEQKGCAFDhIAhQsAQIWBsc/v/U++eDNDtT53rPk9SlemlpvwyrfZSHVwthLtB
+          Tr95ZtrDtRa4meH9heuWNOm5OmQ1+z5uWAbDPbwv/T6yAlcLsUJGGKsOCrlaiM6pWF2KLXotVwup
+          OZYXt5NQhzpvIVUd9pIVuH6VxfBBTD6ksx64TdXKDkkRAoYkhmCIEDBECBgiBAwRAoYIAUOEgCFC
+          wBAhYIgQMEQIGCIEjP/gbExUn6rBYAAAAABJRU5ErkJggg==
+    - path: /skills/transcribe/references/api.md
+      text: |
+          # gpt-4o-transcribe-diarize quick reference
+
+          - Input formats: mp3, mp4, mpeg, mpga, m4a, wav, webm.
+          - Max file size: 25 MB per request.
+          - response_format options: text, json, diarized_json.
+          - For audio longer than ~30 seconds, pass chunking_strategy (use "auto" to split into chunks).
+          - Known speakers: up to 4 references via extra_body known_speaker_names + known_speaker_references (data URLs).
+          - Prompting is not supported for gpt-4o-transcribe-diarize.
+    - path: /skills/transcribe/scripts/transcribe_diarize.py
+      text: |
+          #!/usr/bin/env python3
+          """Transcribe audio (optionally with speaker diarization) using OpenAI."""
+
+          from __future__ import annotations
+
+          import argparse
+          import base64
+          import json
+          import mimetypes
+          import os
+          from pathlib import Path
+          import sys
+          from typing import Any, Dict, List, Optional, Tuple
+
+          DEFAULT_MODEL = "gpt-4o-mini-transcribe"
+          DEFAULT_RESPONSE_FORMAT = "text"
+          DEFAULT_CHUNKING_STRATEGY = "auto"
+          MAX_AUDIO_BYTES = 25 * 1024 * 1024
+          MAX_KNOWN_SPEAKERS = 4
+
+          ALLOWED_RESPONSE_FORMATS = {"text", "json", "diarized_json"}
+
+
+          def _die(message: str, code: int = 1) -> None:
+              print(f"Error: {message}", file=sys.stderr)
+              raise SystemExit(code)
+
+
+          def _warn(message: str) -> None:
+              print(f"Warning: {message}", file=sys.stderr)
+
+
+          def _ensure_api_key(dry_run: bool) -> None:
+              if os.getenv("OPENAI_API_KEY"):
+                  print("OPENAI_API_KEY is set.", file=sys.stderr)
+                  return
+              if dry_run:
+                  _warn("OPENAI_API_KEY is not set; dry-run only.")
+                  return
+              _die("OPENAI_API_KEY is not set. Export it before running.")
+
+
+          def _normalize_response_format(value: Optional[str]) -> str:
+              if not value:
+                  return DEFAULT_RESPONSE_FORMAT
+              fmt = value.strip().lower()
+              if fmt not in ALLOWED_RESPONSE_FORMATS:
+                  _die(
+                      "response-format must be one of: "
+                      + ", ".join(sorted(ALLOWED_RESPONSE_FORMATS))
+                  )
+              return fmt
+
+
+          def _normalize_chunking_strategy(value: Optional[str]) -> Any:
+              if not value:
+                  return DEFAULT_CHUNKING_STRATEGY
+              raw = str(value).strip()
+              if raw.startswith("{"):
+                  try:
+                      return json.loads(raw)
+                  except json.JSONDecodeError:
+                      _die("chunking-strategy JSON is invalid")
+              return raw
+
+
+          def _guess_mime_type(path: Path) -> str:
+              mime, _ = mimetypes.guess_type(str(path))
+              if mime:
+                  return mime
+              return "audio/wav"
+
+
+          def _encode_data_url(path: Path) -> str:
+              data = path.read_bytes()
+              mime = _guess_mime_type(path)
+              encoded = base64.b64encode(data).decode("ascii")
+              return f"data:{mime};base64,{encoded}"
+
+
+          def _parse_known_speakers(raw_items: List[str]) -> Tuple[List[str], List[str]]:
+              names: List[str] = []
+              refs: List[str] = []
+              for raw in raw_items:
+                  if "=" not in raw:
+                      _die("known-speaker must be NAME=PATH")
+                  name, path_str = raw.split("=", 1)
+                  name = name.strip()
+                  path = Path(path_str.strip())
+                  if not name or not path_str.strip():
+                      _die("known-speaker must be NAME=PATH")
+                  if not path.exists():
+                      _die(f"Known speaker file not found: {path}")
+                  names.append(name)
+                  refs.append(_encode_data_url(path))
+              if len(names) > MAX_KNOWN_SPEAKERS:
+                  _die(f"known speakers must be <= {MAX_KNOWN_SPEAKERS}")
+              return names, refs
+
+
+          def _output_extension(response_format: str) -> str:
+              return "txt" if response_format == "text" else "json"
+
+
+          def _build_output_path(
+              audio_path: Path,
+              response_format: str,
+              out: Optional[str],
+              out_dir: Optional[str],
+          ) -> Path:
+              ext = "." + _output_extension(response_format)
+              if out:
+                  path = Path(out)
+                  if path.exists() and path.is_dir():
+                      return path / f"{audio_path.stem}.transcript{ext}"
+                  if path.suffix == "":
+                      return path.with_suffix(ext)
+                  return path
+              if out_dir:
+                  base = Path(out_dir)
+                  base.mkdir(parents=True, exist_ok=True)
+                  return base / f"{audio_path.stem}.transcript{ext}"
+              return Path(f"{audio_path.stem}.transcript{ext}")
+
+
+          def _create_client():
+              try:
+                  from openai import OpenAI
+              except ImportError:
+                  _die("openai SDK not installed. Install with `uv pip install openai`.")
+              return OpenAI()
+
+
+          def _format_output(result: Any, response_format: str) -> str:
+              if response_format == "text":
+                  text = getattr(result, "text", None)
+                  return text if isinstance(text, str) else str(result)
+              if hasattr(result, "model_dump"):
+                  return json.dumps(result.model_dump(), indent=2)
+              if isinstance(result, (dict, list)):
+                  return json.dumps(result, indent=2)
+              return json.dumps({"text": getattr(result, "text", str(result))}, indent=2)
+
+
+          def _validate_audio(path: Path) -> None:
+              if not path.exists():
+                  _die(f"Audio file not found: {path}")
+              size = path.stat().st_size
+              if size > MAX_AUDIO_BYTES:
+                  _warn(
+                      f"Audio file exceeds 25MB limit ({size} bytes): {path}"
+                  )
+
+
+          def _build_payload(
+              args: argparse.Namespace,
+              known_speaker_names: List[str],
+              known_speaker_refs: List[str],
+          ) -> Dict[str, Any]:
+              payload: Dict[str, Any] = {
+                  "model": args.model,
+                  "response_format": args.response_format,
+                  "chunking_strategy": args.chunking_strategy,
+              }
+              if args.language:
+                  payload["language"] = args.language
+              if args.prompt:
+                  payload["prompt"] = args.prompt
+              if known_speaker_names:
+                  payload["extra_body"] = {
+                      "known_speaker_names": known_speaker_names,
+                      "known_speaker_references": known_speaker_refs,
+                  }
+              return payload
+
+
+          def _run_one(
+              client: Any,
+              audio_path: Path,
+              payload: Dict[str, Any],
+          ) -> Any:
+              with audio_path.open("rb") as audio_file:
+                  return client.audio.transcriptions.create(
+                      file=audio_file,
+                      **payload,
+                  )
+
+
+          def main() -> None:
+              parser = argparse.ArgumentParser(
+                  description="Transcribe audio (optionally with speaker diarization) using OpenAI."
+              )
+              parser.add_argument("audio", nargs="+", help="Audio file(s) to transcribe")
+              parser.add_argument(
+                  "--model",
+                  default=DEFAULT_MODEL,
+                  help=f"Model to use (default: {DEFAULT_MODEL})",
+              )
+              parser.add_argument(
+                  "--response-format",
+                  default=DEFAULT_RESPONSE_FORMAT,
+                  help="Response format: text, json, or diarized_json",
+              )
+              parser.add_argument(
+                  "--chunking-strategy",
+                  default=DEFAULT_CHUNKING_STRATEGY,
+                  help="Chunking strategy (use 'auto' for long audio)",
+              )
+              parser.add_argument("--language", help="Optional language hint (e.g. 'en')")
+              parser.add_argument("--prompt", help="Optional prompt to guide transcription")
+              parser.add_argument(
+                  "--known-speaker",
+                  action="append",
+                  default=[],
+                  help="Known speaker reference as NAME=PATH (repeatable, max 4)",
+              )
+              parser.add_argument("--out", help="Output file path (single audio only)")
+              parser.add_argument("--out-dir", help="Output directory for transcripts")
+              parser.add_argument(
+                  "--stdout",
+                  action="store_true",
+                  help="Write transcript to stdout instead of a file",
+              )
+              parser.add_argument(
+                  "--dry-run",
+                  action="store_true",
+                  help="Validate inputs and print payload without calling the API",
+              )
+
+              args = parser.parse_args()
+              args.response_format = _normalize_response_format(args.response_format)
+              args.chunking_strategy = _normalize_chunking_strategy(args.chunking_strategy)
+
+              if args.out and len(args.audio) > 1:
+                  _die("--out only supports a single audio file")
+              if args.stdout and (args.out or args.out_dir):
+                  _die("--stdout cannot be combined with --out or --out-dir")
+              if args.stdout and len(args.audio) > 1:
+                  _die("--stdout only supports a single audio file")
+
+              if args.prompt and "transcribe-diarize" in args.model:
+                  _die("prompt is not supported with gpt-4o-transcribe-diarize")
+              if args.response_format == "diarized_json" and "transcribe-diarize" not in args.model:
+                  _die("diarized_json requires gpt-4o-transcribe-diarize")
+
+              _ensure_api_key(args.dry_run)
+
+              audio_paths = [Path(p) for p in args.audio]
+              for path in audio_paths:
+                  _validate_audio(path)
+
+              known_names, known_refs = _parse_known_speakers(args.known_speaker)
+              if known_names and "transcribe-diarize" not in args.model:
+                  _warn("known-speaker references are only supported for gpt-4o-transcribe-diarize")
+              payload = _build_payload(args, known_names, known_refs)
+
+              if args.dry_run:
+                  print(json.dumps(payload, indent=2))
+                  return
+
+              client = _create_client()
+
+              for path in audio_paths:
+                  result = _run_one(client, path, payload)
+                  output = _format_output(result, args.response_format)
+                  if args.stdout:
+                      print(output)
+                      continue
+                  out_path = _build_output_path(path, args.response_format, args.out, args.out_dir)
+                  out_path.parent.mkdir(parents=True, exist_ok=True)
+                  out_path.write_text(output, encoding="utf-8")
+                  print(f"Wrote {out_path}")
+
+
+          if __name__ == "__main__":
+              main()
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: TRANSCRIBE_CLI
+      value: "/data/skills/transcribe/scripts/transcribe_diarize.py"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-transcribe
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
