@@ -2,13 +2,13 @@
   "id": "claude-product-management",
   "name": "Claude Product Management",
   "description": "An agent that uses Anthropic's product management knowledge work plugin",
-  "long_description": "This plugin supports product management workflows and is designed to help users complete practical work with less manual effort. It can shape product requirements and prioritize roadmap decisions, synthesize user feedback into actionable product insights, and draft product docs for planning, alignment, and execution. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for product management decisions, analysis, and communication.",
+  "long_description": "This agent helps product teams turn research, feedback, and market signals into clear, actionable plans and communications. Users can synthesize user research into prioritized insights, draft feature specifications and metrics to measure success, and produce concise roadmap and stakeholder updates that align cross-functional work. It also supports competitive analysis and recurring metrics reviews so teams can make informed prioritization and execution decisions. Small product teams and PMs can rely on it to standardize planning artifacts and accelerate alignment from discovery through delivery.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/603a618ac36a69e65de2ab944e65bc2e69a5dea5/knowledge-work-plugins/product-management/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/603a618ac36a69e65de2ab944e65bc2e69a5dea5/knowledge-work-plugins/product-management/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d9b688aa1ae10bcc4685e901f51455031db9ce50/knowledge-work-plugins/product-management/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d9b688aa1ae10bcc4685e901f51455031db9ce50/knowledge-work-plugins/product-management/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f0f676a22fb88a207b53af1e433e54385803523b/knowledge-work-plugins/product-management/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f0f676a22fb88a207b53af1e433e54385803523b/knowledge-work-plugins/product-management/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/28fff6d2c6be85be8d006e35ca7f1b227cc56887/knowledge-work-plugins/product-management/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/28fff6d2c6be85be8d006e35ca7f1b227cc56887/knowledge-work-plugins/product-management/agents.prod.yaml"
   }
 }
