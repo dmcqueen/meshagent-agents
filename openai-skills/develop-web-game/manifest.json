@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's develop-web-game skill and powered by gpt-5.2",
   "long_description": "This agent helps software teams and individual developers turn web game ideas into actionable development plans, playable prototypes, and step-by-step implementation guidance. It answers domain-specific questions about web game design and development, breaks down ambiguous requests into concrete tasks, and adapts recommendations to your goals, constraints, and project context so you can prioritize work and remove blockers. Use it to get clear task lists, technical trade-off explanations, and iterative guidance that moves a project from concept toward a working build and testing plan. The agent runs with a modern conversational model and is intended to support planning and authoring rather than execute deployments directly.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c2081b545c40832c2ad9940a9c8ac01975a22e8a/openai-skills/develop-web-game/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c2081b545c40832c2ad9940a9c8ac01975a22e8a/openai-skills/develop-web-game/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ac62e095b2326f536a2a05a84c7b1de18de3a1b/openai-skills/develop-web-game/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ac62e095b2326f536a2a05a84c7b1de18de3a1b/openai-skills/develop-web-game/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8cc7ee470e4b981679aa569af2f9b9d1af7e463b/openai-skills/develop-web-game/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8cc7ee470e4b981679aa569af2f9b9d1af7e463b/openai-skills/develop-web-game/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6314bc139c64e2c8d151f8c71a44f9e512f8d046/openai-skills/develop-web-game/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6314bc139c64e2c8d151f8c71a44f9e512f8d046/openai-skills/develop-web-game/agents.prod.yaml"
   }
 }
