@@ -10,10 +10,10 @@ This agent helps marketing teams generate and refine campaign concepts, produce 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4154b842ecc7d9e027b4856b5686c04d241ac82b/knowledge-work-plugins/marketing/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cbef651ccacc64df71eb801b914196c2834fea32/knowledge-work-plugins/marketing/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a8e35b476b9327dc087b332806c8114cf660658a/knowledge-work-plugins/marketing/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d1892f945017682ffb9c0260e7c7d28adb9ab00/knowledge-work-plugins/marketing/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4154b842ecc7d9e027b4856b5686c04d241ac82b/knowledge-work-plugins/marketing/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cbef651ccacc64df71eb801b914196c2834fea32/knowledge-work-plugins/marketing/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a8e35b476b9327dc087b332806c8114cf660658a/knowledge-work-plugins/marketing/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d1892f945017682ffb9c0260e7c7d28adb9ab00/knowledge-work-plugins/marketing/agents.prod.yaml
