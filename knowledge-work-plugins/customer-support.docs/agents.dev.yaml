@@ -37,36 +37,68 @@ container:
       text: |
           #!/bin/bash
 
-          set -e
+          set -u -o pipefail
+
+          STARTUP_LOG="/data/meshagent-startup.log"
+          SYNC_SCRIPT="/data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh"
+
+          mkdir -p /data
+          touch "${STARTUP_LOG}"
+
+          log_startup() {
+            local message="$1"
+            echo "[startup] $(date -u +"%Y-%m-%dT%H:%M:%SZ") ${message}" >> "${STARTUP_LOG}"
+          }
+
+          run_nonfatal() {
+            local description="$1"
+            shift
+            if "$@"; then
+              log_startup "ok: ${description}"
+            else
+              local exit_code=$?
+              log_startup "failed: ${description} (exit=${exit_code})"
+            fi
+          }
 
           mkdir -p /data/knowledge-work-plugins
           mkdir -p /data/agents/claude-customer-support-meshagent
           if [ -d /knowledge-work-plugins ]; then
-            cp -R -n /knowledge-work-plugins/. /data/knowledge-work-plugins/ 2>/dev/null || true
+            run_nonfatal "sync knowledge-work-plugins into room storage" cp -R -n /knowledge-work-plugins/. /data/knowledge-work-plugins/
           fi
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-chatbot.txt ]]; then
-            cp /var/rules-claude-customer-support-chatbot.txt /data/agents/claude-customer-support-meshagent/rules-chatbot.txt
+            run_nonfatal "stage chatbot rules" cp /var/rules-claude-customer-support-chatbot.txt /data/agents/claude-customer-support-meshagent/rules-chatbot.txt
           fi
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-mailbot.txt ]]; then
-            cp /var/rules-claude-customer-support-mailbot.txt /data/agents/claude-customer-support-meshagent/rules-mailbot.txt
+            run_nonfatal "stage mailbot rules" cp /var/rules-claude-customer-support-mailbot.txt /data/agents/claude-customer-support-meshagent/rules-mailbot.txt
           fi
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-supportagent.txt ]]; then
-            cp /var/rules-claude-customer-support-supportagent.txt /data/agents/claude-customer-support-meshagent/rules-supportagent.txt
+            run_nonfatal "stage supportagent rules" cp /var/rules-claude-customer-support-supportagent.txt /data/agents/claude-customer-support-meshagent/rules-supportagent.txt
           fi
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-git-worker.txt ]]; then
-            cp /var/rules-claude-customer-support-git-worker.txt /data/agents/claude-customer-support-meshagent/rules-git-worker.txt
+            run_nonfatal "stage worker rules" cp /var/rules-claude-customer-support-git-worker.txt /data/agents/claude-customer-support-meshagent/rules-git-worker.txt
           fi
 
-          cp /var/update-meshagent-docs.sh /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh
-          chmod +x /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh
+          if [[ -f /var/update-meshagent-docs.sh ]]; then
+            run_nonfatal "stage docs sync script" cp /var/update-meshagent-docs.sh "${SYNC_SCRIPT}"
+            run_nonfatal "set docs sync script executable" chmod +x "${SYNC_SCRIPT}"
+          else
+            log_startup "failed: stage docs sync script (/var/update-meshagent-docs.sh missing)"
+          fi
 
-          bash /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh
+          if [[ -x "${SYNC_SCRIPT}" ]]; then
+            run_nonfatal "run docs sync script" bash "${SYNC_SCRIPT}"
+          else
+            log_startup "skipped: run docs sync script (${SYNC_SCRIPT} missing or not executable)"
+          fi
 
-          MESHAGENT_TOKEN=$MESHAGENT_TOKEN_SUPPORTAGENT /usr/bin/meshagent task-runner join \
+          SUPPORTAGENT_TOKEN="${MESHAGENT_TOKEN_SUPPORTAGENT:-}"
+          MESHAGENT_TOKEN="${SUPPORTAGENT_TOKEN}" /usr/bin/meshagent task-runner join \
             --require-shell \
-            -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt &
+            -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt >> "${STARTUP_LOG}" 2>&1 &
+          log_startup "started task-runner join in background (pid=$!)"
 
-          exec /usr/bin/meshagent multi join -c "chatbot \
+          if /usr/bin/meshagent multi join -c "chatbot \
             --agent-name claude-customer-support-meshagent \
             --require-web-search \
             --require-toolkit=SupportAgent \
@@ -104,7 +136,13 @@ container:
             --queue docs-sync \
             --require-shell \
             --require-toolkit=email \
-            --room-rules /agents/claude-customer-support-meshagent/rules-git-worker.txt"
+            --room-rules /agents/claude-customer-support-meshagent/rules-git-worker.txt"; then
+            log_startup "meshagent multi join exited cleanly"
+          else
+            exit_code=$?
+            log_startup "failed: meshagent multi join (exit=${exit_code}); keeping container alive for log inspection"
+            tail -f /dev/null
+          fi
     - path: /var/rules-claude-customer-support-chatbot.txt
       read_only: true
       text: |
