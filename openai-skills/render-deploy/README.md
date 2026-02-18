@@ -10,10 +10,10 @@ This plugin supports render-deploy workflows and is designed to help users compl
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/251b6e3c109fb239f2b822927ec222ba0c347ed7/openai-skills/render-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5e1ab142e910340c0c28a3cc7a4f567671f244a4/openai-skills/render-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61c522a20cefda35fa8b15ff5d58350d096834d3/openai-skills/render-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3de2fa6ca23e1b308bc15add6636bd902c1fd4e7/openai-skills/render-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/251b6e3c109fb239f2b822927ec222ba0c347ed7/openai-skills/render-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5e1ab142e910340c0c28a3cc7a4f567671f244a4/openai-skills/render-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61c522a20cefda35fa8b15ff5d58350d096834d3/openai-skills/render-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3de2fa6ca23e1b308bc15add6636bd902c1fd4e7/openai-skills/render-deploy/agents.prod.yaml
