@@ -10,10 +10,10 @@ This agent enables teams to transcribe audio and extract structured insights fro
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86b6856b4e9328fb9ce72262bb48aa5b8972b0d6/openai-skills/transcribe/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/efce130ac94d63cb945ea82e47039a39e5ae1b03/openai-skills/transcribe/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f2e4a7ef5db3845253240622218bb9bda56d0a24/openai-skills/transcribe/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03f23e7e73474c54343555a29b44c48c1a706b7e/openai-skills/transcribe/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86b6856b4e9328fb9ce72262bb48aa5b8972b0d6/openai-skills/transcribe/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/efce130ac94d63cb945ea82e47039a39e5ae1b03/openai-skills/transcribe/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f2e4a7ef5db3845253240622218bb9bda56d0a24/openai-skills/transcribe/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03f23e7e73474c54343555a29b44c48c1a706b7e/openai-skills/transcribe/agents.prod.yaml
