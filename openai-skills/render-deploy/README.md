@@ -6,14 +6,14 @@ An agent that uses OpenAI's render-deploy skill and powered by gpt-5.2
 
 ## Description
 
-This plugin supports render-deploy workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in render-deploy work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for render-deploy decisions, analysis, and communication.
+This agent helps teams and users translate render-deploy needs into concrete, actionable outputs: ask domain-specific questions about render deployment, get clarified requirements, and receive step-by-step guidance tailored to project goals and constraints. It assists in turning ambiguous requests into clear plans and recommended actions that move deployments forward, helping coordinate tasks and decisions across teams. The agent adapts advice to the user’s context so outcomes are practical and aligned with objectives, enabling faster, more reliable render deployment progress. It operates as an interactive assistant to streamline planning, troubleshooting, and execution of render-deploy work.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61c522a20cefda35fa8b15ff5d58350d096834d3/openai-skills/render-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3de2fa6ca23e1b308bc15add6636bd902c1fd4e7/openai-skills/render-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/48c4ce66f447318836edfd9b13153113d865d4b5/openai-skills/render-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d6bd201c66a47741ca36af79a156a91cd3a3efa/openai-skills/render-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61c522a20cefda35fa8b15ff5d58350d096834d3/openai-skills/render-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3de2fa6ca23e1b308bc15add6636bd902c1fd4e7/openai-skills/render-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/48c4ce66f447318836edfd9b13153113d865d4b5/openai-skills/render-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d6bd201c66a47741ca36af79a156a91cd3a3efa/openai-skills/render-deploy/agents.prod.yaml
