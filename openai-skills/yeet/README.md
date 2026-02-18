@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's yeet skill and powered by gpt-5.2
+An agent that uses OpenAI's yeet skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps users and teams get clear, actionable guidance and answers for 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ba610c6a74837c23e9a9d1b13ff13ab4e7845b9/openai-skills/yeet/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd61810b40aeef7279a74041642b7c5446209d08/openai-skills/yeet/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8017773b5dcdfb1ff3f0a2e029417f0532b2a1a4/openai-skills/yeet/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c9433073a0e61b0e907e7d21aac9bd61bb5300ce/openai-skills/yeet/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ba610c6a74837c23e9a9d1b13ff13ab4e7845b9/openai-skills/yeet/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd61810b40aeef7279a74041642b7c5446209d08/openai-skills/yeet/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8017773b5dcdfb1ff3f0a2e029417f0532b2a1a4/openai-skills/yeet/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c9433073a0e61b0e907e7d21aac9bd61bb5300ce/openai-skills/yeet/agents.prod.yaml
