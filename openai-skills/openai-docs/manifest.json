@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's openai-docs skill and powered by gpt-5.2",
   "long_description": "This agent helps users and teams interactively explore and apply documentation and guidance for the openai-docs domain, turning ambiguous or high-level requests into clear, actionable steps and recommendations. It can answer domain-specific questions about the documentation, explain concepts, and adapt its guidance to your goals, constraints, and context so you can plan, implement, or review documentation-related work more effectively. Use it to generate task lists, clarify requirements, and obtain context-aware explanations that help move documentation projects forward. The agent runs with a capable model runtime to deliver conversational, goal-focused assistance tailored to documentation workflows.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ff4a8f468393657831b3f8c39b2341800a31252/openai-skills/openai-docs/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ff4a8f468393657831b3f8c39b2341800a31252/openai-skills/openai-docs/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7552922d10b76917345a4cfaa846d696fcf2aa57/openai-skills/openai-docs/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7552922d10b76917345a4cfaa846d696fcf2aa57/openai-skills/openai-docs/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f77f59a8b8834d25436523d78a3a60b8a34cbb9/openai-skills/openai-docs/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f77f59a8b8834d25436523d78a3a60b8a34cbb9/openai-skills/openai-docs/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0a16a5a315c86496bbbf561648e8956ca754f219/openai-skills/openai-docs/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0a16a5a315c86496bbbf561648e8956ca754f219/openai-skills/openai-docs/agents.prod.yaml"
   }
 }
