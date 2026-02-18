@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-gh-fix-ci
-  description: An agent that uses OpenAI's gh-fix-ci skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's gh-fix-ci skill
   annotations:
     meshagent.service.id: meshagent.openai-gh-fix-ci
 
