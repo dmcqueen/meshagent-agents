@@ -1,0 +1,2369 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-sora
+  description: An agent that uses OpenAI's sora skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-sora
+
+agents:
+  - name: openai-sora
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-web-search \
+            --require-shell \
+            --delegate-shell-token \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-sora/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-sora/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/sora
+    - path: /skills/sora/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+          1. Definitions.
+
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+
+          END OF TERMS AND CONDITIONS
+
+          APPENDIX: How to apply the Apache License to your work.
+
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+
+          Copyright [yyyy] [name of copyright owner]
+
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+
+              http://www.apache.org/licenses/LICENSE-2.0
+
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
+    - path: /skills/sora/SKILL.md
+      text: |
+          ---
+          name: "sora"
+          description: "Use when the user asks to generate, remix, poll, list, download, or delete Sora videos via OpenAI\u2019s video API using the bundled CLI (`scripts/sora.py`), including requests like \u201cgenerate AI video,\u201d \u201cSora,\u201d \u201cvideo remix,\u201d \u201cdownload video/thumbnail/spritesheet,\u201d and batch video generation; requires `OPENAI_API_KEY` and Sora API access."
+          ---
+
+
+          # Sora Video Generation Skill
+
+          Creates or manages short video clips for the current project (product demos, marketing spots, cinematic shots, UI mocks). Defaults to `sora-2` and a structured prompt augmentation workflow, and prefers the bundled CLI for deterministic runs. Note: `$sora` is a skill tag in prompts, not a shell command.
+
+          ## When to use
+          - Generate a new video clip from a prompt
+          - Remix an existing video by ID
+          - Poll status, list jobs, or download assets (video/thumbnail/spritesheet)
+          - Batch runs (many prompts or variants)
+
+          ## Decision tree (create vs remix vs status/download vs batch)
+          - If the user has a **video id** and wants a change → **remix**
+          - If the user has a **video id** and wants status or assets → **status/poll/download**
+          - If the user needs many prompts/assets → **create-batch**
+          - If the user asks for two versions with a small change (same shot, different subject/detail) → **create** the base, then **remix** for the variation
+          - Otherwise → **create** (or **create-and-poll** if they need a ready asset in one step)
+
+          ## Workflow
+          1. Decide intent: create vs remix vs status/download vs batch.
+          2. Collect inputs: prompt, model, size, seconds, and any input reference image.
+          3. If batch: write a temporary JSONL under tmp/ (one job per line), run once, then delete the JSONL.
+          4. Prefer CLI augmentation flags (`--use-case`, `--scene`, `--camera`, etc.) instead of pre-writing a structured prompt. If you already produced a structured prompt file, pass `--no-augment` to avoid double-wrapping.
+          5. Run the bundled CLI (`scripts/sora.py`) with sensible defaults (see references/cli.md). For long prompts, prefer `--prompt-file` to avoid shell-escaping issues; pair with `--no-augment` if the prompt is already structured.
+          6. For async jobs, poll until complete (or use create-and-poll).
+          7. Download assets (video/thumbnail/spritesheet) and save locally.
+          8. Remove intermediate files created during invocation (for example `prompt.txt`, `remix_job.json`, temp JSONL). If the sandbox blocks `rm`, skip cleanup or truncate the files without surfacing an error.
+          9. Iterate with a single targeted change per prompt.
+
+          ## Authentication
+          - `OPENAI_API_KEY` must be set for live API calls.
+
+          If the key is missing, give the user these steps:
+          1. Create an API key in the OpenAI platform UI: https://platform.openai.com/api-keys
+          2. Set `OPENAI_API_KEY` as an environment variable in their system.
+          3. Offer to guide them through setting the environment variable for their OS/shell if needed.
+          - Never ask the user to paste the full key in chat. Ask them to set it locally and confirm when ready.
+
+          ## Defaults & rules
+          - Default model: `sora-2` (use `sora-2-pro` for higher fidelity).
+          - Default size: `1280x720`.
+          - Default seconds: `4` (allowed: "4", "8", "12" as strings).
+          - Always set size and seconds via API params; prose will not change them.
+          - Use the OpenAI Python SDK (`openai` package); do not use raw HTTP.
+          - Require `OPENAI_API_KEY` before any live API call.
+          - If uv cache permissions fail, set `UV_CACHE_DIR=/tmp/uv-cache`.
+          - Input reference images must be jpg/png/webp and should match target size.
+          - Download URLs expire after about 1 hour; copy assets to your own storage.
+          - Prefer the bundled CLI and **never modify** `scripts/sora.py` unless the user asks.
+          - Sora can generate audio; if a user requests voiceover/audio, specify it explicitly in the `Audio:` and `Dialogue:` lines and keep it short.
+
+          ## API limitations
+          - Models are limited to `sora-2` and `sora-2-pro`.
+          - API access to Sora models requires an organization-verified account.
+          - Duration is limited to 4/8/12 seconds and must be set via the `seconds` parameter.
+          - The API expects `seconds` as a string enum ("4", "8", "12").
+          - Output sizes are limited by model (see `references/video-api.md` for the supported sizes).
+          - Video creation is async; you must poll for completion before downloading.
+          - Rate limits apply by usage tier (do not list specific limits).
+          - Content restrictions are enforced by the API (see Guardrails below).
+
+          ## Guardrails (must enforce)
+          - Only content suitable for audiences under 18.
+          - No copyrighted characters or copyrighted music.
+          - No real people (including public figures).
+          - Input images with human faces are rejected.
+
+          ## Prompt augmentation
+          Reformat prompts into a structured, production-oriented spec. Only make implicit details explicit; do not invent new creative requirements.
+
+          Template (include only relevant lines):
+          ```
+          Use case: <where the clip will be used>
+          Primary request: <user's main prompt>
+          Scene/background: <location, time of day, atmosphere>
+          Subject: <main subject>
+          Action: <single clear action>
+          Camera: <shot type, angle, motion>
+          Lighting/mood: <lighting + mood>
+          Color palette: <3-5 color anchors>
+          Style/format: <film/animation/format cues>
+          Timing/beats: <counts or beats>
+          Audio: <ambient cue / music / voiceover if requested>
+          Text (verbatim): "<exact text>"
+          Dialogue:
+          <dialogue>
+          - Speaker: "Short line."
+          </dialogue>
+          Constraints: <must keep/must avoid>
+          Avoid: <negative constraints>
+          ```
+
+          Augmentation rules:
+          - Keep it short; add only details the user already implied or provided elsewhere.
+          - For remixes, explicitly list invariants ("same shot, change only X").
+          - If any critical detail is missing and blocks success, ask a question; otherwise proceed.
+          - If you pass a structured prompt file to the CLI, add `--no-augment` to avoid the tool re-wrapping it.
+
+          ## Examples
+
+          ### Generation example (single shot)
+          ```
+          Use case: product teaser
+          Primary request: a close-up of a matte black camera on a pedestal
+          Action: slow 30-degree orbit over 4 seconds
+          Camera: 85mm, shallow depth of field, gentle handheld drift
+          Lighting/mood: soft key light, subtle rim, premium studio feel
+          Constraints: no logos, no text
+          ```
+
+          ### Remix example (invariants)
+          ```
+          Primary request: same shot and framing, switch palette to teal/sand/rust with warmer backlight
+          Constraints: keep the subject and camera move unchanged
+          ```
+
+          ## Prompting best practices (short list)
+          - One main action + one camera move per shot.
+          - Use counts or beats for timing ("two steps, pause, turn").
+          - Keep text short and the camera locked-off for UI or on-screen text.
+          - Add a brief avoid line when artifacts appear (flicker, jitter, fast motion).
+          - Shorter prompts are more creative; longer prompts are more controlled.
+          - Put dialogue in a dedicated block; keep lines short for 4-8s clips.
+          - State invariants explicitly for remixes (same shot, same camera move).
+          - Iterate with single-change follow-ups to preserve continuity.
+
+          ## Guidance by asset type
+          Use these modules when the request is for a specific artifact. They provide targeted templates and defaults.
+          - Cinematic shots: `references/cinematic-shots.md`
+          - Social ads: `references/social-ads.md`
+
+          ## CLI + environment notes
+          - CLI commands + examples: `references/cli.md`
+          - API parameter quick reference: `references/video-api.md`
+          - Prompting guidance: `references/prompting.md`
+          - Sample prompts: `references/sample-prompts.md`
+          - Troubleshooting: `references/troubleshooting.md`
+          - Network/sandbox tips: `references/codex-network.md`
+
+          ## Reference map
+          - **`references/cli.md`**: how to run create/poll/remix/download/batch via `scripts/sora.py`.
+          - **`references/video-api.md`**: API-level knobs (models, sizes, duration, variants, status).
+          - **`references/prompting.md`**: prompt structure and iteration guidance.
+          - **`references/sample-prompts.md`**: copy/paste prompt recipes (examples only; no extra theory).
+          - **`references/cinematic-shots.md`**: templates for filmic shots.
+          - **`references/social-ads.md`**: templates for short social ad beats.
+          - **`references/troubleshooting.md`**: common errors and fixes.
+          - **`references/codex-network.md`**: network/approval troubleshooting.
+    - path: /skills/sora/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Sora Video Generation Skill"
+            short_description: "Generate and manage Sora videos"
+            icon_small: "./assets/sora-small.svg"
+            icon_large: "./assets/sora.png"
+            default_prompt: "Plan and generate a Sora video for this request, then iterate with concrete prompt edits."
+    - path: /skills/sora/assets/sora-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 14 14">
+            <path fill="currentColor" fill-rule="evenodd" d="M4.668 4.896c.552-.148 1.113.252 1.288.905l.192.718c.175.654-.11 1.281-.662 1.429-.551.147-1.112-.252-1.287-.906l-.193-.719c-.175-.654.111-1.28.662-1.427Zm.16.403a.057.057 0 0 0-.096.026l-.088.362a.058.058 0 0 1-.016.027l-.27.258a.057.057 0 0 0 .027.096l.361.088c.01.002.02.008.028.016l.257.269c.031.032.086.018.096-.025l.088-.362a.06.06 0 0 1 .016-.028l.27-.257a.057.057 0 0 0-.026-.096l-.362-.089a.058.058 0 0 1-.028-.015l-.257-.27Zm2.685-1.166c.551-.148 1.112.252 1.287.905l.192.719c.175.654-.11 1.28-.662 1.428-.551.147-1.111-.253-1.286-.907L6.85 5.56c-.175-.654.11-1.28.662-1.427Zm.159.403a.057.057 0 0 0-.096.026l-.088.361a.057.057 0 0 1-.016.028l-.27.257a.057.057 0 0 0 .026.096l.362.089c.01.002.02.007.028.015l.257.27a.057.057 0 0 0 .096-.026l.088-.362a.058.058 0 0 1 .016-.027l.27-.258a.057.057 0 0 0-.027-.096l-.36-.088a.058.058 0 0 1-.029-.016l-.257-.27Z" clip-rule="evenodd"/>
+            <path fill="currentColor" fill-rule="evenodd" d="M6.001 1.167c.743 0 1.423.27 1.948.715a3.015 3.015 0 0 1 3.502 3.502c.446.525.716 1.206.716 1.948 0 1.308-.834 2.42-1.997 2.838a3.015 3.015 0 0 1-4.786 1.281A3.015 3.015 0 0 1 1.882 7.95a3.004 3.004 0 0 1-.71-1.793l-.005-.155c0-1.308.833-2.42 1.996-2.839A3.016 3.016 0 0 1 6 1.167Zm0 .885c-.985 0-1.815.67-2.058 1.578a.444.444 0 0 1-.313.313 2.13 2.13 0 0 0-.954 3.564.443.443 0 0 1 .115.427 2.13 2.13 0 0 0 2.609 2.61l.057-.012a.443.443 0 0 1 .37.126 2.131 2.131 0 0 0 3.564-.955l.018-.056a.443.443 0 0 1 .294-.257 2.131 2.131 0 0 0 .955-3.564.443.443 0 0 1-.115-.427 2.13 2.13 0 0 0-2.61-2.61.443.443 0 0 1-.426-.113 2.123 2.123 0 0 0-1.396-.622l-.11-.002Z" clip-rule="evenodd"/>
+          </svg>
+    - path: /skills/sora/assets/sora.png.b64
+      text: |
+          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
+    - path: /skills/sora/references/cinematic-shots.md
+      text: |
+          # Cinematic shot templates
+
+          Use these for filmic, mood-forward clips. Keep one subject, one action, one camera move.
+
+          ## Shot grammar (pick one)
+          - Static wide: locked-off, slow atmosphere changes
+          - Dolly-in: slow push toward subject
+          - Dolly-out: reveal more context
+          - Orbit: 15-45 degree arc around subject
+          - Lateral move: smooth left-right slide
+          - Crane: subtle vertical rise
+          - Handheld drift: gentle, controlled sway
+
+          ## Default template
+          ```
+          Use case: cinematic shot
+          Primary request: <subject + setting>
+          Scene/background: <location, time of day, atmosphere>
+          Subject: <main subject>
+          Action: <one clear action>
+          Camera: <shot type, lens, motion>
+          Lighting/mood: <key light + mood>
+          Color palette: <3-5 anchors>
+          Style/format: filmic, natural grain
+          Constraints: no logos, no text, no people
+          Avoid: jitter; flicker; oversharpening
+          ```
+
+          ## Example: moody exterior
+          ```
+          Use case: cinematic shot
+          Primary request: a lone cabin on a cliff above the sea
+          Scene/background: foggy coastline at dawn, drifting mist
+          Subject: small wooden cabin with warm window glow
+          Action: light fog rolls past the cabin
+          Camera: slow dolly-in, 35mm, steady
+          Lighting/mood: moody, soft dawn light, subtle contrast
+          Color palette: deep blue, slate, warm amber
+          Constraints: no logos, no text, no people
+          ```
+
+          ## Example: intimate detail
+          ```
+          Use case: cinematic detail
+          Primary request: close-up of a vinyl record spinning
+          Scene/background: dim room, soft lamp glow
+          Subject: record grooves and stylus
+          Action: slow rotation, subtle dust motes
+          Camera: macro, locked-off
+          Lighting/mood: warm, low-key, soft highlights
+          Color palette: warm amber, deep brown, charcoal
+          Constraints: no logos, no text
+          ```
+    - path: /skills/sora/references/cli.md
+      text: |
+          # CLI reference (`scripts/sora.py`)
+
+          This file contains the command catalog for the bundled video generation CLI. Keep `SKILL.md` overview-first; put verbose CLI details here.
+
+          ## What this CLI does
+          - `create`: create a new video job (async)
+          - `create-and-poll`: create a job, poll until complete, optionally download
+          - `poll`: wait for an existing job to finish
+          - `status`: retrieve job status/details
+          - `download`: download video/thumbnail/spritesheet
+          - `list`: list recent jobs
+          - `delete`: delete a job
+          - `remix`: remix a completed video
+          - `create-batch`: create multiple jobs from a JSONL file
+
+          Real API calls require **network access** + `OPENAI_API_KEY`. `--dry-run` does not.
+
+          ## Quick start (works from any repo)
+          Set a stable path to the skill CLI (default `CODEX_HOME` is `~/.codex`):
+
+          ```
+          export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+          export SORA_CLI="$CODEX_HOME/skills/sora/scripts/sora.py"
+          ```
+
+          If you're in this repo, you can set the path directly:
+
+          ```
+          # Use repo root (tests run from output/* so $PWD is not the root)
+          export SORA_CLI="$(git rev-parse --show-toplevel)/<path-to-skill>/scripts/sora.py"
+          ```
+
+          If `git` isn't available, set `SORA_CLI` to the absolute path to `<path-to-skill>/scripts/sora.py`.
+
+          If uv cache fails with permission errors, set a writable cache:
+
+          ```
+          export UV_CACHE_DIR="/tmp/uv-cache"
+          ```
+
+          Dry-run (no API call; no network required; does not require the `openai` package):
+
+          ```
+          python "$SORA_CLI" create --prompt "Test" --dry-run
+          ```
+
+          Preflight a full prompt without running the API:
+
+          ```
+          python "$SORA_CLI" create --prompt-file prompt.txt --dry-run --json-out out/request.json
+          ```
+
+          Create a job (requires `OPENAI_API_KEY` + network):
+
+          ```
+          uv run --with openai python "$SORA_CLI" create \
+            --model sora-2 \
+            --prompt "Wide tracking shot of a teal coupe on a desert highway" \
+            --size 1280x720 \
+            --seconds 8
+          ```
+
+          Create from a prompt file (avoids shell-escaping issues for multi-line prompts):
+
+          ```
+          cat > prompt.txt << 'EOF'
+          Use case: landing page hero
+          Primary request: a matte black camera on a pedestal
+          Action: slow 30-degree orbit over 4 seconds
+          Camera: 85mm, shallow depth of field
+          Lighting/mood: soft key light, subtle rim
+          Constraints: no logos, no text
+          EOF
+
+          uv run --with openai python "$SORA_CLI" create \
+            --prompt-file prompt.txt \
+            --size 1280x720 \
+            --seconds 4
+          ```
+
+          If your prompt file is already structured (Use case/Scene/Camera/etc), disable tool augmentation:
+
+          ```
+          uv run --with openai python "$SORA_CLI" create \
+            --prompt-file prompt.txt \
+            --no-augment \
+            --size 1280x720 \
+            --seconds 4
+          ```
+
+          Create + poll + download:
+
+          ```
+          uv run --with openai python "$SORA_CLI" create-and-poll \
+            --model sora-2-pro \
+            --prompt "Close-up of a steaming coffee cup on a wooden table" \
+            --size 1280x720 \
+            --seconds 8 \
+            --download \
+            --variant video \
+            --out coffee.mp4
+          ```
+
+          Create + poll + write JSON bundle:
+
+          ```
+          uv run --with openai python "$SORA_CLI" create-and-poll \
+            --prompt "Minimal product teaser of a matte black camera" \
+            --json-out out/coffee-job.json
+          ```
+
+          Remix a completed video:
+
+          ```
+          uv run --with openai python "$SORA_CLI" remix \
+            --id video_abc123 \
+            --prompt "Same shot, shift palette to teal/sand/rust with warm backlight."
+          ```
+
+          Download a thumbnail or spritesheet:
+
+          ```
+          uv run --with openai python "$SORA_CLI" download --id video_abc123 --variant thumbnail --out thumb.webp
+          uv run --with openai python "$SORA_CLI" download --id video_abc123 --variant spritesheet --out sheet.jpg
+          ```
+
+          ## Guardrails (important)
+          - Use `python "$SORA_CLI" ...` (or equivalent full path) for all video work.
+          - For API calls, prefer `uv run --with openai ...` to avoid missing SDK errors.
+          - Do **not** create one-off runners unless the user explicitly asks.
+          - **Never modify** `scripts/sora.py` unless the user asks.
+
+          ## Defaults (unless overridden by flags)
+          - Model: `sora-2`
+          - Size: `1280x720`
+          - Seconds: `4` (API expects a string enum: "4", "8", "12")
+          - Variant: `video`
+          - Poll interval: `10` seconds
+
+          ## JSON output (`--json-out`)
+          - For `create`, `status`, `list`, `delete`, `poll`, and `remix`, `--json-out` writes the JSON response to a file.
+          - For `create-and-poll`, `--json-out` writes a bundle: `{ "create": ..., "final": ... }`.
+          - If the path has no extension, `.json` is added automatically.
+          - In `--dry-run`, `--json-out` writes the request preview instead of a response.
+
+          ## Input reference images
+          - Must be jpg/png/webp; they should match the target size.
+          - Provide the path with `--input-reference`.
+
+          ## Optional deps
+          Prefer `uv run --with ...` for an out-of-the-box run without changing the current project env; otherwise install into your active env:
+
+          ```
+          uv pip install openai
+          ```
+
+          ## JSONL schema for `create-batch`
+          Each line is a JSON object (or a raw prompt string). Required key: `prompt`.
+
+          Top-level override keys:
+          - `model`, `size`, `seconds`
+          - `input_reference` (path)
+          - `out` (optional output filename for the job JSON)
+
+          Prompt augmentation keys (top-level or under `fields`):
+          - `use_case`, `scene`, `subject`, `action`, `camera`, `style`, `lighting`, `palette`, `audio`, `dialogue`, `text`, `timing`, `constraints`, `negative`
+
+          Notes:
+          - `fields` merges into the prompt augmentation inputs.
+          - Top-level keys override CLI defaults.
+          - `seconds` must be one of: "4", "8", "12".
+
+          ## Common recipes
+
+          Create with prompt augmentation fields:
+
+          ```
+          uv run --with openai python "$SORA_CLI" create \
+            --prompt "A minimal product teaser shot of a matte black camera" \
+            --use-case "landing page hero" \
+            --camera "85mm, slow orbit" \
+            --lighting "soft key, subtle rim" \
+            --constraints "no logos, no text"
+          ```
+
+          Two-variant workflow (base + remix):
+
+          ```
+          # 1) Base clip
+          uv run --with openai python "$SORA_CLI" create-and-poll \
+            --prompt "Ceramic mug on a sunlit wooden table in a cozy cafe" \
+            --size 1280x720 --seconds 4 --download --out output.mp4
+
+          # 2) Remix with invariant (same shot, change only the drink)
+          uv run --with openai python "$SORA_CLI" remix \
+            --id video_abc123 \
+            --prompt "Same shot and framing; replace the mug with an iced americano in a glass, visible ice and condensation."
+
+          # 3) Poll and download the remix
+          uv run --with openai python "$SORA_CLI" poll \
+            --id video_def456 --download --out remix.mp4
+          ```
+
+          Poll and download after a job finishes:
+
+          ```
+          uv run --with openai python "$SORA_CLI" poll --id video_abc123 --download --variant video --out out.mp4
+          ```
+
+          Write JSON response to a file:
+
+          ```
+          uv run --with openai python "$SORA_CLI" status --id video_abc123 --json-out out/status.json
+          ```
+
+          Batch create (JSONL input):
+
+          ```
+          mkdir -p tmp/sora
+          cat > tmp/sora/prompts.jsonl << 'EOB'
+          {"prompt":"A neon-lit rainy alley, slow dolly-in","seconds":"4"}
+          {"prompt":"A warm sunrise over a misty lake, gentle pan","seconds":"8",
+           "fields":{"camera":"35mm, slow pan","lighting":"soft dawn light"}}
+          EOB
+
+          uv run --with openai python "$SORA_CLI" create-batch --input tmp/sora/prompts.jsonl --out-dir out --concurrency 3
+
+          # Cleanup (recommended)
+          rm -f tmp/sora/prompts.jsonl
+          ```
+
+          Notes:
+          - `create-batch` writes one JSON response per job under `--out-dir`.
+          - Output names default to `NNN-<prompt-slug>.json`.
+          - Use `--concurrency` to control parallelism (default `3`). Higher concurrency can hit rate limits.
+          - Treat the JSONL file as temporary: write it under `tmp/` and delete it after the run (do not commit it). If `rm` is blocked in your sandbox, skip cleanup or truncate the file.
+
+          ## CLI notes
+          - Supported sizes depend on model (see `references/video-api.md`).
+          - Seconds are limited to 4, 8, or 12.
+          - Download URLs expire after about 1 hour; copy assets to your own storage.
+          - In CI/sandboxes where long-running commands time out, prefer `create` + `poll` (or add `--timeout`).
+
+          ## See also
+          - API parameter quick reference: `references/video-api.md`
+          - Prompt structure and examples: `references/prompting.md`
+          - Sample prompts: `references/sample-prompts.md`
+          - Troubleshooting: `references/troubleshooting.md`
+    - path: /skills/sora/references/codex-network.md
+      text: |
+          # Codex network approvals / sandbox notes
+
+          This guidance is intentionally isolated from `SKILL.md` because it can vary by environment and may become stale. Prefer the defaults in your environment when in doubt.
+
+          ## Why am I asked to approve every video generation call?
+          Video generation uses the OpenAI Video API, so the CLI needs outbound network access. In many Codex setups, network access is disabled by default (especially under stricter sandbox modes), and/or the approval policy may require confirmation before networked commands run.
+
+          ## How do I reduce repeated approval prompts (network)?
+          If you trust the repo and want fewer prompts, enable network access for the relevant sandbox mode and relax the approval policy.
+
+          Example `~/.codex/config.toml` pattern:
+
+          ```
+          approval_policy = "never"
+          sandbox_mode = "workspace-write"
+
+          [sandbox_workspace_write]
+          network_access = true
+          ```
+
+          Or for a single session:
+
+          ```
+          codex --sandbox workspace-write --ask-for-approval never
+          ```
+
+          ## Safety note
+          Use caution: enabling network and disabling approvals reduces friction but increases risk if you run untrusted code or work in an untrusted repository.
+    - path: /skills/sora/references/prompting.md
+      text: |
+          # Prompting best practices (Sora)
+
+          ## Contents
+          - [Mindset & tradeoffs](#mindset--tradeoffs)
+          - [API-controlled params](#api-controlled-params)
+          - [Structure](#structure)
+          - [Specificity](#specificity)
+          - [Style & visual cues](#style--visual-cues)
+          - [Camera & composition](#camera--composition)
+          - [Motion & timing](#motion--timing)
+          - [Lighting & palette](#lighting--palette)
+          - [Character continuity](#character-continuity)
+          - [Multi-shot prompts](#multi-shot-prompts)
+          - [Ultra-detailed briefs](#ultra-detailed-briefs)
+          - [Image input](#image-input)
+          - [Constraints & invariants](#constraints--invariants)
+          - [Text, dialogue & audio](#text-dialogue--audio)
+          - [Avoiding artifacts](#avoiding-artifacts)
+          - [Remixing](#remixing)
+          - [Iterate deliberately](#iterate-deliberately)
+
+          ## Mindset & tradeoffs
+          - Treat the prompt like a cinematography brief, not a contract.
+          - The same prompt can yield different results; rerun for variants.
+          - Short prompts give more creative freedom; longer prompts give more control.
+          - Shorter clips tend to follow instructions better; consider stitching two 4s clips instead of a single 8s if precision matters.
+
+          ## API-controlled params
+          - Model, size, and seconds are controlled by API params, not prose.
+          - Put desired duration in the `seconds` param; the prompt cannot make a clip longer.
+
+          ## Structure
+          - Use short labeled lines; omit sections that do not matter.
+          - Keep one main subject and one main action.
+          - Put timing in beats or counts if it matters.
+          - If you prefer a prose-first template, use:
+          ```
+          <Prose scene description in plain language. Describe subject, setting, time of day, and key visual details.>
+
+          Cinematography:
+          Camera shot: <framing + angle>
+          Mood: <tone>
+
+          Actions:
+          - <clear action beat>
+          - <clear action beat>
+
+          Dialogue:
+          <short lines if needed>
+          ```
+
+          ## Specificity
+          - Name the subject and materials (metal, fabric, glass).
+          - Use camera language (lens, angle, shot type) for stability.
+          - Describe the environment with time of day and atmosphere.
+
+          ## Style & visual cues
+          - Set style early (e.g., "1970s film", "IMAX-scale", "16mm black-and-white").
+          - Use visible nouns and verbs, not vague adjectives.
+          - Weak: "A beautiful street at night."
+          - Strong: "Wet asphalt, zebra crosswalk, neon signs reflecting in puddles."
+
+          ## Camera & composition
+          - Prefer one camera move: dolly, orbit, lateral slide, or locked-off.
+          - Straight-on framing is best for UI and text.
+          - For close-ups, use longer lenses (85mm+); for wide scenes, 24-35mm.
+          - Depth of field is a strong lever: shallow for subject isolation, deep for context.
+          - Example framings: wide establishing, medium close-up, aerial wide, low angle.
+          - Example camera motions: slow tilt, gentle handheld drift, smooth lateral slide.
+
+          ## Motion & timing
+          - Use short beats: "0-2s", "2-4s", "4-6s".
+          - Keep actions sequential, not simultaneous.
+          - For 4s clips, limit to 1-2 beats.
+          - Describe actions as counts or steps when possible (e.g., "takes four steps, pauses, turns in the final second").
+
+          ## Lighting & palette
+          - Describe light quality and direction (soft window light, hard rim, backlight).
+          - Name 3-5 palette anchors to stabilize color across shots.
+          - If continuity matters, keep lighting logic consistent across clips.
+
+          ## Character continuity
+          - Keep character descriptors consistent across shots; reuse phrasing.
+          - Avoid mixing competing traits that can shift identity or pose.
+
+          ## Multi-shot prompts
+          - You can describe multiple shots in one prompt, but keep each shot block distinct.
+          - For each shot, specify one camera setup, one action, one lighting recipe.
+          - Treat each shot as a creative unit you can later edit or stitch.
+
+          ## Ultra-detailed briefs
+          - Use when you need a specific, filmic look or strict continuity.
+          - Call out format/look, lensing/filters, grade/palette, lighting direction, texture, and sound.
+          - If needed, include a short shot list with timing beats.
+
+          ## Image input
+          - Use an input image to lock composition, character design, or set dressing.
+          - The input image should match the target size and be jpg/png/webp.
+          - The image anchors the first frame; the prompt describes what happens next.
+          - If you lack a reference, generate one first and pass it as `input_reference`.
+
+          ## Constraints & invariants
+          - State what must not change: "same shot", "same framing", "keep background".
+          - Repeat invariants in every remix to reduce drift.
+
+          ## Text, dialogue & audio
+          - Keep text short and specific; quote exact strings.
+          - Specify placement and avoid motion blur.
+          - For dialogue, use a dedicated block and keep lines short.
+          - Label speakers consistently for multi-character scenes.
+          - If silent, you can still add a small ambient sound cue to set rhythm.
+          - Sora can generate audio; include an `Audio:` line and a short dialogue block when needed.
+          - As a rule of thumb, 4s clips fit 1-2 short lines; 8s clips can handle a few more.
+
+          Example:
+          ```
+          Audio: soft ambient café noise, clear warm voiceover
+          Dialogue:
+          <dialogue>
+          - Speaker: "Let's get started."
+          </dialogue>
+          ```
+
+          ## Avoiding artifacts
+          - Avoid multiple actions in 4-8 seconds.
+          - Keep camera motion smooth and limited.
+          - Add explicit negatives when needed: "avoid flicker", "avoid jitter", "no fast motion".
+
+          ## Remixing
+          - Change one thing at a time: palette, lighting, or action.
+          - Keep camera and subject consistent unless the change requests otherwise.
+          - If a shot misfires, simplify: freeze the camera, reduce action, clear background, then add complexity back in.
+
+          ## Iterate deliberately
+          - Start simple, then add one constraint per iteration.
+          - If results look chaotic, reduce motion and simplify the scene.
+          - When a result is close, pin it as a reference and describe only the tweak.
+    - path: /skills/sora/references/sample-prompts.md
+      text: |
+          # Sample prompts (copy/paste)
+
+          Use these as starting points. Keep user-provided requirements and constraints; do not invent new creative elements.
+
+          For prompting principles (structure, invariants, iteration), see `references/prompting.md`.
+
+          ## Contents
+          - [Product teaser (single shot)](#product-teaser-single-shot)
+          - [UI demo (screen recording style)](#ui-demo-screen-recording-style)
+          - [Cinematic detail shot](#cinematic-detail-shot)
+          - [Social ad (6s with beats)](#social-ad-6s-with-beats)
+          - [Motion graphics explainer](#motion-graphics-explainer)
+          - [Ambient loop (atmosphere)](#ambient-loop-atmosphere)
+
+          ## Product teaser (single shot)
+          ```
+          Use case: product teaser
+          Primary request: close-up of a matte black wireless speaker on a stone pedestal
+          Scene/background: dark studio cyclorama, subtle haze
+          Subject: compact speaker with soft fabric texture
+          Action: slow 20-degree orbit over 4 seconds
+          Camera: 85mm, shallow depth of field, steady dolly
+          Lighting/mood: soft key, gentle rim, premium studio feel
+          Color palette: charcoal, slate, warm amber accents
+          Constraints: no logos, no text
+          Avoid: harsh bloom; oversharpening; clutter
+          ```
+
+          ## UI demo (screen recording style)
+          ```
+          Use case: UI product demo
+          Primary request: a clean mobile budgeting app demo showing a weekly spend chart
+          Scene/background: neutral gradient backdrop
+          Subject: smartphone UI, centered, screen content crisp and legible
+          Action: tap the "Add expense" button, modal opens, amount typed, save
+          Camera: locked-off, straight-on, no tilt
+          Lighting/mood: soft studio light, minimal reflections
+          Color palette: off-white, slate, mint accent
+          Text (verbatim): "Add expense", "$24.50", "Groceries"
+          Constraints: no brand logos; keep UI text readable; avoid motion blur
+          ```
+
+          ## Cinematic detail shot
+          ```
+          Use case: cinematic product detail
+          Primary request: macro shot of raindrops sliding across a car hood
+          Scene/background: night city bokeh, soft rain mist
+          Subject: glossy hood surface with water beads
+          Action: slow push-in over 4 seconds
+          Camera: 100mm macro, shallow depth of field
+          Lighting/mood: moody, high-contrast reflections, soft speculars
+          Color palette: deep navy, teal, silver highlights
+          Constraints: no logos, no text
+          Avoid: flicker; unstable reflections; excessive noise
+          ```
+
+          ## Social ad (6s with beats)
+          ```
+          Use case: social ad
+          Primary request: minimal coffee subscription ad with three quick beats
+          Scene/background: warm kitchen counter, morning light
+          Subject: ceramic mug, coffee bag, steam
+          Action: beat 1 (0-2s) pour coffee; beat 2 (2-4s) steam rises; beat 3 (4-6s) mug slides to center
+          Camera: 50mm, gentle handheld drift
+          Lighting/mood: warm, cozy, natural light
+          Text (verbatim): "Fresh roast" (top-left), "Weekly delivery" (bottom-right)
+          Constraints: no logos; text must be legible; avoid fast motion
+          ```
+
+          ## Motion graphics explainer
+          ```
+          Use case: explainer clip
+          Primary request: clean motion-graphics animation showing data flowing into a dashboard
+          Scene/background: soft gradient background
+          Subject: abstract nodes and lines, simple dashboard cards
+          Action: nodes connect, data pulses, cards fill with charts
+          Camera: locked-off, no depth, flat design
+          Lighting/mood: minimal, modern
+          Color palette: off-white, graphite, teal, coral accents
+          Constraints: no logos; keep shapes simple; avoid heavy texture
+          ```
+
+          ## Ambient loop (atmosphere)
+          ```
+          Use case: ambient background loop
+          Primary request: fog drifting through a pine forest at dawn
+          Scene/background: tall pines, soft fog layers, distant hills
+          Subject: drifting fog and light rays
+          Action: slow lateral drift, subtle light change
+          Camera: wide, locked-off, no tilt
+          Lighting/mood: calm, soft dawn light
+          Color palette: muted greens, cool gray, pale gold
+          Constraints: no text, no logos, no people
+          Avoid: fast motion; flicker; abrupt lighting shifts
+          ```
+    - path: /skills/sora/references/social-ads.md
+      text: |
+          # Social ad templates (4-8s)
+
+          Short clips work best with clear beats. Use 2-3 beats and keep text minimal.
+
+          ## Default template
+          ```
+          Use case: social ad
+          Primary request: <ad concept>
+          Scene/background: <simple backdrop>
+          Subject: <product or scene>
+          Action: beat 1 (0-2s) <action>; beat 2 (2-4s) <action>; beat 3 (4-6s) <action>
+          Camera: <shot type + motion>
+          Lighting/mood: <mood>
+          Text (verbatim): "<short headline>", "<short subhead>"
+          Constraints: no logos; keep text legible; avoid fast motion
+          ```
+
+          ## Example: product benefit
+          ```
+          Use case: social ad
+          Primary request: a compact humidifier emphasizing quiet operation
+          Scene/background: minimal bedroom nightstand
+          Subject: matte white humidifier with soft vapor
+          Action: beat 1 (0-2s) vapor begins; beat 2 (2-4s) soft glow turns on; beat 3 (4-6s) device slides to center
+          Camera: 50mm, gentle push-in
+          Lighting/mood: calm, warm night light
+          Text (verbatim): "Quiet mist", "Sleep better"
+          Constraints: no logos; text must be legible; avoid harsh highlights
+          ```
+
+          ## Example: before/after
+          ```
+          Use case: social ad
+          Primary request: before/after of a cluttered desk becoming tidy
+          Scene/background: home office desk, neutral wall
+          Subject: desk surface, organizer tray
+          Action: beat 1 (0-2s) cluttered desk; beat 2 (2-4s) quick tidy motion; beat 3 (4-6s) clean desk with organizer
+          Camera: top-down, locked-off
+          Lighting/mood: soft daylight
+          Text (verbatim): "Before", "After"
+          Constraints: no logos; keep motion minimal; avoid blur
+          ```
+    - path: /skills/sora/references/troubleshooting.md
+      text: |
+          # Troubleshooting
+
+          ## Job fails with size or seconds errors
+          - Cause: size not supported by model, or seconds not in 4/8/12.
+          - Fix: match size to model; use only "4", "8", or "12" seconds (see `references/video-api.md`).
+          - If you see `invalid_type` for seconds, update `scripts/sora.py` or pass a string value for `--seconds`.
+
+          ## openai SDK not installed
+          - Cause: running `python "$SORA_CLI" ...` without the OpenAI SDK available.
+          - Fix: run with `uv run --with openai python "$SORA_CLI" ...` instead of using pip directly.
+
+          ## uv cache permission error
+          - Cause: uv cache directory is not writable in CI or sandboxed environments.
+          - Fix: set `UV_CACHE_DIR=/tmp/uv-cache` (or another writable path) before running `uv`.
+
+          ## Prompt shell escaping issues
+          - Cause: multi-line prompts or quotes break the shell.
+          - Fix: use `--prompt-file prompt.txt` (see `references/cli.md` for an example).
+
+          ## Prompt looks double-wrapped ("Primary request: Use case: ...")
+          - Cause: you structured the prompt manually but left CLI augmentation on.
+          - Fix: add `--no-augment` when passing a structured prompt file, or use the CLI fields (`--use-case`, `--scene`, etc.) instead of pre-formatting.
+
+          ## Input reference rejected
+          - Cause: file is not jpg/png/webp, or has a human face, or dimensions do not match target size.
+          - Fix: convert to jpg/png/webp, remove faces, and resize to match `--size`.
+
+          ## Download fails or returns expired URL
+          - Cause: download URLs expire after about 1 hour.
+          - Fix: re-download while the link is fresh; save to your own storage.
+
+          ## Video completes but looks unstable or flickers
+          - Cause: multiple actions or aggressive camera motion.
+          - Fix: reduce to one main action and one camera move; keep beats simple; add constraints like "avoid flicker" or "stable motion".
+
+          ## Text is unreadable
+          - Cause: text too long, too small, or moving.
+          - Fix: shorten text, increase size, keep camera locked-off, and avoid fast motion.
+
+          ## Remix drifts from the original
+          - Cause: too many changes requested at once.
+          - Fix: state invariants explicitly ("same shot and camera move") and change only one element per remix.
+
+          ## Job stuck in queued/in_progress for a long time
+          - Cause: temporary queue delays.
+          - Fix: increase poll timeout, or retry later; avoid high concurrency if you are rate-limited.
+
+          ## create-and-poll times out in CI/sandbox
+          - Cause: long-running CLI commands can exceed CI time limits.
+          - Fix: run `create` (capture the ID) and then `poll` separately, or set `--timeout`.
+
+          ## Audio or voiceover missing / incorrect
+          - Cause: audio wasn't explicitly requested, or the dialogue/audio cue was too long or vague.
+          - Fix: add a clear `Audio:` line and a short `Dialogue:` block.
+
+          ## Cleanup blocked by sandbox policy
+          - Cause: some environments block `rm`.
+          - Fix: skip cleanup, or truncate files instead of deleting.
+    - path: /skills/sora/references/video-api.md
+      text: |
+          # Sora Video API quick reference
+
+          Keep this file short; the full docs live in the OpenAI platform docs.
+
+          ## Models
+          - sora-2: faster, flexible iteration
+          - sora-2-pro: higher fidelity, slower, more expensive
+
+          ## Sizes (by model)
+          - sora-2: 1280x720, 720x1280
+          - sora-2-pro: 1280x720, 720x1280, 1024x1792, 1792x1024
+          Note: higher resolutions generally yield better detail, texture, and motion consistency.
+
+          ## Duration
+          - seconds: "4", "8", "12" (string enum; set via API param; prose will not change clip length)
+          Shorter clips tend to follow instructions more reliably; consider stitching multiple 4s clips for precision.
+
+          ## Input reference
+          - Optional `input_reference` image (jpg/png/webp).
+          - Input reference should match the target size.
+
+          ## Jobs and status
+          - Create is async. Status values: queued, in_progress, completed, failed.
+          - Prefer polling every 10-20s or use webhooks in production.
+
+          ## Endpoints (conceptual)
+          - POST /videos: create a job
+          - GET /videos/{id}: retrieve status
+          - GET /videos/{id}/content: download video data
+          - GET /videos: list
+          - DELETE /videos/{id}: delete
+          - POST /videos/{id}/remix: remix a completed job
+
+          ## Download variants
+          - video (mp4)
+          - thumbnail (webp)
+          - spritesheet (jpg)
+
+          Download URLs expire after about 1 hour; copy files to your own storage for retention.
+
+          ## Guardrails (content restrictions)
+          - Only content suitable for audiences under 18
+          - No copyrighted characters or copyrighted music
+          - No real people (including public figures)
+          - Input images with human faces are currently rejected
+    - path: /skills/sora/scripts/sora.py
+      text: |
+          #!/usr/bin/env python3
+          """Create and manage Sora videos with the OpenAI Video API.
+
+          Defaults to sora-2 and a structured prompt augmentation workflow.
+          """
+
+          from __future__ import annotations
+
+          import argparse
+          import asyncio
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import sys
+          import time
+          from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+
+          DEFAULT_MODEL = "sora-2"
+          DEFAULT_SIZE = "1280x720"
+          DEFAULT_SECONDS = "4"
+          DEFAULT_POLL_INTERVAL = 10.0
+          DEFAULT_VARIANT = "video"
+          DEFAULT_CONCURRENCY = 3
+          DEFAULT_MAX_ATTEMPTS = 3
+
+          ALLOWED_MODELS = {"sora-2", "sora-2-pro"}
+          ALLOWED_SIZES_SORA2 = {"1280x720", "720x1280"}
+          ALLOWED_SIZES_SORA2_PRO = {"1280x720", "720x1280", "1024x1792", "1792x1024"}
+          ALLOWED_SECONDS = {"4", "8", "12"}
+          ALLOWED_VARIANTS = {"video", "thumbnail", "spritesheet"}
+          ALLOWED_ORDERS = {"asc", "desc"}
+          ALLOWED_INPUT_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
+          TERMINAL_STATUSES = {"completed", "failed", "canceled"}
+
+          VARIANT_EXTENSIONS = {"video": ".mp4", "thumbnail": ".webp", "spritesheet": ".jpg"}
+
+          MAX_BATCH_JOBS = 200
+
+
+          def _die(message: str, code: int = 1) -> None:
+              print(f"Error: {message}", file=sys.stderr)
+              raise SystemExit(code)
+
+
+          def _warn(message: str) -> None:
+              print(f"Warning: {message}", file=sys.stderr)
+
+
+          def _ensure_api_key(dry_run: bool) -> None:
+              if os.getenv("OPENAI_API_KEY"):
+                  print("OPENAI_API_KEY is set.", file=sys.stderr)
+                  return
+              if dry_run:
+                  _warn("OPENAI_API_KEY is not set; dry-run only.")
+                  return
+              _die("OPENAI_API_KEY is not set. Export it before running.")
+
+
+          def _read_prompt(prompt: Optional[str], prompt_file: Optional[str]) -> str:
+              if prompt and prompt_file:
+                  _die("Use --prompt or --prompt-file, not both.")
+              if prompt_file:
+                  path = Path(prompt_file)
+                  if not path.exists():
+                      _die(f"Prompt file not found: {path}")
+                  return path.read_text(encoding="utf-8").strip()
+              if prompt:
+                  return prompt.strip()
+              _die("Missing prompt. Use --prompt or --prompt-file.")
+              return ""  # unreachable
+
+
+          def _normalize_model(model: Optional[str]) -> str:
+              value = (model or DEFAULT_MODEL).strip().lower()
+              if value not in ALLOWED_MODELS:
+                  _die("model must be one of: sora-2, sora-2-pro")
+              return value
+
+
+          def _normalize_size(size: Optional[str], model: str) -> str:
+              value = (size or DEFAULT_SIZE).strip().lower()
+              allowed = ALLOWED_SIZES_SORA2 if model == "sora-2" else ALLOWED_SIZES_SORA2_PRO
+              if value not in allowed:
+                  allowed_list = ", ".join(sorted(allowed))
+                  _die(f"size must be one of: {allowed_list} for model {model}")
+              return value
+
+
+          def _normalize_seconds(seconds: Optional[Union[int, str]]) -> str:
+              if seconds is None:
+                  value = DEFAULT_SECONDS
+              elif isinstance(seconds, int):
+                  value = str(seconds)
+              else:
+                  value = str(seconds).strip()
+              if value not in ALLOWED_SECONDS:
+                  _die("seconds must be one of: 4, 8, 12")
+              return value
+
+
+          def _normalize_variant(variant: Optional[str]) -> str:
+              value = (variant or DEFAULT_VARIANT).strip().lower()
+              if value not in ALLOWED_VARIANTS:
+                  _die("variant must be one of: video, thumbnail, spritesheet")
+              return value
+
+
+          def _normalize_order(order: Optional[str]) -> Optional[str]:
+              if order is None:
+                  return None
+              value = order.strip().lower()
+              if value not in ALLOWED_ORDERS:
+                  _die("order must be one of: asc, desc")
+              return value
+
+
+          def _normalize_poll_interval(interval: Optional[float]) -> float:
+              value = float(interval if interval is not None else DEFAULT_POLL_INTERVAL)
+              if value <= 0:
+                  _die("poll-interval must be > 0")
+              return value
+
+
+          def _normalize_timeout(timeout: Optional[float]) -> Optional[float]:
+              if timeout is None:
+                  return None
+              value = float(timeout)
+              if value <= 0:
+                  _die("timeout must be > 0")
+              return value
+
+
+          def _default_out_path(variant: str) -> Path:
+              if variant == "video":
+                  return Path("video.mp4")
+              if variant == "thumbnail":
+                  return Path("thumbnail.webp")
+              return Path("spritesheet.jpg")
+
+
+          def _normalize_out_path(out: Optional[str], variant: str) -> Path:
+              expected_ext = VARIANT_EXTENSIONS[variant]
+              if not out:
+                  return _default_out_path(variant)
+              path = Path(out)
+              if path.suffix == "":
+                  return path.with_suffix(expected_ext)
+              if path.suffix.lower() != expected_ext:
+                  _warn(f"Output extension {path.suffix} does not match {expected_ext} for {variant}.")
+              return path
+
+
+          def _normalize_json_out(out: Optional[str], default_name: str) -> Optional[Path]:
+              if not out:
+                  return None
+              raw = str(out)
+              if raw.endswith("/") or raw.endswith(os.sep):
+                  return Path(raw) / default_name
+              path = Path(out)
+              if path.exists() and path.is_dir():
+                  return path / default_name
+              if path.suffix == "":
+                  path = path.with_suffix(".json")
+              return path
+
+
+          def _open_input_reference(path: Optional[str]):
+              if not path:
+                  return _NullContext()
+              p = Path(path)
+              if not p.exists():
+                  _die(f"Input reference not found: {p}")
+              if p.suffix.lower() not in ALLOWED_INPUT_EXTS:
+                  _warn("Input reference should be jpeg, png, or webp.")
+              return _SingleFile(p)
+
+
+          def _create_client():
+              try:
+                  from openai import OpenAI
+              except ImportError:
+                  _die("openai SDK not installed. Run with `uv run --with openai` or install with `uv pip install openai`.")
+              return OpenAI()
+
+
+          def _create_async_client():
+              try:
+                  from openai import AsyncOpenAI
+              except ImportError:
+                  try:
+                      import openai as _openai  # noqa: F401
+                  except ImportError:
+                      _die("openai SDK not installed. Run with `uv run --with openai` or install with `uv pip install openai`.")
+                  _die(
+                      "AsyncOpenAI not available in this openai SDK version. Upgrade with `uv pip install -U openai`."
+                  )
+              return AsyncOpenAI()
+
+
+          def _to_dict(obj: Any) -> Any:
+              if isinstance(obj, dict):
+                  return obj
+              if hasattr(obj, "model_dump"):
+                  return obj.model_dump()
+              if hasattr(obj, "dict"):
+                  return obj.dict()
+              if hasattr(obj, "__dict__"):
+                  return obj.__dict__
+              return obj
+
+
+          def _print_json(obj: Any) -> None:
+              print(json.dumps(_to_dict(obj), indent=2, sort_keys=True))
+
+
+          def _print_request(payload: Dict[str, Any]) -> None:
+              print(json.dumps(payload, indent=2, sort_keys=True))
+
+
+          def _slugify(value: str) -> str:
+              value = value.strip().lower()
+              value = re.sub(r"[^a-z0-9]+", "-", value)
+              value = re.sub(r"-{2,}", "-", value).strip("-")
+              return value[:60] if value else "job"
+
+
+          def _normalize_job(job: Any, idx: int) -> Dict[str, Any]:
+              if isinstance(job, str):
+                  prompt = job.strip()
+                  if not prompt:
+                      _die(f"Empty prompt at job {idx}")
+                  return {"prompt": prompt}
+              if isinstance(job, dict):
+                  if "prompt" not in job or not str(job["prompt"]).strip():
+                      _die(f"Missing prompt for job {idx}")
+                  return job
+              _die(f"Invalid job at index {idx}: expected string or object.")
+              return {}  # unreachable
+
+
+          def _read_jobs_jsonl(path: str) -> List[Dict[str, Any]]:
+              p = Path(path)
+              if not p.exists():
+                  _die(f"Input file not found: {p}")
+              jobs: List[Dict[str, Any]] = []
+              for line_no, raw in enumerate(p.read_text(encoding="utf-8").splitlines(), start=1):
+                  line = raw.strip()
+                  if not line or line.startswith("#"):
+                      continue
+                  try:
+                      item: Any
+                      if line.startswith("{"):
+                          item = json.loads(line)
+                      else:
+                          item = line
+                      jobs.append(_normalize_job(item, idx=line_no))
+                  except json.JSONDecodeError as exc:
+                      _die(f"Invalid JSON on line {line_no}: {exc}")
+              if not jobs:
+                  _die("No jobs found in input file.")
+              if len(jobs) > MAX_BATCH_JOBS:
+                  _die(f"Too many jobs ({len(jobs)}). Max is {MAX_BATCH_JOBS}.")
+              return jobs
+
+
+          def _merge_non_null(dst: Dict[str, Any], src: Dict[str, Any]) -> Dict[str, Any]:
+              merged = dict(dst)
+              for k, v in src.items():
+                  if v is not None:
+                      merged[k] = v
+              return merged
+
+
+          def _job_output_path(out_dir: Path, idx: int, prompt: str, explicit_out: Optional[str]) -> Path:
+              out_dir.mkdir(parents=True, exist_ok=True)
+              if explicit_out:
+                  path = Path(explicit_out)
+                  if path.suffix == "":
+                      path = path.with_suffix(".json")
+                  return out_dir / path.name
+              slug = _slugify(prompt[:80])
+              return out_dir / f"{idx:03d}-{slug}.json"
+
+
+          def _extract_retry_after_seconds(exc: Exception) -> Optional[float]:
+              for attr in ("retry_after", "retry_after_seconds"):
+                  val = getattr(exc, attr, None)
+                  if isinstance(val, (int, float)) and val >= 0:
+                      return float(val)
+              msg = str(exc)
+              m = re.search(r"retry[- ]after[:= ]+([0-9]+(?:\\.[0-9]+)?)", msg, re.IGNORECASE)
+              if m:
+                  try:
+                      return float(m.group(1))
+                  except Exception:
+                      return None
+              return None
+
+
+          def _is_rate_limit_error(exc: Exception) -> bool:
+              name = exc.__class__.__name__.lower()
+              if "ratelimit" in name or "rate_limit" in name:
+                  return True
+              msg = str(exc).lower()
+              return "429" in msg or "rate limit" in msg or "too many requests" in msg
+
+
+          def _is_transient_error(exc: Exception) -> bool:
+              if _is_rate_limit_error(exc):
+                  return True
+              name = exc.__class__.__name__.lower()
+              if "timeout" in name or "timedout" in name or "tempor" in name:
+                  return True
+              msg = str(exc).lower()
+              return "timeout" in msg or "timed out" in msg or "connection reset" in msg
+
+
+          def _fields_from_args(args: argparse.Namespace) -> Dict[str, Optional[str]]:
+              return {
+                  "use_case": getattr(args, "use_case", None),
+                  "scene": getattr(args, "scene", None),
+                  "subject": getattr(args, "subject", None),
+                  "action": getattr(args, "action", None),
+                  "camera": getattr(args, "camera", None),
+                  "style": getattr(args, "style", None),
+                  "lighting": getattr(args, "lighting", None),
+                  "palette": getattr(args, "palette", None),
+                  "audio": getattr(args, "audio", None),
+                  "dialogue": getattr(args, "dialogue", None),
+                  "text": getattr(args, "text", None),
+                  "timing": getattr(args, "timing", None),
+                  "constraints": getattr(args, "constraints", None),
+                  "negative": getattr(args, "negative", None),
+              }
+
+
+          def _augment_prompt_fields(augment: bool, prompt: str, fields: Dict[str, Optional[str]]) -> str:
+              if not augment:
+                  return prompt
+
+              sections: List[str] = []
+              if fields.get("use_case"):
+                  sections.append(f"Use case: {fields['use_case']}")
+              sections.append(f"Primary request: {prompt}")
+              if fields.get("scene"):
+                  sections.append(f"Scene/background: {fields['scene']}")
+              if fields.get("subject"):
+                  sections.append(f"Subject: {fields['subject']}")
+              if fields.get("action"):
+                  sections.append(f"Action: {fields['action']}")
+              if fields.get("camera"):
+                  sections.append(f"Camera: {fields['camera']}")
+              if fields.get("lighting"):
+                  sections.append(f"Lighting/mood: {fields['lighting']}")
+              if fields.get("palette"):
+                  sections.append(f"Color palette: {fields['palette']}")
+              if fields.get("style"):
+                  sections.append(f"Style/format: {fields['style']}")
+              if fields.get("timing"):
+                  sections.append(f"Timing/beats: {fields['timing']}")
+              if fields.get("audio"):
+                  sections.append(f"Audio: {fields['audio']}")
+              if fields.get("text"):
+                  sections.append(f"Text (verbatim): \"{fields['text']}\"")
+              if fields.get("dialogue"):
+                  dialogue = fields["dialogue"].strip()
+                  sections.append("Dialogue:\n<dialogue>\n" + dialogue + "\n</dialogue>")
+              if fields.get("constraints"):
+                  sections.append(f"Constraints: {fields['constraints']}")
+              if fields.get("negative"):
+                  sections.append(f"Avoid: {fields['negative']}")
+
+              return "\n".join(sections)
+
+
+          def _augment_prompt(args: argparse.Namespace, prompt: str) -> str:
+              fields = _fields_from_args(args)
+              return _augment_prompt_fields(args.augment, prompt, fields)
+
+
+          def _get_status(video: Any) -> Optional[str]:
+              if isinstance(video, dict):
+                  for key in ("status", "state"):
+                      if key in video and isinstance(video[key], str):
+                          return video[key]
+                  data = video.get("data") if isinstance(video.get("data"), dict) else None
+                  if data:
+                      for key in ("status", "state"):
+                          if key in data and isinstance(data[key], str):
+                              return data[key]
+                  return None
+              for key in ("status", "state"):
+                  val = getattr(video, key, None)
+                  if isinstance(val, str):
+                      return val
+              return None
+
+
+          def _get_video_id(video: Any) -> Optional[str]:
+              if isinstance(video, dict):
+                  if isinstance(video.get("id"), str):
+                      return video["id"]
+                  data = video.get("data") if isinstance(video.get("data"), dict) else None
+                  if data and isinstance(data.get("id"), str):
+                      return data["id"]
+                  return None
+              vid = getattr(video, "id", None)
+              return vid if isinstance(vid, str) else None
+
+
+          def _poll_video(
+              client: Any,
+              video_id: str,
+              *,
+              poll_interval: float,
+              timeout: Optional[float],
+          ) -> Any:
+              start = time.time()
+              last_status: Optional[str] = None
+
+              while True:
+                  video = client.videos.retrieve(video_id)
+                  status = _get_status(video) or "unknown"
+                  if status != last_status:
+                      print(f"Status: {status}", file=sys.stderr)
+                      last_status = status
+                  if status in TERMINAL_STATUSES:
+                      return video
+                  if timeout is not None and (time.time() - start) > timeout:
+                      _die(f"Timed out after {timeout:.1f}s waiting for {video_id}")
+                  time.sleep(poll_interval)
+
+
+          def _download_content(client: Any, video_id: str, variant: str) -> Any:
+              content = client.videos.download_content(video_id, variant=variant)
+              if hasattr(content, "write_to_file"):
+                  return content
+              if hasattr(content, "read"):
+                  return content.read()
+              if isinstance(content, (bytes, bytearray)):
+                  return bytes(content)
+              if hasattr(content, "content"):
+                  return content.content
+              return content
+
+
+          def _write_download(data: Any, out_path: Path, *, force: bool) -> None:
+              if out_path.exists() and not force:
+                  _die(f"Output exists: {out_path} (use --force to overwrite)")
+              if hasattr(data, "write_to_file"):
+                  data.write_to_file(out_path)
+                  print(f"Wrote {out_path}")
+                  return
+              if hasattr(data, "read"):
+                  out_path.write_bytes(data.read())
+                  print(f"Wrote {out_path}")
+                  return
+              out_path.write_bytes(data)
+              print(f"Wrote {out_path}")
+
+
+          def _build_create_payload(args: argparse.Namespace, prompt: str) -> Dict[str, Any]:
+              model = _normalize_model(args.model)
+              size = _normalize_size(args.size, model)
+              seconds = _normalize_seconds(args.seconds)
+              return {
+                  "model": model,
+                  "prompt": prompt,
+                  "size": size,
+                  "seconds": seconds,
+              }
+
+
+          def _prepare_job_payload(
+              args: argparse.Namespace,
+              job: Dict[str, Any],
+              base_fields: Dict[str, Optional[str]],
+              base_payload: Dict[str, Any],
+          ) -> Tuple[Dict[str, Any], Optional[str], str]:
+              prompt = str(job["prompt"]).strip()
+              fields = _merge_non_null(base_fields, job.get("fields", {}))
+              fields = _merge_non_null(fields, {k: job.get(k) for k in base_fields.keys()})
+              augmented = _augment_prompt_fields(args.augment, prompt, fields)
+
+              payload = dict(base_payload)
+              payload["prompt"] = augmented
+              payload = _merge_non_null(payload, {k: job.get(k) for k in base_payload.keys()})
+              payload = {k: v for k, v in payload.items() if v is not None}
+
+              model = _normalize_model(payload.get("model"))
+              size = _normalize_size(payload.get("size"), model)
+              seconds = _normalize_seconds(payload.get("seconds"))
+
+              payload["model"] = model
+              payload["size"] = size
+              payload["seconds"] = seconds
+
+              input_ref = (
+                  job.get("input_reference")
+                  or job.get("input_reference_path")
+                  or job.get("input_reference_file")
+              )
+
+              return payload, input_ref, prompt
+
+
+          def _write_json(path: Path, obj: Any) -> None:
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text(json.dumps(_to_dict(obj), indent=2, sort_keys=True), encoding="utf-8")
+              print(f"Wrote {path}")
+
+
+          def _write_json_out(out_path: Optional[Path], obj: Any) -> None:
+              if out_path is None:
+                  return
+              _write_json(out_path, obj)
+
+
+          async def _create_one_with_retries(
+              client: Any,
+              payload: Dict[str, Any],
+              *,
+              attempts: int,
+              job_label: str,
+          ) -> Any:
+              last_exc: Optional[Exception] = None
+              for attempt in range(1, attempts + 1):
+                  try:
+                      return await client.videos.create(**payload)
+                  except Exception as exc:
+                      last_exc = exc
+                      if not _is_transient_error(exc):
+                          raise
+                      if attempt == attempts:
+                          raise
+                      sleep_s = _extract_retry_after_seconds(exc)
+                      if sleep_s is None:
+                          sleep_s = min(60.0, 2.0**attempt)
+                      print(
+                          f"{job_label} attempt {attempt}/{attempts} failed ({exc.__class__.__name__}); retrying in {sleep_s:.1f}s",
+                          file=sys.stderr,
+                      )
+                      await asyncio.sleep(sleep_s)
+              raise last_exc or RuntimeError("unknown error")
+
+
+          async def _run_create_batch(args: argparse.Namespace) -> int:
+              jobs = _read_jobs_jsonl(args.input)
+              out_dir = Path(args.out_dir)
+
+              base_fields = _fields_from_args(args)
+              base_payload = {
+                  "model": args.model,
+                  "size": args.size,
+                  "seconds": args.seconds,
+              }
+
+              if args.dry_run:
+                  for i, job in enumerate(jobs, start=1):
+                      payload, input_ref, prompt = _prepare_job_payload(args, job, base_fields, base_payload)
+                      out_path = _job_output_path(out_dir, i, prompt, job.get("out"))
+                      preview = dict(payload)
+                      if input_ref:
+                          preview["input_reference"] = input_ref
+                      _print_request(
+                          {
+                              "endpoint": "/v1/videos",
+                              "job": i,
+                              "output": str(out_path),
+                              **preview,
+                          }
+                      )
+                  return 0
+
+              client = _create_async_client()
+              sem = asyncio.Semaphore(args.concurrency)
+              any_failed = False
+
+              async def run_job(i: int, job: Dict[str, Any]) -> Tuple[int, Optional[str]]:
+                  nonlocal any_failed
+                  payload, input_ref, prompt = _prepare_job_payload(args, job, base_fields, base_payload)
+                  job_label = f"[job {i}/{len(jobs)}]"
+                  out_path = _job_output_path(out_dir, i, prompt, job.get("out"))
+
+                  try:
+                      async with sem:
+                          print(f"{job_label} starting", file=sys.stderr)
+                          started = time.time()
+                          with _open_input_reference(input_ref) as ref:
+                              request = dict(payload)
+                              if ref is not None:
+                                  request["input_reference"] = ref
+                              result = await _create_one_with_retries(
+                                  client,
+                                  request,
+                                  attempts=args.max_attempts,
+                                  job_label=job_label,
+                              )
+                          elapsed = time.time() - started
+                          print(f"{job_label} completed in {elapsed:.1f}s", file=sys.stderr)
+                      _write_json(out_path, result)
+                      return i, None
+                  except Exception as exc:
+                      any_failed = True
+                      print(f"{job_label} failed: {exc}", file=sys.stderr)
+                      if args.fail_fast:
+                          raise
+                      return i, str(exc)
+
+              tasks = [asyncio.create_task(run_job(i, job)) for i, job in enumerate(jobs, start=1)]
+
+              try:
+                  await asyncio.gather(*tasks)
+              except Exception:
+                  for t in tasks:
+                      if not t.done():
+                          t.cancel()
+                  raise
+
+              return 1 if any_failed else 0
+
+
+          def _create_batch(args: argparse.Namespace) -> None:
+              exit_code = asyncio.run(_run_create_batch(args))
+              if exit_code:
+                  raise SystemExit(exit_code)
+
+
+          def _cmd_create(args: argparse.Namespace) -> int:
+              prompt = _read_prompt(args.prompt, args.prompt_file)
+              prompt = _augment_prompt(args, prompt)
+
+              payload = _build_create_payload(args, prompt)
+              json_out = _normalize_json_out(args.json_out, "create.json")
+
+              if args.dry_run:
+                  preview = dict(payload)
+                  if args.input_reference:
+                      preview["input_reference"] = args.input_reference
+                  _print_request({"endpoint": "/v1/videos", **preview})
+                  _write_json_out(json_out, {"dry_run": True, "request": {"endpoint": "/v1/videos", **preview}})
+                  return 0
+
+              client = _create_client()
+              with _open_input_reference(args.input_reference) as input_ref:
+                  if input_ref is not None:
+                      payload["input_reference"] = input_ref
+                  video = client.videos.create(**payload)
+              _print_json(video)
+              _write_json_out(json_out, video)
+              return 0
+
+
+          def _cmd_create_and_poll(args: argparse.Namespace) -> int:
+              prompt = _read_prompt(args.prompt, args.prompt_file)
+              prompt = _augment_prompt(args, prompt)
+
+              payload = _build_create_payload(args, prompt)
+              json_out = _normalize_json_out(args.json_out, "create-and-poll.json")
+
+              if args.dry_run:
+                  preview = dict(payload)
+                  if args.input_reference:
+                      preview["input_reference"] = args.input_reference
+                  _print_request({"endpoint": "/v1/videos", **preview})
+                  print("Would poll for completion.")
+                  if args.download:
+                      variant = _normalize_variant(args.variant)
+                      out_path = _normalize_out_path(args.out, variant)
+                      print(f"Would download variant={variant} to {out_path}")
+                  if json_out:
+                      dry_bundle: Dict[str, Any] = {
+                          "dry_run": True,
+                          "request": {"endpoint": "/v1/videos", **preview},
+                          "poll": True,
+                      }
+                      if args.download:
+                          dry_bundle["download"] = {
+                              "variant": variant,
+                              "out": str(out_path),
+                          }
+                      _write_json_out(json_out, dry_bundle)
+                  return 0
+
+              client = _create_client()
+              with _open_input_reference(args.input_reference) as input_ref:
+                  if input_ref is not None:
+                      payload["input_reference"] = input_ref
+                  video = client.videos.create(**payload)
+              _print_json(video)
+
+              video_id = _get_video_id(video)
+              if not video_id:
+                  _die("Could not determine video id from create response.")
+
+              poll_interval = _normalize_poll_interval(args.poll_interval)
+              timeout = _normalize_timeout(args.timeout)
+              final_video = _poll_video(
+                  client,
+                  video_id,
+                  poll_interval=poll_interval,
+                  timeout=timeout,
+              )
+              _print_json(final_video)
+
+              if args.download:
+                  status = _get_status(final_video) or "unknown"
+                  if status != "completed":
+                      _die(f"Video status is {status}; download is available only after completion.")
+                  variant = _normalize_variant(args.variant)
+                  out_path = _normalize_out_path(args.out, variant)
+                  data = _download_content(client, video_id, variant)
+                  _write_download(data, out_path, force=args.force)
+
+              if json_out:
+                  _write_json_out(
+                      json_out,
+                      {"create": _to_dict(video), "final": _to_dict(final_video)},
+                  )
+
+              return 0
+
+
+          def _cmd_poll(args: argparse.Namespace) -> int:
+              poll_interval = _normalize_poll_interval(args.poll_interval)
+              timeout = _normalize_timeout(args.timeout)
+              json_out = _normalize_json_out(args.json_out, "poll.json")
+
+              client = _create_client()
+              final_video = _poll_video(
+                  client,
+                  args.id,
+                  poll_interval=poll_interval,
+                  timeout=timeout,
+              )
+              _print_json(final_video)
+              _write_json_out(json_out, final_video)
+
+              if args.download:
+                  status = _get_status(final_video) or "unknown"
+                  if status != "completed":
+                      _die(f"Video status is {status}; download is available only after completion.")
+                  variant = _normalize_variant(args.variant)
+                  out_path = _normalize_out_path(args.out, variant)
+                  data = _download_content(client, args.id, variant)
+                  _write_download(data, out_path, force=args.force)
+
+              return 0
+
+
+          def _cmd_status(args: argparse.Namespace) -> int:
+              json_out = _normalize_json_out(args.json_out, "status.json")
+              client = _create_client()
+              video = client.videos.retrieve(args.id)
+              _print_json(video)
+              _write_json_out(json_out, video)
+              return 0
+
+
+          def _cmd_list(args: argparse.Namespace) -> int:
+              params: Dict[str, Any] = {
+                  "limit": args.limit,
+                  "order": _normalize_order(args.order),
+                  "after": args.after,
+                  "before": args.before,
+              }
+              params = {k: v for k, v in params.items() if v is not None}
+              json_out = _normalize_json_out(args.json_out, "list.json")
+              client = _create_client()
+              videos = client.videos.list(**params)
+              _print_json(videos)
+              _write_json_out(json_out, videos)
+              return 0
+
+
+          def _cmd_delete(args: argparse.Namespace) -> int:
+              json_out = _normalize_json_out(args.json_out, "delete.json")
+              client = _create_client()
+              result = client.videos.delete(args.id)
+              _print_json(result)
+              _write_json_out(json_out, result)
+              return 0
+
+
+          def _cmd_remix(args: argparse.Namespace) -> int:
+              prompt = _read_prompt(args.prompt, args.prompt_file)
+              prompt = _augment_prompt(args, prompt)
+              json_out = _normalize_json_out(args.json_out, "remix.json")
+
+              if args.dry_run:
+                  preview = {"endpoint": f"/v1/videos/{args.id}/remix", "prompt": prompt}
+                  _print_request(preview)
+                  _write_json_out(json_out, {"dry_run": True, "request": preview})
+                  return 0
+
+              client = _create_client()
+              result = client.videos.remix(video_id=args.id, prompt=prompt)
+              _print_json(result)
+              _write_json_out(json_out, result)
+              return 0
+
+
+          def _cmd_download(args: argparse.Namespace) -> int:
+              variant = _normalize_variant(args.variant)
+              out_path = _normalize_out_path(args.out, variant)
+
+              client = _create_client()
+              data = _download_content(client, args.id, variant)
+              _write_download(data, out_path, force=args.force)
+              return 0
+
+
+          class _NullContext:
+              def __enter__(self):
+                  return None
+
+              def __exit__(self, exc_type, exc, tb):
+                  return False
+
+
+          class _SingleFile:
+              def __init__(self, path: Path):
+                  self._path = path
+                  self._handle = None
+
+              def __enter__(self):
+                  self._handle = self._path.open("rb")
+                  return self._handle
+
+              def __exit__(self, exc_type, exc, tb):
+                  if self._handle:
+                      try:
+                          self._handle.close()
+                      except Exception:
+                          pass
+                  return False
+
+
+          def _add_prompt_args(parser: argparse.ArgumentParser) -> None:
+              parser.add_argument("--prompt")
+              parser.add_argument("--prompt-file")
+              parser.add_argument("--augment", dest="augment", action="store_true")
+              parser.add_argument("--no-augment", dest="augment", action="store_false")
+              parser.set_defaults(augment=True)
+
+              parser.add_argument("--use-case")
+              parser.add_argument("--scene")
+              parser.add_argument("--subject")
+              parser.add_argument("--action")
+              parser.add_argument("--camera")
+              parser.add_argument("--style")
+              parser.add_argument("--lighting")
+              parser.add_argument("--palette")
+              parser.add_argument("--audio")
+              parser.add_argument("--dialogue")
+              parser.add_argument("--text")
+              parser.add_argument("--timing")
+              parser.add_argument("--constraints")
+              parser.add_argument("--negative")
+
+
+          def _add_create_args(parser: argparse.ArgumentParser) -> None:
+              parser.add_argument("--model", default=DEFAULT_MODEL)
+              parser.add_argument("--size", default=DEFAULT_SIZE)
+              parser.add_argument("--seconds", default=DEFAULT_SECONDS)
+              parser.add_argument("--input-reference")
+              parser.add_argument("--dry-run", action="store_true")
+              _add_prompt_args(parser)
+
+
+          def _add_poll_args(parser: argparse.ArgumentParser) -> None:
+              parser.add_argument("--poll-interval", type=float, default=DEFAULT_POLL_INTERVAL)
+              parser.add_argument("--timeout", type=float)
+
+
+          def _add_download_args(parser: argparse.ArgumentParser) -> None:
+              parser.add_argument("--download", action="store_true")
+              parser.add_argument("--variant", default=DEFAULT_VARIANT)
+              parser.add_argument("--out")
+              parser.add_argument("--force", action="store_true")
+
+
+          def _add_json_out(parser: argparse.ArgumentParser) -> None:
+              parser.add_argument("--json-out")
+
+
+          def main() -> int:
+              parser = argparse.ArgumentParser(description="Create and manage videos via the Sora Video API")
+              subparsers = parser.add_subparsers(dest="command", required=True)
+
+              create_parser = subparsers.add_parser("create", help="Create a new video job")
+              _add_create_args(create_parser)
+              _add_json_out(create_parser)
+              create_parser.set_defaults(func=_cmd_create)
+
+              create_poll_parser = subparsers.add_parser(
+                  "create-and-poll",
+                  help="Create a job, poll until complete, optionally download",
+              )
+              _add_create_args(create_poll_parser)
+              _add_poll_args(create_poll_parser)
+              _add_download_args(create_poll_parser)
+              _add_json_out(create_poll_parser)
+              create_poll_parser.set_defaults(func=_cmd_create_and_poll)
+
+              poll_parser = subparsers.add_parser("poll", help="Poll a job until it completes")
+              poll_parser.add_argument("--id", required=True)
+              _add_poll_args(poll_parser)
+              _add_download_args(poll_parser)
+              _add_json_out(poll_parser)
+              poll_parser.set_defaults(func=_cmd_poll)
+
+              status_parser = subparsers.add_parser("status", help="Retrieve a job status")
+              status_parser.add_argument("--id", required=True)
+              _add_json_out(status_parser)
+              status_parser.set_defaults(func=_cmd_status)
+
+              list_parser = subparsers.add_parser("list", help="List recent video jobs")
+              list_parser.add_argument("--limit", type=int)
+              list_parser.add_argument("--order")
+              list_parser.add_argument("--after")
+              list_parser.add_argument("--before")
+              _add_json_out(list_parser)
+              list_parser.set_defaults(func=_cmd_list)
+
+              delete_parser = subparsers.add_parser("delete", help="Delete a video job")
+              delete_parser.add_argument("--id", required=True)
+              _add_json_out(delete_parser)
+              delete_parser.set_defaults(func=_cmd_delete)
+
+              remix_parser = subparsers.add_parser("remix", help="Remix a completed video job")
+              remix_parser.add_argument("--id", required=True)
+              remix_parser.add_argument("--dry-run", action="store_true")
+              _add_prompt_args(remix_parser)
+              _add_json_out(remix_parser)
+              remix_parser.set_defaults(func=_cmd_remix)
+
+              download_parser = subparsers.add_parser("download", help="Download video/thumbnail/spritesheet")
+              download_parser.add_argument("--id", required=True)
+              download_parser.add_argument("--variant", default=DEFAULT_VARIANT)
+              download_parser.add_argument("--out")
+              download_parser.add_argument("--force", action="store_true")
+              download_parser.set_defaults(func=_cmd_download)
+
+              batch_parser = subparsers.add_parser("create-batch", help="Create multiple video jobs (JSONL input)")
+              _add_create_args(batch_parser)
+              batch_parser.add_argument("--input", required=True, help="Path to JSONL file (one job per line)")
+              batch_parser.add_argument("--out-dir", required=True)
+              batch_parser.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY)
+              batch_parser.add_argument("--max-attempts", type=int, default=DEFAULT_MAX_ATTEMPTS)
+              batch_parser.add_argument("--fail-fast", action="store_true")
+              batch_parser.set_defaults(func=_create_batch)
+
+              args = parser.parse_args()
+
+              if getattr(args, "concurrency", 1) < 1 or getattr(args, "concurrency", 1) > 10:
+                  _die("--concurrency must be between 1 and 10")
+              if getattr(args, "max_attempts", DEFAULT_MAX_ATTEMPTS) < 1 or getattr(args, "max_attempts", DEFAULT_MAX_ATTEMPTS) > 10:
+                  _die("--max-attempts must be between 1 and 10")
+
+              dry_run = bool(getattr(args, "dry_run", False))
+              _ensure_api_key(dry_run)
+
+              args.func(args)
+              return 0
+
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: SORA_CLI
+      value: "/data/skills/sora/scripts/sora.py"
+    - name: UV_CACHE_DIR
+      value: ""
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-sora
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
