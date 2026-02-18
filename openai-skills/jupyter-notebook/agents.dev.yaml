@@ -1,0 +1,875 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-jupyter-notebook
+  description: An agent that uses OpenAI's jupyter-notebook skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-jupyter-notebook
+
+agents:
+  - name: openai-jupyter-notebook
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-jupyter-notebook/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-jupyter-notebook/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/jupyter-notebook
+    - path: /skills/jupyter-notebook/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+          1. Definitions.
+
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+
+          END OF TERMS AND CONDITIONS
+
+          APPENDIX: How to apply the Apache License to your work.
+
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+
+          Copyright [yyyy] [name of copyright owner]
+
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+
+              http://www.apache.org/licenses/LICENSE-2.0
+
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
+    - path: /skills/jupyter-notebook/SKILL.md
+      text: |
+          ---
+          name: "jupyter-notebook"
+          description: "Use when the user asks to create, scaffold, or edit Jupyter notebooks (`.ipynb`) for experiments, explorations, or tutorials; prefer the bundled templates and run the helper script `new_notebook.py` to generate a clean starting notebook."
+          ---
+
+
+          # Jupyter Notebook Skill
+
+          Create clean, reproducible Jupyter notebooks for two primary modes:
+
+          - Experiments and exploratory analysis
+          - Tutorials and teaching-oriented walkthroughs
+
+          Prefer the bundled templates and the helper script for consistent structure and fewer JSON mistakes.
+
+          ## When to use
+          - Create a new `.ipynb` notebook from scratch.
+          - Convert rough notes or scripts into a structured notebook.
+          - Refactor an existing notebook to be more reproducible and skimmable.
+          - Build experiments or tutorials that will be read or re-run by other people.
+
+          ## Decision tree
+          - If the request is exploratory, analytical, or hypothesis-driven, choose `experiment`.
+          - If the request is instructional, step-by-step, or audience-specific, choose `tutorial`.
+          - If editing an existing notebook, treat it as a refactor: preserve intent and improve structure.
+
+          ## Skill path (set once)
+
+          ```bash
+          export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+          export JUPYTER_NOTEBOOK_CLI="$CODEX_HOME/skills/jupyter-notebook/scripts/new_notebook.py"
+          ```
+
+          User-scoped skills install under `$CODEX_HOME/skills` (default: `~/.codex/skills`).
+
+          ## Workflow
+          1. Lock the intent.
+          Identify the notebook kind: `experiment` or `tutorial`.
+          Capture the objective, audience, and what "done" looks like.
+
+          2. Scaffold from the template.
+          Use the helper script to avoid hand-authoring raw notebook JSON.
+
+          ```bash
+          uv run --python 3.12 python "$JUPYTER_NOTEBOOK_CLI" \
+            --kind experiment \
+            --title "Compare prompt variants" \
+            --out output/jupyter-notebook/compare-prompt-variants.ipynb
+          ```
+
+          ```bash
+          uv run --python 3.12 python "$JUPYTER_NOTEBOOK_CLI" \
+            --kind tutorial \
+            --title "Intro to embeddings" \
+            --out output/jupyter-notebook/intro-to-embeddings.ipynb
+          ```
+
+          3. Fill the notebook with small, runnable steps.
+          Keep each code cell focused on one step.
+          Add short markdown cells that explain the purpose and expected result.
+          Avoid large, noisy outputs when a short summary works.
+
+          4. Apply the right pattern.
+          For experiments, follow `references/experiment-patterns.md`.
+          For tutorials, follow `references/tutorial-patterns.md`.
+
+          5. Edit safely when working with existing notebooks.
+          Preserve the notebook structure; avoid reordering cells unless it improves the top-to-bottom story.
+          Prefer targeted edits over full rewrites.
+          If you must edit raw JSON, review `references/notebook-structure.md` first.
+
+          6. Validate the result.
+          Run the notebook top-to-bottom when the environment allows.
+          If execution is not possible, say so explicitly and call out how to validate locally.
+          Use the final pass checklist in `references/quality-checklist.md`.
+
+          ## Templates and helper script
+          - Templates live in `assets/experiment-template.ipynb` and `assets/tutorial-template.ipynb`.
+          - The helper script loads a template, updates the title cell, and writes a notebook.
+
+          Script path:
+          - `$JUPYTER_NOTEBOOK_CLI` (installed default: `$CODEX_HOME/skills/jupyter-notebook/scripts/new_notebook.py`)
+
+          ## Temp and output conventions
+          - Use `tmp/jupyter-notebook/` for intermediate files; delete when done.
+          - Write final artifacts under `output/jupyter-notebook/` when working in this repo.
+          - Use stable, descriptive filenames (for example, `ablation-temperature.ipynb`).
+
+          ## Dependencies (install only when needed)
+          Prefer `uv` for dependency management.
+
+          Optional Python packages for local notebook execution:
+
+          ```bash
+          uv pip install jupyterlab ipykernel
+          ```
+
+          The bundled scaffold script uses only the Python standard library and does not require extra dependencies.
+
+          ## Environment
+          No required environment variables.
+
+          ## Reference map
+          - `references/experiment-patterns.md`: experiment structure and heuristics.
+          - `references/tutorial-patterns.md`: tutorial structure and teaching flow.
+          - `references/notebook-structure.md`: notebook JSON shape and safe editing rules.
+          - `references/quality-checklist.md`: final validation checklist.
+    - path: /skills/jupyter-notebook/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Jupyter Notebooks"
+            short_description: "Create Jupyter notebooks for experiments and tutorials"
+            icon_small: "./assets/jupyter-small.svg"
+            icon_large: "./assets/jupyter.png"
+            default_prompt: "Create a Jupyter notebook for this task with clear sections, runnable cells, and concise takeaways."
+    - path: /skills/jupyter-notebook/assets/experiment-template.ipynb
+      text: |
+          {
+            "cells": [
+              {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                  "# Experiment: TITLE\n",
+                  "\n",
+                  "Objective:\n",
+                  "- State the question you want to answer.\n",
+                  "- Define the success criteria.\n"
+                ]
+              },
+              {
+                "cell_type": "code",
+                "execution_count": null,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                  "# Setup: imports and reproducibility\n",
+                  "from __future__ import annotations\n",
+                  "\n",
+                  "import random\n",
+                  "import statistics\n",
+                  "\n",
+                  "SEED = 7\n",
+                  "random.seed(SEED)\n",
+                  "SEED\n"
+                ]
+              },
+              {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                  "## Plan\n",
+                  "\n",
+                  "- Hypothesis:\n",
+                  "- Variables to sweep:\n",
+                  "- Metrics to record:\n"
+                ]
+              },
+              {
+                "cell_type": "code",
+                "execution_count": null,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                  "# Define parameters and lightweight helpers\n",
+                  "sample_size = 20\n",
+                  "values = [random.random() for _ in range(sample_size)]\n",
+                  "summary = {\n",
+                  "    \"count\": len(values),\n",
+                  "    \"mean\": statistics.fmean(values),\n",
+                  "    \"min\": min(values),\n",
+                  "    \"max\": max(values),\n",
+                  "}\n",
+                  "summary\n"
+                ]
+              },
+              {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                  "## Results\n",
+                  "\n",
+                  "- Key observations:\n",
+                  "- Surprises or failure modes:\n",
+                  "- Decision: continue, pivot, or stop:\n"
+                ]
+              },
+              {
+                "cell_type": "code",
+                "execution_count": null,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                  "# Record findings in a minimal, copy-pasteable structure\n",
+                  "result = {\n",
+                  "    \"seed\": SEED,\n",
+                  "    \"mean\": summary[\"mean\"],\n",
+                  "    \"range\": summary[\"max\"] - summary[\"min\"],\n",
+                  "}\n",
+                  "result\n"
+                ]
+              },
+              {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                  "## Next steps\n",
+                  "\n",
+                  "- What to try next:\n",
+                  "- What to document elsewhere (PRD, notes, issue):\n"
+                ]
+              }
+            ],
+            "metadata": {
+              "kernelspec": {
+                "display_name": "Python 3",
+                "language": "python",
+                "name": "python3"
+              },
+              "language_info": {
+                "name": "python",
+                "version": "3.12"
+              }
+            },
+            "nbformat": 4,
+            "nbformat_minor": 5
+          }
+    - path: /skills/jupyter-notebook/assets/jupyter-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="21" fill="currentColor" viewBox="0 0 20 21">
+            <path fill="currentColor" d="M4.582 17.078a1.48 1.48 0 0 1 1.066.395c.29.27.463.642.48 1.038v.11a1.509 1.509 0 0 1-.858 1.315 1.476 1.476 0 0 1-1.634-.256 1.504 1.504 0 0 1-.39-1.62 1.51 1.51 0 0 1 .52-.695 1.48 1.48 0 0 1 .816-.287Zm13.167-4.733a7.802 7.802 0 0 1-2.829 3.789 7.698 7.698 0 0 1-4.48 1.44 7.7 7.7 0 0 1-4.48-1.44 7.803 7.803 0 0 1-2.829-3.79c1.424 1.704 4.168 2.854 7.308 2.854 3.14 0 5.883-1.15 7.31-2.853ZM10.436 1.743c1.605 0 3.171.504 4.48 1.44a7.804 7.804 0 0 1 2.829 3.79C16.32 5.272 13.578 4.12 10.438 4.12c-3.14 0-5.884 1.155-7.31 2.855a7.804 7.804 0 0 1 2.828-3.79 7.699 7.699 0 0 1 4.48-1.44ZM3.246 2a.865.865 0 0 1 .91.336.885.885 0 0 1-.062 1.114.869.869 0 0 1-1.433-.224.889.889 0 0 1 .148-.966.875.875 0 0 1 .437-.26ZM16.087.076c.312-.013.617.1.847.313.23.213.367.51.381.824l-.005.176a1.197 1.197 0 0 1-.675.954 1.173 1.173 0 0 1-1.296-.202A1.194 1.194 0 0 1 15.44.305c.188-.14.413-.219.647-.229Z"/>
+          </svg>
+    - path: /skills/jupyter-notebook/assets/jupyter.png.b64
+      text: |
+          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
+    - path: /skills/jupyter-notebook/assets/tutorial-template.ipynb
+      text: |
+          {
+            "cells": [
+              {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                  "# Tutorial: TITLE\n",
+                  "\n",
+                  "Audience:\n",
+                  "- Describe who this is for.\n",
+                  "\n",
+                  "Prerequisites:\n",
+                  "- List required concepts or setup.\n",
+                  "\n",
+                  "Learning goals:\n",
+                  "- By the end, the reader can...\n"
+                ]
+              },
+              {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                  "## Outline\n",
+                  "\n",
+                  "1. Setup\n",
+                  "2. A minimal working example\n",
+                  "3. Variations and pitfalls\n",
+                  "4. Exercises\n"
+                ]
+              },
+              {
+                "cell_type": "code",
+                "execution_count": null,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                  "# Setup cell: keep it short and deterministic\n",
+                  "from __future__ import annotations\n",
+                  "\n",
+                  "import math\n",
+                  "import random\n",
+                  "\n",
+                  "SEED = 21\n",
+                  "random.seed(SEED)\n",
+                  "SEED\n"
+                ]
+              },
+              {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                  "## Step 1 - Start with a tiny example\n",
+                  "\n",
+                  "Explain what the next cell does in plain language.\n"
+                ]
+              },
+              {
+                "cell_type": "code",
+                "execution_count": null,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                  "# Minimal working example\n",
+                  "angles = [0, math.pi / 4, math.pi / 2]\n",
+                  "sines = [math.sin(a) for a in angles]\n",
+                  "list(zip(angles, sines))\n"
+                ]
+              },
+              {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                  "## Exercises\n",
+                  "\n",
+                  "- Try a different input.\n",
+                  "- Predict the output before running the code.\n",
+                  "- Note one common mistake and how to fix it.\n"
+                ]
+              },
+              {
+                "cell_type": "code",
+                "execution_count": null,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                  "# Exercise answer scaffold\n",
+                  "def describe(values: list[float]) -> dict[str, float]:\n",
+                  "    return {\"min\": min(values), \"max\": max(values)}\n",
+                  "\n",
+                  "describe(sines)\n"
+                ]
+              }
+            ],
+            "metadata": {
+              "kernelspec": {
+                "display_name": "Python 3",
+                "language": "python",
+                "name": "python3"
+              },
+              "language_info": {
+                "name": "python",
+                "version": "3.12"
+              }
+            },
+            "nbformat": 4,
+            "nbformat_minor": 5
+          }
+    - path: /skills/jupyter-notebook/references/experiment-patterns.md
+      text: |
+          # Experiment Patterns
+
+          Use this structure for exploratory and experimental work:
+
+          - Title and objective: state the question and the success criteria.
+          - Setup and reproducibility: import only what you need, set a seed early, and keep configuration in one short cell.
+          - Plan: list hypotheses, sweeps, and metrics before running code.
+          - Minimal baseline: start with the smallest runnable example and confirm it runs end-to-end before adding complexity.
+          - Results and notes: summarize findings in markdown near the relevant code and record key metrics in a small dictionary or table-like structure.
+          - Next steps: decide whether to continue, pivot, or stop, and capture follow-up ideas as short bullets.
+    - path: /skills/jupyter-notebook/references/notebook-structure.md
+      text: |
+          # Notebook Structure
+
+          Jupyter notebooks are JSON documents with this high-level shape:
+
+          - `nbformat` and `nbformat_minor`
+          - `metadata`
+          - `cells` (a list of markdown and code cells)
+
+          When editing `.ipynb` files programmatically:
+
+          - Preserve `nbformat` and `nbformat_minor` from the template.
+          - Keep `cells` as an ordered list; do not reorder unless intentional.
+          - For code cells, set `execution_count` to `null` when unknown.
+          - For code cells, set `outputs` to an empty list when scaffolding.
+          - For markdown cells, keep `cell_type="markdown"` and `metadata={}`.
+
+          Prefer scaffolding from the bundled templates or `new_notebook.py` (for example, `$CODEX_HOME/skills/jupyter-notebook/scripts/new_notebook.py`) instead of hand-authoring raw notebook JSON.
+    - path: /skills/jupyter-notebook/references/quality-checklist.md
+      text: |
+          # Quality Checklist
+
+          Before delivering a notebook:
+
+          - Run it top-to-bottom at least once (or as much as the environment allows).
+          - Ensure early cells set all required state; avoid hidden state from prior runs.
+          - Keep outputs tidy. Avoid giant outputs when a short summary works.
+          - Prefer small tables, key metrics, or short printouts.
+          - Keep the narrative skimmable. Use headings and short bullets, and avoid long paragraphs.
+          - Leave helpful TODOs only when necessary, and label them clearly.
+          - If execution is not possible, call out the risk and how to validate locally.
+    - path: /skills/jupyter-notebook/references/tutorial-patterns.md
+      text: |
+          # Tutorial Patterns
+
+          Use this structure for teaching and walkthroughs:
+
+          - Audience, prerequisites, and learning goals: say who it is for, list what they should already know, and state what they will be able to do by the end.
+          - Outline: provide a short numbered outline so readers can skim.
+          - Step-by-step flow: pair a short markdown explanation with a small code cell that runs on its own and a brief interpretation of the result.
+          - Exercises: include at least one exercise that reinforces the key concept and provide an answer scaffold in the next cell.
+          - Pitfalls and extensions: call out one common mistake and how to fix it, and suggest one optional extension for curious readers.
+    - path: /skills/jupyter-notebook/scripts/new_notebook.py
+      text: |
+          from __future__ import annotations
+
+          import argparse
+          import json
+          import re
+          from pathlib import Path
+          from typing import Any
+
+
+          def slugify(text: str) -> str:
+              lowered = text.strip().lower()
+              cleaned = re.sub(r"[^a-z0-9]+", "-", lowered)
+              collapsed = re.sub(r"-+", "-", cleaned).strip("-")
+              return collapsed or "notebook"
+
+
+          def find_repo_root(start: Path) -> Path:
+              for candidate in (start, *start.parents):
+                  if (candidate / ".git").exists():
+                      return candidate
+              return start
+
+
+          def load_template(skill_dir: Path, kind: str) -> dict[str, Any]:
+              asset_name = "experiment-template.ipynb" if kind == "experiment" else "tutorial-template.ipynb"
+              template_path = skill_dir / "assets" / asset_name
+              if not template_path.exists():
+                  raise SystemExit(f"Missing template: {template_path}")
+              with template_path.open("r", encoding="utf-8") as f:
+                  data = json.load(f)
+              if not isinstance(data, dict):
+                  raise SystemExit(f"Unexpected template shape: {template_path}")
+              return data
+
+
+          def update_title(notebook: dict[str, Any], kind: str, title: str) -> None:
+              prefix = "Experiment" if kind == "experiment" else "Tutorial"
+              expected = f"# {prefix}: {title}\n"
+
+              cells = notebook.get("cells")
+              if not isinstance(cells, list) or not cells:
+                  raise SystemExit("Template notebook has no cells")
+
+              first_cell = cells[0]
+              if not isinstance(first_cell, dict) or first_cell.get("cell_type") != "markdown":
+                  raise SystemExit("Template notebook must start with a markdown title cell")
+
+              source = first_cell.get("source", [])
+              if isinstance(source, str):
+                  source_lines = [source]
+              elif isinstance(source, list):
+                  source_lines = [str(line) for line in source]
+              else:
+                  source_lines = []
+
+              if source_lines:
+                  source_lines[0] = expected
+              else:
+                  source_lines = [expected]
+
+              first_cell["source"] = source_lines
+
+              metadata = notebook.setdefault("metadata", {})
+              if not isinstance(metadata, dict):
+                  raise SystemExit("Notebook metadata must be a mapping")
+
+              language_info = metadata.setdefault("language_info", {})
+              if isinstance(language_info, dict):
+                  language_info.setdefault("name", "python")
+                  language_info.setdefault("version", "3.12")
+
+
+          def default_output(repo_root: Path, title: str) -> Path:
+              filename = f"{slugify(title)}.ipynb"
+              return repo_root / "output" / "jupyter-notebook" / filename
+
+
+          def parse_args() -> argparse.Namespace:
+              parser = argparse.ArgumentParser(description="Scaffold a Jupyter notebook for experiments or tutorials.")
+              parser.add_argument(
+                  "--kind",
+                  choices=["experiment", "tutorial"],
+                  default="experiment",
+                  help="Notebook style to scaffold (default: experiment).",
+              )
+              parser.add_argument(
+                  "--title",
+                  required=True,
+                  help="Human-readable notebook title used in the first markdown cell.",
+              )
+              parser.add_argument(
+                  "--out",
+                  type=Path,
+                  default=None,
+                  help="Output path for the notebook. Defaults to output/jupyter-notebook/<slug>.ipynb.",
+              )
+              parser.add_argument(
+                  "--force",
+                  action="store_true",
+                  help="Overwrite the output file if it already exists.",
+              )
+              return parser.parse_args()
+
+
+          def main() -> None:
+              args = parse_args()
+
+              script_path = Path(__file__).resolve()
+              skill_dir = script_path.parents[1]
+              repo_root = find_repo_root(skill_dir)
+
+              notebook = load_template(skill_dir, args.kind)
+              update_title(notebook, args.kind, args.title)
+
+              out_path = args.out or default_output(repo_root, args.title)
+              out_path = out_path.resolve()
+
+              if out_path.exists() and not args.force:
+                  raise SystemExit(f"Refusing to overwrite existing file without --force: {out_path}")
+
+              out_path.parent.mkdir(parents=True, exist_ok=True)
+              with out_path.open("w", encoding="utf-8") as f:
+                  json.dump(notebook, f, indent=2)
+                  f.write("\n")
+
+              print(f"Wrote {out_path} using kind={args.kind}.")
+
+
+          if __name__ == "__main__":
+              main()
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: JUPYTER_NOTEBOOK_CLI
+      value: "/data/skills/jupyter-notebook/scripts/new_notebook.py"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-jupyter-notebook
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
