@@ -10,10 +10,10 @@ This agent helps users and teams interactively explore and apply documentation a
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a44636585d78c98de985bfef51f0d9aec48fed1/openai-skills/openai-docs/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4ca1a6f5dc85c836d08c84cafd9c26f0ceaa39e3/openai-skills/openai-docs/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a5be3310c6b8692867f947b41cea9a17ca8d891/openai-skills/openai-docs/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3400c5284829ab915a79ada97ba0188ccc783696/openai-skills/openai-docs/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a44636585d78c98de985bfef51f0d9aec48fed1/openai-skills/openai-docs/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4ca1a6f5dc85c836d08c84cafd9c26f0ceaa39e3/openai-skills/openai-docs/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a5be3310c6b8692867f947b41cea9a17ca8d891/openai-skills/openai-docs/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3400c5284829ab915a79ada97ba0188ccc783696/openai-skills/openai-docs/agents.prod.yaml
