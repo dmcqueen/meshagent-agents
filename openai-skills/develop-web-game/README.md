@@ -10,10 +10,10 @@ This agent helps software teams and individual developers turn web game ideas in
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c2081b545c40832c2ad9940a9c8ac01975a22e8a/openai-skills/develop-web-game/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8cc7ee470e4b981679aa569af2f9b9d1af7e463b/openai-skills/develop-web-game/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ac62e095b2326f536a2a05a84c7b1de18de3a1b/openai-skills/develop-web-game/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6314bc139c64e2c8d151f8c71a44f9e512f8d046/openai-skills/develop-web-game/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c2081b545c40832c2ad9940a9c8ac01975a22e8a/openai-skills/develop-web-game/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8cc7ee470e4b981679aa569af2f9b9d1af7e463b/openai-skills/develop-web-game/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ac62e095b2326f536a2a05a84c7b1de18de3a1b/openai-skills/develop-web-game/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6314bc139c64e2c8d151f8c71a44f9e512f8d046/openai-skills/develop-web-game/agents.prod.yaml
