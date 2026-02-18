@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-notion-knowledge-capture
-  description: An agent that uses OpenAI's notion-knowledge-capture skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's notion-knowledge-capture skill
   annotations:
     meshagent.service.id: meshagent.openai-notion-knowledge-capture
 
