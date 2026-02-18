@@ -1,0 +1,495 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-figma
+  description: An agent that uses OpenAI's figma skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-figma
+
+agents:
+  - name: openai-figma
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-figma/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-figma/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/figma
+    - path: /skills/figma/LICENSE.txt
+      text: |
+
+             Apache License
+                                     Version 2.0, January 2004
+                                  http://www.apache.org/licenses/
+
+             TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+             1. Definitions.
+
+                "License" shall mean the terms and conditions for use, reproduction,
+                and distribution as defined by Sections 1 through 9 of this document.
+
+                "Licensor" shall mean the copyright owner or entity authorized by
+                the copyright owner that is granting the License.
+
+                "Legal Entity" shall mean the union of the acting entity and all
+                other entities that control, are controlled by, or are under common
+                control with that entity. For the purposes of this definition,
+                "control" means (i) the power, direct or indirect, to cause the
+                direction or management of such entity, whether by contract or
+                otherwise, or (ii) ownership of fifty percent (50%) or more of the
+                outstanding shares, or (iii) beneficial ownership of such entity.
+
+                "You" (or "Your") shall mean an individual or Legal Entity
+                exercising permissions granted by this License.
+
+                "Source" form shall mean the preferred form for making modifications,
+                including but not limited to software source code, documentation
+                source, and configuration files.
+
+                "Object" form shall mean any form resulting from mechanical
+                transformation or translation of a Source form, including but
+                not limited to compiled object code, generated documentation,
+                and conversions to other media types.
+
+                "Work" shall mean the work of authorship, whether in Source or
+                Object form, made available under the License, as indicated by a
+                copyright notice that is included in or attached to the work
+                (an example is provided in the Appendix below).
+
+                "Derivative Works" shall mean any work, whether in Source or Object
+                form, that is based on (or derived from) the Work and for which the
+                editorial revisions, annotations, elaborations, or other modifications
+                represent, as a whole, an original work of authorship. For the purposes
+                of this License, Derivative Works shall not include works that remain
+                separable from, or merely link (or bind by name) to the interfaces of,
+                the Work and Derivative Works thereof.
+
+                "Contribution" shall mean any work of authorship, including
+                the original version of the Work and any modifications or additions
+                to that Work or Derivative Works thereof, that is intentionally
+                submitted to Licensor for inclusion in the Work by the copyright owner
+                or by an individual or Legal Entity authorized to submit on behalf of
+                the copyright owner. For the purposes of this definition, "submitted"
+                means any form of electronic, verbal, or written communication sent
+                to the Licensor or its representatives, including but not limited to
+                communication on electronic mailing lists, source code control systems,
+                and issue tracking systems that are managed by, or on behalf of, the
+                Licensor for the purpose of discussing and improving the Work, but
+                excluding communication that is conspicuously marked or otherwise
+                designated in writing by the copyright owner as "Not a Contribution."
+
+                "Contributor" shall mean Licensor and any individual or Legal Entity
+                on behalf of whom a Contribution has been received by Licensor and
+                subsequently incorporated within the Work.
+
+             2. Grant of Copyright License. Subject to the terms and conditions of
+                this License, each Contributor hereby grants to You a perpetual,
+                worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+                copyright license to reproduce, prepare Derivative Works of,
+                publicly display, publicly perform, sublicense, and distribute the
+                Work and such Derivative Works in Source or Object form.
+
+             3. Grant of Patent License. Subject to the terms and conditions of
+                this License, each Contributor hereby grants to You a perpetual,
+                worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+                (except as stated in this section) patent license to make, have made,
+                use, offer to sell, sell, import, and otherwise transfer the Work,
+                where such license applies only to those patent claims licensable
+                by such Contributor that are necessarily infringed by their
+                Contribution(s) alone or by combination of their Contribution(s)
+                with the Work to which such Contribution(s) was submitted. If You
+                institute patent litigation against any entity (including a
+                cross-claim or counterclaim in a lawsuit) alleging that the Work
+                or a Contribution incorporated within the Work constitutes direct
+                or contributory patent infringement, then any patent licenses
+                granted to You under this License for that Work shall terminate
+                as of the date such litigation is filed.
+
+             4. Redistribution. You may reproduce and distribute copies of the
+                Work or Derivative Works thereof in any medium, with or without
+                modifications, and in Source or Object form, provided that You
+                meet the following conditions:
+
+                (a) You must give any other recipients of the Work or
+                    Derivative Works a copy of this License; and
+
+                (b) You must cause any modified files to carry prominent notices
+                    stating that You changed the files; and
+
+                (c) You must retain, in the Source form of any Derivative Works
+                    that You distribute, all copyright, patent, trademark, and
+                    attribution notices from the Source form of the Work,
+                    excluding those notices that do not pertain to any part of
+                    the Derivative Works; and
+
+                (d) If the Work includes a "NOTICE" text file as part of its
+                    distribution, then any Derivative Works that You distribute must
+                    include a readable copy of the attribution notices contained
+                    within such NOTICE file, excluding those notices that do not
+                    pertain to any part of the Derivative Works, in at least one
+                    of the following places: within a NOTICE text file distributed
+                    as part of the Derivative Works; within the Source form or
+                    documentation, if provided along with the Derivative Works; or,
+                    within a display generated by the Derivative Works, if and
+                    wherever such third-party notices normally appear. The contents
+                    of the NOTICE file are for informational purposes only and
+                    do not modify the License. You may add Your own attribution
+                    notices within Derivative Works that You distribute, alongside
+                    or as an addendum to the NOTICE text from the Work, provided
+                    that such additional attribution notices cannot be construed
+                    as modifying the License.
+
+                You may add Your own copyright statement to Your modifications and
+                may provide additional or different license terms and conditions
+                for use, reproduction, or distribution of Your modifications, or
+                for any such Derivative Works as a whole, provided Your use,
+                reproduction, and distribution of the Work otherwise complies with
+                the conditions stated in this License.
+
+             5. Submission of Contributions. Unless You explicitly state otherwise,
+                any Contribution intentionally submitted for inclusion in the Work
+                by You to the Licensor shall be under the terms and conditions of
+                this License, without any additional terms or conditions.
+                Notwithstanding the above, nothing herein shall supersede or modify
+                the terms of any separate license agreement you may have executed
+                with Licensor regarding such Contributions.
+
+             6. Trademarks. This License does not grant permission to use the trade
+                names, trademarks, service marks, or product names of the Licensor,
+                except as required for reasonable and customary use in describing the
+                origin of the Work and reproducing the content of the NOTICE file.
+
+             7. Disclaimer of Warranty. Unless required by applicable law or
+                agreed to in writing, Licensor provides the Work (and each
+                Contributor provides its Contributions) on an "AS IS" BASIS,
+                WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+                implied, including, without limitation, any warranties or conditions
+                of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+                PARTICULAR PURPOSE. You are solely responsible for determining the
+                appropriateness of using or redistributing the Work and assume any
+                risks associated with Your exercise of permissions under this License.
+
+             8. Limitation of Liability. In no event and under no legal theory,
+                whether in tort (including negligence), contract, or otherwise,
+                unless required by applicable law (such as deliberate and grossly
+                negligent acts) or agreed to in writing, shall any Contributor be
+                liable to You for damages, including any direct, indirect, special,
+                incidental, or consequential damages of any character arising as a
+                result of this License or out of the use or inability to use the
+                Work (including but not limited to damages for loss of goodwill,
+                work stoppage, computer failure or malfunction, or any and all
+                other commercial damages or losses), even if such Contributor
+                has been advised of the possibility of such damages.
+
+             9. Accepting Warranty or Additional Liability. While redistributing
+                the Work or Derivative Works thereof, You may choose to offer,
+                and charge a fee for, acceptance of support, warranty, indemnity,
+                or other liability obligations and/or rights consistent with this
+                License. However, in accepting such obligations, You may act only
+                on Your own behalf and on Your sole responsibility, not on behalf
+                of any other Contributor, and only if You agree to indemnify,
+                defend, and hold each Contributor harmless for any liability
+                incurred by, or claims asserted against, such Contributor by reason
+                of your accepting any such warranty or additional liability.
+
+             END OF TERMS AND CONDITIONS
+
+             APPENDIX: How to apply the Apache License to your work.
+
+                To apply the Apache License to your work, attach the following
+                boilerplate notice, with the fields enclosed by brackets "[]"
+                replaced with your own identifying information. (Don't include
+                the brackets!)  The text should be enclosed in the appropriate
+                comment syntax for the file format. We also recommend that a
+                file or class name and description of purpose be included on the
+                same "printed page" as the copyright notice for easier
+                identification within third-party archives.
+
+             Copyright [yyyy] [name of copyright owner]
+
+             Licensed under the Apache License, Version 2.0 (the "License");
+             you may not use this file except in compliance with the License.
+             You may obtain a copy of the License at
+
+                 http://www.apache.org/licenses/LICENSE-2.0
+
+             Unless required by applicable law or agreed to in writing, software
+             distributed under the License is distributed on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+             See the License for the specific language governing permissions and
+             limitations under the License.
+    - path: /skills/figma/SKILL.md
+      text: |
+          ---
+          name: figma
+          description: Use the Figma MCP server to fetch design context, screenshots, variables, and assets from Figma, and to translate Figma nodes into production code. Trigger when a task involves Figma URLs, node IDs, design-to-code implementation, or Figma MCP setup and troubleshooting.
+          ---
+
+          # Figma MCP
+
+          Use the Figma MCP server for Figma-driven implementation. For setup and debugging details (env vars, config, verification), see `references/figma-mcp-config.md`.
+
+          ## Figma MCP Integration Rules
+          These rules define how to translate Figma inputs into code for this project and must be followed for every Figma-driven change.
+
+          ### Required flow (do not skip)
+          1. Run get_design_context first to fetch the structured representation for the exact node(s).
+          2. If the response is too large or truncated, run get_metadata to get the high-level node map and then re-fetch only the required node(s) with get_design_context.
+          3. Run get_screenshot for a visual reference of the node variant being implemented.
+          4. Only after you have both get_design_context and get_screenshot, download any assets needed and start implementation.
+          5. Translate the output (usually React + Tailwind) into this project's conventions, styles and framework. Reuse the project's color tokens, components, and typography wherever possible.
+          6. Validate against Figma for 1:1 look and behavior before marking complete.
+
+          ### Implementation rules
+          - Treat the Figma MCP output (React + Tailwind) as a representation of design and behavior, not as final code style.
+          - Replace Tailwind utility classes with the project's preferred utilities/design-system tokens when applicable.
+          - Reuse existing components (e.g., buttons, inputs, typography, icon wrappers) instead of duplicating functionality.
+          - Use the project's color system, typography scale, and spacing tokens consistently.
+          - Respect existing routing, state management, and data-fetch patterns already adopted in the repo.
+          - Strive for 1:1 visual parity with the Figma design. When conflicts arise, prefer design-system tokens and adjust spacing or sizes minimally to match visuals.
+          - Validate the final UI against the Figma screenshot for both look and behavior.
+
+          ### Asset handling
+          - The Figma MCP Server provides an assets endpoint which can serve image and SVG assets.
+          - IMPORTANT: If the Figma MCP Server returns a localhost source for an image or an SVG, use that image or SVG source directly.
+          - IMPORTANT: DO NOT import/add new icon packages, all the assets should be in the Figma payload.
+          - IMPORTANT: do NOT use or create placeholders if a localhost source is provided.
+
+          ### Link-based prompting
+          - The server is link-based: copy the Figma frame/layer link and give that URL to the MCP client when asking for implementation help.
+          - The client cannot browse the URL but extracts the node ID from the link; always ensure the link points to the exact node/variant you want.
+
+          ## References
+          - `references/figma-mcp-config.md` — setup, verification, troubleshooting, and link-based usage reminders.
+          - `references/figma-tools-and-prompts.md` — tool catalog and prompt patterns for selecting frameworks/components and fetching metadata.
+    - path: /skills/figma/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Figma"
+            short_description: "Use Figma MCP for design-to-code work"
+            icon_small: "./assets/figma-small.svg"
+            icon_large: "./assets/figma.png"
+            default_prompt: "Use Figma MCP to inspect the target design and translate it into implementable UI decisions."
+
+          dependencies:
+            tools:
+              - type: "mcp"
+                value: "figma"
+                description: "Figma MCP server"
+                transport: "streamable_http"
+                url: "https://mcp.figma.com/mcp"
+    - path: /skills/figma/assets/figma-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill="#000" fill-rule="evenodd" d="M4.994 5.986a2.014 2.014 0 1 0 0 4.028h2.069V5.986H4.994Zm5.063-.98h.055a2.014 2.014 0 1 0 0-4.026h-2.07v4.027h2.015Zm1.697.49A2.994 2.994 0 0 0 10.112 0H4.994a2.994 2.994 0 0 0-1.642 5.498A2.99 2.99 0 0 0 2 8a2.99 2.99 0 0 0 1.352 2.503A2.99 2.99 0 0 0 2 13.007C2 14.663 3.358 16 5.008 16c1.665 0 3.035-1.349 3.035-3.02v-2.765a2.984 2.984 0 0 0 2.014.778h.055a2.994 2.994 0 0 0 1.642-5.496Zm-1.642.49h-.055a2.014 2.014 0 1 0 0 4.028h.055a2.014 2.014 0 1 0 0-4.028Zm-7.132 7.02c0-1.111.902-2.013 2.014-2.013h2.069v1.987c0 1.123-.924 2.04-2.055 2.04a2.026 2.026 0 0 1-2.028-2.013Zm4.083-8H4.994a2.014 2.014 0 1 1 0-4.026h2.069v4.027Z" clip-rule="evenodd"/>
+          </svg>
+    - path: /skills/figma/assets/figma.png.b64
+      text: |
+          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
+          6dokMwAAAABJRU5ErkJggg==
+    - path: /skills/figma/assets/icon.svg
+      text: |
+          <svg
+            width="400"
+            height="400"
+            viewBox="0 0 400 400"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M97.5 302.5C97.5 274.195 120.445 251.25 148.75 251.25H200V302.5C200 330.805 177.055 353.75 148.75 353.75C120.445 353.75 97.5 330.805 97.5 302.5Z"
+              fill="#0ACF83"
+            />
+            <path
+              d="M200 200C200 171.696 222.945 148.75 251.25 148.75C279.554 148.75 302.5 171.695 302.5 200C302.5 228.305 279.554 251.25 251.25 251.25C222.945 251.25 200 228.304 200 200Z"
+              fill="#1ABCFE"
+            />
+            <path
+              d="M97.5 200C97.5 228.305 120.445 251.25 148.75 251.25H200V148.75H148.75C120.445 148.75 97.5 171.695 97.5 200Z"
+              fill="#A259FF"
+            />
+            <path
+              d="M200 46.25V148.75H251.25C279.555 148.75 302.5 125.805 302.5 97.5C302.5 69.1954 279.555 46.25 251.25 46.25H200Z"
+              fill="#FF7262"
+            />
+            <path
+              d="M97.5 97.5C97.5 125.805 120.445 148.75 148.75 148.75H200V46.25L148.75 46.25C120.445 46.25 97.5 69.1954 97.5 97.5Z"
+              fill="#F24E1E"
+            />
+          </svg>
+    - path: /skills/figma/references/figma-mcp-config.md
+      text: |
+          # Figma MCP config reference
+
+          Use this snippet to register the Figma MCP server in `~/.codex/config.toml` as a streamable HTTP server with bearer auth pulled from your env.
+
+          ```toml
+          [mcp_servers.figma]
+          url = "https://mcp.figma.com/mcp"
+          bearer_token_env_var = "FIGMA_OAUTH_TOKEN"
+          http_headers = { "X-Figma-Region" = "us-east-1" }
+          ```
+
+          ## Notes and options
+          - The bearer token must be available as `FIGMA_OAUTH_TOKEN` in the environment that launches Codex.
+          - Keep the region header aligned with your Figma region. If your org uses another region, update `X-Figma-Region` consistently.
+          - OAuth on streamable HTTP requires the RMCP client: set `[features].rmcp_client = true` (or `experimental_use_rmcp_client = true` on older builds) at the top level of `config.toml`.
+          - Optional per-server timeouts: `startup_timeout_sec` (default 10) and `tool_timeout_sec` (default 60) can be set inside `[mcp_servers.figma]` if needed.
+
+          ## Env var setup (if missing)
+          - One-time set for current shell: `export FIGMA_OAUTH_TOKEN="<token>"`
+          - Persist for future sessions: add the export line to your shell profile (e.g., `~/.zshrc` or `~/.bashrc`), then restart the shell or your IDE.
+          - Verify before launching Codex: `echo $FIGMA_OAUTH_TOKEN` should print a non-empty token.
+
+          ## Setup + verification checklist
+          - Add the snippet above to `~/.codex/config.toml` under `[mcp_servers.figma]`, and enable `[features].rmcp_client = true` (or `experimental_use_rmcp_client = true` on older releases).
+          - Restart Codex (CLI/IDE) after updating config and env vars.
+          - Ask Codex to list Figma tools or run a simple call to confirm the server is reachable.
+
+          ## Troubleshooting
+          - Token not picked up: Export `FIGMA_OAUTH_TOKEN` in the same shell that launches Codex, or add it to your shell profile and restart.
+          - OAuth errors: Verify `rmcp_client` is enabled and the bearer token is valid. Tokens copied from Figma should not include surrounding quotes.
+          - Network/headers: Keep the `X-Figma-Region` header; if your org uses another region, update the header consistently across config and requests.
+
+          ## Usage reminders
+          - The server is link-based: copy the Figma frame or layer link, then ask the MCP client to implement that URL. The client will extract the node ID from the link (it does not browse the page).
+          - If output feels generic, restate the project-specific rules from the main skill and ensure you follow the required flow (get_design_context → get_metadata if needed → get_screenshot).
+    - path: /skills/figma/references/figma-tools-and-prompts.md
+      text: |
+          # Figma MCP tools and prompt patterns
+
+          Quick reference for the Figma MCP toolset, when to use each tool, and prompt examples to steer output toward your stack.
+
+          ## Core tools
+          - `get_design_context` (Figma Design, Figma Make): Primary tool. Returns structured design data and default React + Tailwind code. Selection-based prompting works on desktop; the remote server uses a frame/layer link to extract the node ID.
+          - `get_variable_defs` (Figma Design): Lists variables/styles (colors, spacing, typography) used in the selection. Useful to align with tokens.
+          - `get_metadata` (Figma Design): Sparse XML outline of layer IDs/names/types/positions/sizes. Use before re-calling `get_design_context` on large nodes to avoid truncation.
+          - `get_screenshot` (Figma Design, FigJam): Screenshot of the selection for visual fidelity checks.
+          - `get_figjam` (FigJam): XML + screenshots for FigJam diagrams (architecture, flows).
+          - `create_design_system_rules` (no file context): Generates a rule file with design-to-code guidance for your stack. Save it where the agent can read it.
+          - `get_code_connect_map` (Figma Design): Returns mapping of Figma node IDs to code components (`codeConnectSrc`, `codeConnectName`). Use to reuse existing components.
+          - `add_code_connect_map` (Figma Design): Adds/updates a mapping between a Figma node and a code component to improve reuse.
+          - `get_strategy_for_mapping` (alpha, local only): Figma-prompted tool to decide mapping strategy for connecting a node to a code component.
+          - `send_get_strategy_response` (alpha, local only): Sends the response after `get_strategy_for_mapping`.
+          - `whoami` (remote only): Returns the authenticated Figma user identity (email, plans, seat types).
+
+          ## Prompt patterns (design context)
+          - Change framework: “generate my Figma selection in Vue” or “in plain HTML + CSS” or “for iOS”.
+          - Use my components: “generate my Figma selection using components from `src/components/ui`”.
+          - Combine: “generate my Figma selection using components from `src/ui` and style with Tailwind”.
+          - Note: On the remote server, selection-based prompting requires a frame/layer link; the server extracts the node ID from the URL.
+
+          ## Prompt patterns (variables/styles)
+          - “get the variables used in my Figma selection”
+          - “what color and spacing variables are used in my Figma selection?”
+          - “list the variable names and their values used in my Figma selection”
+
+          ## Prompt patterns (code connect)
+          - “show the code connect map for this selection”
+          - “map this node to `src/components/ui/Button.tsx` with name `Button`”
+
+          ## Best-practice flow reminder
+          Use `get_design_context` → (optionally `get_metadata` for large nodes) → `get_screenshot`, and keep project rules from `SKILL.md` in mind when applying the generated output.
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: FIGMA_OAUTH_TOKEN
+      value: ""
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-figma
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
