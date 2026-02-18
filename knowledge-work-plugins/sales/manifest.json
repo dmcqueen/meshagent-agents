@@ -2,13 +2,13 @@
   "id": "claude-sales",
   "name": "Claude Sales",
   "description": "An agent that uses Anthropic's sales knowledge work plugin",
-  "long_description": "This agent helps sales teams and individual sellers synthesize account and prospect information to produce targeted outreach, qualification, and follow-up materials that align with current deal strategies. Users can prepare call briefs, summarize customer signals and competitive context to inform negotiation and prioritization, and generate tailored messaging and assets for prospecting and account engagement. It also supports routine sales operations like pipeline review, forecasting summaries, and daily briefings to keep teams aligned and focused on the highest-impact opportunities. Responses are designed to help accelerate task execution and improve consistency across outreach and deal management.",
+  "long_description": "This agent helps salespeople and teams streamline prospecting, account research, and deal execution by generating tailored outreach messages, qualification scripts, and briefing materials that reflect customer context and signals. It can summarize customer interactions and market or competitive intelligence to inform call preparation, pipeline reviews, and forecasting conversations. Teams can use it to produce consistent assets for outreach, follow-up, and account strategy, reducing time spent on routine prep and improving alignment across stakeholders. When used with a suitable runtime model, it enables quick iterations on messaging and concise summaries that support better-informed sales decisions.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6858b3a10efb7f00cf7f4ed8fd9f3ef2e0a7ea52/knowledge-work-plugins/sales/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6858b3a10efb7f00cf7f4ed8fd9f3ef2e0a7ea52/knowledge-work-plugins/sales/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fec7c37afe81cf2ee829272f98deb44aada5630c/knowledge-work-plugins/sales/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fec7c37afe81cf2ee829272f98deb44aada5630c/knowledge-work-plugins/sales/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/34c5885e313364008b2f1d52ef7ad993d06fad61/knowledge-work-plugins/sales/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/34c5885e313364008b2f1d52ef7ad993d06fad61/knowledge-work-plugins/sales/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c694a7b5a8b7d67dabb1b7114d20d587439f7f3/knowledge-work-plugins/sales/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c694a7b5a8b7d67dabb1b7114d20d587439f7f3/knowledge-work-plugins/sales/agents.prod.yaml"
   }
 }
