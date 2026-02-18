@@ -31,16 +31,10 @@ container:
           if [ -d /skills ]; then
             cp -R -n /skills/* /data/skills/ 2>/dev/null || true
           fi
-          mkdir -p /data/agents/openai-gh-fix-ci
-          if [[ ! -f /data/agents/openai-gh-fix-ci/rules.txt ]]; then
-            cp /var/rules-openai-gh-fix-ci.txt /data/agents/openai-gh-fix-ci/rules.txt
+          mkdir -p /agents/openai-gh-fix-ci
+          if [[ ! -s /agents/openai-gh-fix-ci/rules.txt ]]; then
+            cp /var/rules-openai-gh-fix-ci.txt /agents/openai-gh-fix-ci/rules.txt
           fi
-
-          if [[ -d /agents/openai-gh-fix-ci && ! -L /agents ]]; then
-            rm -f /agents/openai-gh-fix-ci/rules.txt 2>/dev/null || true
-          fi
-
-
 
           # Decode any base64-encoded binary payloads
           if command -v base64 >/dev/null 2>&1; then
@@ -57,7 +51,7 @@ container:
             --storage-tool-local-path=/skills:/skills \
             --storage-tool-room-path=/:/data \
             --script-tool \
-            --room-rules /data/agents/openai-gh-fix-ci/rules.txt \
+            --room-rules /agents/openai-gh-fix-ci/rules.txt \
             --skill-dir /data/skills/gh-fix-ci
     - path: /var/rules-openai-gh-fix-ci.txt
       read_only: true
@@ -66,7 +60,7 @@ container:
           when a question could be served by a skill, read the skill and follow the pattern specified in the skill
           when using the storage tool to read files attached or referenced by the user, in the room, or output by other tools, the file path should be prefixed with /data.
           when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)
-          You have customizable rules stored in /data/agents/openai-gh-fix-ci/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files.
+          You have customizable rules stored in /agents/openai-gh-fix-ci/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files.
           You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com
           You have some slash commands available
     - path: /skills/gh-fix-ci/LICENSE.txt
