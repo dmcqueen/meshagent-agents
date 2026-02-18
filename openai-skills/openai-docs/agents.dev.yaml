@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-openai-docs
-  description: An agent that uses OpenAI's openai-docs skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's openai-docs skill
   annotations:
     meshagent.service.id: meshagent.openai-openai-docs
 
