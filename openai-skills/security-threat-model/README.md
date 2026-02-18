@@ -10,10 +10,10 @@ This plugin supports security-threat-model workflows and is designed to help use
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/16a60a7ba5fa32e1edfc8ec9b44d7bccb415d7d8/openai-skills/security-threat-model/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4f224f5d83d014e3c7a680c735ef85cbb660471f/openai-skills/security-threat-model/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/41a13cc718c54991893c414b40e65b397571bdbb/openai-skills/security-threat-model/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cdac6dad9a9ad59f63daa2ee4b517a7421145de9/openai-skills/security-threat-model/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/16a60a7ba5fa32e1edfc8ec9b44d7bccb415d7d8/openai-skills/security-threat-model/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4f224f5d83d014e3c7a680c735ef85cbb660471f/openai-skills/security-threat-model/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/41a13cc718c54991893c414b40e65b397571bdbb/openai-skills/security-threat-model/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cdac6dad9a9ad59f63daa2ee4b517a7421145de9/openai-skills/security-threat-model/agents.prod.yaml
