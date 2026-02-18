@@ -10,10 +10,10 @@ This plugin supports imagegen workflows and is designed to help users complete p
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6aa4664a86c31062646800438a0e8082d54b8163/openai-skills/imagegen/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/451369c910a26f9c4e95dc0a467422a6d8a0ef92/openai-skills/imagegen/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/82aadb999becf3beab48ec38d42f8effece42e85/openai-skills/imagegen/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c02136019c3a9977d9c86f4712db929b7472434/openai-skills/imagegen/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6aa4664a86c31062646800438a0e8082d54b8163/openai-skills/imagegen/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/451369c910a26f9c4e95dc0a467422a6d8a0ef92/openai-skills/imagegen/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/82aadb999becf3beab48ec38d42f8effece42e85/openai-skills/imagegen/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c02136019c3a9977d9c86f4712db929b7472434/openai-skills/imagegen/agents.prod.yaml
