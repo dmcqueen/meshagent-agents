@@ -10,10 +10,10 @@ This plugin supports speech workflows and is designed to help users complete pra
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/43fd055fef68a3c6ba384207123ecb6de794dd6c/openai-skills/speech/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7915c95896974d04a24c42726770ad2204efdad9/openai-skills/speech/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/642f088737551e8036bb3329883a8a547be2a01b/openai-skills/speech/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/114cc07685287a22462fe4f132d8efaa5c06a08e/openai-skills/speech/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/43fd055fef68a3c6ba384207123ecb6de794dd6c/openai-skills/speech/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7915c95896974d04a24c42726770ad2204efdad9/openai-skills/speech/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/642f088737551e8036bb3329883a8a547be2a01b/openai-skills/speech/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/114cc07685287a22462fe4f132d8efaa5c06a08e/openai-skills/speech/agents.prod.yaml
