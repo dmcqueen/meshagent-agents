@@ -1,0 +1,517 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-vercel-deploy
+  description: An agent that uses OpenAI's vercel-deploy skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-vercel-deploy
+
+agents:
+  - name: openai-vercel-deploy
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-vercel-deploy/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-vercel-deploy/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/vercel-deploy
+    - path: /skills/vercel-deploy/LICENSE.txt
+      text: |
+          MIT License
+
+          Copyright (c) 2026 Vercel
+
+          Permission is hereby granted, free of charge, to any person obtaining a copy
+          of this software and associated documentation files (the "Software"), to deal
+          in the Software without restriction, including without limitation the rights
+          to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+          copies of the Software, and to permit persons to whom the Software is
+          furnished to do so, subject to the following conditions:
+
+          The above copyright notice and this permission notice shall be included in all
+          copies or substantial portions of the Software.
+
+          THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+          IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+          FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+          AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+          LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+          OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+          SOFTWARE.
+    - path: /skills/vercel-deploy/SKILL.md
+      text: |
+          ---
+          name: vercel-deploy
+          description: Deploy applications and websites to Vercel. Use when the user requests deployment actions like "deploy my app", "deploy and give me the link", "push this live", or "create a preview deployment".
+          ---
+
+          # Vercel Deploy
+
+          Deploy any project to Vercel instantly. **Always deploy as preview** (not production) unless the user explicitly asks for production.
+
+          ## Prerequisites
+
+          - When sandboxing blocks the deployment network calls, rerun with `sandbox_permissions=require_escalated`.
+          - The deployment might take a few minutes. Use appropriate timeout values.
+
+          ## Quick Start
+
+          **Just run this (with a 10 minute timeout):**
+          ```bash
+          vercel deploy [path] -y
+          ```
+
+          **Important:** Use a 10 minute (600000ms) timeout for the deploy command since builds can take a while.
+
+          If that fails with "No existing credentials found", use the fallback method below.
+
+          ## Fallback (No Auth)
+
+          If CLI fails with auth error, use the deploy script:
+
+          ```bash
+          # Deploy current directory
+          bash scripts/deploy.sh
+
+          # Deploy specific project
+          bash scripts/deploy.sh /path/to/project
+
+          # Deploy existing tarball
+          bash scripts/deploy.sh /path/to/project.tgz
+          ```
+
+          The script handles framework detection, packaging, and deployment. It waits for the build to complete and returns JSON with `previewUrl` and `claimUrl`.
+
+          **Tell the user:** "Your deployment is ready at [previewUrl]. Claim it at [claimUrl] to manage your deployment."
+
+          ## Production Deploys
+
+          Only if user explicitly asks:
+          ```bash
+          vercel deploy [path] --prod -y
+          ```
+
+          ## Output
+
+          Show the user the deployment URL. For fallback deployments, also show the claim URL.
+
+          **Do not** curl or fetch the deployed URL to verify it works. Just return the link.
+
+          ## Troubleshooting
+
+          ### Escalated Network Access
+
+          If deployment fails due to network issues (timeouts, DNS errors, connection resets), rerun the deploy with escalated permissions (use `sandbox_permissions=require_escalated`). The deploy requires escalated network access when sandbox networking blocks outbound requests.
+
+          Example guidance to the user:
+
+          ```
+          The deploy needs escalated network access to deploy to Vercel. I can rerun the command with escalated permissions—want me to proceed?
+          ```
+    - path: /skills/vercel-deploy/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Vercel Deploy"
+            short_description: "Deploy apps and agents with zero configuration on Vercel. No account required."
+            icon_small: "./assets/vercel-small.svg"
+            icon_large: "./assets/vercel.png"
+            default_prompt: "Create a Vercel deployment for this project and share the URL."
+    - path: /skills/vercel-deploy/assets/vercel-small.svg
+      text: |
+          <svg width="16" height="16" viewBox="0 0 1155 1155" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g transform="translate(0 77.5)">
+              <path fill="currentColor" d="M577.344 0L1154.69 1000H0L577.344 0Z" />
+            </g>
+          </svg>
+    - path: /skills/vercel-deploy/assets/vercel.png.b64
+      text: |
+          iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
+          AXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAKpSURBVHgB7ZyBaUIxFEXTTuAIuoEjOIIjuIFu
+          oBs4gqM4giPoBrpB+iMIUg3Rr8k773MPiCC03nga3m1S+hNCiEFg+A0ChYTAkBAYEgJDQmBICAwJ
+          gSEhMCQEhoTAkBAYEgJDQmBICAwJgSEhMCQEhoTAkBAYEgJDQmBICAwJgSEhMCQEhoTAkBAYgxGy
+          2+3CUIjeH4vFIibm87mr3JmHq7APj/F4HI/H41VIeh6NRq7yD07IdruN92w2G1f5ByUk7Y7/nM/n
+          6+ue1jEYId0gj89Ir3taxyCE3AZ5jtls5mo97oXcBnmO/X7vaj2uhazX6/gKq9XK1bpcCrmvuSXS
+          gHdYg12FzQ7yHA5rsJ+wz2ruKzirwW6CxsPhEPvgbMD7CFqquSUc1WAXIV8e5DnS1ztZKz/kqzW3
+          hJMazA7Yd5A/w0kNRod7u+aWSKfD8DVzw02n01gD+IDHBvt4kOeA12BmsE9rbgnwdS8v1DvnVX2h
+          Xvci/+pkuVyGTkqoSfr+XQ0ORFA/Id+suSWg172oMF+vuSWA172cMLUHeQ5YDcYEqT7Ic8BqMCNI
+          N8ijJWl3Qj4L+xAtam4JyjkXovZ2p7nVa26JTgamBpvvDgqQGmwrpO+1bC0AA97uza1qbgnLGvxz
+          s2JBN8jNZ8czTqdTmEwmwQKzoU4Y5Dksz7lMdkhacNodZC6Xy3WXpOeWmOyQtDvopBpslbPp0Kp1
+          LVuLlLfxZ9RWiPVv5O9iUIPbvRm15pZoXIPbvBHhvKovLa97mw31FteytWhdg5vsDu+0OudqskM8
+          1NwSrWqw6dGJeET/DQiGhMCQEBgSAkNCYEgIDAmBISEwJASGhMCQEBgSAkNCYEgIDAmBISEwJASG
+          hMCQEBgSAkNCYEgIDAmBISEwJASGhMCQEBh/kXodM1WcOo8AAAAASUVORK5CYII=
+    - path: /skills/vercel-deploy/scripts/deploy.sh
+      text: |
+          #!/bin/bash
+
+          # Vercel Deployment Script (via claimable deploy endpoint)
+          # Usage: ./deploy.sh [project-path]
+          # Returns: JSON with previewUrl, claimUrl, deploymentId, projectId
+
+          set -euo pipefail
+
+          DEPLOY_ENDPOINT="https://codex-deploy-skills.vercel.sh/api/deploy"
+
+          # Detect framework from package.json
+          detect_framework() {
+              local pkg_json="$1"
+
+              if [ ! -f "$pkg_json" ]; then
+                  echo "null"
+                  return
+              fi
+
+              local content=$(cat "$pkg_json")
+
+              # Helper to check if a package exists in dependencies or devDependencies.
+              # Use exact matching by default, with a separate prefix matcher for scoped
+              # package families like "@remix-run/".
+              has_dep_exact() {
+                  echo "$content" | grep -q "\"$1\""
+              }
+
+              has_dep_prefix() {
+                  echo "$content" | grep -q "\"$1"
+              }
+
+              # Order matters - check more specific frameworks first
+
+              # Blitz
+              if has_dep_exact "blitz"; then echo "blitzjs"; return; fi
+
+              # Next.js
+              if has_dep_exact "next"; then echo "nextjs"; return; fi
+
+              # Gatsby
+              if has_dep_exact "gatsby"; then echo "gatsby"; return; fi
+
+              # Remix
+              if has_dep_prefix "@remix-run/"; then echo "remix"; return; fi
+
+              # React Router (v7 framework mode)
+              if has_dep_prefix "@react-router/"; then echo "react-router"; return; fi
+
+              # TanStack Start
+              if has_dep_exact "@tanstack/start"; then echo "tanstack-start"; return; fi
+
+              # Astro
+              if has_dep_exact "astro"; then echo "astro"; return; fi
+
+              # Hydrogen (Shopify)
+              if has_dep_exact "@shopify/hydrogen"; then echo "hydrogen"; return; fi
+
+              # SvelteKit
+              if has_dep_exact "@sveltejs/kit"; then echo "sveltekit-1"; return; fi
+
+              # Svelte (standalone)
+              if has_dep_exact "svelte"; then echo "svelte"; return; fi
+
+              # Nuxt
+              if has_dep_exact "nuxt"; then echo "nuxtjs"; return; fi
+
+              # Vue with Vitepress
+              if has_dep_exact "vitepress"; then echo "vitepress"; return; fi
+
+              # Vue with Vuepress
+              if has_dep_exact "vuepress"; then echo "vuepress"; return; fi
+
+              # Gridsome
+              if has_dep_exact "gridsome"; then echo "gridsome"; return; fi
+
+              # SolidStart
+              if has_dep_exact "@solidjs/start"; then echo "solidstart-1"; return; fi
+
+              # Docusaurus
+              if has_dep_exact "@docusaurus/core"; then echo "docusaurus-2"; return; fi
+
+              # RedwoodJS
+              if has_dep_prefix "@redwoodjs/"; then echo "redwoodjs"; return; fi
+
+              # Hexo
+              if has_dep_exact "hexo"; then echo "hexo"; return; fi
+
+              # Eleventy
+              if has_dep_exact "@11ty/eleventy"; then echo "eleventy"; return; fi
+
+              # Angular / Ionic Angular
+              if has_dep_exact "@ionic/angular"; then echo "ionic-angular"; return; fi
+              if has_dep_exact "@angular/core"; then echo "angular"; return; fi
+
+              # Ionic React
+              if has_dep_exact "@ionic/react"; then echo "ionic-react"; return; fi
+
+              # Create React App
+              if has_dep_exact "react-scripts"; then echo "create-react-app"; return; fi
+
+              # Ember
+              if has_dep_exact "ember-cli" || has_dep_exact "ember-source"; then echo "ember"; return; fi
+
+              # Dojo
+              if has_dep_exact "@dojo/framework"; then echo "dojo"; return; fi
+
+              # Polymer
+              if has_dep_prefix "@polymer/"; then echo "polymer"; return; fi
+
+              # Preact
+              if has_dep_exact "preact"; then echo "preact"; return; fi
+
+              # Stencil
+              if has_dep_exact "@stencil/core"; then echo "stencil"; return; fi
+
+              # UmiJS
+              if has_dep_exact "umi"; then echo "umijs"; return; fi
+
+              # Sapper (legacy Svelte)
+              if has_dep_exact "sapper"; then echo "sapper"; return; fi
+
+              # Saber
+              if has_dep_exact "saber"; then echo "saber"; return; fi
+
+              # Sanity
+              if has_dep_exact "sanity"; then echo "sanity-v3"; return; fi
+              if has_dep_prefix "@sanity/"; then echo "sanity"; return; fi
+
+              # Storybook
+              if has_dep_prefix "@storybook/"; then echo "storybook"; return; fi
+
+              # NestJS
+              if has_dep_exact "@nestjs/core"; then echo "nestjs"; return; fi
+
+              # Elysia
+              if has_dep_exact "elysia"; then echo "elysia"; return; fi
+
+              # Hono
+              if has_dep_exact "hono"; then echo "hono"; return; fi
+
+              # Fastify
+              if has_dep_exact "fastify"; then echo "fastify"; return; fi
+
+              # h3
+              if has_dep_exact "h3"; then echo "h3"; return; fi
+
+              # Nitro
+              if has_dep_exact "nitropack"; then echo "nitro"; return; fi
+
+              # Express
+              if has_dep_exact "express"; then echo "express"; return; fi
+
+              # Vite (generic - check last among JS frameworks)
+              if has_dep_exact "vite"; then echo "vite"; return; fi
+
+              # Parcel
+              if has_dep_exact "parcel"; then echo "parcel"; return; fi
+
+              # No framework detected
+              echo "null"
+          }
+
+          # Parse arguments
+          INPUT_PATH="${1:-.}"
+
+          # Create temp directory for packaging
+          TEMP_DIR=$(mktemp -d)
+          TARBALL="$TEMP_DIR/project.tgz"
+          STAGING_DIR="$TEMP_DIR/staging"
+          CLEANUP_TEMP=true
+
+          cleanup() {
+              if [ "$CLEANUP_TEMP" = true ]; then
+                  rm -rf "$TEMP_DIR"
+              fi
+          }
+          trap cleanup EXIT
+
+          echo "Preparing deployment..." >&2
+
+          # Check if input is a .tgz file or a directory
+          FRAMEWORK="null"
+
+          if [ -f "$INPUT_PATH" ] && [[ "$INPUT_PATH" == *.tgz ]]; then
+              # Input is already a tarball, use it directly
+              echo "Using provided tarball..." >&2
+              TARBALL="$INPUT_PATH"
+              CLEANUP_TEMP=false
+              # Can't detect framework from tarball, leave as null
+          elif [ -d "$INPUT_PATH" ]; then
+              # Input is a directory, need to tar it
+              PROJECT_PATH=$(cd "$INPUT_PATH" && pwd)
+
+              # Detect framework from package.json
+              FRAMEWORK=$(detect_framework "$PROJECT_PATH/package.json")
+
+              # Stage files into a temporary directory to avoid mutating the source tree.
+              mkdir -p "$STAGING_DIR"
+              echo "Staging project files..." >&2
+              tar -C "$PROJECT_PATH" \
+                  --exclude='node_modules' \
+                  --exclude='.git' \
+                  --exclude='.env' \
+                  --exclude='.env.*' \
+                  -cf - . | tar -C "$STAGING_DIR" -xf -
+
+              # Check if this is a static HTML project (no package.json)
+              if [ ! -f "$PROJECT_PATH/package.json" ]; then
+                  # Find HTML files in root
+                  HTML_FILES=$(find "$STAGING_DIR" -maxdepth 1 -name "*.html" -type f)
+                  HTML_COUNT=$(printf '%s\n' "$HTML_FILES" | sed '/^$/d' | wc -l | tr -d '[:space:]')
+
+                  # If there's exactly one HTML file and it's not index.html, rename it
+                  if [ "$HTML_COUNT" -eq 1 ]; then
+                      HTML_FILE=$(echo "$HTML_FILES" | head -1)
+                      BASENAME=$(basename "$HTML_FILE")
+                      if [ "$BASENAME" != "index.html" ]; then
+                          echo "Renaming $BASENAME to index.html..." >&2
+                          mv "$HTML_FILE" "$STAGING_DIR/index.html"
+                      fi
+                  fi
+              fi
+
+              # Create tarball of the project (excluding node_modules and .git)
+              echo "Creating deployment package..." >&2
+              tar -czf "$TARBALL" -C "$STAGING_DIR" .
+          else
+              echo "Error: Input must be a directory or a .tgz file" >&2
+              exit 1
+          fi
+
+          if [ "$FRAMEWORK" != "null" ]; then
+              echo "Detected framework: $FRAMEWORK" >&2
+          fi
+
+          # Deploy
+          echo "Deploying..." >&2
+          RESPONSE=$(curl -s -X POST "$DEPLOY_ENDPOINT" -F "file=@$TARBALL" -F "framework=$FRAMEWORK")
+
+          # Check for error in response
+          if echo "$RESPONSE" | grep -q '"error"'; then
+              ERROR_MSG=$(echo "$RESPONSE" | grep -o '"error":"[^"]*"' | cut -d'"' -f4)
+              echo "Error: $ERROR_MSG" >&2
+              exit 1
+          fi
+
+          # Extract URLs from response
+          PREVIEW_URL=$(echo "$RESPONSE" | grep -o '"previewUrl":"[^"]*"' | cut -d'"' -f4)
+          CLAIM_URL=$(echo "$RESPONSE" | grep -o '"claimUrl":"[^"]*"' | cut -d'"' -f4)
+
+          if [ -z "$PREVIEW_URL" ]; then
+              echo "Error: Could not extract preview URL from response" >&2
+              echo "$RESPONSE" >&2
+              exit 1
+          fi
+
+          echo "Deployment started. Waiting for build to complete..." >&2
+          echo "Preview URL: $PREVIEW_URL" >&2
+
+          # Poll the preview URL until it returns 200 (not 5xx which indicates still building)
+          MAX_ATTEMPTS=60  # 5 minutes max (60 * 5 seconds)
+          ATTEMPT=0
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PREVIEW_URL")
+              
+              if [ "$HTTP_STATUS" -eq 200 ]; then
+                  echo "" >&2
+                  echo "Deployment ready!" >&2
+                  break
+              elif [ "$HTTP_STATUS" -ge 500 ]; then
+                  # 5xx means still building/deploying
+                  echo "Building... (attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS)" >&2
+                  sleep 5
+                  ATTEMPT=$((ATTEMPT + 1))
+              elif [ "$HTTP_STATUS" -ge 400 ] && [ "$HTTP_STATUS" -lt 500 ]; then
+                  # 4xx might be an error or the app itself returns 4xx - check if it's responding
+                  echo "" >&2
+                  echo "Deployment ready (returned $HTTP_STATUS)!" >&2
+                  break
+              else
+                  # Any other status, assume it's ready
+                  echo "" >&2
+                  echo "Deployment ready!" >&2
+                  break
+              fi
+          done
+
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+              echo "" >&2
+              echo "Warning: Timed out waiting for deployment, but it may still be building." >&2
+          fi
+
+          echo "" >&2
+          echo "Preview URL: $PREVIEW_URL" >&2
+          echo "Claim URL:   $CLAIM_URL" >&2
+          echo "" >&2
+
+          # Output JSON for programmatic use
+          echo "$RESPONSE"
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-vercel-deploy
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
