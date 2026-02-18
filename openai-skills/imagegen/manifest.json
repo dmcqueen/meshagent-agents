@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's imagegen skill and powered by gpt-5.2",
   "long_description": "This plugin supports imagegen workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in imagegen work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for imagegen decisions, analysis, and communication.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6aa4664a86c31062646800438a0e8082d54b8163/openai-skills/imagegen/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6aa4664a86c31062646800438a0e8082d54b8163/openai-skills/imagegen/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/82aadb999becf3beab48ec38d42f8effece42e85/openai-skills/imagegen/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/82aadb999becf3beab48ec38d42f8effece42e85/openai-skills/imagegen/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/451369c910a26f9c4e95dc0a467422a6d8a0ef92/openai-skills/imagegen/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/451369c910a26f9c4e95dc0a467422a6d8a0ef92/openai-skills/imagegen/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c02136019c3a9977d9c86f4712db929b7472434/openai-skills/imagegen/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c02136019c3a9977d9c86f4712db929b7472434/openai-skills/imagegen/agents.prod.yaml"
   }
 }
