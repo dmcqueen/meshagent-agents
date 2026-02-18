@@ -98,7 +98,8 @@ container:
             -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt >> "${STARTUP_LOG}" 2>&1 &
           log_startup "started task-runner join in background (pid=$!)"
 
-          if /usr/bin/meshagent multi join -c "chatbot \
+          log_startup "starting meshagent multi join as pid 1"
+          exec /usr/bin/meshagent multi join -c "chatbot \
             --agent-name claude-customer-support-meshagent \
             --require-web-search \
             --require-toolkit=SupportAgent \
@@ -136,13 +137,7 @@ container:
             --queue docs-sync \
             --require-shell \
             --require-toolkit=email \
-            --room-rules /agents/claude-customer-support-meshagent/rules-git-worker.txt"; then
-            log_startup "meshagent multi join exited cleanly"
-          else
-            exit_code=$?
-            log_startup "failed: meshagent multi join (exit=${exit_code}); keeping container alive for log inspection"
-            tail -f /dev/null
-          fi
+            --room-rules /agents/claude-customer-support-meshagent/rules-git-worker.txt"
     - path: /var/rules-claude-customer-support-chatbot.txt
       read_only: true
       text: |
