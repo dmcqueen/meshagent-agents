@@ -10,10 +10,10 @@ This plugin supports screenshot workflows and is designed to help users complete
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/32881b1cbad8d235d4651c8217e512d826c83d16/openai-skills/screenshot/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/177ec855bb11299098f8bc9b911dc6e964723168/openai-skills/screenshot/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d0dddabf4b99658e138ebc3977d29a4d959f00ae/openai-skills/screenshot/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eaa01c8ad522a4a5621af5acf7de99eedb3b97f3/openai-skills/screenshot/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/32881b1cbad8d235d4651c8217e512d826c83d16/openai-skills/screenshot/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/177ec855bb11299098f8bc9b911dc6e964723168/openai-skills/screenshot/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d0dddabf4b99658e138ebc3977d29a4d959f00ae/openai-skills/screenshot/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eaa01c8ad522a4a5621af5acf7de99eedb3b97f3/openai-skills/screenshot/agents.prod.yaml
