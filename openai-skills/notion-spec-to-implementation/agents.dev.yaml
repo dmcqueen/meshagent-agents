@@ -1,0 +1,2705 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-notion-spec-to-implementation
+  description: An agent that uses OpenAI's notion-spec-to-implementation skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-notion-spec-to-implementation
+
+agents:
+  - name: openai-notion-spec-to-implementation
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-notion-spec-to-implementation/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-notion-spec-to-implementation/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/notion-spec-to-implementation
+    - path: /skills/notion-spec-to-implementation/LICENSE.txt
+      text: |
+          Copyright 2025 Notion Labs, Inc.
+
+          Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+          The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+          THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    - path: /skills/notion-spec-to-implementation/SKILL.md
+      text: |
+          ---
+          name: notion-spec-to-implementation
+          description: Turn Notion specs into implementation plans, tasks, and progress tracking; use when implementing PRDs/feature specs and creating Notion plans + tasks from them.
+          metadata:
+            short-description: Turn Notion specs into implementation plans, tasks, and progress tracking
+          ---
+
+          # Spec to Implementation
+
+          Convert a Notion spec into linked implementation plans, tasks, and ongoing status updates.
+
+          ## Quick start
+          1) Locate the spec with `Notion:notion-search`, then fetch it with `Notion:notion-fetch`.
+          2) Parse requirements and ambiguities using `reference/spec-parsing.md`.
+          3) Create a plan page with `Notion:notion-create-pages` (pick a template: quick vs. full).
+          4) Find the task database, confirm schema, then create tasks with `Notion:notion-create-pages`.
+          5) Link spec ↔ plan ↔ tasks; keep status current with `Notion:notion-update-page`.
+
+          ## Workflow
+
+          ### 0) If any MCP call fails because Notion MCP is not connected, pause and set it up:
+          1. Add the Notion MCP:
+             - `codex mcp add notion --url https://mcp.notion.com/mcp`
+          2. Enable remote MCP client:
+             - Set `[features].rmcp_client = true` in `config.toml` **or** run `codex --enable rmcp_client`
+          3. Log in with OAuth:
+             - `codex mcp login notion`
+
+          After successful login, the user will have to restart codex. You should finish your answer and tell them so when they try again they can continue with Step 1.
+
+          ### 1) Locate and read the spec
+          - Search first (`Notion:notion-search`); if multiple hits, ask the user which to use.
+          - Fetch the page (`Notion:notion-fetch`) and scan for requirements, acceptance criteria, constraints, and priorities. See `reference/spec-parsing.md` for extraction patterns.
+          - Capture gaps/assumptions in a clarifications block before proceeding.
+
+          ### 2) Choose plan depth
+          - Simple change → use `reference/quick-implementation-plan.md`.
+          - Multi-phase feature/migration → use `reference/standard-implementation-plan.md`.
+          - Create the plan via `Notion:notion-create-pages`, include: overview, linked spec, requirements summary, phases, dependencies/risks, and success criteria. Link back to the spec.
+
+          ### 3) Create tasks
+          - Find the task database (`Notion:notion-search` → `Notion:notion-fetch` to confirm the data source and required properties). Patterns in `reference/task-creation.md`.
+          - Size tasks to 1–2 days. Use `reference/task-creation-template.md` for content (context, objective, acceptance criteria, dependencies, resources).
+          - Set properties: title/action verb, status, priority, relations to spec + plan, due date/story points/assignee if provided.
+          - Create pages with `Notion:notion-create-pages` using the database’s `data_source_id`.
+
+          ### 4) Link artifacts
+          - Plan links to spec; tasks link to both plan and spec.
+          - Optionally update the spec with a short “Implementation” section pointing to the plan and tasks using `Notion:notion-update-page`.
+
+          ### 5) Track progress
+          - Use the cadence in `reference/progress-tracking.md`.
+          - Post updates with `reference/progress-update-template.md`; close phases with `reference/milestone-summary-template.md`.
+          - Keep checklists and status fields in plan/tasks in sync; note blockers and decisions.
+
+          ## References and examples
+          - `reference/` — parsing patterns, plan/task templates, progress cadence (e.g., `spec-parsing.md`, `standard-implementation-plan.md`, `task-creation.md`, `progress-tracking.md`).
+          - `examples/` — end-to-end walkthroughs (e.g., `ui-component.md`, `api-feature.md`, `database-migration.md`).
+    - path: /skills/notion-spec-to-implementation/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Notion Spec to Implementation"
+            short_description: "Turn Notion specs into implementation plans, tasks, and progress tracking"
+            icon_small: "./assets/notion-small.svg"
+            icon_large: "./assets/notion.png"
+            default_prompt: "Turn this Notion spec into an implementation plan with milestones, tasks, and dependencies."
+
+          dependencies:
+            tools:
+              - type: "mcp"
+                value: "notion"
+                description: "Notion MCP server"
+                transport: "streamable_http"
+                url: "https://mcp.notion.com/mcp"
+    - path: /skills/notion-spec-to-implementation/assets/notion-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 100 100" aria-hidden="true">
+            <defs>
+              <filter id="invert" color-interpolation-filters="sRGB">
+                <feColorMatrix type="matrix" values="-1 0 0 0 1  0 -1 0 0 1  0 0 -1 0 1  0 0 0 1 0"/>
+              </filter>
+              <mask id="logo-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+                <image width="100" height="100" href="data:image/png;base64,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" filter="url(#invert)"/>
+              </mask>
+            </defs>
+            <rect width="100" height="100" fill="currentColor" mask="url(#logo-mask)"/>
+          </svg>
+    - path: /skills/notion-spec-to-implementation/assets/notion.png.b64
+      text: |
+          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
+    - path: /skills/notion-spec-to-implementation/evaluations/README.md
+      text: |
+          # Spec to Implementation Skill Evaluations
+
+          Evaluation scenarios for testing the Spec to Implementation skill across different Codex models.
+
+          ## Purpose
+
+          These evaluations ensure the Spec to Implementation skill:
+          - Finds and parses specification pages accurately
+          - Breaks down specs into actionable implementation plans
+          - Creates tasks that Codex can implement with clear acceptance criteria
+          - Tracks progress and updates implementation status
+          - Works consistently across Haiku, Sonnet, and Opus
+
+          ## Evaluation Files
+
+          ### basic-spec-implementation.json
+          Tests basic workflow of turning a spec into an implementation plan.
+
+          **Scenario**: Implement user authentication feature from spec  
+          **Key Behaviors**:
+          - Searches for and finds the authentication spec page
+          - Fetches spec and extracts requirements
+          - Parses requirements into phases (setup, core features, polish)
+          - Creates implementation plan page linked to original spec
+          - Breaks down into clear phases with deliverables
+          - Includes timeline and dependencies
+
+          ### spec-to-tasks.json
+          Tests creating concrete tasks from a specification in a task database.
+
+          **Scenario**: Create tasks from API redesign spec  
+          **Key Behaviors**:
+          - Finds spec page in Notion
+          - Extracts specific requirements and acceptance criteria
+          - Searches for or creates task database
+          - Fetches task database schema
+          - Creates multiple tasks with proper properties (Status, Priority, Sprint, etc.)
+          - Each task has clear title, description, and acceptance criteria
+          - Tasks have dependencies where appropriate
+          - Links all tasks back to original spec
+
+          ## Running Evaluations
+
+          1. Enable the `spec-to-implementation` skill
+          2. Submit the query from the evaluation file
+          3. Verify the skill finds the spec page via search
+          4. Check that requirements are accurately parsed
+          5. Confirm implementation plan is created with phases
+          6. Verify tasks have clear, implementable acceptance criteria
+          7. Check that tasks link back to spec
+          8. Test with Haiku, Sonnet, and Opus
+
+          ## Expected Skill Behaviors
+
+          Spec to Implementation evaluations should verify:
+
+          ### Spec Discovery & Parsing
+          - Searches Notion for specification pages
+          - Fetches complete spec content
+          - Extracts all requirements accurately
+          - Identifies technical dependencies
+          - Understands acceptance criteria
+          - Notes any ambiguities or missing details
+
+          ### Implementation Planning
+          - Creates implementation plan page
+          - Breaks work into logical phases:
+            - Phase 1: Foundation/Setup
+            - Phase 2: Core Implementation
+            - Phase 3: Testing & Polish
+          - Includes timeline estimates
+          - Identifies dependencies between phases
+          - Links back to original spec
+
+          ### Task Creation
+          - Finds or identifies task database
+          - Fetches database schema for property names
+          - Creates tasks with correct properties
+          - Each task has:
+            - Clear, specific title
+            - Context and description
+            - Acceptance criteria (checklist format)
+            - Appropriate priority and status
+            - Link to spec page
+          - Tasks are right-sized (not too big, not too small)
+          - Dependencies between tasks are noted
+
+          ### Progress Tracking
+          - Implementation plan includes progress markers
+          - Tasks can be updated as work progresses
+          - Status updates link to completed work
+          - Blockers or changes are noted
+
+          ## Creating New Evaluations
+
+          When adding Spec to Implementation evaluations:
+
+          1. **Test different spec types** - Features, migrations, refactors, API changes, UI components
+          2. **Vary complexity** - Simple 1-phase vs. complex multi-phase implementations
+          3. **Test task granularity** - Does it create appropriately-sized tasks?
+          4. **Include edge cases** - Vague specs, conflicting requirements, missing details
+          5. **Test database integration** - Creating tasks in existing task databases with various schemas
+          6. **Progress tracking** - Updating implementation plans as tasks complete
+
+          ## Example Success Criteria
+
+          **Good** (specific, testable):
+          - "Searches Notion for spec page using feature name"
+          - "Creates implementation plan with 3 phases: Setup → Core → Polish"
+          - "Creates 5-8 tasks in task database with properties: Task (title), Status, Priority, Sprint"
+          - "Each task has acceptance criteria in checklist format (- [ ] ...)"
+          - "Tasks link back to spec using mention-page tag"
+          - "Task titles are specific and actionable (e.g., 'Create login API endpoint' not 'Authentication')"
+
+          **Bad** (vague, untestable):
+          - "Creates good implementation plan"
+          - "Tasks are well-structured"
+          - "Breaks down spec appropriately"
+          - "Links to spec"
+
+    - path: /skills/notion-spec-to-implementation/evaluations/basic-spec-implementation.json
+      text: |
+          {
+            "name": "Create Implementation Plan from Spec",
+            "skills": ["spec-to-implementation"],
+            "query": "Create an implementation plan for the User Authentication spec page",
+            "expected_behavior": [
+              "Step 1: Uses Notion:notion-search to find 'User Authentication spec' with keywords like 'User Authentication' or 'auth spec'",
+              "Step 2: If not found or ambiguous, asks user for spec page URL/ID",
+              "Step 3: Fetches spec page using Notion:notion-fetch with URL/ID from search results",
+              "Step 4: Parses spec using patterns from reference/spec-parsing.md to extract requirements, acceptance criteria, constraints",
+              "Step 5: Identifies functional requirements (user stories, features, workflows) and non-functional requirements (performance, security)",
+              "Step 6: Creates implementation plan following structure from reference/templates.md",
+              "Step 7: Includes sections: Overview, Linked Spec, Requirements Summary, Technical Approach, Implementation Phases",
+              "Step 8: Breaks work into logical phases with Goal, Tasks checklist, Estimated effort per phase",
+              "Step 9: Identifies dependencies and risks from spec content",
+              "Step 10: Links plan back to original spec page using <mention-page url='...'>",
+              "Step 11: Creates plan page using Notion:notion-create-pages with appropriate title (e.g., 'Implementation Plan: User Authentication')",
+              "Step 12: Places plan appropriately (asks user or suggests under project/spec parent)"
+            ],
+            "success_criteria": [
+              "Spec is found using Notion:notion-search before attempting to fetch (or user is asked for URL if not found)",
+              "Spec is fetched using Notion:notion-fetch with correct URL/ID from search results",
+              "Plan includes clear overview and spec link with mention-page tag",
+              "Requirements are extracted from actual spec content (not generic) using spec-parsing patterns",
+              "Work is broken into multiple phases (typically 3-5) following template structure",
+              "Each phase has Goal, Tasks (as checkboxes), and Estimated effort",
+              "Dependencies and risks sections are included with specific details from spec",
+              "Plan follows Implementation Plan structure from reference/templates.md",
+              "Success criteria or acceptance criteria from spec are referenced in plan",
+              "Uses correct tool names and sequence: Notion:notion-search → Notion:notion-fetch → Notion:notion-create-pages"
+            ]
+          }
+
+    - path: /skills/notion-spec-to-implementation/evaluations/spec-to-tasks.json
+      text: |
+          {
+            "name": "Create Tasks from Specification",
+            "skills": ["spec-to-implementation", "task-manager"],
+            "query": "Read the Payment Integration spec and create implementation tasks in our Tasks database",
+            "expected_behavior": [
+              "Step 1: Uses Notion:notion-search to find Payment Integration spec or asks for URL",
+              "Step 2: Fetches spec page using Notion:notion-fetch to read full content",
+              "Step 3: Parses spec using reference/spec-parsing.md patterns to identify work items",
+              "Step 4: Breaks down into appropriately-sized tasks using breakdown patterns from reference/task-creation.md",
+              "Step 5: Uses Notion:notion-search to find Tasks database location",
+              "Step 6: Fetches Tasks database using Notion:notion-fetch to get schema, property names, and data sources",
+              "Step 7: Identifies correct data source from <data-source> tags in fetch results",
+              "Step 8: Optionally creates implementation plan page first (recommended per workflow)",
+              "Step 9: For each task - creates task page using Notion:notion-create-pages with parent: { data_source_id: 'collection://...' }",
+              "Step 10: Sets task properties from schema: Title, Status (To Do), Priority, Related Tasks (link to spec)",
+              "Step 11: Includes task description with context, acceptance criteria from spec, dependencies",
+              "Step 12: Links tasks to spec page using <mention-page> and to each other for dependencies",
+              "Step 13: Sequences tasks appropriately (setup → implementation → testing per reference/task-creation.md)",
+              "Step 14: Reports summary: 'Created X tasks for Payment Integration: [task list with links]'"
+            ],
+            "success_criteria": [
+              "Spec is found using Notion:notion-search before attempting to fetch",
+              "Task database is found using Notion:notion-search before attempting to fetch schema",
+              "Database schema is fetched and data source identified from <data-source> tags",
+              "Multiple tasks created (at least 3-5) covering spec scope",
+              "Tasks are right-sized per reference/task-creation.md (1-2 days each)",
+              "Each task has clear acceptance criteria extracted from spec",
+              "Tasks are properly sequenced with dependencies using relation properties",
+              "All tasks link back to original spec using mention-page tags",
+              "Task properties match exact schema from fetched database",
+              "Tasks use correct parent (data_source_id: 'collection://...') for database placement",
+              "Uses correct tool names and sequence: Notion:notion-search (2x) → Notion:notion-fetch (2x) → Notion:notion-create-pages (Nx)"
+            ]
+          }
+
+    - path: /skills/notion-spec-to-implementation/examples/api-feature.md
+      text: |
+          # Example: API Feature Implementation
+
+          ## User Request
+
+          > "Create an implementation plan for the User Profile API spec"
+
+          ## Workflow Execution
+
+          ### Step 1: Fetch Specification
+
+          ```
+          Notion:notion-search
+          query: "User Profile API spec"
+          query_type: "internal"
+          ```
+
+          Found: "User Profile API Specification" in Engineering Specs
+
+          ```
+          Notion:notion-fetch
+          id: "user-profile-api-spec-page-id"
+          ```
+
+          ### Step 2: Parse Specification
+
+          **Spec Content Extracted:**
+
+          ```markdown
+          # User Profile API Specification
+
+          ## Overview
+          RESTful API for user profile management
+
+          ## Requirements
+
+          ### Functional
+          - FR-1: Get user profile by ID
+          - FR-2: Update user profile (name, bio, avatar)
+          - FR-3: Upload profile avatar
+          - FR-4: Get user's public profile (limited fields)
+          - FR-5: Search users by name
+
+          ### Non-Functional
+          - NFR-1: Response time < 200ms (p95)
+          - NFR-2: Support 1000 concurrent users
+          - NFR-3: Avatar upload < 5MB
+          - NFR-4: GDPR compliant (data portability)
+
+          ## API Endpoints
+
+          GET /api/v1/users/:id
+          PUT /api/v1/users/:id
+          POST /api/v1/users/:id/avatar
+          GET /api/v1/users/:id/public
+          GET /api/v1/users/search
+
+          ## Data Model
+          - id (UUID)
+          - email (string, unique)
+          - name (string)
+          - bio (text, max 500 chars)
+          - avatar_url (string)
+          - created_at (timestamp)
+          - updated_at (timestamp)
+
+          ## Security
+          - Authentication: JWT bearer token
+          - Authorization: Users can only update own profile
+          - Rate limiting: 100 req/min per user
+
+          ## Acceptance Criteria
+          - AC-1: All endpoints return proper HTTP status codes
+          - AC-2: Validation errors return 400 with error details
+          - AC-3: Unauthorized access returns 401
+          - AC-4: Rate limit exceeded returns 429
+          - AC-5: Avatar images stored in S3
+          ```
+
+          ### Step 3: Create Implementation Plan
+
+          ```
+          Notion:notion-create-pages
+
+          parent: { page_id: "engineering-plans-parent-id" }
+
+          pages: [{
+            properties: {
+              "title": "Implementation Plan: User Profile API"
+            },
+            content: "[Implementation plan]"
+          }]
+          ```
+
+          **Implementation Plan Created:**
+
+          ```markdown
+          # Implementation Plan: User Profile API
+
+          ## Overview
+          Build RESTful API for user profile management with CRUD operations, avatar upload, and search functionality.
+
+          ## Linked Specification
+          <mention-page url="...">User Profile API Specification</mention-page>
+
+          ## Requirements Summary
+
+          ### Functional Requirements
+          - ✅ Get user profile (authenticated)
+          - ✅ Update profile fields (name, bio)
+          - ✅ Upload avatar with image processing
+          - ✅ Public profile view (limited fields)
+          - ✅ User search by name
+
+          ### Non-Functional Requirements
+          - **Performance**: < 200ms response time (p95)
+          - **Scalability**: 1000 concurrent users
+          - **Storage**: Avatar files < 5MB to S3
+          - **Compliance**: GDPR data portability
+
+          ### Acceptance Criteria
+          - All endpoints with proper status codes
+          - Input validation with error details
+          - JWT authentication required
+          - Rate limiting enforced
+          - Avatars stored in S3
+
+          ## Technical Approach
+
+          ### Architecture
+          - **Framework**: Express.js (Node.js)
+          - **Database**: PostgreSQL
+          - **Storage**: AWS S3 for avatars
+          - **Cache**: Redis for profile data
+          - **Search**: PostgreSQL full-text search
+
+          ### Key Design Decisions
+          1. **JWT Authentication**: Stateless auth, scales horizontally
+          2. **S3 for Avatars**: Offload storage, CDN integration ready
+          3. **Redis Caching**: Reduce DB load for frequently accessed profiles
+          4. **Rate Limiting**: Token bucket algorithm, per-user limits
+
+          ## Implementation Phases
+
+          ### Phase 1: Foundation (Days 1-2)
+          **Goal**: Set up core infrastructure
+
+          **Tasks**:
+          - [ ] <mention-page url="...">Setup database schema</mention-page>
+          - [ ] <mention-page url="...">Configure S3 bucket</mention-page>
+          - [ ] <mention-page url="...">Setup Redis cache</mention-page>
+          - [ ] <mention-page url="...">Create API scaffolding</mention-page>
+
+          **Deliverables**: Working skeleton with DB, storage, cache ready  
+          **Estimated effort**: 2 days
+
+          ### Phase 2: Core Endpoints (Days 3-5)
+          **Goal**: Implement main CRUD operations
+
+          **Tasks**:
+          - [ ] <mention-page url="...">Implement GET user profile</mention-page>
+          - [ ] <mention-page url="...">Implement PUT update profile</mention-page>
+          - [ ] <mention-page url="...">Add input validation</mention-page>
+          - [ ] <mention-page url="...">Add JWT authentication middleware</mention-page>
+          - [ ] <mention-page url="...">Implement rate limiting</mention-page>
+
+          **Deliverables**: Working CRUD operations with auth  
+          **Estimated effort**: 3 days
+
+          ### Phase 3: Avatar Upload (Days 6-7)
+          **Goal**: Avatar management with S3
+
+          **Tasks**:
+          - [ ] <mention-page url="...">Implement avatar upload endpoint</mention-page>
+          - [ ] <mention-page url="...">Add image validation (size, format)</mention-page>
+          - [ ] <mention-page url="...">Process and resize images</mention-page>
+          - [ ] <mention-page url="...">Upload to S3 with signed URLs</mention-page>
+
+          **Deliverables**: Avatar upload/update functionality  
+          **Estimated effort**: 2 days
+
+          ### Phase 4: Search & Public Profile (Days 8-9)
+          **Goal**: Complete remaining features
+
+          **Tasks**:
+          - [ ] <mention-page url="...">Implement user search</mention-page>
+          - [ ] <mention-page url="...">Implement public profile endpoint</mention-page>
+          - [ ] <mention-page url="...">Add search indexing</mention-page>
+          - [ ] <mention-page url="...">Optimize search queries</mention-page>
+
+          **Deliverables**: Search and public profiles working  
+          **Estimated effort**: 2 days
+
+          ### Phase 5: Testing & Optimization (Days 10-12)
+          **Goal**: Production-ready quality
+
+          **Tasks**:
+          - [ ] <mention-page url="...">Write unit tests</mention-page>
+          - [ ] <mention-page url="...">Write integration tests</mention-page>
+          - [ ] <mention-page url="...">Performance testing</mention-page>
+          - [ ] <mention-page url="...">Security audit</mention-page>
+          - [ ] <mention-page url="...">API documentation</mention-page>
+
+          **Deliverables**: Tested, documented, production-ready API  
+          **Estimated effort**: 3 days
+
+          ## Dependencies
+
+          ### External Dependencies
+          - AWS S3 bucket created ✅
+          - Redis instance available ✅
+          - PostgreSQL database provisioned ✅
+
+          ### Internal Dependencies
+          - JWT authentication service (exists)
+          - User database table (exists)
+          - Logging infrastructure (exists)
+
+          ### Blockers
+          None currently
+
+          ## Risks & Mitigation
+
+          ### Risk 1: Image Processing Performance
+          - **Probability**: Medium
+          - **Impact**: Medium
+          - **Mitigation**: Use background job queue for processing, return signed upload URL immediately
+
+          ### Risk 2: S3 Upload Failures
+          - **Probability**: Low
+          - **Impact**: Medium
+          - **Mitigation**: Implement retry logic with exponential backoff, fallback to local storage temporarily
+
+          ### Risk 3: Rate Limiting Complexity
+          - **Probability**: Low
+          - **Impact**: Low
+          - **Mitigation**: Use proven library (express-rate-limit with Redis store)
+
+          ### Risk 4: Search Performance
+          - **Probability**: Medium
+          - **Impact**: Medium
+          - **Mitigation**: Add database indexes, consider Elasticsearch if needed later
+
+          ## Timeline
+
+          | Milestone | Target Date | Status |
+          |-----------|-------------|--------|
+          | Phase 1 Complete | Oct 16 | ⏳ Planned |
+          | Phase 2 Complete | Oct 19 | ⏳ Planned |
+          | Phase 3 Complete | Oct 21 | ⏳ Planned |
+          | Phase 4 Complete | Oct 23 | ⏳ Planned |
+          | Phase 5 Complete | Oct 26 | ⏳ Planned |
+          | **Production Deploy** | **Oct 28** | ⏳ Planned |
+
+          **Total Duration**: 12 working days (~2.5 weeks)
+
+          ## Success Criteria
+
+          ### Technical Success
+          - [ ] All 5 endpoints implemented and working
+          - [ ] Response time < 200ms (p95) verified in load testing
+          - [ ] Handles 1000 concurrent users
+          - [ ] All acceptance criteria met
+          - [ ] Test coverage > 80%
+          - [ ] Security scan passed
+          - [ ] API documentation complete
+
+          ### Business Success
+          - [ ] User profile updates functional
+          - [ ] Avatar uploads working reliably
+          - [ ] Search returns relevant results in < 500ms
+          - [ ] Zero critical bugs in first week
+
+          ## Resources
+
+          ### Documentation
+          - <mention-page url="...">User Profile API Specification</mention-page> (original spec)
+          - <mention-page url="...">Authentication Service Docs</mention-page>
+          - <mention-page url="...">AWS S3 Setup Guide</mention-page>
+
+          ### Related Work
+          - <mention-page url="...">User Authentication API</mention-page> (similar pattern)
+          - <mention-page url="...">File Upload Service</mention-page> (avatar upload reference)
+
+          ### External References
+          - Express.js best practices
+          - AWS S3 SDK documentation
+          - PostgreSQL full-text search guide
+
+          ## Progress Tracking
+
+          ### Phase Status
+          - Phase 1: ⏳ Not Started
+          - Phase 2: ⏳ Not Started
+          - Phase 3: ⏳ Not Started
+          - Phase 4: ⏳ Not Started
+          - Phase 5: ⏳ Not Started
+
+          **Overall Progress**: 0% complete
+
+          ### Latest Update
+          *Implementation plan created on October 14, 2025*
+          ```
+
+          ### Step 4: Find Task Database
+
+          ```
+          Notion:notion-search
+          query: "Tasks database"
+          query_type: "internal"
+          ```
+
+          Found: "Engineering Tasks" database
+
+          ### Step 5: Fetch Task Database Schema
+
+          ```
+          Notion:notion-fetch
+          id: "tasks-database-id"
+          ```
+
+          **Schema retrieved:**
+          - Data source: `collection://tasks-db-uuid`
+          - Properties: Name (title), Status (select), Priority (select), Related Tasks (relation), Story Points (number), Tags (multi_select)
+
+          ### Step 6: Create Implementation Tasks
+
+          Now create tasks for Phase 1:
+
+          **Task 1: Setup database schema**
+
+          ```
+          Notion:notion-create-pages
+
+          parent: { data_source_id: "collection://tasks-db-uuid" }
+
+          pages: [{
+            properties: {
+              "Name": "Setup database schema for User Profile API",
+              "Status": "To Do",
+              "Priority": "High",
+              "Related Tasks": ["impl-plan-page-id", "spec-page-id"],
+              "Story Points": 3,
+              "Tags": "backend, database, api"
+            },
+            content: "## Context\nImplementation task for <mention-page url=\"...\">User Profile API Specification</mention-page>\n\nPart of <mention-page url=\"...\">Implementation Plan: User Profile API</mention-page> - Phase 1\n\n## Objective\nCreate database schema for user profile storage\n\n## Requirements\nBased on spec data model:\n- id (UUID, primary key)\n- email (string, unique index)\n- name (string, not null)\n- bio (text, max 500 chars)\n- avatar_url (string, nullable)\n- created_at (timestamp)\n- updated_at (timestamp)\n\n## Acceptance Criteria\n- [ ] Migration file created\n- [ ] Schema includes all required fields\n- [ ] Indexes on email (unique) and name (search)\n- [ ] Constraints validated (bio length, email format)\n- [ ] Migration tested on dev database\n- [ ] Rollback migration created\n\n## Technical Approach\n```sql\nCREATE TABLE user_profiles (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  email VARCHAR(255) UNIQUE NOT NULL,\n  name VARCHAR(255) NOT NULL,\n  bio TEXT CHECK (length(bio) <= 500),\n  avatar_url TEXT,\n  created_at TIMESTAMP DEFAULT NOW(),\n  updated_at TIMESTAMP DEFAULT NOW()\n);\n\nCREATE INDEX idx_user_profiles_email ON user_profiles(email);\nCREATE INDEX idx_user_profiles_name ON user_profiles USING gin(to_tsvector('english', name));\n```\n\n## Dependencies\n- Blocked By: None\n- Blocks: All Phase 2 tasks\n\n## Estimated Effort\n3 story points (half day)\n"
+          }]
+          ```
+
+          *[Create similar tasks for all phases - 20 tasks total]*
+
+          ### Step 7: Link Plan Back to Spec
+
+          ```
+          Notion:notion-update-page
+          page_id: "user-profile-api-spec-page-id"
+          command: "insert_content_after"
+          selection_with_ellipsis: "## Acceptance Criteria..."
+          new_str: "
+
+          ---
+
+          ## Implementation
+
+          **Implementation Plan**: <mention-page url=\"...\">Implementation Plan: User Profile API</mention-page>
+
+          **Implementation Tasks**: See plan for full task breakdown (20 tasks across 5 phases)
+
+          **Status**: Planning complete, ready to start implementation
+          "
+          ```
+
+          ## Summary Provided to User
+
+          ```markdown
+          ## Implementation Plan Created ✅
+
+          ### Plan Overview
+          - **Feature**: User Profile API
+          - **Duration**: 12 days (~2.5 weeks)
+          - **Phases**: 5 (Foundation → Core → Avatar → Search → Testing)
+          - **Tasks**: 20 tasks created
+          - **Target Launch**: October 28, 2025
+
+          ### Implementation Phases
+
+          **Phase 1: Foundation** (2 days)
+          - Database schema
+          - S3 and Redis setup
+          - API scaffolding
+
+          **Phase 2: Core Endpoints** (3 days)
+          - GET/PUT user profile
+          - Authentication & validation
+          - Rate limiting
+
+          **Phase 3: Avatar Upload** (2 days)
+          - Image upload & validation
+          - S3 integration
+          - Image processing
+
+          **Phase 4: Search & Public Profile** (2 days)
+          - User search
+          - Public profile endpoint
+
+          **Phase 5: Testing & Optimization** (3 days)
+          - Unit & integration tests
+          - Performance testing
+          - Documentation
+
+          ### Key Deliverables
+          - 5 REST API endpoints
+          - Avatar upload to S3
+          - User search functionality
+          - Comprehensive tests
+          - API documentation
+
+          ### Links Created
+          ✅ Plan page: <mention-page url="...">Implementation Plan: User Profile API</mention-page>
+          ✅ Spec updated with plan link
+          ✅ 20 tasks created in task database
+          ✅ All tasks linked to plan and spec
+
+          ### Next Steps
+          1. Review and approve plan
+          2. Assign tasks to team members
+          3. Begin Phase 1 (Foundation)
+          4. Daily standups for progress tracking
+
+          **Ready to start implementation! 🚀**
+          ```
+
+          ## Key Features Demonstrated
+
+          ### Spec Parsing
+          - Extracted requirements (functional & non-functional)
+          - Identified API endpoints
+          - Noted data model
+          - Captured acceptance criteria
+          - Understood security requirements
+
+          ### Implementation Planning
+          - Broke into logical phases
+          - Sequenced work appropriately (foundation → features → testing)
+          - Identified dependencies
+          - Estimated effort per phase
+          - Created realistic timeline
+
+          ### Task Creation
+          - Generated 20 specific tasks
+          - Each task has context, acceptance criteria, technical approach
+          - Tasks link to both spec and plan
+          - Proper dependencies noted
+
+          ### Bidirectional Linking
+          - Plan links to spec
+          - Spec updated to link to plan
+          - Tasks link to both
+          - Easy navigation between all artifacts
+
+          Perfect for: Feature implementation, API development, technical projects
+
+    - path: /skills/notion-spec-to-implementation/examples/database-migration.md
+      text: |
+          # Example: Database Migration Implementation
+
+          **User Request**: "Plan and implement the database migration for user preferences schema"
+
+          ## Workflow
+
+          ### 1. Find & Fetch Spec
+          ```
+          Notion:notion-search → Found "User Preferences Schema Migration Spec"
+          Notion:notion-fetch → Extracted requirements
+          ```
+
+          **Spec Summary**: Migrate from JSON blob to structured schema for better performance and data integrity.
+
+          ### 2. Parse Requirements
+          - **Current**: JSONB preferences column
+          - **Target**: Separate `user_preferences` and `notification_preferences` tables
+          - **Must maintain**: Backward compatibility during migration
+          - **Performance**: Support 1M+ users with zero downtime
+
+          ### 3. Create Implementation Plan
+          ```
+          Notion:notion-create-pages
+          pages: [{
+            properties: {
+              title: "Implementation Plan: User Preferences Migration"
+            },
+            content: "[Full implementation plan with phases]"
+          }]
+          ```
+
+          **Plan included**:
+          - **Phase 1**: Create new tables with indexes
+          - **Phase 2**: Backfill data from JSONB
+          - **Phase 3**: Dual-write mode (both old and new)
+          - **Phase 4**: Switch reads to new schema
+          - **Phase 5**: Drop old JSONB column
+
+          ### 4. Find Task Database & Create Tasks
+          ```
+          Notion:notion-search → Found "Engineering Tasks" database
+          Notion:notion-fetch → Got schema (Task, Status, Priority, Assignee, etc.)
+
+          Notion:notion-create-pages
+          parent: { data_source_id: "collection://xyz" }
+          pages: [
+            {
+              properties: {
+                "Task": "Write migration SQL scripts",
+                "Status": "To Do",
+                "Priority": "High",
+                "Sprint": "Sprint 25"
+              },
+              content: "## Context\nPart of User Preferences Migration...\n\n## Acceptance Criteria\n- [ ] Migration script creates tables\n- [ ] Indexes defined..."
+            },
+            // ... 4 more tasks
+          ]
+          ```
+
+          **Tasks created**:
+          1. Write migration SQL scripts
+          2. Implement backfill job
+          3. Add dual-write logic to API
+          4. Update read queries
+          5. Rollback plan & monitoring
+
+          ### 5. Track Progress
+          Regular updates to implementation plan with status, blockers, and completion notes.
+
+          ## Key Outputs
+
+          **Implementation Plan Page** (linked to spec)
+          **5 Tasks in Database** (with dependencies, acceptance criteria)
+          **Progress Tracking** (updated as work progresses)
+
+          ## Success Factors
+          - Broke down complex migration into clear phases
+          - Created tasks with specific acceptance criteria
+          - Established dependencies (Phase 1 → 2 → 3 → 4 → 5)
+          - Zero-downtime approach with rollback plan
+          - Linked all work back to original spec
+    - path: /skills/notion-spec-to-implementation/examples/ui-component.md
+      text: |
+          # Example: UI Component Implementation
+
+          **User Request**: "Implement the new search component from the design spec"
+
+          ## Workflow
+
+          ### 1. Find Spec
+          ```
+          Notion:notion-search
+          query: "search component design spec"
+          ```
+          Found: "Global Search Redesign Spec"
+
+          ### 2. Fetch & Parse Spec
+          ```
+          Notion:notion-fetch
+          ```
+
+          **Requirements**:
+          - Instant search with debounced API calls
+          - Keyboard navigation (↑↓ arrows, Enter, Esc)
+          - Recent searches history
+          - Result categories (pages, people, files)
+          - Mobile responsive
+          - Accessibility (ARIA labels, screen reader)
+
+          ### 3. Create Implementation Plan
+          ```
+          Notion:notion-create-pages
+          ```
+
+          **Plan phases**:
+          - Phase 1: Base component structure
+          - Phase 2: API integration & debouncing
+          - Phase 3: Keyboard navigation
+          - Phase 4: Recent searches
+          - Phase 5: Polish & accessibility
+
+          ### 4. Create Tasks
+          ```
+          Notion:notion-create-pages (7 tasks)
+          ```
+
+          **Tasks**:
+          1. Create SearchInput component
+          2. Implement useDebounce hook
+          3. Add keyboard navigation
+          4. LocalStorage for recent searches
+          5. Result categorization UI
+          6. Accessibility audit
+          7. Mobile responsive styling
+
+          ### 5. Implement & Track
+          As each task completed, updated status and added progress notes with screenshots and implementation details.
+
+          ## Key Outputs
+
+          **Implementation Plan** (linked to design spec)
+          **7 Component Tasks** (in Engineering Tasks database)
+          **Progress Updates** (with code snippets and demo links)
+
+          ## Success Factors
+          - Clear component breakdown
+          - Separated concerns (logic, UI, accessibility)
+          - Each task had acceptance criteria
+          - Referenced design spec throughout
+          - Included accessibility from start, not afterthought
+          - Tracked progress with visual updates
+    - path: /skills/notion-spec-to-implementation/reference/milestone-summary-template.md
+      text: |
+          # Milestone Summary Template
+
+          Use this when completing major phases or milestones.
+
+          ```markdown
+          ## Phase [N] Complete: [Date]
+
+          ### Accomplishments
+          - [Major item delivered]
+          - [Major item delivered]
+
+          ### Deliverables
+          - <mention-page url="...">Deliverable 1</mention-page>
+          - [Link to PR/deployment]
+
+          ### Metrics
+          - [Relevant metric]
+          - [Relevant metric]
+
+          ### Learnings
+          - [What went well]
+          - [What to improve]
+
+          ### Next Phase
+          Starting [Phase name] on [Date]
+          ```
+
+    - path: /skills/notion-spec-to-implementation/reference/progress-tracking.md
+      text: |
+          # Progress Tracking
+
+          ## Update Frequency
+
+          ### Daily Updates
+
+          For active implementation work:
+
+          **What to update**:
+          - Task status if changed
+          - Add progress note to task
+          - Update blockers
+
+          **When**:
+          - End of work day
+          - After completing significant work
+          - When encountering blockers
+
+          ### Milestone Updates
+
+          For phase/milestone completion:
+
+          **What to update**:
+          - Mark phase complete in plan
+          - Add milestone summary
+          - Update timeline if needed
+          - Report to stakeholders
+
+          **When**:
+          - Phase completion
+          - Major deliverable ready
+          - Sprint end
+          - Release
+
+          ### Status Change Updates
+
+          For task state transitions:
+
+          **What to update**:
+          - Task status property
+          - Add transition note
+          - Notify relevant people
+
+          **When**:
+          - Start work (To Do → In Progress)
+          - Ready for review (In Progress → In Review)
+          - Complete (In Review → Done)
+          - Block (Any → Blocked)
+
+          ## Progress Note Format
+
+          ### Daily Progress Note
+
+          ```markdown
+          ## Progress: [Date]
+
+          ### Completed
+          - [Specific accomplishment with details]
+          - [Specific accomplishment with details]
+
+          ### In Progress
+          - [Current work item]
+          - Current status: [Percentage or description]
+
+          ### Next Steps
+          1. [Next planned action]
+          2. [Next planned action]
+
+          ### Blockers
+          - [Blocker description and who/what needed to unblock]
+          - Or: None
+
+          ### Decisions Made
+          - [Any technical/product decisions]
+
+          ### Notes
+          [Additional context, learnings, issues encountered]
+          ```
+
+          Example:
+
+          ```markdown
+          ## Progress: Oct 14, 2025
+
+          ### Completed
+          - Implemented user authentication API endpoints (login, logout, refresh)
+          - Added JWT token generation and validation
+          - Wrote unit tests for auth service (95% coverage)
+
+          ### In Progress
+          - Frontend login form integration
+          - Currently: Form submits but need to handle error states
+
+          ### Next Steps
+          1. Complete error handling in login form
+          2. Add loading states
+          3. Implement "remember me" functionality
+
+          ### Blockers
+          None
+
+          ### Decisions Made
+          - Using HttpOnly cookies for refresh tokens (more secure than localStorage)
+          - Session timeout set to 24 hours based on security review
+
+          ### Notes
+          - Found edge case with concurrent login attempts, added to backlog
+          - Performance of auth check is good (<10ms)
+          ```
+
+          ### Milestone Summary
+
+          ```markdown
+          ## Phase [N] Complete: [Date]
+
+          ### Overview
+          [Brief description of what was accomplished in this phase]
+
+          ### Completed Tasks
+          - <mention-page url="...">Task 1</mention-page> ✅
+          - <mention-page url="...">Task 2</mention-page> ✅
+          - <mention-page url="...">Task 3</mention-page> ✅
+
+          ### Deliverables
+          - [Deliverable 1]: [Link/description]
+          - [Deliverable 2]: [Link/description]
+
+          ### Key Accomplishments
+          - [Major achievement]
+          - [Major achievement]
+
+          ### Metrics
+          - [Relevant metric]: [Value]
+          - [Relevant metric]: [Value]
+
+          ### Challenges Overcome
+          - [Challenge and how it was solved]
+
+          ### Learnings
+          **What went well**:
+          - [Success factor]
+
+          **What to improve**:
+          - [Area for improvement]
+
+          ### Impact on Timeline
+          - On schedule / [X days ahead/behind]
+          - Reason: [If deviation, explain why]
+
+          ### Next Phase
+          - **Starting**: [Next phase name]
+          - **Target start date**: [Date]
+          - **Focus**: [Main objectives]
+          ```
+
+          ## Updating Implementation Plan
+
+          ### Progress Indicators
+
+          Update plan page regularly:
+
+          ```markdown
+          ## Status Overview
+
+          **Overall Progress**: 45% complete
+
+          ### Phase Status
+          - ✅ Phase 1: Foundation - Complete
+          - 🔄 Phase 2: Core Features - In Progress (60%)
+          - ⏳ Phase 3: Integration - Not Started
+
+          ### Task Summary
+          - ✅ Completed: 12 tasks
+          - 🔄 In Progress: 5 tasks
+          - 🚧 Blocked: 1 task
+          - ⏳ Not Started: 8 tasks
+
+          **Last Updated**: [Date]
+          ```
+
+          ### Task Checklist Updates
+
+          Mark completed tasks:
+
+          ```markdown
+          ## Implementation Phases
+
+          ### Phase 1: Foundation
+          - [x] <mention-page url="...">Database schema</mention-page>
+          - [x] <mention-page url="...">API scaffolding</mention-page>
+          - [x] <mention-page url="...">Auth setup</mention-page>
+
+          ### Phase 2: Core Features
+          - [x] <mention-page url="...">User management</mention-page>
+          - [ ] <mention-page url="...">Dashboard</mention-page>
+          - [ ] <mention-page url="...">Reporting</mention-page>
+          ```
+
+          ### Timeline Updates
+
+          Update milestone dates:
+
+          ```markdown
+          ## Timeline
+
+          | Milestone | Original | Current | Status |
+          |-----------|----------|---------|--------|
+          | Phase 1 | Oct 15 | Oct 14 | ✅ Complete (1 day early) |
+          | Phase 2 | Oct 30 | Nov 2 | 🔄 In Progress (3 days delay) |
+          | Phase 3 | Nov 15 | Nov 18 | ⏳ Planned (adjusted) |
+          | Launch | Nov 20 | Nov 22 | ⏳ Planned (adjusted) |
+
+          **Timeline Status**: Slightly behind due to [reason]
+          ```
+
+          ## Task Status Tracking
+
+          ### Status Definitions
+
+          **To Do**: Not started
+          - Task is ready to begin
+          - Dependencies met
+          - Assigned (or available)
+
+          **In Progress**: Actively being worked
+          - Work has started
+          - Assigned to someone
+          - Regular updates expected
+
+          **Blocked**: Cannot proceed
+          - Dependency not met
+          - External blocker
+          - Waiting on decision/resource
+
+          **In Review**: Awaiting review
+          - Work complete from implementer perspective
+          - Needs code review, QA, or approval
+          - Reviewers identified
+
+          **Done**: Complete
+          - All acceptance criteria met
+          - Reviewed and approved
+          - Deployed/delivered
+
+          ### Updating Task Status
+
+          When updating:
+
+          ```
+          1. Update Status property
+          2. Add progress note explaining change
+          3. Update related tasks if needed
+          4. Notify relevant people via comment
+
+          Example:
+          properties: { "Status": "In Progress" }
+
+          Content update:
+          ## Progress: Oct 14, 2025
+          Started implementation. Set up basic structure and wrote initial tests.
+          ```
+
+          ## Blocker Tracking
+
+          ### Recording Blockers
+
+          When encountering a blocker:
+
+          ```markdown
+          ## Blockers
+
+          ### [Date]: [Blocker Description]
+          **Status**: 🚧 Active
+          **Impact**: [What's blocked]
+          **Needed to unblock**: [Action/person/decision needed]
+          **Owner**: [Who's responsible for unblocking]
+          **Target resolution**: [Date or timeframe]
+          ```
+
+          ### Resolving Blockers
+
+          When unblocked:
+
+          ```markdown
+          ## Blockers
+
+          ### [Date]: [Blocker Description]
+          **Status**: ✅ Resolved on [Date]
+          **Resolution**: [How it was resolved]
+          **Impact**: [Any timeline/scope impact]
+          ```
+
+          ### Escalating Blockers
+
+          If blocker needs escalation:
+
+          ```
+          1. Update blocker status in task
+          2. Add comment tagging stakeholder
+          3. Update plan with blocker impact
+          4. Propose mitigation if possible
+          ```
+
+          ## Metrics Tracking
+
+          ### Velocity Tracking
+
+          Track completion rate:
+
+          ```markdown
+          ## Velocity
+
+          ### Week 1
+          - Tasks completed: 8
+          - Story points: 21
+          - Velocity: Strong
+
+          ### Week 2
+          - Tasks completed: 6
+          - Story points: 18
+          - Velocity: Moderate (1 blocker)
+
+          ### Week 3
+          - Tasks completed: 9
+          - Story points: 24
+          - Velocity: Strong (blocker resolved)
+          ```
+
+          ### Quality Metrics
+
+          Track quality indicators:
+
+          ```markdown
+          ## Quality Metrics
+
+          - Test coverage: 87%
+          - Code review approval rate: 95%
+          - Bug count: 3 (2 minor, 1 cosmetic)
+          - Performance: All targets met
+          - Security: No issues found
+          ```
+
+          ### Progress Metrics
+
+          Quantitative progress:
+
+          ```markdown
+          ## Progress Metrics
+
+          - Requirements implemented: 15/20 (75%)
+          - Acceptance criteria met: 42/56 (75%)
+          - Test cases passing: 128/135 (95%)
+          - Code complete: 80%
+          - Documentation: 60%
+          ```
+
+          ## Stakeholder Communication
+
+          ### Weekly Status Report
+
+          ```markdown
+          ## Weekly Status: [Week of Date]
+
+          ### Summary
+          [One paragraph overview of progress and status]
+
+          ### This Week's Accomplishments
+          - [Key accomplishment]
+          - [Key accomplishment]
+          - [Key accomplishment]
+
+          ### Next Week's Plan
+          - [Planned work]
+          - [Planned work]
+
+          ### Status
+          - On track / At risk / Behind schedule
+          - [If at risk or behind, explain and provide mitigation plan]
+
+          ### Blockers & Needs
+          - [Active blocker or need for help]
+          - Or: None
+
+          ### Risks
+          - [New or evolving risk]
+          - Or: None currently identified
+          ```
+
+          ### Executive Summary
+
+          For leadership updates:
+
+          ```markdown
+          ## Implementation Status: [Feature Name]
+
+          **Overall Status**: 🟢 On Track / 🟡 At Risk / 🔴 Behind
+
+          **Progress**: [X]% complete
+
+          **Key Updates**:
+          - [Most important update]
+          - [Most important update]
+
+          **Timeline**: [Status vs original plan]
+
+          **Risks**: [Top 1-2 risks]
+
+          **Next Milestone**: [Upcoming milestone and date]
+          ```
+
+          ## Automated Progress Tracking
+
+          ### Query-Based Status
+
+          Generate status from task database:
+
+          ```
+          Query task database:
+          SELECT 
+            "Status",
+            COUNT(*) as count
+          FROM "collection://tasks-uuid"
+          WHERE "Related Tasks" CONTAINS 'plan-page-id'
+          GROUP BY "Status"
+
+          Generate summary:
+          - To Do: 8
+          - In Progress: 5
+          - Blocked: 1
+          - In Review: 2
+          - Done: 12
+
+          Overall: 44% complete (12/28 tasks)
+          ```
+
+          ### Timeline Calculation
+
+          Calculate projected completion:
+
+          ```
+          Average velocity: 6 tasks/week
+          Remaining tasks: 14
+          Projected completion: 2.3 weeks from now
+
+          Compares to target: [On schedule/Behind/Ahead]
+          ```
+
+          ## Best Practices
+
+          1. **Update regularly**: Don't let updates pile up
+          2. **Be specific**: "Completed login" vs "Made progress"
+          3. **Quantify progress**: Use percentages, counts, metrics
+          4. **Note blockers immediately**: Don't wait to report blockers
+          5. **Link to work**: Reference PRs, deployments, demos
+          6. **Track decisions**: Document why, not just what
+          7. **Be honest**: Report actual status, not optimistic status
+          8. **Update in one place**: Keep implementation plan as source of truth
+
+    - path: /skills/notion-spec-to-implementation/reference/progress-update-template.md
+      text: |
+          # Progress Update Template
+
+          Use this to update progress on implementation plans and tasks.
+
+          ```markdown
+          ## Progress: [Date]
+
+          ### Completed Today
+          - [Specific item completed]
+          - [Specific item completed]
+
+          ### In Progress
+          - [Current work item and status]
+
+          ### Next Steps
+          1. [Next action]
+          2. [Next action]
+
+          ### Blockers
+          - [Blocker description] or None
+
+          ### Notes
+          [Additional context, decisions made, issues encountered]
+          ```
+
+    - path: /skills/notion-spec-to-implementation/reference/quick-implementation-plan.md
+      text: |
+          # Quick Implementation Plan Template
+
+          For simpler features or small changes.
+
+          ```markdown
+          # Implementation: [Feature Name]
+
+          ## Spec
+          <mention-page url="...">Specification</mention-page>
+
+          ## Summary
+          [Quick description]
+
+          ## Tasks
+          - [ ] <mention-page url="...">Task 1</mention-page>
+          - [ ] <mention-page url="...">Task 2</mention-page>
+          - [ ] <mention-page url="...">Task 3</mention-page>
+
+          ## Timeline
+          Start: [Date]
+          Target completion: [Date]
+
+          ## Status
+          [Update as work progresses]
+          ```
+
+    - path: /skills/notion-spec-to-implementation/reference/spec-parsing.md
+      text: |
+          # Specification Parsing
+
+          ## Finding the Specification
+
+          Before parsing, locate the spec page:
+
+          ```
+          1. Search for spec:
+             Notion:notion-search
+             query: "[Feature Name] spec" or "[Feature Name] specification"
+             
+          2. Handle results:
+             - If found → use page URL/ID
+             - If multiple → ask user which one
+             - If not found → ask user for URL/ID
+
+          Example:
+          Notion:notion-search
+          query: "User Profile API spec"
+          query_type: "internal"
+          ```
+
+          ## Reading Specifications
+
+          After finding the spec, fetch it with `Notion:notion-fetch`:
+
+          1. Read the full content
+          2. Identify key sections
+          3. Extract structured information
+          4. Note ambiguities or gaps
+
+          ```
+          Notion:notion-fetch
+          id: "spec-page-id-from-search"
+          ```
+
+          ## Common Spec Structures
+
+          ### Requirements-Based Spec
+
+          ```
+          # Feature Spec
+          ## Overview
+          [Feature description]
+
+          ## Requirements
+          ### Functional
+          - REQ-1: [Requirement]
+          - REQ-2: [Requirement]
+
+          ### Non-Functional
+          - PERF-1: [Performance requirement]
+          - SEC-1: [Security requirement]
+
+          ## Acceptance Criteria
+          - AC-1: [Criterion]
+          - AC-2: [Criterion]
+          ```
+
+          Extract:
+          - List of functional requirements
+          - List of non-functional requirements
+          - List of acceptance criteria
+
+          ### User Story Based Spec
+
+          ```
+          # Feature Spec
+          ## User Stories
+          ### As a [user type]
+          I want [goal]
+          So that [benefit]
+
+          **Acceptance Criteria**:
+          - [Criterion]
+          - [Criterion]
+          ```
+
+          Extract:
+          - User personas
+          - Goals/capabilities needed
+          - Acceptance criteria per story
+
+          ### Technical Design Doc
+
+          ```
+          # Technical Design
+          ## Problem Statement
+          [Problem description]
+
+          ## Proposed Solution
+          [Solution approach]
+
+          ## Architecture
+          [Architecture details]
+
+          ## Implementation Plan
+          [Implementation approach]
+          ```
+
+          Extract:
+          - Problem being solved
+          - Proposed solution approach
+          - Architectural decisions
+          - Implementation guidance
+
+          ### Product Requirements Document (PRD)
+
+          ```
+          # PRD: [Feature]
+          ## Goals
+          [Business goals]
+
+          ## User Needs
+          [User problems being solved]
+
+          ## Features
+          [Feature list]
+
+          ## Success Metrics
+          [How to measure success]
+          ```
+
+          Extract:
+          - Business goals
+          - User needs
+          - Feature list
+          - Success metrics
+
+          ## Extraction Strategies
+
+          ### Requirement Identification
+
+          Look for:
+          - "Must", "Should", "Will" statements
+          - Numbered requirements (REQ-1, etc.)
+          - User stories (As a... I want...)
+          - Acceptance criteria sections
+          - Feature lists
+
+          ### Categorization
+
+          Group requirements by:
+
+          **Functional**: What the system does
+          - User capabilities
+          - System behaviors
+          - Data operations
+
+          **Non-Functional**: How the system performs
+          - Performance targets
+          - Security requirements
+          - Scalability needs
+          - Availability requirements
+          - Compliance requirements
+
+          **Constraints**: Limitations
+          - Technical constraints
+          - Business constraints
+          - Timeline constraints
+
+          ### Priority Extraction
+
+          Identify priority indicators:
+          - "Critical", "Must have", "P0"
+          - "Important", "Should have", "P1"
+          - "Nice to have", "Could have", "P2"
+          - "Future", "Won't have", "P3"
+
+          Map to implementation phases based on priority.
+
+          ## Handling Ambiguity
+
+          ### Unclear Requirements
+
+          When requirement is ambiguous:
+
+          ```markdown
+          ## Clarifications Needed
+
+          ### [Requirement ID/Description]
+          **Current text**: "[Ambiguous requirement]"
+          **Question**: [What needs clarification]
+          **Impact**: [Why this matters for implementation]
+          **Assumed for now**: [Working assumption if any]
+          ```
+
+          Create clarification task or add comment to spec.
+
+          ### Missing Information
+
+          When critical info is missing:
+
+          ```markdown
+          ## Missing Information
+
+          - **[Topic]**: Spec doesn't specify [what's missing]
+          - **Impact**: Blocks [affected tasks]
+          - **Action**: Need to [how to resolve]
+          ```
+
+          ### Conflicting Requirements
+
+          When requirements conflict:
+
+          ```markdown
+          ## Conflicting Requirements
+
+          **Conflict**: REQ-1 says [X] but REQ-5 says [Y]
+          **Impact**: [Implementation impact]
+          **Resolution needed**: [Decision needed]
+          ```
+
+          ## Acceptance Criteria Parsing
+
+          ### Explicit Criteria
+
+          Direct acceptance criteria:
+
+          ```
+          ## Acceptance Criteria
+          - User can log in with email and password
+          - System sends confirmation email
+          - Session expires after 24 hours
+          ```
+
+          Convert to checklist:
+          - [ ] User can log in with email and password
+          - [ ] System sends confirmation email
+          - [ ] Session expires after 24 hours
+
+          ### Implicit Criteria
+
+          Derive from requirements:
+
+          ```
+          Requirement: "Users can upload files up to 100MB"
+
+          Implied acceptance criteria:
+          - [ ] Files up to 100MB upload successfully
+          - [ ] Files over 100MB are rejected with error message
+          - [ ] Progress indicator shows during upload
+          - [ ] Upload can be cancelled
+          ```
+
+          ### Testable Criteria
+
+          Ensure criteria are testable:
+
+          ❌ **Not testable**: "System is fast"
+          ✓ **Testable**: "Page loads in < 2 seconds"
+
+          ❌ **Not testable**: "Users like the interface"
+          ✓ **Testable**: "90% of test users complete task successfully"
+
+          ## Technical Detail Extraction
+
+          ### Architecture Information
+
+          Extract:
+          - System components
+          - Data models
+          - APIs/interfaces
+          - Integration points
+          - Technology choices
+
+          ### Design Decisions
+
+          Note:
+          - Technology selections
+          - Architecture patterns
+          - Trade-offs made
+          - Rationale provided
+
+          ### Implementation Guidance
+
+          Look for:
+          - Suggested approach
+          - Code examples
+          - Library recommendations
+          - Best practices mentioned
+
+          ## Dependency Identification
+
+          ### External Dependencies
+
+          From spec, identify:
+          - Third-party services required
+          - External APIs needed
+          - Infrastructure requirements
+          - Tool/library dependencies
+
+          ### Internal Dependencies
+
+          Identify:
+          - Other features needed first
+          - Shared components required
+          - Team dependencies
+          - Data dependencies
+
+          ### Timeline Dependencies
+
+          Note:
+          - Hard deadlines
+          - Milestone dependencies
+          - Sequencing requirements
+
+          ## Scope Extraction
+
+          ### In Scope
+
+          What's explicitly included:
+          - Features to build
+          - Use cases to support
+          - Users/personas to serve
+
+          ### Out of Scope
+
+          What's explicitly excluded:
+          - Features deferred
+          - Use cases not supported
+          - Edge cases not handled
+
+          ### Assumptions
+
+          What's assumed:
+          - Environment assumptions
+          - User assumptions
+          - System state assumptions
+
+          ## Risk Identification
+
+          Extract risk information:
+
+          ### Technical Risks
+          - Unproven technology
+          - Complex integration
+          - Performance concerns
+          - Scalability unknowns
+
+          ### Business Risks
+          - Market timing
+          - Resource availability
+          - Dependency on others
+
+          ### Mitigation Strategies
+
+          Note any mitigation approaches mentioned in spec.
+
+          ## Spec Quality Assessment
+
+          Evaluate spec completeness:
+
+          ✓ **Good spec**:
+          - Clear requirements
+          - Explicit acceptance criteria
+          - Priorities defined
+          - Risks identified
+          - Technical approach outlined
+
+          ⚠️ **Incomplete spec**:
+          - Vague requirements
+          - Missing acceptance criteria
+          - Unclear priorities
+          - No risk analysis
+          - Technical details absent
+
+          Document gaps and create clarification tasks.
+
+          ## Parsing Checklist
+
+          Before creating implementation plan:
+
+          ☐ All functional requirements identified
+          ☐ Non-functional requirements noted
+          ☐ Acceptance criteria extracted
+          ☐ Dependencies identified
+          ☐ Risks noted
+          ☐ Ambiguities documented
+          ☐ Technical approach understood
+          ☐ Scope is clear
+          ☐ Priorities are defined
+
+    - path: /skills/notion-spec-to-implementation/reference/standard-implementation-plan.md
+      text: |
+          # Standard Implementation Plan Template
+
+          Use this template for most feature implementations.
+
+          ```markdown
+          # Implementation Plan: [Feature Name]
+
+          ## Overview
+          [1-2 sentence feature description and business value]
+
+          ## Linked Specification
+          <mention-page url="...">Original Specification</mention-page>
+
+          ## Requirements Summary
+
+          ### Functional Requirements
+          - [Requirement 1]
+          - [Requirement 2]
+          - [Requirement 3]
+
+          ### Non-Functional Requirements
+          - **Performance**: [Targets]
+          - **Security**: [Requirements]
+          - **Scalability**: [Needs]
+
+          ### Acceptance Criteria
+          - [ ] [Criterion 1]
+          - [ ] [Criterion 2]
+          - [ ] [Criterion 3]
+
+          ## Technical Approach
+
+          ### Architecture
+          [High-level architectural decisions]
+
+          ### Technology Stack
+          - Backend: [Technologies]
+          - Frontend: [Technologies]
+          - Infrastructure: [Technologies]
+
+          ### Key Design Decisions
+          1. **[Decision]**: [Rationale]
+          2. **[Decision]**: [Rationale]
+
+          ## Implementation Phases
+
+          ### Phase 1: Foundation (Week 1)
+          **Goal**: Set up core infrastructure
+
+          **Tasks**:
+          - [ ] <mention-page url="...">Database schema design</mention-page>
+          - [ ] <mention-page url="...">API scaffolding</mention-page>
+          - [ ] <mention-page url="...">Authentication setup</mention-page>
+
+          **Deliverables**: Working API skeleton
+          **Estimated effort**: 3 days
+
+          ### Phase 2: Core Features (Week 2-3)
+          **Goal**: Implement main functionality
+
+          **Tasks**:
+          - [ ] <mention-page url="...">Feature A implementation</mention-page>
+          - [ ] <mention-page url="...">Feature B implementation</mention-page>
+
+          **Deliverables**: Core features working
+          **Estimated effort**: 1 week
+
+          ### Phase 3: Integration & Polish (Week 4)
+          **Goal**: Complete integration and refinement
+
+          **Tasks**:
+          - [ ] <mention-page url="...">Frontend integration</mention-page>
+          - [ ] <mention-page url="...">Testing & QA</mention-page>
+
+          **Deliverables**: Production-ready feature
+          **Estimated effort**: 1 week
+
+          ## Dependencies
+
+          ### External Dependencies
+          - [Dependency 1]: [Status]
+          - [Dependency 2]: [Status]
+
+          ### Internal Dependencies
+          - [Team/component dependency]
+
+          ### Blockers
+          - [Known blocker] or None currently
+
+          ## Risks & Mitigation
+
+          ### Risk 1: [Description]
+          - **Probability**: High/Medium/Low
+          - **Impact**: High/Medium/Low
+          - **Mitigation**: [Strategy]
+
+          ### Risk 2: [Description]
+          - **Probability**: High/Medium/Low
+          - **Impact**: High/Medium/Low
+          - **Mitigation**: [Strategy]
+
+          ## Timeline
+
+          | Milestone | Target Date | Status |
+          |-----------|-------------|--------|
+          | Phase 1 Complete | [Date] | ⏳ Planned |
+          | Phase 2 Complete | [Date] | ⏳ Planned |
+          | Phase 3 Complete | [Date] | ⏳ Planned |
+          | Launch | [Date] | ⏳ Planned |
+
+          ## Success Criteria
+
+          ### Technical Success
+          - [ ] All acceptance criteria met
+          - [ ] Performance targets achieved
+          - [ ] Security requirements satisfied
+          - [ ] Test coverage > 80%
+
+          ### Business Success
+          - [ ] [Business metric 1]
+          - [ ] [Business metric 2]
+
+          ## Resources
+
+          ### Documentation
+          - <mention-page url="...">Design Doc</mention-page>
+          - <mention-page url="...">API Spec</mention-page>
+
+          ### Related Work
+          - <mention-page url="...">Related Feature</mention-page>
+
+          ## Progress Tracking
+
+          [This section updated regularly]
+
+          ### Phase Status
+          - Phase 1: ⏳ Not Started
+          - Phase 2: ⏳ Not Started
+          - Phase 3: ⏳ Not Started
+
+          **Overall Progress**: 0% complete
+
+          ### Latest Update: [Date]
+          [Brief status update]
+          ```
+
+    - path: /skills/notion-spec-to-implementation/reference/task-creation-template.md
+      text: |
+          # Task Creation Template
+
+          When creating tasks from spec.
+
+          ```markdown
+          # [Task Name]
+
+          ## Context
+          Part of implementation for <mention-page url="...">Feature Spec</mention-page>
+
+          Implementation plan: <mention-page url="...">Implementation Plan</mention-page>
+
+          ## Description
+          [What needs to be done]
+
+          ## Acceptance Criteria
+          - [ ] [Criterion 1]
+          - [ ] [Criterion 2]
+
+          ## Technical Details
+          [Technical approach or notes]
+
+          ## Dependencies
+          - Blocked by: [Task] or None
+          - Blocks: [Task] or None
+
+          ## Resources
+          - [Link to design]
+          - [Link to related code]
+
+          ## Progress
+          [To be updated during implementation]
+          ```
+
+    - path: /skills/notion-spec-to-implementation/reference/task-creation.md
+      text: |
+          # Task Creation from Specs
+
+          ## Finding the Task Database
+
+          Before creating tasks, locate the task database:
+
+          ```
+          1. Search for task database:
+             Notion:notion-search
+             query: "Tasks" or "Task Management" or "[Project] Tasks"
+             
+          2. Fetch database schema:
+             Notion:notion-fetch
+             id: "database-id-from-search"
+             
+          3. Identify data source:
+             - Look for <data-source url="collection://..."> tags
+             - Extract collection ID for parent parameter
+             
+          4. Note schema:
+             - Required properties
+             - Property types and options
+             - Relation properties for linking
+
+          Example:
+          Notion:notion-search
+          query: "Engineering Tasks"
+          query_type: "internal"
+
+          Notion:notion-fetch
+          id: "tasks-database-id"
+          ```
+
+          Result: `collection://abc-123-def` for use as parent
+
+          ## Task Breakdown Strategy
+
+          ### Size Guidelines
+
+          **Good task size**:
+          - Completable in 1-2 days
+          - Single clear deliverable
+          - Independently testable
+          - Minimal dependencies
+
+          **Too large**:
+          - Takes > 3 days
+          - Multiple deliverables
+          - Many dependencies
+          - Break down further
+
+          **Too small**:
+          - Takes < 2 hours
+          - Too granular
+          - Group with related work
+
+          ### Granularity by Phase
+
+          **Early phases**: Larger tasks acceptable
+          - "Design database schema"
+          - "Set up API structure"
+
+          **Middle phases**: Medium-sized tasks
+          - "Implement user authentication"
+          - "Build dashboard UI"
+
+          **Late phases**: Smaller, precise tasks
+          - "Fix validation bug in form"
+          - "Add loading state to button"
+
+          ## Task Creation Pattern
+
+          For each requirement or work item:
+
+          ```
+          1. Identify the work
+          2. Determine task size
+          3. Create task in database
+          4. Set properties
+          5. Write task description
+          6. Link to spec/plan
+          ```
+
+          ### Creating Task
+
+          ```
+          Use Notion:notion-create-pages:
+
+          parent: {
+            type: "data_source_id",
+            data_source_id: "collection://tasks-db-uuid"
+          }
+
+          properties: {
+            "[Title Property]": "Task: [Clear task name]",
+            "Status": "To Do",
+            "Priority": "[High/Medium/Low]",
+            "[Project/Related]": ["spec-page-id", "plan-page-id"],
+            "Assignee": "[Person]" (if known),
+            "date:Due Date:start": "[Date]" (if applicable),
+            "date:Due Date:is_datetime": 0
+          }
+
+          content: "[Task description using template]"
+          ```
+
+          ## Task Description Template
+
+          ```markdown
+          # [Task Name]
+
+          ## Context
+          Implementation task for <mention-page url="...">Feature Spec</mention-page>
+
+          Part of <mention-page url="...">Implementation Plan</mention-page> - Phase [N]
+
+          ## Objective
+          [What this task accomplishes]
+
+          ## Requirements
+          Based on spec requirements:
+          - [Relevant requirement 1]
+          - [Relevant requirement 2]
+
+          ## Acceptance Criteria
+          - [ ] [Specific, testable criterion]
+          - [ ] [Specific, testable criterion]
+          - [ ] [Specific, testable criterion]
+
+          ## Technical Approach
+          [Suggested implementation approach]
+
+          ### Components Affected
+          - [Component 1]
+          - [Component 2]
+
+          ### Key Decisions
+          - [Decision point 1]
+          - [Decision point 2]
+
+          ## Dependencies
+
+          ### Blocked By
+          - <mention-page url="...">Prerequisite Task</mention-page> or None
+
+          ### Blocks
+          - <mention-page url="...">Dependent Task</mention-page> or None
+
+          ## Resources
+          - [Link to design mockup]
+          - [Link to API spec]
+          - [Link to relevant code]
+
+          ## Estimated Effort
+          [Time estimate]
+
+          ## Progress
+          [To be updated during implementation]
+          ```
+
+          ## Task Types
+
+          ### Infrastructure/Setup Tasks
+
+          ```
+          Title: "Setup: [What's being set up]"
+          Examples:
+          - "Setup: Configure database connection pool"
+          - "Setup: Initialize authentication middleware"
+          - "Setup: Create CI/CD pipeline"
+
+          Focus: Getting environment/tooling ready
+          ```
+
+          ### Feature Implementation Tasks
+
+          ```
+          Title: "Implement: [Feature name]"
+          Examples:
+          - "Implement: User login flow"
+          - "Implement: File upload functionality"
+          - "Implement: Dashboard widget"
+
+          Focus: Building specific functionality
+          ```
+
+          ### Integration Tasks
+
+          ```
+          Title: "Integrate: [What's being integrated]"
+          Examples:
+          - "Integrate: Connect frontend to API"
+          - "Integrate: Add payment provider"
+          - "Integrate: Link user profile to dashboard"
+
+          Focus: Connecting components
+          ```
+
+          ### Testing Tasks
+
+          ```
+          Title: "Test: [What's being tested]"
+          Examples:
+          - "Test: Write unit tests for auth service"
+          - "Test: E2E testing for checkout flow"
+          - "Test: Performance testing for API"
+
+          Focus: Validation and quality assurance
+          ```
+
+          ### Documentation Tasks
+
+          ```
+          Title: "Document: [What's being documented]"
+          Examples:
+          - "Document: API endpoints"
+          - "Document: Setup instructions"
+          - "Document: Architecture decisions"
+
+          Focus: Creating documentation
+          ```
+
+          ### Bug Fix Tasks
+
+          ```
+          Title: "Fix: [Bug description]"
+          Examples:
+          - "Fix: Login error on Safari"
+          - "Fix: Memory leak in image processing"
+          - "Fix: Race condition in payment flow"
+
+          Focus: Resolving issues
+          ```
+
+          ### Refactoring Tasks
+
+          ```
+          Title: "Refactor: [What's being refactored]"
+          Examples:
+          - "Refactor: Extract auth logic to service"
+          - "Refactor: Optimize database queries"
+          - "Refactor: Simplify component hierarchy"
+
+          Focus: Code quality improvement
+          ```
+
+          ## Sequencing Tasks
+
+          ### Critical Path
+
+          Identify must-happen-first tasks:
+
+          ```
+          1. Database schema
+          2. API foundation
+          3. Core business logic
+          4. Frontend integration
+          5. Testing
+          6. Deployment
+          ```
+
+          ### Parallel Tracks
+
+          Tasks that can happen simultaneously:
+
+          ```
+          Track A: Backend development
+          - API endpoints
+          - Business logic
+          - Database operations
+
+          Track B: Frontend development
+          - UI components
+          - State management
+          - Routing
+
+          Track C: Infrastructure
+          - CI/CD setup
+          - Monitoring
+          - Documentation
+          ```
+
+          ### Phase-Based Sequencing
+
+          Group by implementation phase:
+
+          ```
+          Phase 1 (Foundation):
+          - Setup tasks
+          - Infrastructure tasks
+
+          Phase 2 (Core):
+          - Feature implementation tasks
+          - Integration tasks
+
+          Phase 3 (Polish):
+          - Testing tasks
+          - Documentation tasks
+          - Optimization tasks
+          ```
+
+          ## Priority Assignment
+
+          ### P0/Critical
+          - Blocks everything else
+          - Core functionality
+          - Security requirements
+          - Data integrity
+
+          ### P1/High
+          - Important features
+          - User-facing functionality
+          - Performance requirements
+
+          ### P2/Medium
+          - Nice-to-have features
+          - Optimizations
+          - Minor improvements
+
+          ### P3/Low
+          - Future enhancements
+          - Edge case handling
+          - Cosmetic improvements
+
+          ## Estimation
+
+          ### Story Points
+
+          If using story points:
+          - 1 point: Few hours
+          - 2 points: Half day
+          - 3 points: Full day
+          - 5 points: 2 days
+          - 8 points: 3-4 days (consider breaking down)
+
+          ### Time Estimates
+
+          Direct time estimates:
+          - 2-4 hours: Small task
+          - 1 day: Medium task
+          - 2 days: Large task
+          - 3+ days: Break down further
+
+          ### Estimation Factors
+
+          Consider:
+          - Complexity
+          - Unknowns
+          - Dependencies
+          - Testing requirements
+          - Documentation needs
+
+          ## Task Relationships
+
+          ### Parent Task Pattern
+
+          For large features:
+
+          ```
+          Parent: "Feature: User Authentication"
+          Children:
+          - "Setup: Configure auth library"
+          - "Implement: Login flow"
+          - "Implement: Password reset"
+          - "Test: Auth functionality"
+          ```
+
+          ### Dependency Chain Pattern
+
+          For sequential work:
+
+          ```
+          Task A: "Design database schema"
+          ↓ (blocks)
+          Task B: "Implement data models"
+          ↓ (blocks)
+          Task C: "Create API endpoints"
+          ↓ (blocks)
+          Task D: "Integrate with frontend"
+          ```
+
+          ### Related Tasks Pattern
+
+          For parallel work:
+
+          ```
+          Central: "Feature: Dashboard"
+          Related:
+          - "Backend API for dashboard data"
+          - "Frontend dashboard component"
+          - "Dashboard data caching"
+          ```
+
+          ## Bulk Task Creation
+
+          When creating many tasks:
+
+          ```
+          For each work item in breakdown:
+            1. Determine task properties
+            2. Create task page
+            3. Link to spec/plan
+            4. Set relationships
+
+          Then:
+            1. Update plan with task links
+            2. Review sequencing
+            3. Assign tasks (if known)
+          ```
+
+          ## Task Naming Conventions
+
+          **Be specific**:
+          ✓ "Implement user login with email/password"
+          ✗ "Add login"
+
+          **Include context**:
+          ✓ "Dashboard: Add revenue chart widget"
+          ✗ "Add chart"
+
+          **Use action verbs**:
+          - Implement, Build, Create
+          - Integrate, Connect, Link
+          - Fix, Resolve, Debug
+          - Test, Validate, Verify
+          - Document, Write, Update
+          - Refactor, Optimize, Improve
+
+          ## Validation Checklist
+
+          Before finalizing tasks:
+
+          ☐ Each task has clear objective
+          ☐ Acceptance criteria are testable
+          ☐ Dependencies identified
+          ☐ Appropriate size (1-2 days)
+          ☐ Priority assigned
+          ☐ Linked to spec/plan
+          ☐ Proper sequencing
+          ☐ Resources noted
+
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-notion-spec-to-implementation
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
