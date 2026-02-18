@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's security-best-practices skill",
   "long_description": "This agent helps teams and users get clear, actionable guidance on security best practices relevant to their goals and constraints, turning ambiguous or high-level security questions into specific steps, checklists, or prioritized recommendations. It can answer domain-specific security questions, adapt advice to different contexts, and produce outputs that can be used directly in planning, risk assessments, or implementation tasks. The agent is intended to streamline decision-making around security practices and help translate requirements into concrete actions and outcomes. It is designed to work interactively so teams can refine recommendations to fit their constraints and objectives.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a78f3f2bb012051d475b2204322b61f9f700a595/openai-skills/security-best-practices/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a78f3f2bb012051d475b2204322b61f9f700a595/openai-skills/security-best-practices/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66dc7062341fcdeddb4bf92a4c2c4c65041616ff/openai-skills/security-best-practices/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66dc7062341fcdeddb4bf92a4c2c4c65041616ff/openai-skills/security-best-practices/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ef0b2a39aefc55306620be645c1ea8a163e73f41/openai-skills/security-best-practices/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ef0b2a39aefc55306620be645c1ea8a163e73f41/openai-skills/security-best-practices/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61c521418bd48d48fd102cbe8dc3bb4fbb4d1373/openai-skills/security-best-practices/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/61c521418bd48d48fd102cbe8dc3bb4fbb4d1373/openai-skills/security-best-practices/agents.prod.yaml"
   }
 }
