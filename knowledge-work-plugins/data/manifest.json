@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's data knowledge work plugin",
   "long_description": "This agent helps users and teams turn data questions into clear, actionable analyses by guiding the workflow from hypothesis and query design through validation, exploration, and concise reporting. It can generate and explain SQL queries, perform statistical checks, extract context from datasets, and create visualizations and interactive dashboards to communicate findings to stakeholders. Teams can use it to streamline data validation, uncover patterns, and produce shareable summaries and visuals that support decision-making. The agent is focused on practical outcomes\u2014improving the speed, clarity, and reliability of data-driven insights.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/43ce2213804e433cc27214eefde9c3d780881e5c/knowledge-work-plugins/data/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/43ce2213804e433cc27214eefde9c3d780881e5c/knowledge-work-plugins/data/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/52cc99681ecd3e7534aa38747b68346138ef6423/knowledge-work-plugins/data/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/52cc99681ecd3e7534aa38747b68346138ef6423/knowledge-work-plugins/data/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/966db0deb9148377efa80506fd01d8ab7db68493/knowledge-work-plugins/data/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/966db0deb9148377efa80506fd01d8ab7db68493/knowledge-work-plugins/data/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d78d09ce72b41d73d9b5f1d4c940921fa8585eb0/knowledge-work-plugins/data/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d78d09ce72b41d73d9b5f1d4c940921fa8585eb0/knowledge-work-plugins/data/agents.prod.yaml"
   }
 }
