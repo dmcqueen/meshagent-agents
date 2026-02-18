@@ -42,7 +42,6 @@ container:
           fi
           
           exec /usr/bin/meshagent chatbot join \
-            --model=gpt-5.2 \
             --require-web-search \
             --require-shell \
             --delegate-shell-token \
