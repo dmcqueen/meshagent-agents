@@ -6,14 +6,14 @@ An agent that uses OpenAI's netlify-deploy skill and powered by gpt-5.2
 
 ## Description
 
-This plugin supports netlify-deploy workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in netlify-deploy work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for netlify-deploy decisions, analysis, and communication.
+This agent helps teams manage Netlify deployment tasks by interpreting user goals, turning ambiguous requests into clear, actionable steps, and answering domain-specific questions about deployments. Users can rely on it to plan and automate deployment workflows, adapt guidance to project constraints, and produce the concrete outputs needed to move a site from development to hosted production. It is intended for people who need practical, context-aware assistance with Netlify deployment decisions and tasks, helping reduce back-and-forth and accelerate delivery. The agent uses a contemporary large language model runtime to generate recommendations and procedural steps when necessary.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e29af9e49e1bdc89609303f7167bc2c7ee2f8df6/openai-skills/netlify-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ad6851e750646fa8758a804113de2e4acb848ceb/openai-skills/netlify-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/355afc9ccf0b2284dc2e6333bb28ad3c18b11edd/openai-skills/netlify-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c5fc9f71e3f168e399787ccf07f7c15a8dde5120/openai-skills/netlify-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e29af9e49e1bdc89609303f7167bc2c7ee2f8df6/openai-skills/netlify-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ad6851e750646fa8758a804113de2e4acb848ceb/openai-skills/netlify-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/355afc9ccf0b2284dc2e6333bb28ad3c18b11edd/openai-skills/netlify-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c5fc9f71e3f168e399787ccf07f7c15a8dde5120/openai-skills/netlify-deploy/agents.prod.yaml
