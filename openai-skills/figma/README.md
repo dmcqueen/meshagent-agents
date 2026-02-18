@@ -10,10 +10,10 @@ This plugin supports figma workflows and is designed to help users complete prac
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ea04cbd79c2b9281ba1b3d3b3daf74243695f8bc/openai-skills/figma/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1a30f0ada356ecd83583ef1d0e7294824b659bbf/openai-skills/figma/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6acbc5d6e57f53b2d849a37b9828852d7c696eef/openai-skills/figma/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2d74dd9d12d00a2bdc85e48a4ec927f09e317346/openai-skills/figma/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ea04cbd79c2b9281ba1b3d3b3daf74243695f8bc/openai-skills/figma/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1a30f0ada356ecd83583ef1d0e7294824b659bbf/openai-skills/figma/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6acbc5d6e57f53b2d849a37b9828852d7c696eef/openai-skills/figma/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2d74dd9d12d00a2bdc85e48a4ec927f09e317346/openai-skills/figma/agents.prod.yaml
