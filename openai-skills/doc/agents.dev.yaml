@@ -24,14 +24,19 @@ container:
     - path: /var/start.sh
       text: |
           #!/bin/bash
-          
+
           set -e
-          
+
           mkdir -p /data/skills
           if [ -d /skills ]; then
             cp -R -n /skills/* /data/skills/ 2>/dev/null || true
           fi
-          
+          mkdir -p /data/agents/openai-doc
+          if [[ ! -f /data/agents/openai-doc/rules.txt ]]; then
+            cp /var/rules-openai-doc.txt /data/agents/openai-doc/rules.txt
+          fi
+
+
           # Decode any base64-encoded binary payloads
           if command -v base64 >/dev/null 2>&1; then
             find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
@@ -40,22 +45,25 @@ container:
               rm -f "${file}"
             done
           fi
-          
+
           exec /usr/bin/meshagent chatbot join \
             --require-storage \
             --require-web-search \
-            --rule="you can use the storage tool to read skills not just the shell tool" \
-            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
-            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
-            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
             --storage-tool-local-path=/skills:/skills \
             --storage-tool-room-path=/:/data \
             --script-tool \
-            -rr=agents/openai-doc/rules.txt \
-            --rule='You have customizable rules stored in agents/openai-doc/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
-            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
-            --rule='You have some slash commands available' \
+            -rr=/data/agents/openai-doc/rules.txt \
             --skill-dir /data/skills/doc
+    - path: /var/rules-openai-doc.txt
+      read_only: true
+      text: |
+          you can use the storage tool to read skills
+          when a question could be served by a skill, read the skill and follow the pattern specified in the skill
+          when using the storage tool to read files attached or referenced by the user, in the room, or output by other tools, the file path should be prefixed with /data.
+          when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)
+          You have customizable rules stored in agents/openai-doc/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files.
+          You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com
+          You have some slash commands available
     - path: /skills/doc/LICENSE.txt
       text: |
           Apache License
