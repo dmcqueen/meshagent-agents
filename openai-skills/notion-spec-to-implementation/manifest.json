@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's notion-spec-to-implementation skill and powered by gpt-5.2",
   "long_description": "This plugin supports notion-spec-to-implementation workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in notion-spec-to-implementation work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for notion-spec-to-implementation decisions, analysis, and communication.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/db27ffe9b4762967f74bb1eca52ef2c3d71e3de9/openai-skills/notion-spec-to-implementation/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/db27ffe9b4762967f74bb1eca52ef2c3d71e3de9/openai-skills/notion-spec-to-implementation/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a43b6d59a490eb648f9f8e066820e3cf24e29910/openai-skills/notion-spec-to-implementation/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a43b6d59a490eb648f9f8e066820e3cf24e29910/openai-skills/notion-spec-to-implementation/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd77117d56dd4a93832fc43b2b956616dbb3a43c/openai-skills/notion-spec-to-implementation/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd77117d56dd4a93832fc43b2b956616dbb3a43c/openai-skills/notion-spec-to-implementation/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23957f19373d4c4299040f6c1400fc9be972644a/openai-skills/notion-spec-to-implementation/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23957f19373d4c4299040f6c1400fc9be972644a/openai-skills/notion-spec-to-implementation/agents.prod.yaml"
   }
 }
