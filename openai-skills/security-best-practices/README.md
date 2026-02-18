@@ -10,10 +10,10 @@ This agent helps teams and users get clear, actionable guidance on security best
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2e72ad775210abd6efba432a474dbe6664282b82/openai-skills/security-best-practices/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/39b2c6630c4ac2358bed39caf072ac792f5a5038/openai-skills/security-best-practices/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a78f3f2bb012051d475b2204322b61f9f700a595/openai-skills/security-best-practices/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ef0b2a39aefc55306620be645c1ea8a163e73f41/openai-skills/security-best-practices/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2e72ad775210abd6efba432a474dbe6664282b82/openai-skills/security-best-practices/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/39b2c6630c4ac2358bed39caf072ac792f5a5038/openai-skills/security-best-practices/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a78f3f2bb012051d475b2204322b61f9f700a595/openai-skills/security-best-practices/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ef0b2a39aefc55306620be645c1ea8a163e73f41/openai-skills/security-best-practices/agents.prod.yaml
