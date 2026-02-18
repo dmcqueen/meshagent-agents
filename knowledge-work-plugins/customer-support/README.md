@@ -6,14 +6,14 @@ An agent that uses Anthropic's customer support knowledge work plugin
 
 ## Description
 
-This agent enables customer support teams to triage incoming issues, prioritize urgent cases, and move tickets efficiently toward resolution by proposing clear next steps and escalation paths; teams can use it to quickly assess problem severity and assign appropriate follow-up actions. It helps draft clear, empathetic responses and follow-up messages tailored to each case, and can produce knowledge-base articles or research summaries to capture recurring issues and improve long-term support. Users can escalate complex cases with suggested rationale and context, maintain better knowledge management, and reduce resolution times through consistent, well-structured communication. The agent is intended for practical customer-support workflows and collaboration, producing outputs that support faster, more organized ticket handling.
+This agent helps customer support teams triage incoming issues, prioritize urgent cases, and move tickets toward resolution through clear, empathetic response drafts and suggested next steps. Teams can use it to generate follow-up messages, propose escalations when needed, and create or update knowledge-base content to reduce repeat inquiries. It also assists with customer research and documenting findings to improve long-term support outcomes. The agent is designed for use in customer support workflows to speed resolution, maintain consistent communication, and surface items for escalation or knowledge-management.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bafabe7c8731458761c6c0a539d8120373be3034/knowledge-work-plugins/customer-support/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/db479a78e0d7ccc18a46469e52b3d234795c1606/knowledge-work-plugins/customer-support/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cecb8f1407ec3500abc1487a5a3ed155e750d421/knowledge-work-plugins/customer-support/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5db00ed673f8a691c4ea82f2fe52bb90e325fd43/knowledge-work-plugins/customer-support/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bafabe7c8731458761c6c0a539d8120373be3034/knowledge-work-plugins/customer-support/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/db479a78e0d7ccc18a46469e52b3d234795c1606/knowledge-work-plugins/customer-support/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cecb8f1407ec3500abc1487a5a3ed155e750d421/knowledge-work-plugins/customer-support/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5db00ed673f8a691c4ea82f2fe52bb90e325fd43/knowledge-work-plugins/customer-support/agents.prod.yaml
