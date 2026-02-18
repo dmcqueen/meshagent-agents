@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's security-threat-model skill and powered by gpt-5.2
+An agent that uses OpenAI's security-threat-model skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps security practitioners and teams convert ambiguous security que
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d480d6156948cd5bedc1a9a615d4816e29b9f5c9/openai-skills/security-threat-model/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/39038f77fe487dbd664cebfcb55429e3add2d68a/openai-skills/security-threat-model/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b267524c2fdb38a0ed042bdc5de2a2973b5d8297/openai-skills/security-threat-model/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7eb0cb0e524424272b390c794ea798e0771db7a6/openai-skills/security-threat-model/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d480d6156948cd5bedc1a9a615d4816e29b9f5c9/openai-skills/security-threat-model/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/39038f77fe487dbd664cebfcb55429e3add2d68a/openai-skills/security-threat-model/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b267524c2fdb38a0ed042bdc5de2a2973b5d8297/openai-skills/security-threat-model/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7eb0cb0e524424272b390c794ea798e0771db7a6/openai-skills/security-threat-model/agents.prod.yaml
