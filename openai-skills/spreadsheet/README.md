@@ -10,10 +10,10 @@ This agent lets individuals and teams work directly with spreadsheet-related tas
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ebd2c7345f08364c081ec6ce74bde7dd748ddeab/openai-skills/spreadsheet/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/953f4f98d58e2aa147f6dd497c600f88fcd5c515/openai-skills/spreadsheet/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/abad47c4041853ab67168009770de8d43ef857ce/openai-skills/spreadsheet/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a95bfde494acffbc85f9c1cf7571a94e2648cdde/openai-skills/spreadsheet/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ebd2c7345f08364c081ec6ce74bde7dd748ddeab/openai-skills/spreadsheet/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/953f4f98d58e2aa147f6dd497c600f88fcd5c515/openai-skills/spreadsheet/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/abad47c4041853ab67168009770de8d43ef857ce/openai-skills/spreadsheet/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a95bfde494acffbc85f9c1cf7571a94e2648cdde/openai-skills/spreadsheet/agents.prod.yaml
