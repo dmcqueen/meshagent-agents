@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's netlify-deploy skill and powered by gpt-5.2
+An agent that uses OpenAI's netlify-deploy skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps teams manage Netlify deployment tasks by interpreting user goal
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2d5c70717e2cd1e85804498b938795e7b286554a/openai-skills/netlify-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86bb90d9ef6a165a1a2fb24d93bcaad0a957f009/openai-skills/netlify-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/30b5ddfafcb745571b59ba270da2222a893336a5/openai-skills/netlify-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4cf9f14abe470c96d4ebdd152336d1b7fc2eb3be/openai-skills/netlify-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2d5c70717e2cd1e85804498b938795e7b286554a/openai-skills/netlify-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86bb90d9ef6a165a1a2fb24d93bcaad0a957f009/openai-skills/netlify-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/30b5ddfafcb745571b59ba270da2222a893336a5/openai-skills/netlify-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4cf9f14abe470c96d4ebdd152336d1b7fc2eb3be/openai-skills/netlify-deploy/agents.prod.yaml
