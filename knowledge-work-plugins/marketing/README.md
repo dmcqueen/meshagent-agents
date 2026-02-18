@@ -6,14 +6,14 @@ An agent that uses Anthropic's marketing knowledge work plugin
 
 ## Description
 
-This plugin supports marketing workflows and is designed to help users complete practical work with less manual effort. It can generate campaign concepts and message variants for different audiences, plan content and channel strategies with clear goals, and refine copy for clarity, positioning, and consistency. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for marketing decisions, analysis, and communication.
+This plugin helps marketing teams generate and refine campaign concepts, messaging variants, and content plans tailored to specific audiences and goals, enabling clearer positioning and more consistent brand voice across channels. Teams can use it to map channel strategies, outline email sequences and content calendars, and produce drafts that are optimized for clarity and audience fit. It also supports competitive analysis and performance-oriented reporting so users can iterate on tactics based on measurable outcomes. Designed for practical marketing workflows, it streamlines the creation, review, and refinement of copy and campaign plans.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a094af42c550e024364f68734da64814d531e78d/knowledge-work-plugins/marketing/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1e40e6b9c0347b0f039c3aed26dde8aafba0b2c7/knowledge-work-plugins/marketing/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b1f09adcb122b111433677c4492b0aa017c57e26/knowledge-work-plugins/marketing/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dcb24b57f051b39763b4e7612734b75148e6e82d/knowledge-work-plugins/marketing/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a094af42c550e024364f68734da64814d531e78d/knowledge-work-plugins/marketing/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1e40e6b9c0347b0f039c3aed26dde8aafba0b2c7/knowledge-work-plugins/marketing/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b1f09adcb122b111433677c4492b0aa017c57e26/knowledge-work-plugins/marketing/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dcb24b57f051b39763b4e7612734b75148e6e82d/knowledge-work-plugins/marketing/agents.prod.yaml
