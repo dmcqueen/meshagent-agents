@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-security-best-practices
-  description: An agent that uses OpenAI's security-best-practices skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's security-best-practices skill
   annotations:
     meshagent.service.id: meshagent.openai-security-best-practices
 
