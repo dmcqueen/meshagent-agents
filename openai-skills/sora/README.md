@@ -10,10 +10,10 @@ This agent helps users and teams interact with the Sora domain by answering doma
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7fd9eb300c0c75b8fddc5f7101dca555c54dec79/openai-skills/sora/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/428b843dc5bd9605822e9c89f39226479f21dedf/openai-skills/sora/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/57497420acb22f896d6bfb8d08a0fb61941b26ec/openai-skills/sora/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5628c5b97bc5932fab03a062f2bdbb55fd93b586/openai-skills/sora/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7fd9eb300c0c75b8fddc5f7101dca555c54dec79/openai-skills/sora/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/428b843dc5bd9605822e9c89f39226479f21dedf/openai-skills/sora/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/57497420acb22f896d6bfb8d08a0fb61941b26ec/openai-skills/sora/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5628c5b97bc5932fab03a062f2bdbb55fd93b586/openai-skills/sora/agents.prod.yaml
