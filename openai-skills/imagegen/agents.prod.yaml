@@ -1,0 +1,2069 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-imagegen
+  description: An agent that uses OpenAI's imagegen skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-imagegen
+
+agents:
+  - name: openai-imagegen
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-web-search \
+            --require-shell \
+            --delegate-shell-token \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-imagegen/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-imagegen/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/imagegen
+    - path: /skills/imagegen/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+          1. Definitions.
+
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+
+          END OF TERMS AND CONDITIONS
+
+          APPENDIX: How to apply the Apache License to your work.
+
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+
+          Copyright [yyyy] [name of copyright owner]
+
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+
+              http://www.apache.org/licenses/LICENSE-2.0
+
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
+    - path: /skills/imagegen/SKILL.md
+      text: |
+          ---
+          name: "imagegen"
+          description: "Use when the user asks to generate or edit images via the OpenAI Image API (for example: generate image, edit/inpaint/mask, background removal or replacement, transparent background, product shots, concept art, covers, or batch variants); run the bundled CLI (`scripts/image_gen.py`) and require `OPENAI_API_KEY` for live calls."
+          ---
+
+
+          # Image Generation Skill
+
+          Generates or edits images for the current project (e.g., website assets, game assets, UI mockups, product mockups, wireframes, logo design, photorealistic images, infographics). Defaults to `gpt-image-1.5` and the OpenAI Image API, and prefers the bundled CLI for deterministic, reproducible runs.
+
+          ## When to use
+          - Generate a new image (concept art, product shot, cover, website hero)
+          - Edit an existing image (inpainting, masked edits, lighting or weather transformations, background replacement, object removal, compositing, transparent background)
+          - Batch runs (many prompts, or many variants across prompts)
+
+          ## Decision tree (generate vs edit vs batch)
+          - If the user provides an input image (or says “edit/retouch/inpaint/mask/translate/localize/change only X”) → **edit**
+          - Else if the user needs many different prompts/assets → **generate-batch**
+          - Else → **generate**
+
+          ## Workflow
+          1. Decide intent: generate vs edit vs batch (see decision tree above).
+          2. Collect inputs up front: prompt(s), exact text (verbatim), constraints/avoid list, and any input image(s)/mask(s). For multi-image edits, label each input by index and role; for edits, list invariants explicitly.
+          3. If batch: write a temporary JSONL under tmp/ (one job per line), run once, then delete the JSONL.
+          4. Augment prompt into a short labeled spec (structure + constraints) without inventing new creative requirements.
+          5. Run the bundled CLI (`scripts/image_gen.py`) with sensible defaults (see references/cli.md).
+          6. For complex edits/generations, inspect outputs (open/view images) and validate: subject, style, composition, text accuracy, and invariants/avoid items.
+          7. Iterate: make a single targeted change (prompt or mask), re-run, re-check.
+          8. Save/return final outputs and note the final prompt + flags used.
+
+          ## Temp and output conventions
+          - Use `tmp/imagegen/` for intermediate files (for example JSONL batches); delete when done.
+          - Write final artifacts under `output/imagegen/` when working in this repo.
+          - Use `--out` or `--out-dir` to control output paths; keep filenames stable and descriptive.
+
+          ## Dependencies (install if missing)
+          Prefer `uv` for dependency management.
+
+          Python packages:
+          ```
+          uv pip install openai pillow
+          ```
+          If `uv` is unavailable:
+          ```
+          python3 -m pip install openai pillow
+          ```
+
+          ## Environment
+          - `OPENAI_API_KEY` must be set for live API calls.
+
+          If the key is missing, give the user these steps:
+          1. Create an API key in the OpenAI platform UI: https://platform.openai.com/api-keys
+          2. Set `OPENAI_API_KEY` as an environment variable in their system.
+          3. Offer to guide them through setting the environment variable for their OS/shell if needed.
+          - Never ask the user to paste the full key in chat. Ask them to set it locally and confirm when ready.
+
+          If installation isn't possible in this environment, tell the user which dependency is missing and how to install it locally.
+
+          ## Defaults & rules
+          - Use `gpt-image-1.5` unless the user explicitly asks for `gpt-image-1-mini` or explicitly prefers a cheaper/faster model.
+          - Assume the user wants a new image unless they explicitly ask for an edit.
+          - Require `OPENAI_API_KEY` before any live API call.
+          - Use the OpenAI Python SDK (`openai` package) for all API calls; do not use raw HTTP.
+          - If the user requests edits, use `client.images.edit(...)` and include input images (and mask if provided).
+          - Prefer the bundled CLI (`scripts/image_gen.py`) over writing new one-off scripts.
+          - Never modify `scripts/image_gen.py`. If something is missing, ask the user before doing anything else.
+          - If the result isn’t clearly relevant or doesn’t satisfy constraints, iterate with small targeted prompt changes; only ask a question if a missing detail blocks success.
+
+          ## Prompt augmentation
+          Reformat user prompts into a structured, production-oriented spec. Only make implicit details explicit; do not invent new requirements.
+
+          ## Use-case taxonomy (exact slugs)
+          Classify each request into one of these buckets and keep the slug consistent across prompts and references.
+
+          Generate:
+          - photorealistic-natural — candid/editorial lifestyle scenes with real texture and natural lighting.
+          - product-mockup — product/packaging shots, catalog imagery, merch concepts.
+          - ui-mockup — app/web interface mockups that look shippable.
+          - infographic-diagram — diagrams/infographics with structured layout and text.
+          - logo-brand — logo/mark exploration, vector-friendly.
+          - illustration-story — comics, children’s book art, narrative scenes.
+          - stylized-concept — style-driven concept art, 3D/stylized renders.
+          - historical-scene — period-accurate/world-knowledge scenes.
+
+          Edit:
+          - text-localization — translate/replace in-image text, preserve layout.
+          - identity-preserve — try-on, person-in-scene; lock face/body/pose.
+          - precise-object-edit — remove/replace a specific element (incl. interior swaps).
+          - lighting-weather — time-of-day/season/atmosphere changes only.
+          - background-extraction — transparent background / clean cutout.
+          - style-transfer — apply reference style while changing subject/scene.
+          - compositing — multi-image insert/merge with matched lighting/perspective.
+          - sketch-to-render — drawing/line art to photoreal render.
+
+          Quick clarification (augmentation vs invention):
+          - If the user says “a hero image for a landing page”, you may add *layout/composition constraints* that are implied by that use (e.g., “generous negative space on the right for headline text”).
+          - Do not introduce new creative elements the user didn’t ask for (e.g., adding a mascot, changing the subject, inventing brand names/logos).
+
+          Template (include only relevant lines):
+          ```
+          Use case: <taxonomy slug>
+          Asset type: <where the asset will be used>
+          Primary request: <user's main prompt>
+          Scene/background: <environment>
+          Subject: <main subject>
+          Style/medium: <photo/illustration/3D/etc>
+          Composition/framing: <wide/close/top-down; placement>
+          Lighting/mood: <lighting + mood>
+          Color palette: <palette notes>
+          Materials/textures: <surface details>
+          Quality: <low/medium/high/auto>
+          Input fidelity (edits): <low/high>
+          Text (verbatim): "<exact text>"
+          Constraints: <must keep/must avoid>
+          Avoid: <negative constraints>
+          ```
+
+          Augmentation rules:
+          - Keep it short; add only details the user already implied or provided elsewhere.
+          - Always classify the request into a taxonomy slug above and tailor constraints/composition/quality to that bucket. Use the slug to find the matching example in `references/sample-prompts.md`.
+          - If the user gives a broad request (e.g., "Generate images for this website"), use judgment to propose tasteful, context-appropriate assets and map each to a taxonomy slug.
+          - For edits, explicitly list invariants ("change only X; keep Y unchanged").
+          - If any critical detail is missing and blocks success, ask a question; otherwise proceed.
+
+          ## Examples
+
+          ### Generation example (hero image)
+          ```
+          Use case: stylized-concept
+          Asset type: landing page hero
+          Primary request: a minimal hero image of a ceramic coffee mug
+          Style/medium: clean product photography
+          Composition/framing: centered product, generous negative space on the right
+          Lighting/mood: soft studio lighting
+          Constraints: no logos, no text, no watermark
+          ```
+
+          ### Edit example (invariants)
+          ```
+          Use case: precise-object-edit
+          Asset type: product photo background replacement
+          Primary request: replace the background with a warm sunset gradient
+          Constraints: change only the background; keep the product and its edges unchanged; no text; no watermark
+          ```
+
+          ## Prompting best practices (short list)
+          - Structure prompt as scene -> subject -> details -> constraints.
+          - Include intended use (ad, UI mock, infographic) to set the mode and polish level.
+          - Use camera/composition language for photorealism.
+          - Quote exact text and specify typography + placement.
+          - For tricky words, spell them letter-by-letter and require verbatim rendering.
+          - For multi-image inputs, reference images by index and describe how to combine them.
+          - For edits, repeat invariants every iteration to reduce drift.
+          - Iterate with single-change follow-ups.
+          - For latency-sensitive runs, start with quality=low; use quality=high for text-heavy or detail-critical outputs.
+          - For strict edits (identity/layout lock), consider input_fidelity=high.
+          - If results feel “tacky”, add a brief “Avoid:” line (stock-photo vibe; cheesy lens flare; oversaturated neon; harsh bloom; oversharpening; clutter) and specify restraint (“editorial”, “premium”, “subtle”).
+
+          More principles: `references/prompting.md`. Copy/paste specs: `references/sample-prompts.md`.
+
+          ## Guidance by asset type
+          Asset-type templates (website assets, game assets, wireframes, logo) are consolidated in `references/sample-prompts.md`.
+
+          ## CLI + environment notes
+          - CLI commands + examples: `references/cli.md`
+          - API parameter quick reference: `references/image-api.md`
+          - If network approvals / sandbox settings are getting in the way: `references/codex-network.md`
+
+          ## Reference map
+          - **`references/cli.md`**: how to *run* image generation/edits/batches via `scripts/image_gen.py` (commands, flags, recipes).
+          - **`references/image-api.md`**: what knobs exist at the API level (parameters, sizes, quality, background, edit-only fields).
+          - **`references/prompting.md`**: prompting principles (structure, constraints/invariants, iteration patterns).
+          - **`references/sample-prompts.md`**: copy/paste prompt recipes (generate + edit workflows; examples only).
+          - **`references/codex-network.md`**: environment/sandbox/network-approval troubleshooting.
+    - path: /skills/imagegen/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Image Gen"
+            short_description: "Generate and edit images using OpenAI"
+            icon_small: "./assets/imagegen-small.svg"
+            icon_large: "./assets/imagegen.png"
+            default_prompt: "Generate or edit images for this task and return the final prompt plus selected outputs."
+    - path: /skills/imagegen/assets/imagegen-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill="currentColor" d="M7.51 6.827a1 1 0 1 1 .278 1.982 1 1 0 0 1-.278-1.982Z"/>
+            <path fill="currentColor" fill-rule="evenodd" d="M8.31 4.47c.368-.016.699.008 1.016.124l.186.075c.423.194.786.5 1.047.888l.067.107c.148.253.235.533.3.848.073.354.126.797.193 1.343l.277 2.25.088.745c.024.224.041.425.049.605.013.322-.004.615-.085.896l-.04.12a2.53 2.53 0 0 1-.802 1.115l-.16.118c-.281.189-.596.292-.956.366a9.46 9.46 0 0 1-.6.1l-.743.094-2.25.277c-.547.067-.99.121-1.35.136a2.765 2.765 0 0 1-.896-.085l-.12-.039a2.533 2.533 0 0 1-1.115-.802l-.118-.161c-.189-.28-.292-.596-.366-.956a9.42 9.42 0 0 1-.1-.599l-.094-.744-.276-2.25a17.884 17.884 0 0 1-.137-1.35c-.015-.367.009-.698.124-1.015l.076-.185c.193-.423.5-.787.887-1.048l.107-.067c.253-.148.534-.234.849-.3.354-.073.796-.126 1.343-.193l2.25-.277.744-.088c.224-.024.425-.041.606-.049Zm-2.905 5.978a1.47 1.47 0 0 0-.875.074c-.127.052-.267.146-.475.344-.212.204-.462.484-.822.889l-.314.351c.018.115.036.219.055.313.061.295.127.458.206.575l.07.094c.167.211.39.372.645.465l.109.032c.119.027.273.038.499.029.308-.013.7-.06 1.264-.13l2.25-.275.727-.093.198-.03-2.05-1.64a16.848 16.848 0 0 0-.96-.738c-.18-.121-.31-.19-.421-.23l-.106-.03Zm2.95-4.915c-.154.006-.33.021-.536.043l-.729.086-2.25.276c-.564.07-.956.118-1.257.18a1.937 1.937 0 0 0-.478.15l-.097.057a1.47 1.47 0 0 0-.515.608l-.044.107c-.048.133-.073.307-.06.608.012.307.06.7.129 1.264l.22 1.8.178-.197c.145-.159.278-.298.403-.418.255-.243.507-.437.809-.56l.181-.067a2.526 2.526 0 0 1 1.328-.06l.118.029c.27.079.517.215.772.387.287.194.619.46 1.03.789l2.52 2.016c.146-.148.26-.326.332-.524l.031-.109c.027-.119.039-.273.03-.499a8.311 8.311 0 0 0-.044-.536l-.086-.728-.276-2.25c-.07-.564-.118-.956-.18-1.258a1.935 1.935 0 0 0-.15-.477l-.057-.098a1.468 1.468 0 0 0-.608-.515l-.107-.043c-.133-.049-.306-.074-.607-.061Z" clip-rule="evenodd"/>
+            <path fill="currentColor" d="M7.783 1.272c.36.014.803.07 1.35.136l2.25.277.743.095c.224.03.423.062.6.099.36.074.675.177.955.366l.161.118c.364.29.642.675.802 1.115l.04.12c.081.28.098.574.085.896a9.42 9.42 0 0 1-.05.605l-.087.745-.277 2.25c-.067.547-.12.989-.193 1.343a2.765 2.765 0 0 1-.3.848l-.067.107a2.534 2.534 0 0 1-.415.474l-.086.064a.532.532 0 0 1-.622-.858l.13-.13c.04-.046.077-.094.111-.145l.057-.098c.055-.109.104-.256.15-.477.062-.302.11-.694.18-1.258l.276-2.25.086-.728c.022-.207.037-.382.043-.536.01-.226-.002-.38-.029-.5l-.032-.108a1.469 1.469 0 0 0-.464-.646l-.094-.069c-.118-.08-.28-.145-.575-.206a8.285 8.285 0 0 0-.53-.088l-.728-.092-2.25-.276c-.565-.07-.956-.117-1.264-.13a1.94 1.94 0 0 0-.5.029l-.108.032a1.469 1.469 0 0 0-.647.465l-.068.094c-.054.08-.102.18-.146.33l-.04.1a.533.533 0 0 1-.98-.403l.055-.166c.059-.162.133-.314.23-.457l.117-.16c.29-.365.675-.643 1.115-.803l.12-.04c.28-.08.574-.097.896-.084Z"/>
+          </svg>
+    - path: /skills/imagegen/assets/imagegen.png.b64
+      text: |
+          iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
+          AXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAZESURBVHgB7Z1PbBNHFId/49iOnQQSCgIqVTQo
+          aY8kvhYkQolob0X0xiHtrRI3VOCaRL0VED3R9tJCDhxLLpVaBNQHwqlSEnosqQKq2pAKMImTOHHs
+          6bwhDo5jO2t7Znc9O5+08mZt2cp8+9783V2GBjg9ybvSWO/Ph3CccfQDXGysS7zVhWCQYsAsF5v4
+          /6fF38m7iUgSDcBQB4OT2QGE8Ann+BzBKXynpESxjjPOb9YjpyYhJIIzDIvdAVickBSRM1qLGEdC
+          Pp5c6c6y8DWxexqWOmA3Irxl9JcEm93xkzt9YCMqbsOmpgYRMjjO30uEx6t9KlTtzcHp7LCQ8Rus
+          DAXwbjB++0NRptU+VTFCpAyOEViUI07ykft9kdFy75UVYmXoh/Pc+fuJ2Delx7cJOTm5fppCCxbt
+          iBbYidIW2BYhr1tTLaLOYN2wuEFqFw8fHk+wVOHAlko9yyLDVoardC2y9R+LD2xGiE1V3lGcut5E
+          CMtfg8UTNkY/JFKIHJsC64bFKwZeO9gQwhn7DBZP4RvDUrIOOTmVfQnbG/ca2eIKbYSKleE9cm6J
+          UtYALL4gL1yERdI6joDRF8/gaMcKDkRz6I2ubR5Pi6lP2mYyEUyk45heicFNGPL9bHAqOykqlH4Y
+          TkcojzN7FuVG+06Yy4bxaLkVYy865b5+2CwTFTqH4ZzZs4ChvQuORZRCUfPTy10Ye94JzaSMFkIC
+          Lh18jg9EelLBTCaK4X/3aY2WEAzlYGQd3707p0wG0RNbw5V35uV368JIIRQZugqOvlOnFCOFnNv/
+          UutZTN998cAL6MA4Iad2L8lNN31tGdliU41xQob2voJb0G/V23KrhFFCKDJ0pqpSCn0blRgl5FMN
+          KWQnrJAKUGT0tK7BbShKaChGFcYIORJfhVccVdjXMUZIrwfRUeBAVF29ZYyQnlgWXtETVffbxg6d
+          NCtWiM8wRshSrq6LwZRAw/OqMEaIOxNI5VmyQrYzsxaFV0yLWUVVGCNkYjEOr7BCykB5fHrZ3UUJ
+          BKVKlYshjGpl/brQBre5s9AOlRgl5M5Ch6uVO/2WFbIDl+fegluMPd+t/AQwTgjlc1qyo5uH6biM
+          SNUY2VO//t8erRU8RcXXc3uhA2OHTob/2YeZ1QhU8zgTxYW/9yvtnRdjrBAqsC+evK00fVEFTjJ0
+          Nhy8G29wCUpfj0Wk0FLSeufbScD1+S48XNLfrNaylLSDZXA0/CeOhJ+it+WZ+PvNbN5cvhNpHsNE
+          9j08Wj+EOa59vewmp3an8VHnsuMpV2ogTKRjuPOqQ1uKKkWpkL6WpxiKPZCvTpnOHcJY5ph8dQs5
+          /x5dQ1/bqpzt6wi9LoJ0nuHZWljUPVFMrbTimQcDlkqEHAy9wsX4zzWJKGVi/X18u3LS1YjxIw0L
+          ORX5A+di92SaUsHY6jG5BZWGYnKo9YHcVELfR3KvZwYRROquqS6JFKVaRoEz0d/xffsPyqKumahZ
+          CBXS1fZbMlXppKdlHlfbbgVOSk1CqPK+Igqpkcq7FoIoxbGQgoxeUUhuEjQpjoT0hualDJLiBUGS
+          sqMQqiuutHsno0BQpFQVQq0dak35pRCCIKWiEGrSnovdhd8wXUpZISRCVx9DBSZL2SKk0MegVOV3
+          TJWyKcTtPoYKTJQihXjVx1CBaVJCXvcxVGCSFLY4c5mbcnbN5Pbjy+WzckayWQmZlH9NiBTjVp00
+          uxQjlwE1sxRj12U1qxSjL/psRinGX4XbbFICcVl0M0kJzHXqzSIlUDcOaAYpgbuTg9+lBPLWGn6W
+          Eth7nfhVSqBvPuNDKanA3w3IT1Lo2eyBF0L4RQrn+SdWyAZ+kMIQmrJCivCBlKQVUoKHUlL0cEkr
+          pAzeSGHywfdWSAXclsI4v0mvVkgVXJSS3P4sXEtZ3JDCOEYL+1aIA/RKYTeKH3JvhThEjxQ2m+Mt
+          o8VHrJAaUC6F43wywWaLD1khNaJKChf1xr1EeLz0uBVSB41KIRn3E5GRcu9ZIXVSr5RqMggrpAFq
+          lJISzdsT1WQQVkiDOJEi5jmSOR5OFDdvK2GFKKCSFBJBUXG3P3KitDVVCcb/+sr4p0W7BV2fcmH5
+          bGqRx8dpbMpJRJRihTRGShRhCoxNIZ9/IvKNaMbmptjhkRTq5H8B8qTf9rFuswAAAABJRU5ErkJg
+          gg==
+    - path: /skills/imagegen/references/cli.md
+      text: |
+          # CLI reference (`scripts/image_gen.py`)
+
+          This file contains the “command catalog” for the bundled image generation CLI. Keep `SKILL.md` as overview-first; put verbose CLI details here.
+
+          ## What this CLI does
+          - `generate`: generate new images from a prompt
+          - `edit`: edit an existing image (optionally with a mask) — inpainting / background replacement / “change only X”
+          - `generate-batch`: run many jobs from a JSONL file (one job per line)
+
+          Real API calls require **network access** + `OPENAI_API_KEY`. `--dry-run` does not.
+
+          ## Quick start (works from any repo)
+          Set a stable path to the skill CLI (default `CODEX_HOME` is `~/.codex`):
+
+          ```
+          export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+          export IMAGE_GEN="$CODEX_HOME/skills/imagegen/scripts/image_gen.py"
+          ```
+
+          Dry-run (no API call; no network required; does not require the `openai` package):
+
+          ```
+          python "$IMAGE_GEN" generate --prompt "Test" --dry-run
+          ```
+
+          Generate (requires `OPENAI_API_KEY` + network):
+
+          ```
+          uv run --with openai python "$IMAGE_GEN" generate --prompt "A cozy alpine cabin at dawn" --size 1024x1024
+          ```
+
+          No `uv` installed? Use your active Python env:
+
+          ```
+          python "$IMAGE_GEN" generate --prompt "A cozy alpine cabin at dawn" --size 1024x1024
+          ```
+
+          ## Guardrails (important)
+          - Use `python "$IMAGE_GEN" ...` (or equivalent full path) for generations/edits/batch work.
+          - Do **not** create one-off runners (e.g. `gen_images.py`) unless the user explicitly asks for a custom wrapper.
+          - **Never modify** `scripts/image_gen.py`. If something is missing, ask the user before doing anything else.
+
+          ## Defaults (unless overridden by flags)
+          - Model: `gpt-image-1.5`
+          - Size: `1024x1024`
+          - Quality: `auto`
+          - Output format: `png`
+          - Background: unspecified (API default). If you set `--background transparent`, also set `--output-format png` or `webp`.
+
+          ## Quality + input fidelity
+          - `--quality` works for `generate`, `edit`, and `generate-batch`: `low|medium|high|auto`.
+          - `--input-fidelity` is **edit-only**: `low|high` (use `high` for strict edits like identity or layout lock).
+
+          Example:
+          ```
+          python "$IMAGE_GEN" edit --image input.png --prompt "Change only the background" --quality high --input-fidelity high
+          ```
+
+          ## Masks (edits)
+          - Use a **PNG** mask; an alpha channel is strongly recommended.
+          - The mask should match the input image dimensions.
+          - In the edit prompt, repeat invariants (e.g., “change only the background; keep the subject unchanged”) to reduce drift.
+
+          ## Optional deps
+          Prefer `uv run --with ...` for an out-of-the-box run without changing the current project env; otherwise install into your active env:
+
+          ```
+          uv pip install openai
+          ```
+
+          ## Common recipes
+
+          Generate + also write a downscaled copy for fast web loading:
+
+          ```
+          uv run --with openai --with pillow python "$IMAGE_GEN" generate \
+            --prompt "A cozy alpine cabin at dawn" \
+            --size 1024x1024 \
+            --downscale-max-dim 1024
+          ```
+
+          Notes:
+          - Downscaling writes an extra file next to the original (default suffix `-web`, e.g. `output-web.png`).
+          - Downscaling requires Pillow (use `uv run --with pillow ...` or install it into your env).
+
+          Generate with augmentation fields:
+
+          ```
+          python "$IMAGE_GEN" generate \
+            --prompt "A minimal hero image of a ceramic coffee mug" \
+            --use-case "landing page hero" \
+            --style "clean product photography" \
+            --composition "centered product, generous negative space" \
+            --constraints "no logos, no text"
+          ```
+
+          Generate multiple prompts concurrently (async batch):
+
+          ```
+          mkdir -p tmp/imagegen
+          cat > tmp/imagegen/prompts.jsonl << 'EOF'
+          {"prompt":"Cavernous hangar interior with a compact shuttle parked center-left, open bay door","use_case":"game concept art environment","composition":"wide-angle, low-angle, cinematic framing","lighting":"volumetric light rays through drifting fog","constraints":"no logos or trademarks; no watermark","size":"1536x1024"}
+          {"prompt":"Gray wolf in profile in a snowy forest, crisp fur texture","use_case":"wildlife photography print","composition":"100mm, eye-level, shallow depth of field","constraints":"no logos or trademarks; no watermark","size":"1024x1024"}
+          EOF
+
+          python "$IMAGE_GEN" generate-batch --input tmp/imagegen/prompts.jsonl --out-dir out --concurrency 5
+
+          # Cleanup (recommended)
+          rm -f tmp/imagegen/prompts.jsonl
+          ```
+
+          Notes:
+          - Use `--concurrency` to control parallelism (default `5`). Higher concurrency can hit rate limits; the CLI retries on transient errors.
+          - Per-job overrides are supported in JSONL (e.g., `size`, `quality`, `background`, `output_format`, `n`, and prompt-augmentation fields).
+          - `--n` generates multiple variants for a single prompt; `generate-batch` is for many different prompts.
+          - Treat the JSONL file as temporary: write it under `tmp/` and delete it after the run (don’t commit it).
+
+          Edit:
+
+          ```
+          python "$IMAGE_GEN" edit --image input.png --mask mask.png --prompt "Replace the background with a warm sunset"
+          ```
+
+          ## CLI notes
+          - Supported sizes: `1024x1024`, `1536x1024`, `1024x1536`, or `auto`.
+          - Transparent backgrounds require `output_format` to be `png` or `webp`.
+          - Default output is `output.png`; multiple images become `output-1.png`, `output-2.png`, etc.
+          - Use `--no-augment` to skip prompt augmentation.
+
+          ## See also
+          - API parameter quick reference: `references/image-api.md`
+          - Prompt examples: `references/sample-prompts.md`
+    - path: /skills/imagegen/references/codex-network.md
+      text: |
+          # Codex network approvals / sandbox notes
+
+          This guidance is intentionally isolated from `SKILL.md` because it can vary by environment and may become stale. Prefer the defaults in your environment when in doubt.
+
+          ## Why am I asked to approve every image generation call?
+          Image generation uses the OpenAI Image API, so the CLI needs outbound network access. In many Codex setups, network access is disabled by default (especially under stricter sandbox modes), and/or the approval policy may require confirmation before networked commands run.
+
+          ## How do I reduce repeated approval prompts (network)?
+          If you trust the repo and want fewer prompts, enable network access for the relevant sandbox mode and relax the approval policy.
+
+          Example `~/.codex/config.toml` pattern:
+
+          ```
+          approval_policy = "never"
+          sandbox_mode = "workspace-write"
+
+          [sandbox_workspace_write]
+          network_access = true
+          ```
+
+          Or for a single session:
+
+          ```
+          codex --sandbox workspace-write --ask-for-approval never
+          ```
+
+          ## Safety note
+          Use caution: enabling network and disabling approvals reduces friction but increases risk if you run untrusted code or work in an untrusted repository.
+    - path: /skills/imagegen/references/image-api.md
+      text: |
+          # Image API quick reference
+
+          ## Endpoints
+          - Generate: `POST /v1/images/generations` (`client.images.generate(...)`)
+          - Edit: `POST /v1/images/edits` (`client.images.edit(...)`)
+
+          ## Models
+          - Default: `gpt-image-1.5`
+          - Alternatives: `gpt-image-1-mini` (for faster, lower-cost generation)
+
+          ## Core parameters (generate + edit)
+          - `prompt`: text prompt
+          - `model`: image model
+          - `n`: number of images (1-10)
+          - `size`: `1024x1024`, `1536x1024`, `1024x1536`, or `auto`
+          - `quality`: `low`, `medium`, `high`, or `auto`
+          - `background`: `transparent`, `opaque`, or `auto` (transparent requires `png`/`webp`)
+          - `output_format`: `png` (default), `jpeg`, `webp`
+          - `output_compression`: 0-100 (jpeg/webp only)
+          - `moderation`: `auto` (default) or `low`
+
+          ## Edit-specific parameters
+          - `image`: one or more input images (first image is primary)
+          - `mask`: optional mask image (same size, alpha channel required)
+          - `input_fidelity`: `low` (default) or `high` (support varies by model) - set it to `high` if the user needs a very specific edit and you can't achieve it with the default `low` fidelity.
+
+          ## Output
+          - `data[]` list with `b64_json` per image
+
+          ## Limits & notes
+          - Input images and masks must be under 50MB.
+          - Use edits endpoint when the user requests changes to an existing image.
+          - Masking is prompt-guided; exact shapes are not guaranteed.
+          - Large sizes and high quality increase latency and cost.
+          - For fast iteration or latency-sensitive runs, start with `quality=low`; raise to `high` for text-heavy or detail-critical outputs.
+          - Use `input_fidelity=high` for strict edits (identity preservation, layout lock, or precise compositing).
+    - path: /skills/imagegen/references/prompting.md
+      text: |
+          # Prompting best practices (gpt-image-1.5)
+
+          ## Contents
+          - [Structure](#structure)
+          - [Specificity](#specificity)
+          - [Avoiding “tacky” outputs](#avoiding-tacky-outputs)
+          - [Composition & layout](#composition--layout)
+          - [Constraints & invariants](#constraints--invariants)
+          - [Text in images](#text-in-images)
+          - [Multi-image inputs](#multi-image-inputs)
+          - [Iterate deliberately](#iterate-deliberately)
+          - [Quality vs latency](#quality-vs-latency)
+          - [Use-case tips](#use-case-tips)
+          - [Where to find copy/paste recipes](#where-to-find-copypaste-recipes)
+
+          ## Structure
+          - Use a consistent order: scene/background -> subject -> key details -> constraints -> output intent.
+          - Include intended use (ad, UI mock, infographic) to set the mode and polish level.
+          - For complex requests, use short labeled lines instead of a long paragraph.
+
+          ## Specificity
+          - Name materials, textures, and visual medium (photo, watercolor, 3D render).
+          - For photorealism, include camera/composition language (lens, framing, lighting).
+          - Add targeted quality cues only when needed (film grain, textured brushstrokes, macro detail); avoid generic "8K" style prompts.
+
+          ## Avoiding “tacky” outputs
+          - Don’t use vibe-only buzzwords (“epic”, “cinematic”, “trending”, “8k”, “award-winning”, “unreal engine”, “artstation”) unless the user explicitly wants that look.
+          - Specify restraint: “minimal”, “editorial”, “premium”, “subtle”, “natural color grading”, “soft contrast”, “no harsh bloom”, “no oversharpening”.
+          - For 3D/illustration, name the finish you want: “matte”, “paper grain”, “ink texture”, “flat color with soft shadow”; avoid “glossy plastic” unless requested.
+          - Add a short negative line when needed (especially for marketing art): “Avoid: stock-photo vibe; cheesy lens flare; oversaturated neon; excessive bokeh; fake-looking smiles; clutter”.
+
+          ## Composition & layout
+          - Specify framing and viewpoint (close-up, wide, top-down) and placement ("logo top-right").
+          - Call out negative space if you need room for UI or overlays.
+
+          ## Constraints & invariants
+          - State what must not change ("keep background unchanged").
+          - For edits, say "change only X; keep Y unchanged" and repeat invariants on every iteration to reduce drift.
+
+          ## Text in images
+          - Put literal text in quotes or ALL CAPS and specify typography (font style, size, color, placement).
+          - Spell uncommon words letter-by-letter if accuracy matters.
+          - For in-image copy, require verbatim rendering and no extra characters.
+
+          ## Multi-image inputs
+          - Reference inputs by index and role ("Image 1: product, Image 2: style").
+          - Describe how to combine them ("apply Image 2's style to Image 1").
+          - For compositing, specify what moves where and what must remain unchanged.
+
+          ## Iterate deliberately
+          - Start with a clean base prompt, then make small single-change edits.
+          - Re-specify critical constraints when you iterate.
+
+          ## Quality vs latency
+          - For latency-sensitive runs, start at `quality=low` and only raise it if needed.
+          - Use `quality=high` for text-heavy or detail-critical images.
+          - For strict edits (identity preservation, layout lock), consider `input_fidelity=high`.
+
+          ## Use-case tips
+          Generate:
+          - photorealistic-natural: Prompt as if a real photo is captured in the moment; use photography language (lens, lighting, framing); call for real texture (pores, wrinkles, fabric wear, imperfections); avoid studio polish or staging; use `quality=high` when detail matters.
+          - product-mockup: Describe the product/packaging and materials; ensure clean silhouette and label clarity; if in-image text is needed, require verbatim rendering and specify typography.
+          - ui-mockup: Describe a real product; focus on layout, hierarchy, and common UI elements; avoid concept-art language so it looks shippable.
+          - infographic-diagram: Define the audience and layout flow; label parts explicitly; require verbatim text; use `quality=high`.
+          - logo-brand: Keep it simple and scalable; ask for a strong silhouette and balanced negative space; avoid gradients and fine detail.
+          - illustration-story: Define panels or scene beats; keep each action concrete; for continuity, restate character traits and outfit each time.
+          - stylized-concept: Specify style cues, material finish, and rendering approach (3D, painterly, clay); add a short "Avoid" line to prevent tacky effects.
+          - historical-scene: State the location/date and required period accuracy; constrain clothing, props, and environment to match the era.
+
+          Edit:
+          - text-localization: Change only the text; preserve layout, typography, spacing, and hierarchy; no extra words or reflow unless needed.
+          - identity-preserve: Lock identity (face, body, pose, hair, expression); change only the specified elements; match lighting and shadows; use `input_fidelity=high` if likeness drifts.
+          - precise-object-edit: Specify exactly what to remove/replace; preserve surrounding texture and lighting; keep everything else unchanged.
+          - lighting-weather: Change only environmental conditions (light, shadows, atmosphere, precipitation); keep geometry, framing, and subject identity.
+          - background-extraction: Request transparent background; crisp silhouette; no halos; preserve label text exactly; optionally add a subtle contact shadow.
+          - style-transfer: Specify style cues to preserve (palette, texture, brushwork) and what must change; add "no extra elements" to prevent drift.
+          - compositing: Reference inputs by index; specify what moves where; match lighting, perspective, and scale; keep background and framing unchanged.
+          - sketch-to-render: Preserve layout, proportions, and perspective; add plausible materials, lighting, and environment; "do not add new elements or text."
+
+          ## Where to find copy/paste recipes
+          For copy/paste prompt specs (examples only), see `references/sample-prompts.md`. This file focuses on principles, structure, and iteration patterns.
+    - path: /skills/imagegen/references/sample-prompts.md
+      text: |
+          # Sample prompts (copy/paste)
+
+          Use these as starting points (recipes only). Keep user-provided requirements; do not invent new creative elements.
+
+          For prompting principles (structure, invariants, iteration), see `references/prompting.md`.
+
+          ## Generate
+
+          ### photorealistic-natural
+          ```
+          Use case: photorealistic-natural
+          Primary request: candid photo of an elderly sailor on a small fishing boat adjusting a net
+          Scene/background: coastal water with soft haze
+          Subject: weathered skin with wrinkles and sun texture; a calm dog on deck nearby
+          Style/medium: photorealistic candid photo
+          Composition/framing: medium close-up, eye-level, 50mm lens
+          Lighting/mood: soft coastal daylight, shallow depth of field, subtle film grain
+          Materials/textures: real skin texture, worn fabric, salt-worn wood
+          Constraints: natural color balance; no heavy retouching; no glamorization; no watermark
+          Avoid: studio polish; staged look
+          Quality: high
+          ```
+
+          ### product-mockup
+          ```
+          Use case: product-mockup
+          Primary request: premium product photo of a matte black shampoo bottle with a minimal label
+          Scene/background: clean studio gradient from light gray to white
+          Subject: single bottle centered with subtle reflection
+          Style/medium: premium product photography
+          Composition/framing: centered, slight three-quarter angle, generous padding
+          Lighting/mood: softbox lighting, clean highlights, controlled shadows
+          Materials/textures: matte plastic, crisp label printing
+          Constraints: no logos or trademarks; no watermark
+          Quality: high
+          ```
+
+          ### ui-mockup
+          ```
+          Use case: ui-mockup
+          Primary request: mobile app UI for a local farmers market with vendors and specials
+          Scene/background: clean white background with subtle natural accents
+          Subject: header, vendor list with small photos, "Today's specials" section, location and hours
+          Style/medium: realistic product UI, not concept art
+          Composition/framing: iPhone frame, balanced spacing and hierarchy
+          Constraints: practical layout, clear typography, no logos or trademarks, no watermark
+          ```
+
+          ### infographic-diagram
+          ```
+          Use case: infographic-diagram
+          Primary request: detailed infographic of an automatic coffee machine flow
+          Scene/background: clean, light neutral background
+          Subject: bean hopper -> grinder -> brew group -> boiler -> water tank -> drip tray
+          Style/medium: clean vector-like infographic with clear callouts and arrows
+          Composition/framing: vertical poster layout, top-to-bottom flow
+          Text (verbatim): "Bean Hopper", "Grinder", "Brew Group", "Boiler", "Water Tank", "Drip Tray"
+          Constraints: clear labels, strong contrast, no logos or trademarks, no watermark
+          Quality: high
+          ```
+
+          ### logo-brand
+          ```
+          Use case: logo-brand
+          Primary request: original logo for "Field & Flour", a local bakery
+          Style/medium: vector logo mark; flat colors; minimal
+          Composition/framing: single centered logo on plain background with padding
+          Constraints: strong silhouette, balanced negative space; original design only; no gradients unless essential; no trademarks; no watermark
+          ```
+
+          ### illustration-story
+          ```
+          Use case: illustration-story
+          Primary request: 4-panel comic about a pet left alone at home
+          Scene/background: cozy living room across panels
+          Subject: pet reacting to the owner leaving, then relaxing, then returning to a composed pose
+          Style/medium: comic illustration with clear panels
+          Composition/framing: 4 equal-sized vertical panels, readable actions per panel
+          Constraints: no text; no logos or trademarks; no watermark
+          ```
+
+          ### stylized-concept
+          ```
+          Use case: stylized-concept
+          Primary request: cavernous hangar interior with tall support beams and drifting fog
+          Scene/background: industrial hangar interior, deep scale, light haze
+          Subject: compact shuttle, parked center-left, bay door open
+          Style/medium: cinematic concept art, industrial realism
+          Composition/framing: wide-angle, low-angle, cinematic framing
+          Lighting/mood: volumetric light rays cutting through fog
+          Constraints: no logos or trademarks; no watermark
+          ```
+
+          ### historical-scene
+          ```
+          Use case: historical-scene
+          Primary request: outdoor crowd scene in Bethel, New York on August 16, 1969
+          Scene/background: open field, temporary stages, period-accurate tents and signage
+          Subject: crowd in period-accurate clothing, authentic staging and environment
+          Style/medium: photorealistic photo
+          Composition/framing: wide shot, eye-level
+          Constraints: period-accurate details; no modern objects; no logos or trademarks; no watermark
+          ```
+
+          ## Asset type templates (taxonomy-aligned)
+
+          ### Website assets template
+          ```
+          Use case: <photorealistic-natural|stylized-concept|product-mockup|infographic-diagram|ui-mockup>
+          Asset type: <hero image / section illustration / blog header>
+          Primary request: <short description>
+          Scene/background: <environment or abstract background>
+          Subject: <main subject>
+          Style/medium: <photo/illustration/3D>
+          Composition/framing: <wide/centered; specify negative space side>
+          Lighting/mood: <soft/bright/neutral>
+          Color palette: <brand colors or neutral>
+          Constraints: <no text; no logos; no watermark; leave space for UI>
+          ```
+
+          ### Website assets example: minimal hero background
+          ```
+          Use case: stylized-concept
+          Asset type: landing page hero background
+          Primary request: minimal abstract background with a soft gradient and subtle texture (calm, modern)
+          Style/medium: matte illustration / soft-rendered abstract background (not glossy 3D)
+          Composition/framing: wide composition; large negative space on the right for headline
+          Lighting/mood: gentle studio glow
+          Color palette: cool neutrals with a restrained blue accent
+          Constraints: no text; no logos; no watermark
+          ```
+
+          ### Website assets example: feature section illustration
+          ```
+          Use case: stylized-concept
+          Asset type: feature section illustration
+          Primary request: simple abstract shapes suggesting connection and flow (tasteful, minimal)
+          Scene/background: subtle light-gray backdrop with faint texture
+          Style/medium: flat illustration; soft shadows; restrained contrast
+          Composition/framing: centered cluster; open margins for UI
+          Color palette: muted teal and slate, low contrast accents
+          Constraints: no text; no logos; no watermark
+          ```
+
+          ### Website assets example: blog header image
+          ```
+          Use case: photorealistic-natural
+          Asset type: blog header image
+          Primary request: overhead desk scene with notebook, pen, and coffee cup
+          Scene/background: warm wooden tabletop
+          Style/medium: photorealistic photo
+          Composition/framing: wide crop; subject placed left; right side left empty
+          Lighting/mood: soft morning light
+          Constraints: no text; no logos; no watermark
+          ```
+
+          ### Game assets template
+          ```
+          Use case: stylized-concept
+          Asset type: <game environment concept art / game character concept / game UI icon / tileable game texture>
+          Primary request: <biome/scene/character/icon/material>
+          Scene/background: <location + set dressing> (if applicable)
+          Subject: <main focal element(s)>
+          Style/medium: <realistic/stylized>; <concept art / character render / UI icon / texture>
+          Composition/framing: <wide/establishing/top-down>; <camera angle>; <focal point placement>
+          Lighting/mood: <time of day>; <mood>; <volumetric/fog/etc>
+          Constraints: no logos or trademarks; no watermark
+          ```
+
+          ### Game assets example: environment concept art
+          ```
+          Use case: stylized-concept
+          Asset type: game environment concept art
+          Primary request: cavernous hangar interior with tall support beams and drifting fog
+          Scene/background: industrial hangar interior, deep scale, light haze
+          Subject: compact shuttle, parked center-left, bay door open
+          Foreground: painted floor markings; cables; tool carts along edges
+          Style/medium: cinematic concept art, industrial realism
+          Composition/framing: wide-angle, low-angle, cinematic framing
+          Lighting/mood: volumetric light rays cutting through fog
+          Constraints: no logos or trademarks; no watermark
+          ```
+
+          ### Game assets example: character concept
+          ```
+          Use case: stylized-concept
+          Asset type: game character concept
+          Primary request: desert scout character with layered travel gear
+          Silhouette: long coat with hood, wide boots, satchel
+          Outfit/gear: dusty canvas, leather straps, brass buckles
+          Face/hair: windworn face, short cropped hair
+          Style/medium: character render; stylized realism
+          Pose: neutral hero pose
+          Background: simple neutral backdrop
+          Constraints: no logos or trademarks; no watermark
+          ```
+
+          ### Game assets example: UI icon
+          ```
+          Use case: stylized-concept
+          Asset type: game UI icon
+          Primary request: round shield icon with a subtle rune pattern
+          Style/medium: painted game UI icon
+          Composition/framing: centered icon; generous padding; clear silhouette
+          Background: transparent
+          Lighting/mood: subtle highlights; crisp edges
+          Constraints: no text; no logos or trademarks; no watermark
+          ```
+
+          ### Game assets example: tileable texture
+          ```
+          Use case: stylized-concept
+          Asset type: tileable game texture
+          Primary request: worn sandstone blocks
+          Style/medium: seamless tileable texture; PBR-ish look
+          Scale: medium tiling
+          Lighting: neutral / flat lighting
+          Constraints: seamless edges; no obvious focal elements; no text; no logos or trademarks; no watermark
+          ```
+
+          ### Wireframe template
+          ```
+          Use case: ui-mockup
+          Asset type: website wireframe
+          Primary request: <page or flow to sketch>
+          Fidelity: low-fi grayscale wireframe; hand-drawn feel; simple boxes
+          Layout: <sections in order; grid/columns>
+          Annotations: <labels for key blocks>
+          Resolution/orientation: <landscape or portrait to match expected device>
+          Constraints: no color; no logos; no real photos; no watermark
+          ```
+
+          ### Wireframe example: homepage (desktop)
+          ```
+          Use case: ui-mockup
+          Asset type: website wireframe
+          Primary request: SaaS homepage layout with clear hierarchy
+          Fidelity: low-fi grayscale wireframe; hand-drawn feel; simple boxes
+          Layout: top nav; hero with headline and CTA; three feature cards; testimonial strip; pricing preview; footer
+          Annotations: label each block ("Nav", "Hero", "CTA", "Feature", "Testimonial", "Pricing", "Footer")
+          Resolution/orientation: landscape (wide) for desktop
+          Constraints: no color; no logos; no real photos; no watermark
+          ```
+
+          ### Wireframe example: pricing page
+          ```
+          Use case: ui-mockup
+          Asset type: website wireframe
+          Primary request: pricing page layout with comparison table
+          Fidelity: low-fi grayscale wireframe; sketchy lines; simple boxes
+          Layout: header; plan toggle; 3 pricing cards; comparison table; FAQ accordion; footer
+          Annotations: label key areas ("Toggle", "Plan Card", "Table", "FAQ")
+          Resolution/orientation: landscape for desktop or portrait for tablet
+          Constraints: no color; no logos; no real photos; no watermark
+          ```
+
+          ### Wireframe example: mobile onboarding flow
+          ```
+          Use case: ui-mockup
+          Asset type: website wireframe
+          Primary request: three-screen mobile onboarding flow
+          Fidelity: low-fi grayscale wireframe; hand-drawn feel; simple boxes
+          Layout: screen 1 (logo placeholder, headline, illustration placeholder, CTA); screen 2 (feature bullets); screen 3 (form fields + CTA)
+          Annotations: label each block and screen number
+          Resolution/orientation: portrait (tall) for mobile
+          Constraints: no color; no logos; no real photos; no watermark
+          ```
+
+          ### Logo template
+          ```
+          Use case: logo-brand
+          Asset type: logo concept
+          Primary request: <brand idea or symbol concept>
+          Style/medium: vector logo mark; flat colors; minimal
+          Composition/framing: centered mark; clear silhouette; generous margin
+          Color palette: <1-2 colors; high contrast>
+          Text (verbatim): "<exact name>" (only if needed)
+          Constraints: no gradients; no mockups; no 3D; no watermark
+          ```
+
+          ### Logo example: abstract symbol mark
+          ```
+          Use case: logo-brand
+          Asset type: logo concept
+          Primary request: geometric leaf symbol suggesting sustainability and growth
+          Style/medium: vector logo mark; flat colors; minimal
+          Composition/framing: centered mark; clear silhouette
+          Color palette: deep green and off-white
+          Constraints: no text; no gradients; no mockups; no 3D; no watermark
+          ```
+
+          ### Logo example: monogram mark
+          ```
+          Use case: logo-brand
+          Asset type: logo concept
+          Primary request: interlocking monogram of the letters "AV"
+          Style/medium: vector logo mark; flat colors; minimal
+          Composition/framing: centered mark; balanced spacing
+          Color palette: black on white
+          Constraints: no gradients; no mockups; no 3D; no watermark
+          ```
+
+          ### Logo example: wordmark
+          ```
+          Use case: logo-brand
+          Asset type: logo concept
+          Primary request: clean wordmark for a modern studio
+          Style/medium: vector wordmark; flat colors; minimal
+          Text (verbatim): "Studio North"
+          Composition/framing: centered text; even letter spacing
+          Color palette: charcoal on white
+          Constraints: no gradients; no mockups; no 3D; no watermark
+          ```
+
+          ## Edit
+
+          ### text-localization
+          ```
+          Use case: text-localization
+          Input images: Image 1: original infographic
+          Primary request: translate all in-image text to Spanish
+          Constraints: change only the text; preserve layout, typography, spacing, and hierarchy; no extra words; do not alter logos or imagery
+          ```
+
+          ### identity-preserve
+          ```
+          Use case: identity-preserve
+          Input images: Image 1: person photo; Image 2..N: clothing items
+          Primary request: replace only the clothing with the provided garments
+          Constraints: preserve face, body shape, pose, hair, expression, and identity; match lighting and shadows; keep background unchanged; no accessories or text
+          Input fidelity (edits): high
+          ```
+
+          ### precise-object-edit
+          ```
+          Use case: precise-object-edit
+          Input images: Image 1: room photo
+          Primary request: replace ONLY the white chairs with wooden chairs
+          Constraints: preserve camera angle, room lighting, floor shadows, and surrounding objects; keep all other aspects unchanged
+          ```
+
+          ### lighting-weather
+          ```
+          Use case: lighting-weather
+          Input images: Image 1: original photo
+          Primary request: make it look like a winter evening with gentle snowfall
+          Constraints: preserve subject identity, geometry, camera angle, and composition; change only lighting, atmosphere, and weather
+          Quality: high
+          ```
+
+          ### background-extraction
+          ```
+          Use case: background-extraction
+          Input images: Image 1: product photo
+          Primary request: extract the product on a transparent background
+          Output: transparent background (RGBA PNG)
+          Constraints: crisp silhouette, no halos/fringing; preserve label text exactly; no restyling
+          ```
+
+          ### style-transfer
+          ```
+          Use case: style-transfer
+          Input images: Image 1: style reference
+          Primary request: apply Image 1's visual style to a man riding a motorcycle on a white background
+          Constraints: preserve palette, texture, and brushwork; no extra elements; plain white background
+          ```
+
+          ### compositing
+          ```
+          Use case: compositing
+          Input images: Image 1: base scene; Image 2: subject to insert
+          Primary request: place the subject from Image 2 next to the person in Image 1
+          Constraints: match lighting, perspective, and scale; keep background and framing unchanged; no extra elements
+          Input fidelity (edits): high
+          ```
+
+          ### sketch-to-render
+          ```
+          Use case: sketch-to-render
+          Input images: Image 1: drawing
+          Primary request: turn the drawing into a photorealistic image
+          Constraints: preserve layout, proportions, and perspective; choose realistic materials and lighting; do not add new elements or text
+          Quality: high
+          ```
+    - path: /skills/imagegen/scripts/image_gen.py
+      text: |
+          #!/usr/bin/env python3
+          """Generate or edit images with the OpenAI Image API.
+
+          Defaults to gpt-image-1.5 and a structured prompt augmentation workflow.
+          """
+
+          from __future__ import annotations
+
+          import argparse
+          import asyncio
+          import base64
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import sys
+          import time
+          from typing import Any, Dict, Iterable, List, Optional, Tuple
+
+          from io import BytesIO
+
+          DEFAULT_MODEL = "gpt-image-1.5"
+          DEFAULT_SIZE = "1024x1024"
+          DEFAULT_QUALITY = "auto"
+          DEFAULT_OUTPUT_FORMAT = "png"
+          DEFAULT_CONCURRENCY = 5
+          DEFAULT_DOWNSCALE_SUFFIX = "-web"
+
+          ALLOWED_SIZES = {"1024x1024", "1536x1024", "1024x1536", "auto"}
+          ALLOWED_QUALITIES = {"low", "medium", "high", "auto"}
+          ALLOWED_BACKGROUNDS = {"transparent", "opaque", "auto", None}
+
+          MAX_IMAGE_BYTES = 50 * 1024 * 1024
+          MAX_BATCH_JOBS = 500
+
+
+          def _die(message: str, code: int = 1) -> None:
+              print(f"Error: {message}", file=sys.stderr)
+              raise SystemExit(code)
+
+
+          def _warn(message: str) -> None:
+              print(f"Warning: {message}", file=sys.stderr)
+
+
+          def _ensure_api_key(dry_run: bool) -> None:
+              if os.getenv("OPENAI_API_KEY"):
+                  print("OPENAI_API_KEY is set.", file=sys.stderr)
+                  return
+              if dry_run:
+                  _warn("OPENAI_API_KEY is not set; dry-run only.")
+                  return
+              _die("OPENAI_API_KEY is not set. Export it before running.")
+
+
+          def _read_prompt(prompt: Optional[str], prompt_file: Optional[str]) -> str:
+              if prompt and prompt_file:
+                  _die("Use --prompt or --prompt-file, not both.")
+              if prompt_file:
+                  path = Path(prompt_file)
+                  if not path.exists():
+                      _die(f"Prompt file not found: {path}")
+                  return path.read_text(encoding="utf-8").strip()
+              if prompt:
+                  return prompt.strip()
+              _die("Missing prompt. Use --prompt or --prompt-file.")
+              return ""  # unreachable
+
+
+          def _check_image_paths(paths: Iterable[str]) -> List[Path]:
+              resolved: List[Path] = []
+              for raw in paths:
+                  path = Path(raw)
+                  if not path.exists():
+                      _die(f"Image file not found: {path}")
+                  if path.stat().st_size > MAX_IMAGE_BYTES:
+                      _warn(f"Image exceeds 50MB limit: {path}")
+                  resolved.append(path)
+              return resolved
+
+
+          def _normalize_output_format(fmt: Optional[str]) -> str:
+              if not fmt:
+                  return DEFAULT_OUTPUT_FORMAT
+              fmt = fmt.lower()
+              if fmt not in {"png", "jpeg", "jpg", "webp"}:
+                  _die("output-format must be png, jpeg, jpg, or webp.")
+              return "jpeg" if fmt == "jpg" else fmt
+
+
+          def _validate_size(size: str) -> None:
+              if size not in ALLOWED_SIZES:
+                  _die(
+                      "size must be one of 1024x1024, 1536x1024, 1024x1536, or auto for GPT image models."
+                  )
+
+
+          def _validate_quality(quality: str) -> None:
+              if quality not in ALLOWED_QUALITIES:
+                  _die("quality must be one of low, medium, high, or auto.")
+
+
+          def _validate_background(background: Optional[str]) -> None:
+              if background not in ALLOWED_BACKGROUNDS:
+                  _die("background must be one of transparent, opaque, or auto.")
+
+
+          def _validate_transparency(background: Optional[str], output_format: str) -> None:
+              if background == "transparent" and output_format not in {"png", "webp"}:
+                  _die("transparent background requires output-format png or webp.")
+
+
+          def _validate_generate_payload(payload: Dict[str, Any]) -> None:
+              n = int(payload.get("n", 1))
+              if n < 1 or n > 10:
+                  _die("n must be between 1 and 10")
+              size = str(payload.get("size", DEFAULT_SIZE))
+              quality = str(payload.get("quality", DEFAULT_QUALITY))
+              background = payload.get("background")
+              _validate_size(size)
+              _validate_quality(quality)
+              _validate_background(background)
+              oc = payload.get("output_compression")
+              if oc is not None and not (0 <= int(oc) <= 100):
+                  _die("output_compression must be between 0 and 100")
+
+
+          def _build_output_paths(
+              out: str,
+              output_format: str,
+              count: int,
+              out_dir: Optional[str],
+          ) -> List[Path]:
+              ext = "." + output_format
+
+              if out_dir:
+                  out_base = Path(out_dir)
+                  out_base.mkdir(parents=True, exist_ok=True)
+                  return [out_base / f"image_{i}{ext}" for i in range(1, count + 1)]
+
+              out_path = Path(out)
+              if out_path.exists() and out_path.is_dir():
+                  out_path.mkdir(parents=True, exist_ok=True)
+                  return [out_path / f"image_{i}{ext}" for i in range(1, count + 1)]
+
+              if out_path.suffix == "":
+                  out_path = out_path.with_suffix(ext)
+              elif output_format and out_path.suffix.lstrip(".").lower() != output_format:
+                  _warn(
+                      f"Output extension {out_path.suffix} does not match output-format {output_format}."
+                  )
+
+              if count == 1:
+                  return [out_path]
+
+              return [
+                  out_path.with_name(f"{out_path.stem}-{i}{out_path.suffix}")
+                  for i in range(1, count + 1)
+              ]
+
+
+          def _augment_prompt(args: argparse.Namespace, prompt: str) -> str:
+              fields = _fields_from_args(args)
+              return _augment_prompt_fields(args.augment, prompt, fields)
+
+
+          def _augment_prompt_fields(augment: bool, prompt: str, fields: Dict[str, Optional[str]]) -> str:
+              if not augment:
+                  return prompt
+
+              sections: List[str] = []
+              if fields.get("use_case"):
+                  sections.append(f"Use case: {fields['use_case']}")
+              sections.append(f"Primary request: {prompt}")
+              if fields.get("scene"):
+                  sections.append(f"Scene/background: {fields['scene']}")
+              if fields.get("subject"):
+                  sections.append(f"Subject: {fields['subject']}")
+              if fields.get("style"):
+                  sections.append(f"Style/medium: {fields['style']}")
+              if fields.get("composition"):
+                  sections.append(f"Composition/framing: {fields['composition']}")
+              if fields.get("lighting"):
+                  sections.append(f"Lighting/mood: {fields['lighting']}")
+              if fields.get("palette"):
+                  sections.append(f"Color palette: {fields['palette']}")
+              if fields.get("materials"):
+                  sections.append(f"Materials/textures: {fields['materials']}")
+              if fields.get("text"):
+                  sections.append(f"Text (verbatim): \"{fields['text']}\"")
+              if fields.get("constraints"):
+                  sections.append(f"Constraints: {fields['constraints']}")
+              if fields.get("negative"):
+                  sections.append(f"Avoid: {fields['negative']}")
+
+              return "\n".join(sections)
+
+
+          def _fields_from_args(args: argparse.Namespace) -> Dict[str, Optional[str]]:
+              return {
+                  "use_case": getattr(args, "use_case", None),
+                  "scene": getattr(args, "scene", None),
+                  "subject": getattr(args, "subject", None),
+                  "style": getattr(args, "style", None),
+                  "composition": getattr(args, "composition", None),
+                  "lighting": getattr(args, "lighting", None),
+                  "palette": getattr(args, "palette", None),
+                  "materials": getattr(args, "materials", None),
+                  "text": getattr(args, "text", None),
+                  "constraints": getattr(args, "constraints", None),
+                  "negative": getattr(args, "negative", None),
+              }
+
+
+          def _print_request(payload: dict) -> None:
+              print(json.dumps(payload, indent=2, sort_keys=True))
+
+
+          def _decode_and_write(images: List[str], outputs: List[Path], force: bool) -> None:
+              for idx, image_b64 in enumerate(images):
+                  if idx >= len(outputs):
+                      break
+                  out_path = outputs[idx]
+                  if out_path.exists() and not force:
+                      _die(f"Output already exists: {out_path} (use --force to overwrite)")
+                  out_path.parent.mkdir(parents=True, exist_ok=True)
+                  out_path.write_bytes(base64.b64decode(image_b64))
+                  print(f"Wrote {out_path}")
+
+
+          def _derive_downscale_path(path: Path, suffix: str) -> Path:
+              if suffix and not suffix.startswith("-") and not suffix.startswith("_"):
+                  suffix = "-" + suffix
+              return path.with_name(f"{path.stem}{suffix}{path.suffix}")
+
+
+          def _downscale_image_bytes(image_bytes: bytes, *, max_dim: int, output_format: str) -> bytes:
+              try:
+                  from PIL import Image
+              except Exception:
+                  _die(
+                      "Downscaling requires Pillow. Install with `uv pip install pillow` (then re-run)."
+                  )
+
+              if max_dim < 1:
+                  _die("--downscale-max-dim must be >= 1")
+
+              with Image.open(BytesIO(image_bytes)) as img:
+                  img.load()
+                  w, h = img.size
+                  scale = min(1.0, float(max_dim) / float(max(w, h)))
+                  target = (max(1, int(round(w * scale))), max(1, int(round(h * scale))))
+
+                  resized = img if target == (w, h) else img.resize(target, Image.Resampling.LANCZOS)
+
+                  fmt = output_format.lower()
+                  if fmt == "jpg":
+                      fmt = "jpeg"
+
+                  if fmt == "jpeg":
+                      if resized.mode in ("RGBA", "LA") or ("transparency" in getattr(resized, "info", {})):
+                          bg = Image.new("RGB", resized.size, (255, 255, 255))
+                          bg.paste(resized.convert("RGBA"), mask=resized.convert("RGBA").split()[-1])
+                          resized = bg
+                      else:
+                          resized = resized.convert("RGB")
+
+                  out = BytesIO()
+                  resized.save(out, format=fmt.upper())
+                  return out.getvalue()
+
+
+          def _decode_write_and_downscale(
+              images: List[str],
+              outputs: List[Path],
+              *,
+              force: bool,
+              downscale_max_dim: Optional[int],
+              downscale_suffix: str,
+              output_format: str,
+          ) -> None:
+              for idx, image_b64 in enumerate(images):
+                  if idx >= len(outputs):
+                      break
+                  out_path = outputs[idx]
+                  if out_path.exists() and not force:
+                      _die(f"Output already exists: {out_path} (use --force to overwrite)")
+                  out_path.parent.mkdir(parents=True, exist_ok=True)
+
+                  raw = base64.b64decode(image_b64)
+                  out_path.write_bytes(raw)
+                  print(f"Wrote {out_path}")
+
+                  if downscale_max_dim is None:
+                      continue
+
+                  derived = _derive_downscale_path(out_path, downscale_suffix)
+                  if derived.exists() and not force:
+                      _die(f"Output already exists: {derived} (use --force to overwrite)")
+                  derived.parent.mkdir(parents=True, exist_ok=True)
+                  resized = _downscale_image_bytes(raw, max_dim=downscale_max_dim, output_format=output_format)
+                  derived.write_bytes(resized)
+                  print(f"Wrote {derived}")
+
+
+          def _create_client():
+              try:
+                  from openai import OpenAI
+              except ImportError as exc:
+                  _die("openai SDK not installed. Install with `uv pip install openai`.")
+              return OpenAI()
+
+
+          def _create_async_client():
+              try:
+                  from openai import AsyncOpenAI
+              except ImportError:
+                  try:
+                      import openai as _openai  # noqa: F401
+                  except ImportError:
+                      _die("openai SDK not installed. Install with `uv pip install openai`.")
+                  _die(
+                      "AsyncOpenAI not available in this openai SDK version. Upgrade with `uv pip install -U openai`."
+                  )
+              return AsyncOpenAI()
+
+
+          def _slugify(value: str) -> str:
+              value = value.strip().lower()
+              value = re.sub(r"[^a-z0-9]+", "-", value)
+              value = re.sub(r"-{2,}", "-", value).strip("-")
+              return value[:60] if value else "job"
+
+
+          def _normalize_job(job: Any, idx: int) -> Dict[str, Any]:
+              if isinstance(job, str):
+                  prompt = job.strip()
+                  if not prompt:
+                      _die(f"Empty prompt at job {idx}")
+                  return {"prompt": prompt}
+              if isinstance(job, dict):
+                  if "prompt" not in job or not str(job["prompt"]).strip():
+                      _die(f"Missing prompt for job {idx}")
+                  return job
+              _die(f"Invalid job at index {idx}: expected string or object.")
+              return {}  # unreachable
+
+
+          def _read_jobs_jsonl(path: str) -> List[Dict[str, Any]]:
+              p = Path(path)
+              if not p.exists():
+                  _die(f"Input file not found: {p}")
+              jobs: List[Dict[str, Any]] = []
+              for line_no, raw in enumerate(p.read_text(encoding="utf-8").splitlines(), start=1):
+                  line = raw.strip()
+                  if not line or line.startswith("#"):
+                      continue
+                  try:
+                      item: Any
+                      if line.startswith("{"):
+                          item = json.loads(line)
+                      else:
+                          item = line
+                      jobs.append(_normalize_job(item, idx=line_no))
+                  except json.JSONDecodeError as exc:
+                      _die(f"Invalid JSON on line {line_no}: {exc}")
+              if not jobs:
+                  _die("No jobs found in input file.")
+              if len(jobs) > MAX_BATCH_JOBS:
+                  _die(f"Too many jobs ({len(jobs)}). Max is {MAX_BATCH_JOBS}.")
+              return jobs
+
+
+          def _merge_non_null(dst: Dict[str, Any], src: Dict[str, Any]) -> Dict[str, Any]:
+              merged = dict(dst)
+              for k, v in src.items():
+                  if v is not None:
+                      merged[k] = v
+              return merged
+
+
+          def _job_output_paths(
+              *,
+              out_dir: Path,
+              output_format: str,
+              idx: int,
+              prompt: str,
+              n: int,
+              explicit_out: Optional[str],
+          ) -> List[Path]:
+              out_dir.mkdir(parents=True, exist_ok=True)
+              ext = "." + output_format
+
+              if explicit_out:
+                  base = Path(explicit_out)
+                  if base.suffix == "":
+                      base = base.with_suffix(ext)
+                  elif base.suffix.lstrip(".").lower() != output_format:
+                      _warn(
+                          f"Job {idx}: output extension {base.suffix} does not match output-format {output_format}."
+                      )
+                  base = out_dir / base.name
+              else:
+                  slug = _slugify(prompt[:80])
+                  base = out_dir / f"{idx:03d}-{slug}{ext}"
+
+              if n == 1:
+                  return [base]
+              return [
+                  base.with_name(f"{base.stem}-{i}{base.suffix}")
+                  for i in range(1, n + 1)
+              ]
+
+
+          def _extract_retry_after_seconds(exc: Exception) -> Optional[float]:
+              # Best-effort: openai SDK errors vary by version. Prefer a conservative fallback.
+              for attr in ("retry_after", "retry_after_seconds"):
+                  val = getattr(exc, attr, None)
+                  if isinstance(val, (int, float)) and val >= 0:
+                      return float(val)
+              msg = str(exc)
+              m = re.search(r"retry[- ]after[:= ]+([0-9]+(?:\\.[0-9]+)?)", msg, re.IGNORECASE)
+              if m:
+                  try:
+                      return float(m.group(1))
+                  except Exception:
+                      return None
+              return None
+
+
+          def _is_rate_limit_error(exc: Exception) -> bool:
+              name = exc.__class__.__name__.lower()
+              if "ratelimit" in name or "rate_limit" in name:
+                  return True
+              msg = str(exc).lower()
+              return "429" in msg or "rate limit" in msg or "too many requests" in msg
+
+
+          def _is_transient_error(exc: Exception) -> bool:
+              if _is_rate_limit_error(exc):
+                  return True
+              name = exc.__class__.__name__.lower()
+              if "timeout" in name or "timedout" in name or "tempor" in name:
+                  return True
+              msg = str(exc).lower()
+              return "timeout" in msg or "timed out" in msg or "connection reset" in msg
+
+
+          async def _generate_one_with_retries(
+              client: Any,
+              payload: Dict[str, Any],
+              *,
+              attempts: int,
+              job_label: str,
+          ) -> Any:
+              last_exc: Optional[Exception] = None
+              for attempt in range(1, attempts + 1):
+                  try:
+                      return await client.images.generate(**payload)
+                  except Exception as exc:
+                      last_exc = exc
+                      if not _is_transient_error(exc):
+                          raise
+                      if attempt == attempts:
+                          raise
+                      sleep_s = _extract_retry_after_seconds(exc)
+                      if sleep_s is None:
+                          sleep_s = min(60.0, 2.0**attempt)
+                      print(
+                          f"{job_label} attempt {attempt}/{attempts} failed ({exc.__class__.__name__}); retrying in {sleep_s:.1f}s",
+                          file=sys.stderr,
+                      )
+                      await asyncio.sleep(sleep_s)
+              raise last_exc or RuntimeError("unknown error")
+
+
+          async def _run_generate_batch(args: argparse.Namespace) -> int:
+              jobs = _read_jobs_jsonl(args.input)
+              out_dir = Path(args.out_dir)
+
+              base_fields = _fields_from_args(args)
+              base_payload = {
+                  "model": args.model,
+                  "n": args.n,
+                  "size": args.size,
+                  "quality": args.quality,
+                  "background": args.background,
+                  "output_format": args.output_format,
+                  "output_compression": args.output_compression,
+                  "moderation": args.moderation,
+              }
+
+              if args.dry_run:
+                  for i, job in enumerate(jobs, start=1):
+                      prompt = str(job["prompt"]).strip()
+                      fields = _merge_non_null(base_fields, job.get("fields", {}))
+                      # Allow flat job keys as well (use_case, scene, etc.)
+                      fields = _merge_non_null(fields, {k: job.get(k) for k in base_fields.keys()})
+                      augmented = _augment_prompt_fields(args.augment, prompt, fields)
+
+                      job_payload = dict(base_payload)
+                      job_payload["prompt"] = augmented
+                      job_payload = _merge_non_null(job_payload, {k: job.get(k) for k in base_payload.keys()})
+                      job_payload = {k: v for k, v in job_payload.items() if v is not None}
+
+                      _validate_generate_payload(job_payload)
+                      effective_output_format = _normalize_output_format(job_payload.get("output_format"))
+                      _validate_transparency(job_payload.get("background"), effective_output_format)
+                      if "output_format" in job_payload:
+                          job_payload["output_format"] = effective_output_format
+
+                      n = int(job_payload.get("n", 1))
+                      outputs = _job_output_paths(
+                          out_dir=out_dir,
+                          output_format=effective_output_format,
+                          idx=i,
+                          prompt=prompt,
+                          n=n,
+                          explicit_out=job.get("out"),
+                      )
+                      downscaled = None
+                      if args.downscale_max_dim is not None:
+                          downscaled = [
+                              str(_derive_downscale_path(p, args.downscale_suffix)) for p in outputs
+                          ]
+                      _print_request(
+                          {
+                              "endpoint": "/v1/images/generations",
+                              "job": i,
+                              "outputs": [str(p) for p in outputs],
+                              "outputs_downscaled": downscaled,
+                              **job_payload,
+                          }
+                      )
+                  return 0
+
+              client = _create_async_client()
+              sem = asyncio.Semaphore(args.concurrency)
+
+              any_failed = False
+
+              async def run_job(i: int, job: Dict[str, Any]) -> Tuple[int, Optional[str]]:
+                  nonlocal any_failed
+                  prompt = str(job["prompt"]).strip()
+                  job_label = f"[job {i}/{len(jobs)}]"
+
+                  fields = _merge_non_null(base_fields, job.get("fields", {}))
+                  fields = _merge_non_null(fields, {k: job.get(k) for k in base_fields.keys()})
+                  augmented = _augment_prompt_fields(args.augment, prompt, fields)
+
+                  payload = dict(base_payload)
+                  payload["prompt"] = augmented
+                  payload = _merge_non_null(payload, {k: job.get(k) for k in base_payload.keys()})
+                  payload = {k: v for k, v in payload.items() if v is not None}
+
+                  n = int(payload.get("n", 1))
+                  _validate_generate_payload(payload)
+                  effective_output_format = _normalize_output_format(payload.get("output_format"))
+                  _validate_transparency(payload.get("background"), effective_output_format)
+                  if "output_format" in payload:
+                      payload["output_format"] = effective_output_format
+                  outputs = _job_output_paths(
+                      out_dir=out_dir,
+                      output_format=effective_output_format,
+                      idx=i,
+                      prompt=prompt,
+                      n=n,
+                      explicit_out=job.get("out"),
+                  )
+                  try:
+                      async with sem:
+                          print(f"{job_label} starting", file=sys.stderr)
+                          started = time.time()
+                          result = await _generate_one_with_retries(
+                              client,
+                              payload,
+                              attempts=args.max_attempts,
+                              job_label=job_label,
+                          )
+                          elapsed = time.time() - started
+                          print(f"{job_label} completed in {elapsed:.1f}s", file=sys.stderr)
+                      images = [item.b64_json for item in result.data]
+                      _decode_write_and_downscale(
+                          images,
+                          outputs,
+                          force=args.force,
+                          downscale_max_dim=args.downscale_max_dim,
+                          downscale_suffix=args.downscale_suffix,
+                          output_format=effective_output_format,
+                      )
+                      return i, None
+                  except Exception as exc:
+                      any_failed = True
+                      print(f"{job_label} failed: {exc}", file=sys.stderr)
+                      if args.fail_fast:
+                          raise
+                      return i, str(exc)
+
+              tasks = [asyncio.create_task(run_job(i, job)) for i, job in enumerate(jobs, start=1)]
+
+              try:
+                  await asyncio.gather(*tasks)
+              except Exception:
+                  for t in tasks:
+                      if not t.done():
+                          t.cancel()
+                  raise
+
+              return 1 if any_failed else 0
+
+
+          def _generate_batch(args: argparse.Namespace) -> None:
+              exit_code = asyncio.run(_run_generate_batch(args))
+              if exit_code:
+                  raise SystemExit(exit_code)
+
+
+          def _generate(args: argparse.Namespace) -> None:
+              prompt = _read_prompt(args.prompt, args.prompt_file)
+              prompt = _augment_prompt(args, prompt)
+
+              payload = {
+                  "model": args.model,
+                  "prompt": prompt,
+                  "n": args.n,
+                  "size": args.size,
+                  "quality": args.quality,
+                  "background": args.background,
+                  "output_format": args.output_format,
+                  "output_compression": args.output_compression,
+                  "moderation": args.moderation,
+              }
+              payload = {k: v for k, v in payload.items() if v is not None}
+
+              output_format = _normalize_output_format(args.output_format)
+              _validate_transparency(args.background, output_format)
+              if "output_format" in payload:
+                  payload["output_format"] = output_format
+              output_paths = _build_output_paths(args.out, output_format, args.n, args.out_dir)
+
+              if args.dry_run:
+                  _print_request({"endpoint": "/v1/images/generations", **payload})
+                  return
+
+              print(
+                  "Calling Image API (generation). This can take up to a couple of minutes.",
+                  file=sys.stderr,
+              )
+              started = time.time()
+              client = _create_client()
+              result = client.images.generate(**payload)
+              elapsed = time.time() - started
+              print(f"Generation completed in {elapsed:.1f}s.", file=sys.stderr)
+
+              images = [item.b64_json for item in result.data]
+              _decode_write_and_downscale(
+                  images,
+                  output_paths,
+                  force=args.force,
+                  downscale_max_dim=args.downscale_max_dim,
+                  downscale_suffix=args.downscale_suffix,
+                  output_format=output_format,
+              )
+
+
+          def _edit(args: argparse.Namespace) -> None:
+              prompt = _read_prompt(args.prompt, args.prompt_file)
+              prompt = _augment_prompt(args, prompt)
+
+              image_paths = _check_image_paths(args.image)
+              mask_path = Path(args.mask) if args.mask else None
+              if mask_path:
+                  if not mask_path.exists():
+                      _die(f"Mask file not found: {mask_path}")
+                  if mask_path.suffix.lower() != ".png":
+                      _warn(f"Mask should be a PNG with an alpha channel: {mask_path}")
+                  if mask_path.stat().st_size > MAX_IMAGE_BYTES:
+                      _warn(f"Mask exceeds 50MB limit: {mask_path}")
+
+              payload = {
+                  "model": args.model,
+                  "prompt": prompt,
+                  "n": args.n,
+                  "size": args.size,
+                  "quality": args.quality,
+                  "background": args.background,
+                  "output_format": args.output_format,
+                  "output_compression": args.output_compression,
+                  "input_fidelity": args.input_fidelity,
+                  "moderation": args.moderation,
+              }
+              payload = {k: v for k, v in payload.items() if v is not None}
+
+              output_format = _normalize_output_format(args.output_format)
+              _validate_transparency(args.background, output_format)
+              if "output_format" in payload:
+                  payload["output_format"] = output_format
+              output_paths = _build_output_paths(args.out, output_format, args.n, args.out_dir)
+
+              if args.dry_run:
+                  payload_preview = dict(payload)
+                  payload_preview["image"] = [str(p) for p in image_paths]
+                  if mask_path:
+                      payload_preview["mask"] = str(mask_path)
+                  _print_request({"endpoint": "/v1/images/edits", **payload_preview})
+                  return
+
+              print(
+                  f"Calling Image API (edit) with {len(image_paths)} image(s).",
+                  file=sys.stderr,
+              )
+              started = time.time()
+              client = _create_client()
+
+              with _open_files(image_paths) as image_files, _open_mask(mask_path) as mask_file:
+                  request = dict(payload)
+                  request["image"] = image_files if len(image_files) > 1 else image_files[0]
+                  if mask_file is not None:
+                      request["mask"] = mask_file
+                  result = client.images.edit(**request)
+
+              elapsed = time.time() - started
+              print(f"Edit completed in {elapsed:.1f}s.", file=sys.stderr)
+              images = [item.b64_json for item in result.data]
+              _decode_write_and_downscale(
+                  images,
+                  output_paths,
+                  force=args.force,
+                  downscale_max_dim=args.downscale_max_dim,
+                  downscale_suffix=args.downscale_suffix,
+                  output_format=output_format,
+              )
+
+
+          def _open_files(paths: List[Path]):
+              return _FileBundle(paths)
+
+
+          def _open_mask(mask_path: Optional[Path]):
+              if mask_path is None:
+                  return _NullContext()
+              return _SingleFile(mask_path)
+
+
+          class _NullContext:
+              def __enter__(self):
+                  return None
+
+              def __exit__(self, exc_type, exc, tb):
+                  return False
+
+
+          class _SingleFile:
+              def __init__(self, path: Path):
+                  self._path = path
+                  self._handle = None
+
+              def __enter__(self):
+                  self._handle = self._path.open("rb")
+                  return self._handle
+
+              def __exit__(self, exc_type, exc, tb):
+                  if self._handle:
+                      try:
+                          self._handle.close()
+                      except Exception:
+                          pass
+                  return False
+
+
+          class _FileBundle:
+              def __init__(self, paths: List[Path]):
+                  self._paths = paths
+                  self._handles: List[object] = []
+
+              def __enter__(self):
+                  self._handles = [p.open("rb") for p in self._paths]
+                  return self._handles
+
+              def __exit__(self, exc_type, exc, tb):
+                  for handle in self._handles:
+                      try:
+                          handle.close()
+                      except Exception:
+                          pass
+                  return False
+
+
+          def _add_shared_args(parser: argparse.ArgumentParser) -> None:
+              parser.add_argument("--model", default=DEFAULT_MODEL)
+              parser.add_argument("--prompt")
+              parser.add_argument("--prompt-file")
+              parser.add_argument("--n", type=int, default=1)
+              parser.add_argument("--size", default=DEFAULT_SIZE)
+              parser.add_argument("--quality", default=DEFAULT_QUALITY)
+              parser.add_argument("--background")
+              parser.add_argument("--output-format")
+              parser.add_argument("--output-compression", type=int)
+              parser.add_argument("--moderation")
+              parser.add_argument("--out", default="output.png")
+              parser.add_argument("--out-dir")
+              parser.add_argument("--force", action="store_true")
+              parser.add_argument("--dry-run", action="store_true")
+              parser.add_argument("--augment", dest="augment", action="store_true")
+              parser.add_argument("--no-augment", dest="augment", action="store_false")
+              parser.set_defaults(augment=True)
+
+              # Prompt augmentation hints
+              parser.add_argument("--use-case")
+              parser.add_argument("--scene")
+              parser.add_argument("--subject")
+              parser.add_argument("--style")
+              parser.add_argument("--composition")
+              parser.add_argument("--lighting")
+              parser.add_argument("--palette")
+              parser.add_argument("--materials")
+              parser.add_argument("--text")
+              parser.add_argument("--constraints")
+              parser.add_argument("--negative")
+
+              # Post-processing (optional): generate an additional downscaled copy for fast web loading.
+              parser.add_argument("--downscale-max-dim", type=int)
+              parser.add_argument("--downscale-suffix", default=DEFAULT_DOWNSCALE_SUFFIX)
+
+
+          def main() -> int:
+              parser = argparse.ArgumentParser(description="Generate or edit images via the Image API")
+              subparsers = parser.add_subparsers(dest="command", required=True)
+
+              gen_parser = subparsers.add_parser("generate", help="Create a new image")
+              _add_shared_args(gen_parser)
+              gen_parser.set_defaults(func=_generate)
+
+              batch_parser = subparsers.add_parser(
+                  "generate-batch",
+                  help="Generate multiple prompts concurrently (JSONL input)",
+              )
+              _add_shared_args(batch_parser)
+              batch_parser.add_argument("--input", required=True, help="Path to JSONL file (one job per line)")
+              batch_parser.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY)
+              batch_parser.add_argument("--max-attempts", type=int, default=3)
+              batch_parser.add_argument("--fail-fast", action="store_true")
+              batch_parser.set_defaults(func=_generate_batch)
+
+              edit_parser = subparsers.add_parser("edit", help="Edit an existing image")
+              _add_shared_args(edit_parser)
+              edit_parser.add_argument("--image", action="append", required=True)
+              edit_parser.add_argument("--mask")
+              edit_parser.add_argument("--input-fidelity")
+              edit_parser.set_defaults(func=_edit)
+
+              args = parser.parse_args()
+              if args.n < 1 or args.n > 10:
+                  _die("--n must be between 1 and 10")
+              if getattr(args, "concurrency", 1) < 1 or getattr(args, "concurrency", 1) > 25:
+                  _die("--concurrency must be between 1 and 25")
+              if getattr(args, "max_attempts", 3) < 1 or getattr(args, "max_attempts", 3) > 10:
+                  _die("--max-attempts must be between 1 and 10")
+              if args.output_compression is not None and not (0 <= args.output_compression <= 100):
+                  _die("--output-compression must be between 0 and 100")
+              if args.command == "generate-batch" and not args.out_dir:
+                  _die("generate-batch requires --out-dir")
+              if getattr(args, "downscale_max_dim", None) is not None and args.downscale_max_dim < 1:
+                  _die("--downscale-max-dim must be >= 1")
+
+              _validate_size(args.size)
+              _validate_quality(args.quality)
+              _validate_background(args.background)
+              _ensure_api_key(args.dry_run)
+
+              args.func(args)
+              return 0
+
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: IMAGE_GEN
+      value: "/data/skills/imagegen/scripts/image_gen.py"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-imagegen
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
