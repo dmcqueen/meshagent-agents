@@ -10,10 +10,10 @@ This plugin supports sora workflows and is designed to help users complete pract
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1055530721bb05b42291a83eb72ea4d44727f000/openai-skills/sora/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cda11a3315e624b4bc5a70e5e07a45350fe7697e/openai-skills/sora/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/691047d9c0a72d63e684c131075d83d4e9c86ea0/openai-skills/sora/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fb51dddeb32f573c98d2a74e8a62bf3667724691/openai-skills/sora/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1055530721bb05b42291a83eb72ea4d44727f000/openai-skills/sora/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cda11a3315e624b4bc5a70e5e07a45350fe7697e/openai-skills/sora/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/691047d9c0a72d63e684c131075d83d4e9c86ea0/openai-skills/sora/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fb51dddeb32f573c98d2a74e8a62bf3667724691/openai-skills/sora/agents.prod.yaml
