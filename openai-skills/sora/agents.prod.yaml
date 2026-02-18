@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-sora
-  description: An agent that uses OpenAI's sora skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's sora skill
   annotations:
     meshagent.service.id: meshagent.openai-sora
 
