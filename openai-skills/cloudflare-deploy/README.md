@@ -10,10 +10,10 @@ This plugin supports cloudflare-deploy workflows and is designed to help users c
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05a4e8dcfdcacced514a7e06c252e52df3e637f3/openai-skills/cloudflare-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/15dab984983d57ce2376c7bf307b50598328cfae/openai-skills/cloudflare-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c269257f37faf7d980d4e9d4c2e0a91f5642a161/openai-skills/cloudflare-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd2c3b5f26bf0e17223bc58f8cbf7c16603dcd6f/openai-skills/cloudflare-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05a4e8dcfdcacced514a7e06c252e52df3e637f3/openai-skills/cloudflare-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/15dab984983d57ce2376c7bf307b50598328cfae/openai-skills/cloudflare-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c269257f37faf7d980d4e9d4c2e0a91f5642a161/openai-skills/cloudflare-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dd2c3b5f26bf0e17223bc58f8cbf7c16603dcd6f/openai-skills/cloudflare-deploy/agents.prod.yaml
