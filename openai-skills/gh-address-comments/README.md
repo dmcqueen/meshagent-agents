@@ -10,10 +10,10 @@ This agent helps teams manage and act on GitHub comment-related tasks by turning
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c01c9636a42a6a5a53c47c771b975ccf1cc51026/openai-skills/gh-address-comments/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b68b649e8f251f2ee352e14c2c0f6253ad70ec3/openai-skills/gh-address-comments/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/543b6f900da922331cd757b0e5fa7f09143264c0/openai-skills/gh-address-comments/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ed23aa31011d104ecc2d5e4bca67fccdfd39bcd5/openai-skills/gh-address-comments/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c01c9636a42a6a5a53c47c771b975ccf1cc51026/openai-skills/gh-address-comments/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b68b649e8f251f2ee352e14c2c0f6253ad70ec3/openai-skills/gh-address-comments/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/543b6f900da922331cd757b0e5fa7f09143264c0/openai-skills/gh-address-comments/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ed23aa31011d104ecc2d5e4bca67fccdfd39bcd5/openai-skills/gh-address-comments/agents.prod.yaml
