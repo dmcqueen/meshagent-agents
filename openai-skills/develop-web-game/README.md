@@ -10,10 +10,10 @@ This plugin supports develop-web-game workflows and is designed to help users co
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6a74a35f8d282dee949d396247fb6456e23c4ddf/openai-skills/develop-web-game/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0cc404ac5a54b732d4d4edc22d6531c86e03b269/openai-skills/develop-web-game/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/033240e3bb77df5ee5c12a217d8933714b038a39/openai-skills/develop-web-game/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/202ca2901311429e782a69e91671c1fa0916080c/openai-skills/develop-web-game/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6a74a35f8d282dee949d396247fb6456e23c4ddf/openai-skills/develop-web-game/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0cc404ac5a54b732d4d4edc22d6531c86e03b269/openai-skills/develop-web-game/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/033240e3bb77df5ee5c12a217d8933714b038a39/openai-skills/develop-web-game/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/202ca2901311429e782a69e91671c1fa0916080c/openai-skills/develop-web-game/agents.prod.yaml
