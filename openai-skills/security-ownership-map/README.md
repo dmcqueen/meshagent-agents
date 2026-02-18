@@ -6,14 +6,14 @@ An agent that uses OpenAI's security-ownership-map skill and powered by gpt-5.2
 
 ## Description
 
-This plugin supports security-ownership-map workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in security-ownership-map work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for security-ownership-map decisions, analysis, and communication.
+This agent helps users and teams clarify and document who owns specific security responsibilities and tasks across a product or organization, turning vague questions into concrete ownership assignments and actionable next steps. It can answer domain-specific questions about security ownership, suggest practical ways to split responsibilities, and adapt its guidance to your goals and constraints so you can produce clear, implementable ownership maps. Teams can use it to reduce confusion, streamline handoffs, and ensure accountability for security controls and processes. The agent operates as a conversational tool that focuses on producing usable outcomes rather than implementation details.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1505e10cd50d17ef8d98c03582afecff25d21f87/openai-skills/security-ownership-map/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f08e83aaf99eb2793b38e70b9afe49538de652ef/openai-skills/security-ownership-map/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e5cba74a4df67f07411540e2a9d79289846c0199/openai-skills/security-ownership-map/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/aeaea12576aa853850327639d4b75c16c6ec4d68/openai-skills/security-ownership-map/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1505e10cd50d17ef8d98c03582afecff25d21f87/openai-skills/security-ownership-map/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f08e83aaf99eb2793b38e70b9afe49538de652ef/openai-skills/security-ownership-map/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e5cba74a4df67f07411540e2a9d79289846c0199/openai-skills/security-ownership-map/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/aeaea12576aa853850327639d4b75c16c6ec4d68/openai-skills/security-ownership-map/agents.prod.yaml
