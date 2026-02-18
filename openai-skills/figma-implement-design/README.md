@@ -6,14 +6,14 @@ An agent that uses OpenAI's figma-implement-design skill and powered by gpt-5.2
 
 ## Description
 
-This plugin supports figma-implement-design workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in figma-implement-design work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for figma-implement-design decisions, analysis, and communication.
+This agent helps teams translate design intentions into practical Figma implementation steps by interpreting ambiguous requests, producing actionable task lists, and adapting guidance to project goals and constraints. Users can ask domain-specific questions about implementing designs in Figma and receive clear, prioritized recommendations that support handoff, component creation, and layout adjustments. It is intended to streamline collaboration between designers and developers by turning high-level requirements into concrete implementation plans and checklists. The agent uses a conversational model to iteratively refine outputs based on feedback and context.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/59e599c3fbd78ccaf8a94518c46aa1a8dd62befa/openai-skills/figma-implement-design/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d1ad346fbcdd3521581b7f4cf1476c9a2d83b7ac/openai-skills/figma-implement-design/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03ca36ec3f8982ea770a27d4de1d7edafefcff38/openai-skills/figma-implement-design/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/732653c7f06ddd47b8686c5ef369053a69c58a53/openai-skills/figma-implement-design/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/59e599c3fbd78ccaf8a94518c46aa1a8dd62befa/openai-skills/figma-implement-design/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d1ad346fbcdd3521581b7f4cf1476c9a2d83b7ac/openai-skills/figma-implement-design/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03ca36ec3f8982ea770a27d4de1d7edafefcff38/openai-skills/figma-implement-design/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/732653c7f06ddd47b8686c5ef369053a69c58a53/openai-skills/figma-implement-design/agents.prod.yaml
