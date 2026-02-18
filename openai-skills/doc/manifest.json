@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's doc skill",
   "long_description": "This agent enables teams to ask domain-specific questions about document work and receive clear, actionable outputs that turn ambiguous requests into concrete steps or deliverables. Users can get tailored guidance that adapts to their goals, constraints, and context, helping produce refined documents, task lists, or implementation plans. It is suited for workflows that require iterative clarification and practical next steps rather than high-level theory. The agent runs on a conversational model runtime and is intended to streamline document-focused collaboration and decision-making.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cb609d09087af24763bbb0eee869292d9221e57a/openai-skills/doc/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cb609d09087af24763bbb0eee869292d9221e57a/openai-skills/doc/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e030ceda425162ecc2ab8f336b41d15706b3d6a3/openai-skills/doc/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e030ceda425162ecc2ab8f336b41d15706b3d6a3/openai-skills/doc/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e650ee5811a9e46da6909ee75f1650e69e7ef29/openai-skills/doc/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e650ee5811a9e46da6909ee75f1650e69e7ef29/openai-skills/doc/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e43bdbf8e145a4477dcf35bedab3376f8c3b4036/openai-skills/doc/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e43bdbf8e145a4477dcf35bedab3376f8c3b4036/openai-skills/doc/agents.prod.yaml"
   }
 }
