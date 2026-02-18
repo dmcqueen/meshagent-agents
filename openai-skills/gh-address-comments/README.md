@@ -10,10 +10,10 @@ This plugin supports gh-address-comments workflows and is designed to help users
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/aa0bbf4fa98848efdebd5f591369c3e1d5853717/openai-skills/gh-address-comments/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/79322619654120683e95385d51336d5319d456ca/openai-skills/gh-address-comments/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4c72397eb94cccee4e07bea76379276a0ba23fce/openai-skills/gh-address-comments/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05632a11b07658779d0dbbcb7f6910a8b06ddef3/openai-skills/gh-address-comments/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/aa0bbf4fa98848efdebd5f591369c3e1d5853717/openai-skills/gh-address-comments/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/79322619654120683e95385d51336d5319d456ca/openai-skills/gh-address-comments/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4c72397eb94cccee4e07bea76379276a0ba23fce/openai-skills/gh-address-comments/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/05632a11b07658779d0dbbcb7f6910a8b06ddef3/openai-skills/gh-address-comments/agents.prod.yaml
