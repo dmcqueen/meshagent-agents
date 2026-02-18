@@ -10,10 +10,10 @@ This plugin supports netlify-deploy workflows and is designed to help users comp
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab41157438d8e2f065608810e705a90b4e326e03/openai-skills/netlify-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ec36703d9478cdef79bcbcb90bfe384a53f1214/openai-skills/netlify-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e29af9e49e1bdc89609303f7167bc2c7ee2f8df6/openai-skills/netlify-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ad6851e750646fa8758a804113de2e4acb848ceb/openai-skills/netlify-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab41157438d8e2f065608810e705a90b4e326e03/openai-skills/netlify-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2ec36703d9478cdef79bcbcb90bfe384a53f1214/openai-skills/netlify-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e29af9e49e1bdc89609303f7167bc2c7ee2f8df6/openai-skills/netlify-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ad6851e750646fa8758a804113de2e4acb848ceb/openai-skills/netlify-deploy/agents.prod.yaml
