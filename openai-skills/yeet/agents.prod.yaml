@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-yeet
-  description: An agent that uses OpenAI's yeet skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's yeet skill
   annotations:
     meshagent.service.id: meshagent.openai-yeet
 
