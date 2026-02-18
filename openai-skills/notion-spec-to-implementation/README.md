@@ -10,10 +10,10 @@ This agent helps teams turn Notion specifications into concrete, actionable impl
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/372d3b42ec31b3c4ddd5bd6838192babd025dc9d/openai-skills/notion-spec-to-implementation/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/20977c8831885f2319472ac1a25d38c68aaf9368/openai-skills/notion-spec-to-implementation/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fc356e76744e9bf9c1c2aced6e31ef1b43b73aad/openai-skills/notion-spec-to-implementation/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9bf47852ea83385840ee585e4be3c2992aa89b7/openai-skills/notion-spec-to-implementation/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/372d3b42ec31b3c4ddd5bd6838192babd025dc9d/openai-skills/notion-spec-to-implementation/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/20977c8831885f2319472ac1a25d38c68aaf9368/openai-skills/notion-spec-to-implementation/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fc356e76744e9bf9c1c2aced6e31ef1b43b73aad/openai-skills/notion-spec-to-implementation/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9bf47852ea83385840ee585e4be3c2992aa89b7/openai-skills/notion-spec-to-implementation/agents.prod.yaml
