@@ -10,10 +10,10 @@ This agent helps teams and users translate render-deploy needs into concrete, ac
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab59bc10072adff3f843c0c40a3aa6131fb65cfe/openai-skills/render-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f16171d60baa0fffeb7d63cd8dd60813bfea6c44/openai-skills/render-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9614af166ee2aed61a36f1707362ffd03c74ff70/openai-skills/render-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/656fb2760ddad8b38c790dba8dab719adb5d9aa6/openai-skills/render-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab59bc10072adff3f843c0c40a3aa6131fb65cfe/openai-skills/render-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f16171d60baa0fffeb7d63cd8dd60813bfea6c44/openai-skills/render-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9614af166ee2aed61a36f1707362ffd03c74ff70/openai-skills/render-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/656fb2760ddad8b38c790dba8dab719adb5d9aa6/openai-skills/render-deploy/agents.prod.yaml
