@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's imagegen skill and powered by gpt-5.2
+An agent that uses OpenAI's imagegen skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps users and teams create clear, actionable image-generation reque
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/06ecd639cc81c9fec59f99cf1d8f3bc504d9f486/openai-skills/imagegen/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ea600aac89da518da62fb318dd799882cfc87d67/openai-skills/imagegen/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/507000a36a72b4d74344c85f7ae39be756a5533f/openai-skills/imagegen/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/518dd7dfe8f38597f81fcd05dc68cddeafb392df/openai-skills/imagegen/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/06ecd639cc81c9fec59f99cf1d8f3bc504d9f486/openai-skills/imagegen/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ea600aac89da518da62fb318dd799882cfc87d67/openai-skills/imagegen/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/507000a36a72b4d74344c85f7ae39be756a5533f/openai-skills/imagegen/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/518dd7dfe8f38597f81fcd05dc68cddeafb392df/openai-skills/imagegen/agents.prod.yaml
