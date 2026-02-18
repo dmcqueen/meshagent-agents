@@ -2,13 +2,13 @@
   "id": "claude-finance",
   "name": "Claude Finance",
   "description": "An agent that uses Anthropic's finance knowledge work plugin",
-  "long_description": "This agent helps finance teams analyze questions, summarize reports, and highlight the most decision-relevant signals so stakeholders can act with clarity and speed. It prepares structured outputs for planning, close management, audits, and stakeholder updates, and supports tasks such as preparing journal entries, performing reconciliations, conducting variance analysis, and reviewing financial statements. Users can rely on it to produce clear explanations of implications and concise, actionable summaries that streamline review cycles and audit preparations. When needed, it can generate ready-to-use summaries and checklists to support financial close and compliance workflows.",
+  "long_description": "This agent helps finance teams analyze financial questions, summarize reports, and prepare structured outputs that support planning, close activities, and stakeholder updates. Users can get clear explanations of implications from financial analyses, concise highlights of decision-relevant signals in statements or reports, and prepared materials for audit support, reconciliation, journal entry preparation, variance analysis, and close management. It produces organized, actionable deliverables that streamline review cycles and help teams make informed decisions during month-end and audit processes. The agent runs as a finance-focused assistant tuned to deliver concise, work-ready outputs for accounting and financial reporting tasks.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/41b1b28a3b369a4f84803d5ca404433640f1304e/knowledge-work-plugins/finance/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/41b1b28a3b369a4f84803d5ca404433640f1304e/knowledge-work-plugins/finance/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eb803eb1bc3ee5c072a174f494dcc1bc1cfe07f2/knowledge-work-plugins/finance/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eb803eb1bc3ee5c072a174f494dcc1bc1cfe07f2/knowledge-work-plugins/finance/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/865fa381f911808abeacaa49357ae23c8ee26d67/knowledge-work-plugins/finance/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/865fa381f911808abeacaa49357ae23c8ee26d67/knowledge-work-plugins/finance/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66837cc048db5da211a8c4a6a8710e7ce63b17aa/knowledge-work-plugins/finance/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/66837cc048db5da211a8c4a6a8710e7ce63b17aa/knowledge-work-plugins/finance/agents.prod.yaml"
   }
 }
