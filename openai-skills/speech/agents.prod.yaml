@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-speech
-  description: An agent that uses OpenAI's speech skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's speech skill
   annotations:
     meshagent.service.id: meshagent.openai-speech
 
