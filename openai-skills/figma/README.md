@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's figma skill and powered by gpt-5.2
+An agent that uses OpenAI's figma skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent lets users and teams interact directly with Figma work by asking doma
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/773b966fcd9030f8d05059b71277995a79df0f69/openai-skills/figma/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e19a69e0834d0baac183e672a9a5b11f6d45ab1/openai-skills/figma/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e947733ea6d55fd02ce095fc0719939caf42351/openai-skills/figma/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/034553eca6167f8af38c97b010ad1a26c5388014/openai-skills/figma/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/773b966fcd9030f8d05059b71277995a79df0f69/openai-skills/figma/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e19a69e0834d0baac183e672a9a5b11f6d45ab1/openai-skills/figma/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e947733ea6d55fd02ce095fc0719939caf42351/openai-skills/figma/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/034553eca6167f8af38c97b010ad1a26c5388014/openai-skills/figma/agents.prod.yaml
