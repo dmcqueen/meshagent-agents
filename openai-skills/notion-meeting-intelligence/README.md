@@ -10,10 +10,10 @@ This plugin supports notion-meeting-intelligence workflows and is designed to he
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a910501002ff970b171927b0842348a9103fa66/openai-skills/notion-meeting-intelligence/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a318b5ea80f13fd5e68dd36fdcd6d889cddac6cb/openai-skills/notion-meeting-intelligence/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2e6580601b5d60ea1cd0ad2cfe0953809858490d/openai-skills/notion-meeting-intelligence/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fa6aff573a69354d17ca2d8c2be1beea86273baf/openai-skills/notion-meeting-intelligence/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a910501002ff970b171927b0842348a9103fa66/openai-skills/notion-meeting-intelligence/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a318b5ea80f13fd5e68dd36fdcd6d889cddac6cb/openai-skills/notion-meeting-intelligence/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2e6580601b5d60ea1cd0ad2cfe0953809858490d/openai-skills/notion-meeting-intelligence/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fa6aff573a69354d17ca2d8c2be1beea86273baf/openai-skills/notion-meeting-intelligence/agents.prod.yaml
