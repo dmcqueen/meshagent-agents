@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's openai-docs skill and powered by gpt-5.2
+An agent that uses OpenAI's openai-docs skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps users and teams interactively explore and apply documentation a
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/93b4cddc13bff7f842307a8b032126cde244a144/openai-skills/openai-docs/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f0932ed88c9875c853b5796bf828edb18abda5b/openai-skills/openai-docs/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a44636585d78c98de985bfef51f0d9aec48fed1/openai-skills/openai-docs/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4ca1a6f5dc85c836d08c84cafd9c26f0ceaa39e3/openai-skills/openai-docs/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/93b4cddc13bff7f842307a8b032126cde244a144/openai-skills/openai-docs/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f0932ed88c9875c853b5796bf828edb18abda5b/openai-skills/openai-docs/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a44636585d78c98de985bfef51f0d9aec48fed1/openai-skills/openai-docs/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4ca1a6f5dc85c836d08c84cafd9c26f0ceaa39e3/openai-skills/openai-docs/agents.prod.yaml
