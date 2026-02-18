@@ -6,14 +6,14 @@ An agent that uses Anthropic's data knowledge work plugin
 
 ## Description
 
-This plugin supports data workflows and is designed to help users complete practical work with less manual effort. It can analyze data-related questions and interpret findings clearly, help structure analytical workflows from question to conclusion, and produce concise explanations and summaries for stakeholders. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for data decisions, analysis, and communication.
+This agent helps individuals and teams take data questions from initial framing through to clear conclusions by guiding exploration, validation, analysis, and visualization workflows. Users can ask it to inspect datasets, craft and refine SQL queries, run statistical analyses, and produce concise explanations or summaries tailored for stakeholders. It also assists in creating interactive dashboards and visualizations to make results actionable and to support decision making. The agent is focused on delivering interpretable findings and reproducible analytical steps so teams can validate results and communicate outcomes effectively.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cb847c3991ca31b0b78d8553b606e3c2dd27ecb1/knowledge-work-plugins/data/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/114d63fffac1c0e428b05dc57a91443ec63c7bfe/knowledge-work-plugins/data/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ac3ccf6e12aa55104846763b5ef9ff13f050c2e8/knowledge-work-plugins/data/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/77b7fb90313f1151f0af64c7214e89d977cfbfe7/knowledge-work-plugins/data/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cb847c3991ca31b0b78d8553b606e3c2dd27ecb1/knowledge-work-plugins/data/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/114d63fffac1c0e428b05dc57a91443ec63c7bfe/knowledge-work-plugins/data/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ac3ccf6e12aa55104846763b5ef9ff13f050c2e8/knowledge-work-plugins/data/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/77b7fb90313f1151f0af64c7214e89d977cfbfe7/knowledge-work-plugins/data/agents.prod.yaml
