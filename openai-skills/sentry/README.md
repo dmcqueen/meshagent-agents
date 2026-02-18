@@ -10,10 +10,10 @@ This agent helps teams work with Sentry by answering domain-specific questions, 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e902d75e24ea992adc4c91e64e142556094d9e96/openai-skills/sentry/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/903a30b7032956769fee0630b734d2265d298a6e/openai-skills/sentry/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/aa3c1d114f1b2c94f5e3c65278b58a056f60d4ce/openai-skills/sentry/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5e3958857bb252a011bda3826ec2c47c5b037161/openai-skills/sentry/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e902d75e24ea992adc4c91e64e142556094d9e96/openai-skills/sentry/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/903a30b7032956769fee0630b734d2265d298a6e/openai-skills/sentry/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/aa3c1d114f1b2c94f5e3c65278b58a056f60d4ce/openai-skills/sentry/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5e3958857bb252a011bda3826ec2c47c5b037161/openai-skills/sentry/agents.prod.yaml
