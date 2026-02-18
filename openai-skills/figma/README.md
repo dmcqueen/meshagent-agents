@@ -10,10 +10,10 @@ This agent lets users and teams interact directly with Figma work by asking doma
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/373e1c26e0ffe92b391c317cd5c25bcaa16c11c4/openai-skills/figma/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f19398c5c54c8021579ff85dee7f44dca61d9818/openai-skills/figma/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/18b46f28b4344cc8cf51f6e95501121839e7a940/openai-skills/figma/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0393f8fdbc2113b0faaaf3430eb766a3dc44ed18/openai-skills/figma/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/373e1c26e0ffe92b391c317cd5c25bcaa16c11c4/openai-skills/figma/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f19398c5c54c8021579ff85dee7f44dca61d9818/openai-skills/figma/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/18b46f28b4344cc8cf51f6e95501121839e7a940/openai-skills/figma/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0393f8fdbc2113b0faaaf3430eb766a3dc44ed18/openai-skills/figma/agents.prod.yaml
