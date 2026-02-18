@@ -62,17 +62,17 @@ container:
           Apache License
           Version 2.0, January 2004
           http://www.apache.org/licenses/
-          
+
           TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-          
+
           1. Definitions.
-          
+
              "License" shall mean the terms and conditions for use, reproduction,
              and distribution as defined by Sections 1 through 9 of this document.
-          
+
              "Licensor" shall mean the copyright owner or entity authorized by
              the copyright owner that is granting the License.
-          
+
              "Legal Entity" shall mean the union of the acting entity and all
              other entities that control, are controlled by, or are under common
              control with that entity. For the purposes of this definition,
@@ -80,24 +80,24 @@ container:
              direction or management of such entity, whether by contract or
              otherwise, or (ii) ownership of fifty percent (50%) or more of the
              outstanding shares, or (iii) beneficial ownership of such entity.
-          
+
              "You" (or "Your") shall mean an individual or Legal Entity
              exercising permissions granted by this License.
-          
+
              "Source" form shall mean the preferred form for making modifications,
              including but not limited to software source code, documentation
              source, and configuration files.
-          
+
              "Object" form shall mean any form resulting from mechanical
              transformation or translation of a Source form, including but
              not limited to compiled object code, generated documentation,
              and conversions to other media types.
-          
+
              "Work" shall mean the work of authorship, whether in Source or
              Object form, made available under the License, as indicated by a
              copyright notice that is included in or attached to the work
              (an example is provided in the Appendix below).
-          
+
              "Derivative Works" shall mean any work, whether in Source or Object
              form, that is based on (or derived from) the Work and for which the
              editorial revisions, annotations, elaborations, or other modifications
@@ -105,7 +105,7 @@ container:
              of this License, Derivative Works shall not include works that remain
              separable from, or merely link (or bind by name) to the interfaces of,
              the Work and Derivative Works thereof.
-          
+
              "Contribution" shall mean any work of authorship, including
              the original version of the Work and any modifications or additions
              to that Work or Derivative Works thereof, that is intentionally
@@ -119,18 +119,18 @@ container:
              Licensor for the purpose of discussing and improving the Work, but
              excluding communication that is conspicuously marked or otherwise
              designated in writing by the copyright owner as "Not a Contribution."
-          
+
              "Contributor" shall mean Licensor and any individual or Legal Entity
              on behalf of whom a Contribution has been received by Licensor and
              subsequently incorporated within the Work.
-          
+
           2. Grant of Copyright License. Subject to the terms and conditions of
              this License, each Contributor hereby grants to You a perpetual,
              worldwide, non-exclusive, no-charge, royalty-free, irrevocable
              copyright license to reproduce, prepare Derivative Works of,
              publicly display, publicly perform, sublicense, and distribute the
              Work and such Derivative Works in Source or Object form.
-          
+
           3. Grant of Patent License. Subject to the terms and conditions of
              this License, each Contributor hereby grants to You a perpetual,
              worldwide, non-exclusive, no-charge, royalty-free, irrevocable
@@ -146,24 +146,24 @@ container:
              or contributory patent infringement, then any patent licenses
              granted to You under this License for that Work shall terminate
              as of the date such litigation is filed.
-          
+
           4. Redistribution. You may reproduce and distribute copies of the
              Work or Derivative Works thereof in any medium, with or without
              modifications, and in Source or Object form, provided that You
              meet the following conditions:
-          
+
              (a) You must give any other recipients of the Work or
                  Derivative Works a copy of this License; and
-          
+
              (b) You must cause any modified files to carry prominent notices
                  stating that You changed the files; and
-          
+
              (c) You must retain, in the Source form of any Derivative Works
                  that You distribute, all copyright, patent, trademark, and
                  attribution notices from the Source form of the Work,
                  excluding those notices that do not pertain to any part of
                  the Derivative Works; and
-          
+
              (d) If the Work includes a "NOTICE" text file as part of its
                  distribution, then any Derivative Works that You distribute must
                  include a readable copy of the attribution notices contained
@@ -180,14 +180,14 @@ container:
                  or as an addendum to the NOTICE text from the Work, provided
                  that such additional attribution notices cannot be construed
                  as modifying the License.
-          
+
              You may add Your own copyright statement to Your modifications and
              may provide additional or different license terms and conditions
              for use, reproduction, or distribution of Your modifications, or
              for any such Derivative Works as a whole, provided Your use,
              reproduction, and distribution of the Work otherwise complies with
              the conditions stated in this License.
-          
+
           5. Submission of Contributions. Unless You explicitly state otherwise,
              any Contribution intentionally submitted for inclusion in the Work
              by You to the Licensor shall be under the terms and conditions of
@@ -195,12 +195,12 @@ container:
              Notwithstanding the above, nothing herein shall supersede or modify
              the terms of any separate license agreement you may have executed
              with Licensor regarding such Contributions.
-          
+
           6. Trademarks. This License does not grant permission to use the trade
              names, trademarks, service marks, or product names of the Licensor,
              except as required for reasonable and customary use in describing the
              origin of the Work and reproducing the content of the NOTICE file.
-          
+
           7. Disclaimer of Warranty. Unless required by applicable law or
              agreed to in writing, Licensor provides the Work (and each
              Contributor provides its Contributions) on an "AS IS" BASIS,
@@ -210,7 +210,7 @@ container:
              PARTICULAR PURPOSE. You are solely responsible for determining the
              appropriateness of using or redistributing the Work and assume any
              risks associated with Your exercise of permissions under this License.
-          
+
           8. Limitation of Liability. In no event and under no legal theory,
              whether in tort (including negligence), contract, or otherwise,
              unless required by applicable law (such as deliberate and grossly
@@ -222,7 +222,7 @@ container:
              work stoppage, computer failure or malfunction, or any and all
              other commercial damages or losses), even if such Contributor
              has been advised of the possibility of such damages.
-          
+
           9. Accepting Warranty or Additional Liability. While redistributing
              the Work or Derivative Works thereof, You may choose to offer,
              and charge a fee for, acceptance of support, warranty, indemnity,
@@ -233,11 +233,11 @@ container:
              defend, and hold each Contributor harmless for any liability
              incurred by, or claims asserted against, such Contributor by reason
              of your accepting any such warranty or additional liability.
-          
+
           END OF TERMS AND CONDITIONS
-          
+
           APPENDIX: How to apply the Apache License to your work.
-          
+
              To apply the Apache License to your work, attach the following
              boilerplate notice, with the fields enclosed by brackets "[]"
              replaced with your own identifying information. (Don\'t include
@@ -246,15 +246,15 @@ container:
              file or class name and description of purpose be included on the
              same "printed page" as the copyright notice for easier
              identification within third-party archives.
-          
+
           Copyright [yyyy] [name of copyright owner]
-          
+
           Licensed under the Apache License, Version 2.0 (the "License");
           you may not use this file except in compliance with the License.
           You may obtain a copy of the License at
-          
+
               http://www.apache.org/licenses/LICENSE-2.0
-          
+
           Unless required by applicable law or agreed to in writing, software
           distributed under the License is distributed on an "AS IS" BASIS,
           WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -266,24 +266,24 @@ container:
           name: "develop-web-game"
           description: "Use when Codex is building or iterating on a web game (HTML/JS) and needs a reliable development + testing loop: implement small changes, run a Playwright-based test script with short input bursts and intentional pauses, inspect screenshots/text, and review console errors with render_game_to_text."
           ---
-          
-          
+
+
           # Develop Web Game
-          
+
           Build games in small steps and validate every change. Treat each iteration as: implement → act → pause → observe → adjust.
-          
+
           ## Skill paths (set once)
-          
+
           ```bash
           export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
           export WEB_GAME_CLIENT="$CODEX_HOME/skills/develop-web-game/scripts/web_game_playwright_client.js"
           export WEB_GAME_ACTIONS="$CODEX_HOME/skills/develop-web-game/references/action_payloads.json"
           ```
-          
+
           User-scoped skills install under `$CODEX_HOME/skills` (default: `~/.codex/skills`).
-          
+
           ## Workflow
-          
+
           1. **Pick a goal.** Define a single feature or behavior to implement.
           2. **Implement small.** Make the smallest change that moves the game forward.
           3. **Ensure integration points.** Provide a single canvas and `window.render_game_to_text` so the test loop can read state.
@@ -299,12 +299,12 @@ container:
           12. **Check errors.** Review console errors and fix the first new issue before continuing.
           13. **Reset between scenarios.** Avoid cross-test state when validating distinct features.
           14. **Iterate with small deltas.** Change one variable at a time (frames, inputs, timing, positions), then repeat steps 7–13 until stable.
-          
+
           Example command (actions required):
           ```
           node "$WEB_GAME_CLIENT" --url http://localhost:5173 --actions-file "$WEB_GAME_ACTIONS" --click-selector "#start-btn" --iterations 3 --pause-ms 250
           ```
-          
+
           Example actions (inline JSON):
           ```json
           {
@@ -316,11 +316,11 @@ container:
             ]
           }
           ```
-          
+
           ## Test Checklist
-          
+
           Test any new features added for the request and any areas your logic changes could affect. Identify issues, fix them, and re-run the tests to confirm they’re resolved.
-          
+
           Examples of things to test:
           - Primary movement/interaction inputs (e.g., move, jump, shoot, confirm/select).
           - Win/lose or success/fail transitions.
@@ -328,27 +328,27 @@ container:
           - Boundary conditions (collisions, walls, screen edges).
           - Menu/pause/start flow if present.
           - Any special actions tied to the request (powerups, combos, abilities, puzzles, timers).
-          
+
           ## Test Artifacts to Review
-          
+
           - Latest screenshots from the Playwright run.
           - Latest `render_game_to_text` JSON output.
           - Console error logs (fix the first new error before continuing).
           You must actually open and visually inspect the latest screenshots after running the Playwright script, not just generate them. Ensure everything that should be visible on screen is actually visible. Go beyond the start screen and capture gameplay screenshots that cover all newly added features. Treat the screenshots as the source of truth; if something is missing, it is missing in the build. If you suspect a headless/WebGL capture issue, rerun the Playwright script in headed mode and re-check. Fix and rerun in a tight loop until the screenshots and text state look correct. Once fixes are verified, re-test all important interactions and controls, confirm they work, and ensure your changes did not introduce regressions. If they did, fix them and rerun everything in a loop until interactions, text state, and controls all work as expected. Be exhaustive in testing controls; broken games are not acceptable.
-          
+
           ## Core Game Guidelines
-          
+
           ### Canvas + Layout
           - Prefer a single canvas centered in the window.
-          
+
           ### Visuals
           - Keep on-screen text minimal; show controls on a start/menu screen rather than overlaying them during play.
           - Avoid overly dark scenes unless the design calls for it. Make key elements easy to see.
           - Draw the background on the canvas itself instead of relying on CSS backgrounds.
-          
+
           ### Text State Output (render_game_to_text)
           Expose a `window.render_game_to_text` function that returns a concise JSON string representing the current game state. The text should include enough information to play the game without visuals.
-          
+
           Minimal pattern:
           ```js
           function renderGameToText() {
@@ -362,14 +362,14 @@ container:
           }
           window.render_game_to_text = renderGameToText;
           ```
-          
+
           Keep the payload succinct and biased toward on-screen/interactive elements. Prefer current, visible entities over full history.
           Include a clear coordinate system note (origin and axis directions), and encode all player-relevant state: player position/velocity, active obstacles/enemies, collectibles, timers/cooldowns, score, and any mode/state flags needed to make correct decisions. Avoid large histories; only include what's currently relevant and visible.
-          
+
           ### Time Stepping Hook
           Provide a deterministic time-stepping hook so the Playwright client can advance the game in controlled increments. Expose `window.advanceTime(ms)` (or a thin wrapper that forwards to your game update loop) and have the game loop use it when present.
           The Playwright test script uses this hook to step frames deterministically during automated testing.
-          
+
           Minimal pattern:
           ```js
           window.advanceTime = (ms) => {
@@ -378,21 +378,21 @@ container:
             render();
           };
           ```
-          
+
           ### Fullscreen Toggle
           - Use a single key (prefer `f`) to toggle fullscreen on/off.
           - Allow `Esc` to exit fullscreen.
           - When fullscreen toggles, resize the canvas/rendering so visuals and input mapping stay correct.
-          
+
           ## Progress Tracking
-          
+
           Create a `progress.md` file if it doesn't exist, and append TODOs, notes, gotchas, and loose ends as you go so another agent can pick up seamlessly.
           If a `progress.md` file already exists, read it first, including the original user prompt at the top (you may be continuing another agent's work). Do not overwrite the original prompt; preserve it.
           Update `progress.md` after each meaningful chunk of work (feature added, bug found, test run, or decision made).
           At the end of your work, leave TODOs and suggestions for the next agent in `progress.md`.
-          
+
           ## Playwright Prerequisites
-          
+
           - Prefer a local `playwright` dependency if the project already has it.
           - If unsure whether Playwright is available, check for `npx`:
             ```
@@ -403,13 +403,13 @@ container:
             npm install -g @playwright/mcp@latest
             ```
           - Do not switch to `@playwright/test` unless explicitly asked; stick to the client script.
-          
+
           ## Scripts
-          
+
           - `$WEB_GAME_CLIENT` (installed default: `$CODEX_HOME/skills/develop-web-game/scripts/web_game_playwright_client.js`) — Playwright-based action loop with virtual-time stepping, screenshot capture, and console error buffering. You must pass an action burst via `--actions-file`, `--actions-json`, or `--click`.
-          
+
           ## References
-          
+
           - `$WEB_GAME_ACTIONS` (installed default: `$CODEX_HOME/skills/develop-web-game/references/action_payloads.json`) — example action payloads (keyboard + mouse, per-frame capture). Use these to build your burst.
     - path: /skills/develop-web-game/agents/openai.yaml
       text: |
@@ -481,7 +481,7 @@ container:
           import fs from "node:fs";
           import path from "node:path";
           import { chromium } from "playwright";
-          
+
           function parseArgs(argv) {
             const args = {
               url: null,
@@ -534,7 +534,7 @@ container:
             }
             return args;
           }
-          
+
           const buttonNameToKey = {
             up: "ArrowUp",
             down: "ArrowDown",
@@ -545,24 +545,24 @@ container:
             a: "KeyA",
             b: "KeyB",
           };
-          
+
           async function sleep(ms) {
             return new Promise((resolve) => setTimeout(resolve, ms));
           }
-          
+
           function ensureDir(p) {
             fs.mkdirSync(p, { recursive: true });
           }
-          
+
           function makeVirtualTimeShim() {
             return `(() => {
               const pending = new Set();
               const origSetTimeout = window.setTimeout.bind(window);
               const origSetInterval = window.setInterval.bind(window);
               const origRequestAnimationFrame = window.requestAnimationFrame.bind(window);
-          
+
               window.__vt_pending = pending;
-          
+
               window.setTimeout = (fn, t, ...rest) => {
                 const task = {};
                 pending.add(task);
@@ -571,7 +571,7 @@ container:
                   fn(...rest);
                 }, t);
               };
-          
+
               window.setInterval = (fn, t, ...rest) => {
                 const task = {};
                 pending.add(task);
@@ -579,7 +579,7 @@ container:
                   fn(...rest);
                 }, t);
               };
-          
+
               window.requestAnimationFrame = (fn) => {
                 const task = {};
                 pending.add(task);
@@ -588,7 +588,7 @@ container:
                   fn(ts);
                 });
               };
-          
+
               window.advanceTime = (ms) => {
                 return new Promise((resolve) => {
                   const start = performance.now();
@@ -599,11 +599,11 @@ container:
                   origRequestAnimationFrame(step);
                 });
               };
-          
+
               window.__drainVirtualTimePending = () => pending.size;
             })();`;
           }
-          
+
           async function getCanvasHandle(page) {
             const handle = await page.evaluateHandle(() => {
               let best = null;
@@ -619,7 +619,7 @@ container:
             });
             return handle.asElement();
           }
-          
+
           async function captureCanvasPngBase64(canvas) {
             return canvas.evaluate((c) => {
               if (!c || typeof c.toDataURL !== "function") return "";
@@ -628,7 +628,7 @@ container:
               return idx === -1 ? "" : data.slice(idx + 1);
             });
           }
-          
+
           async function isCanvasTransparent(canvas) {
             if (!canvas) return true;
             return canvas.evaluate((c) => {
@@ -653,7 +653,7 @@ container:
               }
             });
           }
-          
+
           async function captureScreenshot(page, canvas, outPath) {
             let buffer = null;
             let base64 = canvas ? await captureCanvasPngBase64(canvas) : "";
@@ -683,27 +683,27 @@ container:
             }
             fs.writeFileSync(outPath, buffer);
           }
-          
+
           class ConsoleErrorTracker {
             constructor() {
               this._seen = new Set();
               this._errors = [];
             }
-          
+
             ingest(err) {
               const key = JSON.stringify(err);
               if (this._seen.has(key)) return;
               this._seen.add(key);
               this._errors.push(err);
             }
-          
+
             drain() {
               const next = [...this._errors];
               this._errors = [];
               return next;
             }
           }
-          
+
           async function doChoreography(page, canvas, steps) {
             for (const step of steps) {
               const buttons = new Set(step.buttons || []);
@@ -719,7 +719,7 @@ container:
                   await page.keyboard.down(buttonNameToKey[button]);
                 }
               }
-          
+
               const frames = step.frames || 1;
               for (let i = 0; i < frames; i++) {
                 await page.evaluate(async () => {
@@ -728,7 +728,7 @@ container:
                   }
                 });
               }
-          
+
               for (const button of buttons) {
                 if (button === "left_mouse_button" || button === "right_mouse_button") {
                   await page.mouse.up({ button: button === "left_mouse_button" ? "left" : "right" });
@@ -738,18 +738,18 @@ container:
               }
             }
           }
-          
+
           async function main() {
             const args = parseArgs(process.argv);
             ensureDir(args.screenshotDir);
-          
+
             const browser = await chromium.launch({
               headless: args.headless,
               args: ["--use-gl=angle", "--use-angle=swiftshader"],
             });
             const page = await browser.newPage();
             const consoleErrors = new ConsoleErrorTracker();
-          
+
             page.on("console", (msg) => {
               if (msg.type() !== "error") return;
               consoleErrors.ingest({ type: "console.error", text: msg.text() });
@@ -757,16 +757,16 @@ container:
             page.on("pageerror", (err) => {
               consoleErrors.ingest({ type: "pageerror", text: String(err) });
             });
-          
+
             await page.addInitScript({ content: makeVirtualTimeShim() });
             await page.goto(args.url, { waitUntil: "domcontentloaded" });
             await page.waitForTimeout(500);
             await page.evaluate(() => {
               window.dispatchEvent(new Event("resize"));
             });
-          
+
             let canvas = await getCanvasHandle(page);
-          
+
             if (args.clickSelector) {
               try {
                 await page.click(args.clickSelector, { timeout: 5000 });
@@ -798,15 +798,15 @@ container:
             if (!steps) {
               throw new Error("Actions are required. Use --actions-file, --actions-json, or --click.");
             }
-          
+
             for (let i = 0; i < args.iterations; i++) {
               if (!canvas) canvas = await getCanvasHandle(page);
               await doChoreography(page, canvas, steps);
               await sleep(args.pauseMs);
-          
+
               const shotPath = path.join(args.screenshotDir, `shot-${i}.png`);
               await captureScreenshot(page, canvas, shotPath);
-          
+
               const text = await page.evaluate(() => {
                 if (typeof window.render_game_to_text === "function") {
                   return window.render_game_to_text();
@@ -816,7 +816,7 @@ container:
               if (text) {
                 fs.writeFileSync(path.join(args.screenshotDir, `state-${i}.json`), text);
               }
-          
+
               const freshErrors = consoleErrors.drain();
               if (freshErrors.length) {
                 fs.writeFileSync(
@@ -826,10 +826,10 @@ container:
                 break;
               }
             }
-          
+
             await browser.close();
           }
-          
+
           main().catch((err) => {
             console.error(err);
             process.exit(1);
