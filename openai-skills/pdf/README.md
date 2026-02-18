@@ -10,10 +10,10 @@ This agent enables users and teams to interact with PDF content by answering dom
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/683f328b3aed02db8b40909f391be213c69b15d4/openai-skills/pdf/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d6338c88f1e6c108576f1c23fec14cafd12863c8/openai-skills/pdf/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fadf9a7bd87cc687214d452d469bebd8eeed4403/openai-skills/pdf/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ce45a3066afad900888b9641b2f8ca589b258112/openai-skills/pdf/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/683f328b3aed02db8b40909f391be213c69b15d4/openai-skills/pdf/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d6338c88f1e6c108576f1c23fec14cafd12863c8/openai-skills/pdf/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fadf9a7bd87cc687214d452d469bebd8eeed4403/openai-skills/pdf/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ce45a3066afad900888b9641b2f8ca589b258112/openai-skills/pdf/agents.prod.yaml
