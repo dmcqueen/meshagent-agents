@@ -10,10 +10,10 @@ This agent lets users and teams work with speech-related tasks by answering doma
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6ad91c24560eb4ab03b81ba042d9d783110ebea8/openai-skills/speech/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/913553c57e57abc48d1548bad00654862e5d4879/openai-skills/speech/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9a3e2ad64915fd24ec24a92c16641cd1408ce941/openai-skills/speech/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c89b8de83be46e69f081975792db8292aff7ea61/openai-skills/speech/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6ad91c24560eb4ab03b81ba042d9d783110ebea8/openai-skills/speech/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/913553c57e57abc48d1548bad00654862e5d4879/openai-skills/speech/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9a3e2ad64915fd24ec24a92c16641cd1408ce941/openai-skills/speech/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c89b8de83be46e69f081975792db8292aff7ea61/openai-skills/speech/agents.prod.yaml
