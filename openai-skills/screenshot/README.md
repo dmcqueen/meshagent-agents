@@ -10,10 +10,10 @@ This agent helps users and teams capture, analyze, and act on screenshots by ans
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dba61330cbf85a459e9de0c2ca39727ab464dd40/openai-skills/screenshot/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6507ed10b35a0ea00d8fb665d122eab4dc881e94/openai-skills/screenshot/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ac97ba76b0f9b381a9968a9d3165a5a75dad94e/openai-skills/screenshot/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a1084b28e39a5fb48a128da7374b10115f1ab7/openai-skills/screenshot/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dba61330cbf85a459e9de0c2ca39727ab464dd40/openai-skills/screenshot/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6507ed10b35a0ea00d8fb665d122eab4dc881e94/openai-skills/screenshot/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ac97ba76b0f9b381a9968a9d3165a5a75dad94e/openai-skills/screenshot/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a1084b28e39a5fb48a128da7374b10115f1ab7/openai-skills/screenshot/agents.prod.yaml
