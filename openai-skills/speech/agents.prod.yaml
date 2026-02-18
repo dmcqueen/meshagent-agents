@@ -31,16 +31,10 @@ container:
           if [ -d /skills ]; then
             cp -R -n /skills/* /data/skills/ 2>/dev/null || true
           fi
-          mkdir -p /data/agents/openai-speech
-          if [[ ! -f /data/agents/openai-speech/rules.txt ]]; then
-            cp /var/rules-openai-speech.txt /data/agents/openai-speech/rules.txt
+          mkdir -p /agents/openai-speech
+          if [[ ! -s /agents/openai-speech/rules.txt ]]; then
+            cp /var/rules-openai-speech.txt /agents/openai-speech/rules.txt
           fi
-
-          if [[ -d /agents/openai-speech && ! -L /agents ]]; then
-            rm -f /agents/openai-speech/rules.txt 2>/dev/null || true
-          fi
-
-
 
           # Decode any base64-encoded binary payloads
           if command -v base64 >/dev/null 2>&1; then
@@ -56,7 +50,7 @@ container:
             --require-shell \
             --delegate-shell-token \
             --script-tool \
-            --room-rules /data/agents/openai-speech/rules.txt \
+            --room-rules /agents/openai-speech/rules.txt \
             --skill-dir /data/skills/speech
     - path: /var/rules-openai-speech.txt
       read_only: true
@@ -65,7 +59,7 @@ container:
           when a question could be served by a skill, read the skill and follow the pattern specified in the skill
           when using the shell tool to read files attached or referenced by the user, in the room, or output by other tools, the file path should be prefixed with /data.
           when using the shell tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)
-          You have customizable rules stored in /data/agents/openai-speech/rules.txt; use the shell tool to read or update this file.
+          You have customizable rules stored in /agents/openai-speech/rules.txt; use the shell tool to read or update this file.
           You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com
           You have some slash commands available
     - path: /skills/speech/LICENSE.txt
