@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's spreadsheet skill",
   "long_description": "This agent lets individuals and teams work directly with spreadsheet-related tasks by answering domain-specific questions, clarifying ambiguous requests into concrete actions, and providing step-by-step guidance tailored to user goals and constraints. Users can rely on it to transform high-level objectives into practical spreadsheet outputs, refine formulas and workflows, and adapt recommendations to the context of their data and desired outcomes. It is suited for collaborative scenarios where iterative clarification and actionable directions are needed to complete spreadsheet work efficiently. The agent runs with a modern conversational model to produce clear, usable instructions and results.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ce4925a12f0951000d07825f72ee4d0f6c17d825/openai-skills/spreadsheet/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ce4925a12f0951000d07825f72ee4d0f6c17d825/openai-skills/spreadsheet/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/52d563f8d960df5d49bdcaa19838d82c28f64f8d/openai-skills/spreadsheet/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/52d563f8d960df5d49bdcaa19838d82c28f64f8d/openai-skills/spreadsheet/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a5d7cbe94464fee64bbb78e40438fd9a74af44d9/openai-skills/spreadsheet/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a5d7cbe94464fee64bbb78e40438fd9a74af44d9/openai-skills/spreadsheet/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3aadb5cefbea8b7813438c77e024b7d8098657fb/openai-skills/spreadsheet/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3aadb5cefbea8b7813438c77e024b7d8098657fb/openai-skills/spreadsheet/agents.prod.yaml"
   }
 }
