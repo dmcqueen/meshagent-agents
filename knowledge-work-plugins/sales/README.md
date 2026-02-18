@@ -6,14 +6,14 @@ An agent that uses Anthropic's sales knowledge work plugin
 
 ## Description
 
-This plugin supports sales workflows and is designed to help users complete practical work with less manual effort. It can prepare prospecting and account messaging tailored to context, summarize customer signals to support deal strategy, and generate materials for outreach, qualification, and follow-up. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for sales decisions, analysis, and communication.
+This agent helps sales teams and individual sellers synthesize account and prospect information to produce targeted outreach, qualification, and follow-up materials that align with current deal strategies. Users can prepare call briefs, summarize customer signals and competitive context to inform negotiation and prioritization, and generate tailored messaging and assets for prospecting and account engagement. It also supports routine sales operations like pipeline review, forecasting summaries, and daily briefings to keep teams aligned and focused on the highest-impact opportunities. Responses are designed to help accelerate task execution and improve consistency across outreach and deal management.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ce4a877f4ec6c46d27fc797952bf9deec07550cf/knowledge-work-plugins/sales/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d26f2b3d3d1f351969e47dd851c3ea7cb0b72dda/knowledge-work-plugins/sales/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6858b3a10efb7f00cf7f4ed8fd9f3ef2e0a7ea52/knowledge-work-plugins/sales/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/34c5885e313364008b2f1d52ef7ad993d06fad61/knowledge-work-plugins/sales/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ce4a877f4ec6c46d27fc797952bf9deec07550cf/knowledge-work-plugins/sales/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d26f2b3d3d1f351969e47dd851c3ea7cb0b72dda/knowledge-work-plugins/sales/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6858b3a10efb7f00cf7f4ed8fd9f3ef2e0a7ea52/knowledge-work-plugins/sales/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/34c5885e313364008b2f1d52ef7ad993d06fad61/knowledge-work-plugins/sales/agents.prod.yaml
