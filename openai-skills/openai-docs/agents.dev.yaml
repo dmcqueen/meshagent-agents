@@ -1,0 +1,400 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-openai-docs
+  description: An agent that uses OpenAI's openai-docs skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-openai-docs
+
+agents:
+  - name: openai-openai-docs
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-openai-docs/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-openai-docs/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/openai-docs
+    - path: /skills/openai-docs/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+          1. Definitions.
+
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+
+          END OF TERMS AND CONDITIONS
+
+          APPENDIX: How to apply the Apache License to your work.
+
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+
+          Copyright [yyyy] [name of copyright owner]
+
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+
+              http://www.apache.org/licenses/LICENSE-2.0
+
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
+    - path: /skills/openai-docs/SKILL.md
+      text: |
+          ---
+          name: "openai-docs"
+          description: "Use when the user asks how to build with OpenAI products or APIs and needs up-to-date official documentation with citations (for example: Codex, Responses API, Chat Completions, Apps SDK, Agents SDK, Realtime, model capabilities or limits); prioritize OpenAI docs MCP tools and restrict any fallback browsing to official OpenAI domains."
+          ---
+
+
+          # OpenAI Docs
+
+          Provide authoritative, current guidance from OpenAI developer docs using the developers.openai.com MCP server. Always prioritize the developer docs MCP tools over web.run for OpenAI-related questions. Only if the MCP server is installed and returns no meaningful results should you fall back to web search.
+
+          ## Quick start
+
+          - Use `mcp__openaiDeveloperDocs__search_openai_docs` to find the most relevant doc pages.
+          - Use `mcp__openaiDeveloperDocs__fetch_openai_doc` to pull exact sections and quote/paraphrase accurately.
+          - Use `mcp__openaiDeveloperDocs__list_openai_docs` only when you need to browse or discover pages without a clear query.
+
+          ## OpenAI product snapshots
+
+          1. Apps SDK: Build ChatGPT apps by providing a web component UI and an MCP server that exposes your app's tools to ChatGPT.
+          2. Responses API: A unified endpoint designed for stateful, multimodal, tool-using interactions in agentic workflows.
+          3. Chat Completions API: Generate a model response from a list of messages comprising a conversation.
+          4. Codex: OpenAI's coding agent for software development that can write, understand, review, and debug code.
+          5. gpt-oss: Open-weight OpenAI reasoning models (gpt-oss-120b and gpt-oss-20b) released under the Apache 2.0 license.
+          6. Realtime API: Build low-latency, multimodal experiences including natural speech-to-speech conversations.
+          7. Agents SDK: A toolkit for building agentic apps where a model can use tools and context, hand off to other agents, stream partial results, and keep a full trace.
+
+          ## If MCP server is missing
+
+          If MCP tools fail or no OpenAI docs resources are available:
+
+          1. Run the install command yourself: `codex mcp add openaiDeveloperDocs --url https://developers.openai.com/mcp`
+          2. If it fails due to permissions/sandboxing, immediately retry the same command with escalated permissions and include a 1-sentence justification for approval. Do not ask the user to run it yet.
+          3. Only if the escalated attempt fails, ask the user to run the install command.
+          4. Ask the user to restart Codex.
+          5. Re-run the doc search/fetch after restart.
+
+          ## Workflow
+
+          1. Clarify the product scope (Codex, OpenAI API, or ChatGPT Apps SDK) and the task.
+          2. Search docs with a precise query.
+          3. Fetch the best page and the specific section needed (use `anchor` when possible).
+          4. Answer with concise guidance and cite the doc source.
+          5. Provide code snippets only when the docs support them.
+
+          ## Quality rules
+
+          - Treat OpenAI docs as the source of truth; avoid speculation.
+          - Keep quotes short and within policy limits; prefer paraphrase with citations.
+          - If multiple pages differ, call out the difference and cite both.
+          - If docs do not cover the user’s need, say so and offer next steps.
+
+          ## Tooling notes
+
+          - Always use MCP doc tools before any web search for OpenAI-related questions.
+          - If the MCP server is installed but returns no meaningful results, then use web search as a fallback.
+          - When falling back to web search, restrict to official OpenAI domains (developers.openai.com, platform.openai.com) and cite sources.
+    - path: /skills/openai-docs/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "OpenAI Docs"
+            short_description: "Reference the official OpenAI Developer docs"
+            icon_small: "./assets/openai-small.svg"
+            icon_large: "./assets/openai.png"
+            default_prompt: "Look up official OpenAI docs for this task and answer with concise, cited guidance."
+
+          dependencies:
+            tools:
+              - type: "mcp"
+                value: "openaiDeveloperDocs"
+                description: "OpenAI Developer Docs MCP server"
+                transport: "streamable_http"
+                url: "https://developers.openai.com/mcp"
+    - path: /skills/openai-docs/assets/openai-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 14 14">
+            <path d="M10.931 3.34a.112.112 0 0 0-.069-.104l-.038-.007c-1.537.05-2.45.318-3.714 1.002v6.683c.48-.248.936-.44 1.414-.58.695-.203 1.417-.292 2.303-.305l.038-.008a.113.113 0 0 0 .066-.104V3.341ZM2.363 9.919c0 .064.051.11.105.111l.33.008c1.162.046 2.042.243 2.975.662-.403-.585-1.008-1.075-1.654-1.292a.991.991 0 0 1-.674-.941v-5.14a6.36 6.36 0 0 0-.59-.076l-.37-.02a.115.115 0 0 0-.122.111v6.577Zm9.455-.001a.998.998 0 0 1-.877.992l-.101.007c-.832.012-1.47.095-2.066.27-.599.174-1.176.448-1.883.863a.444.444 0 0 1-.449 0c-1.299-.763-2.229-1.07-3.689-1.125l-.299-.008a.997.997 0 0 1-.977-.998V3.342c0-.573.478-1.017 1.038-.999l.417.023c.188.015.35.037.513.062v-.754c0-.708.749-1.244 1.429-.903.984.492 1.836 1.449 2.15 2.505 1.216-.617 2.222-.884 3.771-.934l.105.003a.998.998 0 0 1 .918.996v6.576ZM4.332 8.466c0 .049.03.087.07.1l.24.091a4.319 4.319 0 0 1 1.581 1.176V3.721c-.164-.803-.799-1.617-1.584-2.07l-.162-.088c-.025-.012-.054-.013-.088.009a.12.12 0 0 0-.057.102v6.792Z"/>
+          </svg>
+    - path: /skills/openai-docs/assets/openai.png.b64
+      text: |
+          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
+          rkJggg==
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-openai-docs
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
