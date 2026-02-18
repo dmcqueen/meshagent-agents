@@ -1,0 +1,719 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: openai-sentry
+  description: An agent that uses OpenAI's sentry skill and powered by gpt-5.2
+  annotations:
+    meshagent.service.id: meshagent.openai-sentry
+
+agents:
+  - name: openai-sentry
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+          
+          set -e
+          
+          mkdir -p /data/skills
+          if [ -d /skills ]; then
+            cp -R -n /skills/* /data/skills/ 2>/dev/null || true
+          fi
+          
+          # Decode any base64-encoded binary payloads
+          if command -v base64 >/dev/null 2>&1; then
+            find /data/skills -type f -name '*.b64' -print0 | while IFS= read -r -d '' file; do
+              target="${file%.b64}"
+              base64 -d "${file}" > "${target}"
+              rm -f "${file}"
+            done
+          fi
+          
+          exec /usr/bin/meshagent chatbot join \
+            --model=gpt-5.2 \
+            --require-storage \
+            --require-web-search \
+            --rule="you can use the storage tool to read skills not just the shell tool" \
+            --rule="when a question could be served by a skill, read the skill and follow the pattern specified in the skill" \
+            --rule="when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data." \
+            --rule="when using the storage tool to read skills, the path should be prefixed with /data/skills (the folder where the skills are located)" \
+            --storage-tool-local-path=/skills:/skills \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/openai-sentry/rules.txt \
+            --rule='You have customizable rules stored in agents/openai-sentry/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.' \
+            --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com' \
+            --rule='You have some slash commands available' \
+            --skill-dir /data/skills/sentry
+    - path: /skills/sentry/LICENSE.txt
+      text: |
+          Apache License
+          Version 2.0, January 2004
+          http://www.apache.org/licenses/
+
+          TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+          1. Definitions.
+
+             "License" shall mean the terms and conditions for use, reproduction,
+             and distribution as defined by Sections 1 through 9 of this document.
+
+             "Licensor" shall mean the copyright owner or entity authorized by
+             the copyright owner that is granting the License.
+
+             "Legal Entity" shall mean the union of the acting entity and all
+             other entities that control, are controlled by, or are under common
+             control with that entity. For the purposes of this definition,
+             "control" means (i) the power, direct or indirect, to cause the
+             direction or management of such entity, whether by contract or
+             otherwise, or (ii) ownership of fifty percent (50%) or more of the
+             outstanding shares, or (iii) beneficial ownership of such entity.
+
+             "You" (or "Your") shall mean an individual or Legal Entity
+             exercising permissions granted by this License.
+
+             "Source" form shall mean the preferred form for making modifications,
+             including but not limited to software source code, documentation
+             source, and configuration files.
+
+             "Object" form shall mean any form resulting from mechanical
+             transformation or translation of a Source form, including but
+             not limited to compiled object code, generated documentation,
+             and conversions to other media types.
+
+             "Work" shall mean the work of authorship, whether in Source or
+             Object form, made available under the License, as indicated by a
+             copyright notice that is included in or attached to the work
+             (an example is provided in the Appendix below).
+
+             "Derivative Works" shall mean any work, whether in Source or Object
+             form, that is based on (or derived from) the Work and for which the
+             editorial revisions, annotations, elaborations, or other modifications
+             represent, as a whole, an original work of authorship. For the purposes
+             of this License, Derivative Works shall not include works that remain
+             separable from, or merely link (or bind by name) to the interfaces of,
+             the Work and Derivative Works thereof.
+
+             "Contribution" shall mean any work of authorship, including
+             the original version of the Work and any modifications or additions
+             to that Work or Derivative Works thereof, that is intentionally
+             submitted to Licensor for inclusion in the Work by the copyright owner
+             or by an individual or Legal Entity authorized to submit on behalf of
+             the copyright owner. For the purposes of this definition, "submitted"
+             means any form of electronic, verbal, or written communication sent
+             to the Licensor or its representatives, including but not limited to
+             communication on electronic mailing lists, source code control systems,
+             and issue tracking systems that are managed by, or on behalf of, the
+             Licensor for the purpose of discussing and improving the Work, but
+             excluding communication that is conspicuously marked or otherwise
+             designated in writing by the copyright owner as "Not a Contribution."
+
+             "Contributor" shall mean Licensor and any individual or Legal Entity
+             on behalf of whom a Contribution has been received by Licensor and
+             subsequently incorporated within the Work.
+
+          2. Grant of Copyright License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             copyright license to reproduce, prepare Derivative Works of,
+             publicly display, publicly perform, sublicense, and distribute the
+             Work and such Derivative Works in Source or Object form.
+
+          3. Grant of Patent License. Subject to the terms and conditions of
+             this License, each Contributor hereby grants to You a perpetual,
+             worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+             (except as stated in this section) patent license to make, have made,
+             use, offer to sell, sell, import, and otherwise transfer the Work,
+             where such license applies only to those patent claims licensable
+             by such Contributor that are necessarily infringed by their
+             Contribution(s) alone or by combination of their Contribution(s)
+             with the Work to which such Contribution(s) was submitted. If You
+             institute patent litigation against any entity (including a
+             cross-claim or counterclaim in a lawsuit) alleging that the Work
+             or a Contribution incorporated within the Work constitutes direct
+             or contributory patent infringement, then any patent licenses
+             granted to You under this License for that Work shall terminate
+             as of the date such litigation is filed.
+
+          4. Redistribution. You may reproduce and distribute copies of the
+             Work or Derivative Works thereof in any medium, with or without
+             modifications, and in Source or Object form, provided that You
+             meet the following conditions:
+
+             (a) You must give any other recipients of the Work or
+                 Derivative Works a copy of this License; and
+
+             (b) You must cause any modified files to carry prominent notices
+                 stating that You changed the files; and
+
+             (c) You must retain, in the Source form of any Derivative Works
+                 that You distribute, all copyright, patent, trademark, and
+                 attribution notices from the Source form of the Work,
+                 excluding those notices that do not pertain to any part of
+                 the Derivative Works; and
+
+             (d) If the Work includes a "NOTICE" text file as part of its
+                 distribution, then any Derivative Works that You distribute must
+                 include a readable copy of the attribution notices contained
+                 within such NOTICE file, excluding those notices that do not
+                 pertain to any part of the Derivative Works, in at least one
+                 of the following places: within a NOTICE text file distributed
+                 as part of the Derivative Works; within the Source form or
+                 documentation, if provided along with the Derivative Works; or,
+                 within a display generated by the Derivative Works, if and
+                 wherever such third-party notices normally appear. The contents
+                 of the NOTICE file are for informational purposes only and
+                 do not modify the License. You may add Your own attribution
+                 notices within Derivative Works that You distribute, alongside
+                 or as an addendum to the NOTICE text from the Work, provided
+                 that such additional attribution notices cannot be construed
+                 as modifying the License.
+
+             You may add Your own copyright statement to Your modifications and
+             may provide additional or different license terms and conditions
+             for use, reproduction, or distribution of Your modifications, or
+             for any such Derivative Works as a whole, provided Your use,
+             reproduction, and distribution of the Work otherwise complies with
+             the conditions stated in this License.
+
+          5. Submission of Contributions. Unless You explicitly state otherwise,
+             any Contribution intentionally submitted for inclusion in the Work
+             by You to the Licensor shall be under the terms and conditions of
+             this License, without any additional terms or conditions.
+             Notwithstanding the above, nothing herein shall supersede or modify
+             the terms of any separate license agreement you may have executed
+             with Licensor regarding such Contributions.
+
+          6. Trademarks. This License does not grant permission to use the trade
+             names, trademarks, service marks, or product names of the Licensor,
+             except as required for reasonable and customary use in describing the
+             origin of the Work and reproducing the content of the NOTICE file.
+
+          7. Disclaimer of Warranty. Unless required by applicable law or
+             agreed to in writing, Licensor provides the Work (and each
+             Contributor provides its Contributions) on an "AS IS" BASIS,
+             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+             implied, including, without limitation, any warranties or conditions
+             of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+             PARTICULAR PURPOSE. You are solely responsible for determining the
+             appropriateness of using or redistributing the Work and assume any
+             risks associated with Your exercise of permissions under this License.
+
+          8. Limitation of Liability. In no event and under no legal theory,
+             whether in tort (including negligence), contract, or otherwise,
+             unless required by applicable law (such as deliberate and grossly
+             negligent acts) or agreed to in writing, shall any Contributor be
+             liable to You for damages, including any direct, indirect, special,
+             incidental, or consequential damages of any character arising as a
+             result of this License or out of the use or inability to use the
+             Work (including but not limited to damages for loss of goodwill,
+             work stoppage, computer failure or malfunction, or any and all
+             other commercial damages or losses), even if such Contributor
+             has been advised of the possibility of such damages.
+
+          9. Accepting Warranty or Additional Liability. While redistributing
+             the Work or Derivative Works thereof, You may choose to offer,
+             and charge a fee for, acceptance of support, warranty, indemnity,
+             or other liability obligations and/or rights consistent with this
+             License. However, in accepting such obligations, You may act only
+             on Your own behalf and on Your sole responsibility, not on behalf of
+             any other Contributor, and only if You agree to indemnify,
+             defend, and hold each Contributor harmless for any liability
+             incurred by, or claims asserted against, such Contributor by reason
+             of your accepting any such warranty or additional liability.
+
+          END OF TERMS AND CONDITIONS
+
+          APPENDIX: How to apply the Apache License to your work.
+
+             To apply the Apache License to your work, attach the following
+             boilerplate notice, with the fields enclosed by brackets "[]"
+             replaced with your own identifying information. (Don\'t include
+             the brackets!)  The text should be enclosed in the appropriate
+             comment syntax for the file format. We also recommend that a
+             file or class name and description of purpose be included on the
+             same "printed page" as the copyright notice for easier
+             identification within third-party archives.
+
+          Copyright [yyyy] [name of copyright owner]
+
+          Licensed under the Apache License, Version 2.0 (the "License");
+          you may not use this file except in compliance with the License.
+          You may obtain a copy of the License at
+
+              http://www.apache.org/licenses/LICENSE-2.0
+
+          Unless required by applicable law or agreed to in writing, software
+          distributed under the License is distributed on an "AS IS" BASIS,
+          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          See the License for the specific language governing permissions and
+          limitations under the License.
+    - path: /skills/sentry/SKILL.md
+      text: |
+          ---
+          name: "sentry"
+          description: "Use when the user asks to inspect Sentry issues or events, summarize recent production errors, or pull basic Sentry health data via the Sentry API; perform read-only queries with the bundled script and require `SENTRY_AUTH_TOKEN`."
+          ---
+
+
+          # Sentry (Read-only Observability)
+
+          ## Quick start
+
+          - If not already authenticated, ask the user to provide a valid `SENTRY_AUTH_TOKEN` (read-only scopes such as `project:read`, `event:read`) or to log in and create one before running commands.
+          - Set `SENTRY_AUTH_TOKEN` as an env var.
+          - Optional defaults: `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_BASE_URL`.
+          - Defaults: org/project `{your-org}`/`{your-project}`, time range `24h`, environment `prod`, limit 20 (max 50).
+          - Always call the Sentry API (no heuristics, no caching).
+
+          If the token is missing, give the user these steps:
+          1. Create a Sentry auth token: https://sentry.io/settings/account/api/auth-tokens/
+          2. Create a token with read-only scopes such as `project:read`, `event:read`, and `org:read`.
+          3. Set `SENTRY_AUTH_TOKEN` as an environment variable in their system.
+          4. Offer to guide them through setting the environment variable for their OS/shell if needed.
+          - Never ask the user to paste the full token in chat. Ask them to set it locally and confirm when ready.
+
+          ## Core tasks (use bundled script)
+
+          Use `scripts/sentry_api.py` for deterministic API calls. It handles pagination and retries once on transient errors.
+
+          ## Skill path (set once)
+
+          ```bash
+          export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+          export SENTRY_API="$CODEX_HOME/skills/sentry/scripts/sentry_api.py"
+          ```
+
+          User-scoped skills install under `$CODEX_HOME/skills` (default: `~/.codex/skills`).
+
+          ### 1) List issues (ordered by most recent)
+
+          ```bash
+          python3 "$SENTRY_API" \
+            list-issues \
+            --org {your-org} \
+            --project {your-project} \
+            --environment prod \
+            --time-range 24h \
+            --limit 20 \
+            --query "is:unresolved"
+          ```
+
+          ### 2) Resolve an issue short ID to issue ID
+
+          ```bash
+          python3 "$SENTRY_API" \
+            list-issues \
+            --org {your-org} \
+            --project {your-project} \
+            --query "ABC-123" \
+            --limit 1
+          ```
+
+          Use the returned `id` for issue detail or events.
+
+          ### 3) Issue detail
+
+          ```bash
+          python3 "$SENTRY_API" \
+            issue-detail \
+            1234567890
+          ```
+
+          ### 4) Issue events
+
+          ```bash
+          python3 "$SENTRY_API" \
+            issue-events \
+            1234567890 \
+            --limit 20
+          ```
+
+          ### 5) Event detail (no stack traces by default)
+
+          ```bash
+          python3 "$SENTRY_API" \
+            event-detail \
+            --org {your-org} \
+            --project {your-project} \
+            abcdef1234567890
+          ```
+
+          ## API requirements
+
+          Always use these endpoints (GET only):
+
+          - List issues: `/api/0/projects/{org_slug}/{project_slug}/issues/`
+          - Issue detail: `/api/0/issues/{issue_id}/`
+          - Events for issue: `/api/0/issues/{issue_id}/events/`
+          - Event detail: `/api/0/projects/{org_slug}/{project_slug}/events/{event_id}/`
+
+          ## Inputs and defaults
+
+          - `org_slug`, `project_slug`: default to `{your-org}`/`{your-project}` (avoid non-prod orgs).
+          - `time_range`: default `24h` (pass as `statsPeriod`).
+          - `environment`: default `prod`.
+          - `limit`: default 20, max 50 (paginate until limit reached).
+          - `search_query`: optional `query` parameter.
+          - `issue_short_id`: resolve via list-issues query first.
+
+          ## Output formatting rules
+
+          - Issue list: show title, short_id, status, first_seen, last_seen, count, environments, top_tags; order by most recent.
+          - Event detail: include culprit, timestamp, environment, release, url.
+          - If no results, state explicitly.
+          - Redact PII in output (emails, IPs). Do not print raw stack traces.
+          - Never echo auth tokens.
+
+          ## Golden test inputs
+
+          - Org: `{your-org}`
+          - Project: `{your-project}`
+          - Issue short ID: `{ABC-123}`
+
+          Example prompt: “List the top 10 open issues for prod in the last 24h.”
+          Expected: ordered list with titles, short IDs, counts, last seen.
+    - path: /skills/sentry/agents/openai.yaml
+      text: |
+          interface:
+            display_name: "Sentry (Read-only Observability)"
+            short_description: "Read-only Sentry observability"
+            icon_small: "./assets/sentry-small.svg"
+            icon_large: "./assets/sentry.png"
+            default_prompt: "Investigate this issue in read-only Sentry data and report likely root cause, impact, and next steps."
+    - path: /skills/sentry/assets/sentry-small.svg
+      text: |
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 50 44" fill="currentColor" aria-hidden="true">
+            <path d="M29,2.26a4.67,4.67,0,0,0-8,0L14.42,13.53A32.21,32.21,0,0,1,32.17,40.19H27.55A27.68,27.68,0,0,0,12.09,17.47L6,28a15.92,15.92,0,0,1,9.23,12.17H4.62A.76.76,0,0,1,4,39.06l2.94-5a10.74,10.74,0,0,0-3.36-1.9l-2.91,5a4.54,4.54,0,0,0,1.69,6.24A4.66,4.66,0,0,0,4.62,44H19.15a19.4,19.4,0,0,0-8-17.31l2.31-4A23.87,23.87,0,0,1,23.76,44H36.07a35.88,35.88,0,0,0-16.41-31.8l4.67-8a.77.77,0,0,1,1.05-.27c.53.29,20.29,34.77,20.66,35.17a.76.76,0,0,1-.68,1.13H40.6q.09,1.91,0,3.81h4.78A4.59,4.59,0,0,0,50,39.43a4.49,4.49,0,0,0-.62-2.28Z"/>
+          </svg>
+    - path: /skills/sentry/assets/sentry.png.b64
+      text: |
+          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
+          QmCC
+    - path: /skills/sentry/scripts/sentry_api.py
+      text: |
+          #!/usr/bin/env python3
+          import argparse
+          import json
+          import os
+          import re
+          import sys
+          import time
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import urlencode
+          from urllib.request import Request, urlopen
+
+          DEFAULT_BASE_URL = "https://sentry.io"
+          DEFAULT_ORG = "your-org"
+          DEFAULT_PROJECT = "your-project"
+          MAX_LIMIT = 50
+
+          EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+          IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+
+
+          def redact_string(value):
+              value = EMAIL_RE.sub("[REDACTED_EMAIL]", value)
+              value = IP_RE.sub("[REDACTED_IP]", value)
+              return value
+
+
+          def redact_data(value):
+              if isinstance(value, str):
+                  return redact_string(value)
+              if isinstance(value, list):
+                  return [redact_data(item) for item in value]
+              if isinstance(value, dict):
+                  redacted = {}
+                  for key, item in value.items():
+                      if key.lower() in {"email", "ip", "ip_address"}:
+                          redacted[key] = "[REDACTED]"
+                      else:
+                          redacted[key] = redact_data(item)
+                  return redacted
+              return value
+
+
+          def next_cursor(link_header):
+              if not link_header:
+                  return None
+              for part in link_header.split(","):
+                  if 'rel="next"' in part and 'results="true"' in part:
+                      match = re.search(r'cursor="([^"]+)"', part)
+                      if match:
+                          return match.group(1)
+              return None
+
+
+          def request_json(url, token, retries=1):
+              req = Request(url)
+              req.add_header("Authorization", f"Bearer {token}")
+              req.add_header("Accept", "application/json")
+
+              attempt = 0
+              while True:
+                  try:
+                      with urlopen(req) as resp:
+                          body = resp.read().decode("utf-8")
+                          data = json.loads(body) if body else None
+                          return data, resp.headers
+                  except HTTPError as err:
+                      body = err.read().decode("utf-8", "ignore")
+                      if attempt < retries and (err.code >= 500 or err.code == 429):
+                          attempt += 1
+                          time.sleep(1)
+                          continue
+                      raise RuntimeError(f"HTTP {err.code} for {url}: {body or 'request failed'}") from err
+                  except URLError as err:
+                      if attempt < retries:
+                          attempt += 1
+                          time.sleep(1)
+                          continue
+                      raise RuntimeError(f"Network error for {url}: {err.reason}") from err
+
+
+          def build_url(base_url, path, params=None):
+              base = base_url.rstrip("/")
+              url = f"{base}{path}"
+              if params:
+                  url = f"{url}?{urlencode(params, doseq=True)}"
+              return url
+
+
+          def paged_get(base_url, path, params, token, limit):
+              results = []
+              cursor = None
+              while len(results) < limit:
+                  page_params = dict(params)
+                  page_params["per_page"] = min(MAX_LIMIT, limit - len(results))
+                  if cursor:
+                      page_params["cursor"] = cursor
+                  url = build_url(base_url, path, page_params)
+                  data, headers = request_json(url, token)
+                  if not data:
+                      break
+                  results.extend(data)
+                  cursor = next_cursor(headers.get("Link"))
+                  if not cursor:
+                      break
+              return results[:limit]
+
+
+          def require_org_project(org, project):
+              if org == DEFAULT_ORG or project == DEFAULT_PROJECT:
+                  raise RuntimeError(
+                      "Missing org/project. Set SENTRY_ORG and SENTRY_PROJECT or pass --org/--project."
+                  )
+
+
+          def handle_list_issues(args, token, base_url):
+              require_org_project(args.org, args.project)
+              limit = min(args.limit, MAX_LIMIT)
+              params = {
+                  "statsPeriod": args.time_range,
+                  "environment": args.environment,
+              }
+              if args.query:
+                  params["query"] = args.query
+
+              path = f"/api/0/projects/{args.org}/{args.project}/issues/"
+              issues = paged_get(base_url, path, params, token, limit)
+              return issues
+
+
+          def handle_issue_detail(args, token, base_url):
+              path = f"/api/0/issues/{args.issue_id}/"
+              url = build_url(base_url, path)
+              data, _ = request_json(url, token)
+              return data
+
+
+          def handle_issue_events(args, token, base_url):
+              limit = min(args.limit, MAX_LIMIT)
+              path = f"/api/0/issues/{args.issue_id}/events/"
+              events = paged_get(base_url, path, {}, token, limit)
+              return events
+
+
+          def handle_event_detail(args, token, base_url):
+              require_org_project(args.org, args.project)
+              path = f"/api/0/projects/{args.org}/{args.project}/events/{args.event_id}/"
+              url = build_url(base_url, path)
+              data, _ = request_json(url, token)
+              if data and not args.include_entries:
+                  data = dict(data)
+                  data.pop("entries", None)
+              return data
+
+
+          def build_parser():
+              parser = argparse.ArgumentParser(
+                  description="Read-only Sentry API helper for issues and events"
+              )
+              parser.add_argument(
+                  "--base-url",
+                  default=os.environ.get("SENTRY_BASE_URL", DEFAULT_BASE_URL),
+                  help="Sentry base URL (default: https://sentry.io)",
+              )
+              parser.add_argument(
+                  "--org",
+                  default=os.environ.get("SENTRY_ORG", DEFAULT_ORG),
+                  help="Sentry org slug",
+              )
+              parser.add_argument(
+                  "--project",
+                  default=os.environ.get("SENTRY_PROJECT", DEFAULT_PROJECT),
+                  help="Sentry project slug",
+              )
+              parser.add_argument(
+                  "--no-redact",
+                  action="store_true",
+                  help="Do not redact PII in output",
+              )
+
+              subparsers = parser.add_subparsers(dest="command", required=True)
+
+              list_issues = subparsers.add_parser("list-issues", help="List issues")
+              list_issues.add_argument("--time-range", default="24h")
+              list_issues.add_argument("--environment", default="prod")
+              list_issues.add_argument("--query", default="")
+              list_issues.add_argument("--limit", type=int, default=20)
+
+              issue_detail = subparsers.add_parser("issue-detail", help="Issue detail")
+              issue_detail.add_argument("issue_id")
+
+              issue_events = subparsers.add_parser("issue-events", help="Issue events")
+              issue_events.add_argument("issue_id")
+              issue_events.add_argument("--limit", type=int, default=20)
+
+              event_detail = subparsers.add_parser("event-detail", help="Event detail")
+              event_detail.add_argument("event_id")
+              event_detail.add_argument(
+                  "--include-entries",
+                  action="store_true",
+                  help="Include event entries (may contain stack traces)",
+              )
+
+              return parser
+
+
+          def main():
+              parser = build_parser()
+              args = parser.parse_args()
+
+              token = os.environ.get("SENTRY_AUTH_TOKEN")
+              if not token:
+                  raise RuntimeError("Missing SENTRY_AUTH_TOKEN env var.")
+
+              base_url = args.base_url
+
+              if args.command == "list-issues":
+                  data = handle_list_issues(args, token, base_url)
+              elif args.command == "issue-detail":
+                  data = handle_issue_detail(args, token, base_url)
+              elif args.command == "issue-events":
+                  data = handle_issue_events(args, token, base_url)
+              elif args.command == "event-detail":
+                  data = handle_event_detail(args, token, base_url)
+              else:
+                  raise RuntimeError(f"Unknown command: {args.command}")
+
+              if not args.no_redact:
+                  data = redact_data(data)
+
+              print(json.dumps(data, indent=2, sort_keys=True))
+
+
+          if __name__ == "__main__":
+              try:
+                  main()
+              except RuntimeError as exc:
+                  print(f"Error: {exc}", file=sys.stderr)
+                  sys.exit(1)
+  environment:
+    - name: OPENAI_MAX_TOKENS
+      value: "8192"
+    - name: SENTRY_API
+      value: "/data/skills/sentry/scripts/sentry_api.py"
+    - name: SENTRY_AUTH_TOKEN
+      value: ""
+    - name: SENTRY_BASE_URL
+      value: ""
+    - name: SENTRY_ORG
+      value: ""
+    - name: SENTRY_PROJECT
+      value: ""
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: openai-sentry
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
