@@ -6,14 +6,14 @@ An agent that uses OpenAI's doc skill and powered by gpt-5.2
 
 ## Description
 
-This plugin supports doc workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in doc work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for doc decisions, analysis, and communication.
+This agent enables teams to ask domain-specific questions about document work and receive clear, actionable outputs that turn ambiguous requests into concrete steps or deliverables. Users can get tailored guidance that adapts to their goals, constraints, and context, helping produce refined documents, task lists, or implementation plans. It is suited for workflows that require iterative clarification and practical next steps rather than high-level theory. The agent runs on a conversational model runtime and is intended to streamline document-focused collaboration and decision-making.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d0b6964d4b76d44bfc6535dccf2a8844f875cc8/openai-skills/doc/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8062e755de9a6196ff705ac2add700500037a96a/openai-skills/doc/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3c34a9fc3363701da2a909e9df0bb39343bde27a/openai-skills/doc/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ec42bad139a71bef9a25a7073bfaea035865fc3c/openai-skills/doc/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d0b6964d4b76d44bfc6535dccf2a8844f875cc8/openai-skills/doc/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8062e755de9a6196ff705ac2add700500037a96a/openai-skills/doc/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3c34a9fc3363701da2a909e9df0bb39343bde27a/openai-skills/doc/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ec42bad139a71bef9a25a7073bfaea035865fc3c/openai-skills/doc/agents.prod.yaml
