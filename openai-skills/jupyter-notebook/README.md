@@ -10,10 +10,10 @@ This plugin supports jupyter-notebook workflows and is designed to help users co
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a773c8aabf34d8f30cf698a4e3236bf49062a15f/openai-skills/jupyter-notebook/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ba55b9ed7bd9e72ec84ecf217cd9695946ec4ba1/openai-skills/jupyter-notebook/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b14248f95e04cd0fa1af10e47378e9eae65afec/openai-skills/jupyter-notebook/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/de356d159cebf4947fcd03ef4dc573e5714e1a32/openai-skills/jupyter-notebook/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a773c8aabf34d8f30cf698a4e3236bf49062a15f/openai-skills/jupyter-notebook/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ba55b9ed7bd9e72ec84ecf217cd9695946ec4ba1/openai-skills/jupyter-notebook/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b14248f95e04cd0fa1af10e47378e9eae65afec/openai-skills/jupyter-notebook/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/de356d159cebf4947fcd03ef4dc573e5714e1a32/openai-skills/jupyter-notebook/agents.prod.yaml
