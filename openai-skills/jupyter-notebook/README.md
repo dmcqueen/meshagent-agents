@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's jupyter-notebook skill and powered by gpt-5.2
+An agent that uses OpenAI's jupyter-notebook skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps users and teams work effectively with Jupyter Notebook tasks by
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1ffb2fa22d3f97c9d12ea33befd609e6ad580658/openai-skills/jupyter-notebook/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f89b203b076542f57cd668d3e9c21ea4458e0af5/openai-skills/jupyter-notebook/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/76933e549c6a54e93ea41b8fd48fb7cf890bb6fd/openai-skills/jupyter-notebook/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f50e121c767e27d6414c9c7787f7d4f58186af43/openai-skills/jupyter-notebook/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1ffb2fa22d3f97c9d12ea33befd609e6ad580658/openai-skills/jupyter-notebook/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f89b203b076542f57cd668d3e9c21ea4458e0af5/openai-skills/jupyter-notebook/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/76933e549c6a54e93ea41b8fd48fb7cf890bb6fd/openai-skills/jupyter-notebook/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f50e121c767e27d6414c9c7787f7d4f58186af43/openai-skills/jupyter-notebook/agents.prod.yaml
