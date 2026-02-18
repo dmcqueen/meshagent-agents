@@ -1,14 +1,14 @@
 {
   "id": "openai-notion-meeting-intelligence",
   "name": "OpenAI Notion Meeting Intelligence",
-  "description": "An agent that uses OpenAI's notion-meeting-intelligence skill and powered by gpt-5.2",
+  "description": "An agent that uses OpenAI's notion-meeting-intelligence skill",
   "long_description": "This agent helps teams extract actionable insights and next steps from meeting content by answering domain-specific questions, clarifying ambiguous requests into concrete outputs, and tailoring guidance to the user\u2019s goals and constraints. Users can ask it to summarize meeting discussions, identify decisions and action items, and generate follow-up plans or concise briefs that stakeholders can act on. It supports iterative clarification so teams can refine priorities and deliverables based on context provided during the session. Responses are focused on producing clear, usable outcomes for meeting-driven workflows.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f5b374e27d00263e10f5e34e6e3ec719cfa66db/openai-skills/notion-meeting-intelligence/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f5b374e27d00263e10f5e34e6e3ec719cfa66db/openai-skills/notion-meeting-intelligence/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bf52580dbcefeb41d71db5e5533b4fa3dde9217f/openai-skills/notion-meeting-intelligence/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bf52580dbcefeb41d71db5e5533b4fa3dde9217f/openai-skills/notion-meeting-intelligence/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d04d893115492b11dc4e8ee3e63092e22a2977ac/openai-skills/notion-meeting-intelligence/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d04d893115492b11dc4e8ee3e63092e22a2977ac/openai-skills/notion-meeting-intelligence/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e8cd53025e2ca42aa0e3600002f6c543875c831/openai-skills/notion-meeting-intelligence/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e8cd53025e2ca42aa0e3600002f6c543875c831/openai-skills/notion-meeting-intelligence/agents.prod.yaml"
   }
 }
