@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's notion-meeting-intelligence skill and powered by gpt-5.2
+An agent that uses OpenAI's notion-meeting-intelligence skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps teams extract actionable insights and next steps from meeting c
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f5b374e27d00263e10f5e34e6e3ec719cfa66db/openai-skills/notion-meeting-intelligence/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d04d893115492b11dc4e8ee3e63092e22a2977ac/openai-skills/notion-meeting-intelligence/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bf52580dbcefeb41d71db5e5533b4fa3dde9217f/openai-skills/notion-meeting-intelligence/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e8cd53025e2ca42aa0e3600002f6c543875c831/openai-skills/notion-meeting-intelligence/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f5b374e27d00263e10f5e34e6e3ec719cfa66db/openai-skills/notion-meeting-intelligence/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d04d893115492b11dc4e8ee3e63092e22a2977ac/openai-skills/notion-meeting-intelligence/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bf52580dbcefeb41d71db5e5533b4fa3dde9217f/openai-skills/notion-meeting-intelligence/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e8cd53025e2ca42aa0e3600002f6c543875c831/openai-skills/notion-meeting-intelligence/agents.prod.yaml
