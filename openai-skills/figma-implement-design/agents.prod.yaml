@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-figma-implement-design
-  description: An agent that uses OpenAI's figma-implement-design skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's figma-implement-design skill
   annotations:
     meshagent.service.id: meshagent.openai-figma-implement-design
 
