@@ -2,7 +2,7 @@
 
 ## Summary
 
-An agent that uses OpenAI's notion-spec-to-implementation skill and powered by gpt-5.2
+An agent that uses OpenAI's notion-spec-to-implementation skill
 
 ## Description
 
@@ -10,10 +10,10 @@ This agent helps teams turn Notion specifications into concrete, actionable impl
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fc356e76744e9bf9c1c2aced6e31ef1b43b73aad/openai-skills/notion-spec-to-implementation/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9bf47852ea83385840ee585e4be3c2992aa89b7/openai-skills/notion-spec-to-implementation/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6b593c2b3806919862532acf8d177bce39086cb9/openai-skills/notion-spec-to-implementation/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b68fc9e0d715d6aa10704433df7a075495b3dabd/openai-skills/notion-spec-to-implementation/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/fc356e76744e9bf9c1c2aced6e31ef1b43b73aad/openai-skills/notion-spec-to-implementation/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9bf47852ea83385840ee585e4be3c2992aa89b7/openai-skills/notion-spec-to-implementation/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6b593c2b3806919862532acf8d177bce39086cb9/openai-skills/notion-spec-to-implementation/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b68fc9e0d715d6aa10704433df7a075495b3dabd/openai-skills/notion-spec-to-implementation/agents.prod.yaml
