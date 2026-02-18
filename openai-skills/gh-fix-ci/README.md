@@ -10,10 +10,10 @@ This plugin supports gh-fix-ci workflows and is designed to help users complete 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3d797c83021c9fe7de1858ad3dcf6f5bff65767a/openai-skills/gh-fix-ci/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/37515eed75bcf05103696fbafeb2741f92bf65dc/openai-skills/gh-fix-ci/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d588d16e383f0ae0b4dd0997afc7fe4d59475f23/openai-skills/gh-fix-ci/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a003b8f4c8da5ac6a39f7a5202599b16815cbd08/openai-skills/gh-fix-ci/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3d797c83021c9fe7de1858ad3dcf6f5bff65767a/openai-skills/gh-fix-ci/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/37515eed75bcf05103696fbafeb2741f92bf65dc/openai-skills/gh-fix-ci/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d588d16e383f0ae0b4dd0997afc7fe4d59475f23/openai-skills/gh-fix-ci/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a003b8f4c8da5ac6a39f7a5202599b16815cbd08/openai-skills/gh-fix-ci/agents.prod.yaml
