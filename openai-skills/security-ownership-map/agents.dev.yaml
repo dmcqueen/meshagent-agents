@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-security-ownership-map
-  description: An agent that uses OpenAI's security-ownership-map skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's security-ownership-map skill
   annotations:
     meshagent.service.id: meshagent.openai-security-ownership-map
 
