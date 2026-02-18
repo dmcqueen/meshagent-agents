@@ -6,14 +6,14 @@ An agent that uses Anthropic's productivity knowledge work plugin
 
 ## Description
 
-This plugin supports productivity workflows and is designed to help users complete practical work with less manual effort. It can turn rough requests into structured plans and deliverables, summarize context and extract clear next actions, and support day-to-day execution across writing, planning, and decision support. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for productivity decisions, analysis, and communication.
+This agent helps teams and individuals turn rough requests into structured plans and concrete deliverables, summarize context to surface clear next actions, and support day-to-day execution across writing, planning, and decision-making tasks. Users can use it to break down projects into manageable tasks, track and update progress, and maintain continuity through memory-aware summaries so work stays coordinated over time. It also assists with drafting and refining documents, creating concise briefs and action lists, and converting discussions into prioritized work items that teams can act on. The agent is designed to streamline routine knowledge-work workflows so users spend less time organizing and more time executing.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bd8cf209622027b3b7841a05847468edd3f54c87/knowledge-work-plugins/productivity/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/30ca2d596af7d5e9e92b1702ec35a05bec6c6cb9/knowledge-work-plugins/productivity/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/148d6bc251031b0b5719ac2b4604aa09db44fe27/knowledge-work-plugins/productivity/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/347a2f3160960de79ddef497feb809af6366ff80/knowledge-work-plugins/productivity/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bd8cf209622027b3b7841a05847468edd3f54c87/knowledge-work-plugins/productivity/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/30ca2d596af7d5e9e92b1702ec35a05bec6c6cb9/knowledge-work-plugins/productivity/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/148d6bc251031b0b5719ac2b4604aa09db44fe27/knowledge-work-plugins/productivity/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/347a2f3160960de79ddef497feb809af6366ff80/knowledge-work-plugins/productivity/agents.prod.yaml
