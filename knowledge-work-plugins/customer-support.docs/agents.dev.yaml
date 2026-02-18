@@ -23,7 +23,7 @@ agents:
   - name: claude-customer-support-meshagent
     annotations:
       meshagent.agent.type: Worker
-      meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"docs-sync","name":"SyncMeshagentDocs","payload":{"prompt":"Run the meshagent docs sync workflow from /data/agents/claude-customer-support-meshagent/rules-worker.txt"}}'
+      meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"docs-sync","name":"SyncMeshagentDocs","payload":{"prompt":"Run the meshagent docs sync workflow from /data/agents/claude-customer-support-meshagent/rules-git-worker.txt"}}'
 
 container:
   image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/shell-terminal:{SERVER_VERSION}-esgz
@@ -57,7 +57,10 @@ container:
             cp /var/rules-claude-customer-support-git-worker.txt /data/agents/claude-customer-support-meshagent/rules-git-worker.txt
           fi
 
-          bash /var/update-meshagent-docs.sh
+          cp /var/update-meshagent-docs.sh /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh
+          chmod +x /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh
+
+          bash /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh
 
           MESHAGENT_TOKEN=$MESHAGENT_TOKEN_SUPPORTAGENT /usr/bin/meshagent task-runner join \
             --require-shell \
@@ -115,7 +118,7 @@ container:
     - path: /var/rules-claude-customer-support-git-worker.txt
       read_only: true
       text: |
-          When this worker runs, execute the docs sync script by running "bash /var/update-meshagent-docs.sh" using the shell tool.
+          When this worker runs, execute the docs sync script by running "bash /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh" using the shell tool.
           Run the script once per run.
           Read /data/.runtime/meshagent-docs-sync.status after the script completes. If /data/.runtime/meshagent-docs-sync.cloned exists, treat it as a clone event, send the email, and remove the marker file so it only notifies once.
           Send a verbose status email using the email toolkit to {{AdminEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URLs, status, changed, event, before_commit, after_commit, agents_before_commit, agents_after_commit, agents_changed, cloned_repo, and any error details. If event=cloned or the clone marker exists, explicitly state which repo(s) were cloned. 
