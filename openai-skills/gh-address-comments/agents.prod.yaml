@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: openai-gh-address-comments
-  description: An agent that uses OpenAI's gh-address-comments skill and powered by gpt-5.2
+  description: An agent that uses OpenAI's gh-address-comments skill
   annotations:
     meshagent.service.id: meshagent.openai-gh-address-comments
 
