@@ -10,10 +10,10 @@ This plugin supports transcribe workflows and is designed to help users complete
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/52fd671b65c337f3adea72875c1da200672c2d63/openai-skills/transcribe/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6c3e7cc0daa744df3d1f7ef3f60bd1137f04e3e6/openai-skills/transcribe/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eff0b5c5f55f0e0871f3e38e5165113d035843bd/openai-skills/transcribe/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bb8f7e0a3f3585eacbd1e91ab88584b659ce7d03/openai-skills/transcribe/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/52fd671b65c337f3adea72875c1da200672c2d63/openai-skills/transcribe/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6c3e7cc0daa744df3d1f7ef3f60bd1137f04e3e6/openai-skills/transcribe/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eff0b5c5f55f0e0871f3e38e5165113d035843bd/openai-skills/transcribe/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bb8f7e0a3f3585eacbd1e91ab88584b659ce7d03/openai-skills/transcribe/agents.prod.yaml
