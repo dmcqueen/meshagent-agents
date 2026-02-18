@@ -10,10 +10,10 @@ This plugin supports security-ownership-map workflows and is designed to help us
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b828d75617c653a423b2ace67108b81d9599e3d6/openai-skills/security-ownership-map/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1f7e94100d4d67fefebe6df2bfd61d7e04ebfe43/openai-skills/security-ownership-map/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1505e10cd50d17ef8d98c03582afecff25d21f87/openai-skills/security-ownership-map/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f08e83aaf99eb2793b38e70b9afe49538de652ef/openai-skills/security-ownership-map/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b828d75617c653a423b2ace67108b81d9599e3d6/openai-skills/security-ownership-map/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1f7e94100d4d67fefebe6df2bfd61d7e04ebfe43/openai-skills/security-ownership-map/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1505e10cd50d17ef8d98c03582afecff25d21f87/openai-skills/security-ownership-map/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f08e83aaf99eb2793b38e70b9afe49538de652ef/openai-skills/security-ownership-map/agents.prod.yaml
