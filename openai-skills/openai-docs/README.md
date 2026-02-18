@@ -6,14 +6,14 @@ An agent that uses OpenAI's openai-docs skill and powered by gpt-5.2
 
 ## Description
 
-This plugin supports openai-docs workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in openai-docs work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for openai-docs decisions, analysis, and communication.
+This agent helps users and teams interactively explore and apply documentation and guidance for the openai-docs domain, turning ambiguous or high-level requests into clear, actionable steps and recommendations. It can answer domain-specific questions about the documentation, explain concepts, and adapt its guidance to your goals, constraints, and context so you can plan, implement, or review documentation-related work more effectively. Use it to generate task lists, clarify requirements, and obtain context-aware explanations that help move documentation projects forward. The agent runs with a capable model runtime to deliver conversational, goal-focused assistance tailored to documentation workflows.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5bf5b2bb2c737eb8ffb018350ae1155ff07320d7/openai-skills/openai-docs/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5963c45bd2107eed1cc59a5a37ac6b91ae544942/openai-skills/openai-docs/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ff4a8f468393657831b3f8c39b2341800a31252/openai-skills/openai-docs/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f77f59a8b8834d25436523d78a3a60b8a34cbb9/openai-skills/openai-docs/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5bf5b2bb2c737eb8ffb018350ae1155ff07320d7/openai-skills/openai-docs/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5963c45bd2107eed1cc59a5a37ac6b91ae544942/openai-skills/openai-docs/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ff4a8f468393657831b3f8c39b2341800a31252/openai-skills/openai-docs/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f77f59a8b8834d25436523d78a3a60b8a34cbb9/openai-skills/openai-docs/agents.prod.yaml
