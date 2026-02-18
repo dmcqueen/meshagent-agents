@@ -1,14 +1,14 @@
 {
   "id": "openai-doc",
   "name": "OpenAI Doc",
-  "description": "An agent that uses OpenAI's doc skill and powered by gpt-5.2",
+  "description": "An agent that uses OpenAI's doc skill",
   "long_description": "This agent enables teams to ask domain-specific questions about document work and receive clear, actionable outputs that turn ambiguous requests into concrete steps or deliverables. Users can get tailored guidance that adapts to their goals, constraints, and context, helping produce refined documents, task lists, or implementation plans. It is suited for workflows that require iterative clarification and practical next steps rather than high-level theory. The agent runs on a conversational model runtime and is intended to streamline document-focused collaboration and decision-making.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/290051eecb437cdbd7bfa2b449d5a96c317c97dd/openai-skills/doc/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/290051eecb437cdbd7bfa2b449d5a96c317c97dd/openai-skills/doc/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dbf644a2b08a02c78f8a5b277255f4c88a26ab9d/openai-skills/doc/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dbf644a2b08a02c78f8a5b277255f4c88a26ab9d/openai-skills/doc/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/abd07e30d217534d14891bd3176fede7c560ee4b/openai-skills/doc/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/abd07e30d217534d14891bd3176fede7c560ee4b/openai-skills/doc/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e0d0e51a1e7bcface4778ee3c69589a69d148c89/openai-skills/doc/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e0d0e51a1e7bcface4778ee3c69589a69d148c89/openai-skills/doc/agents.prod.yaml"
   }
 }
