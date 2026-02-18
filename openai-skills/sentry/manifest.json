@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's sentry skill and powered by gpt-5.2",
   "long_description": "This plugin supports sentry workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in sentry work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for sentry decisions, analysis, and communication.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/caacbe957499d796ecd471ec9a19f4155d1f4f74/openai-skills/sentry/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/caacbe957499d796ecd471ec9a19f4155d1f4f74/openai-skills/sentry/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f30de306400a362419c116183f8fed29d6318d5/openai-skills/sentry/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2f30de306400a362419c116183f8fed29d6318d5/openai-skills/sentry/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3d1b3885df94848cbecfd207fbc601dab3513f93/openai-skills/sentry/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3d1b3885df94848cbecfd207fbc601dab3513f93/openai-skills/sentry/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1a6ba4f735b3ea0e102a49132521f61d38a7f6b2/openai-skills/sentry/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1a6ba4f735b3ea0e102a49132521f61d38a7f6b2/openai-skills/sentry/agents.prod.yaml"
   }
 }
