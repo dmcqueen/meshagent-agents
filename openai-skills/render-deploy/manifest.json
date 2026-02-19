@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's render-deploy skill",
   "long_description": "This agent helps teams and users translate render-deploy needs into concrete, actionable outputs: ask domain-specific questions about render deployment, get clarified requirements, and receive step-by-step guidance tailored to project goals and constraints. It assists in turning ambiguous requests into clear plans and recommended actions that move deployments forward, helping coordinate tasks and decisions across teams. The agent adapts advice to the user\u2019s context so outcomes are practical and aligned with objectives, enabling faster, more reliable render deployment progress. It operates as an interactive assistant to streamline planning, troubleshooting, and execution of render-deploy work.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a632ccd1ad7b28488b078269f720477e7a6bf0/openai-skills/render-deploy/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a632ccd1ad7b28488b078269f720477e7a6bf0/openai-skills/render-deploy/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c76782fd64354b28aff6a7762b109a9012e7272b/openai-skills/render-deploy/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c76782fd64354b28aff6a7762b109a9012e7272b/openai-skills/render-deploy/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e7f867d7333f9dea3487a6b273f501d5e6e0c1da/openai-skills/render-deploy/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e7f867d7333f9dea3487a6b273f501d5e6e0c1da/openai-skills/render-deploy/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ed12fed4032c6406a812ffe62c4800de875b19c0/openai-skills/render-deploy/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ed12fed4032c6406a812ffe62c4800de875b19c0/openai-skills/render-deploy/agents.prod.yaml"
   }
 }
