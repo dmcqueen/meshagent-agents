@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's screenshot skill",
   "long_description": "This agent helps users and teams capture, analyze, and act on screenshots by answering domain-specific questions about visual content and turning ambiguous screenshot-related requests into clear, actionable tasks. It guides users through workflows for extracting insights, annotating, and comparing images to support decision-making, adapting its recommendations to the user\u2019s goals and constraints. The agent is suited for collaborative review of visual materials, streamlining tasks like identifying issues in images, generating concise next steps, and producing shareable summaries for stakeholders. Model/runtime specifics are minimal in scope and only relevant for ensuring responsive, context-aware guidance.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a5f0891cdd3568b43ed09ef0ffc8ccfb3af26f4c/openai-skills/screenshot/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a5f0891cdd3568b43ed09ef0ffc8ccfb3af26f4c/openai-skills/screenshot/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b2b8b3f0027988ab4f89fd2b2190cf8f1814270e/openai-skills/screenshot/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b2b8b3f0027988ab4f89fd2b2190cf8f1814270e/openai-skills/screenshot/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6aa6cf504d1e173c6fc8eb342288ac2fe257cfa0/openai-skills/screenshot/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6aa6cf504d1e173c6fc8eb342288ac2fe257cfa0/openai-skills/screenshot/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/afdaf4c314ec9d3ad2e49a9fa5dcefc7c2a95fcc/openai-skills/screenshot/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/afdaf4c314ec9d3ad2e49a9fa5dcefc7c2a95fcc/openai-skills/screenshot/agents.prod.yaml"
   }
 }
