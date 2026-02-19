@@ -10,10 +10,10 @@ This agent helps users and teams work effectively with Jupyter Notebook tasks by
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/597e8aac81989af2b53652b7f78533cfd611fa05/openai-skills/jupyter-notebook/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a87ca70143c30713849372a43b2e92f0d651f4c2/openai-skills/jupyter-notebook/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8aa5f31f2725235a3234385ff06e5e1d08e9126b/openai-skills/jupyter-notebook/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6a2d08807df393078e7705d1ba4b65e1181cbc0c/openai-skills/jupyter-notebook/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/597e8aac81989af2b53652b7f78533cfd611fa05/openai-skills/jupyter-notebook/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a87ca70143c30713849372a43b2e92f0d651f4c2/openai-skills/jupyter-notebook/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8aa5f31f2725235a3234385ff06e5e1d08e9126b/openai-skills/jupyter-notebook/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6a2d08807df393078e7705d1ba4b65e1181cbc0c/openai-skills/jupyter-notebook/agents.prod.yaml
