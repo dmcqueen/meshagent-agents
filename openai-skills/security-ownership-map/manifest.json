@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's security-ownership-map skill",
   "long_description": "This agent helps users and teams clarify and document who owns specific security responsibilities and tasks across a product or organization, turning vague questions into concrete ownership assignments and actionable next steps. It can answer domain-specific questions about security ownership, suggest practical ways to split responsibilities, and adapt its guidance to your goals and constraints so you can produce clear, implementable ownership maps. Teams can use it to reduce confusion, streamline handoffs, and ensure accountability for security controls and processes. The agent operates as a conversational tool that focuses on producing usable outcomes rather than implementation details.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e289b1a6999f1e8158af3611ce6c38717d83cb1/openai-skills/security-ownership-map/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e289b1a6999f1e8158af3611ce6c38717d83cb1/openai-skills/security-ownership-map/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/be8f2cb075a123d68d41f48e136c99253ef04af7/openai-skills/security-ownership-map/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/be8f2cb075a123d68d41f48e136c99253ef04af7/openai-skills/security-ownership-map/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d4b893a32982a1c10e6f7ccab4804b8a63f36b99/openai-skills/security-ownership-map/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d4b893a32982a1c10e6f7ccab4804b8a63f36b99/openai-skills/security-ownership-map/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8352e49cb95662edb75451ced4f7ce26789a9b9f/openai-skills/security-ownership-map/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8352e49cb95662edb75451ced4f7ce26789a9b9f/openai-skills/security-ownership-map/agents.prod.yaml"
   }
 }
