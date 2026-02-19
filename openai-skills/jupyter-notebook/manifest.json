@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's jupyter-notebook skill",
   "long_description": "This agent helps users and teams work effectively with Jupyter Notebook tasks by answering domain-specific questions, turning ambiguous requests into concrete, actionable steps, and adapting guidance to users\u2019 goals and constraints. It is useful for clarifying notebook workflows, producing step-by-step instructions for analyses or notebook setups, and helping translate high-level objectives into reproducible notebook actions. Teams can use it to accelerate collaboration by getting clear, context-aware recommendations and troubleshooting advice tailored to their work in Jupyter Notebooks. The agent operates interactively with a model runtime to generate these practical outcomes.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/597e8aac81989af2b53652b7f78533cfd611fa05/openai-skills/jupyter-notebook/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/597e8aac81989af2b53652b7f78533cfd611fa05/openai-skills/jupyter-notebook/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8aa5f31f2725235a3234385ff06e5e1d08e9126b/openai-skills/jupyter-notebook/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8aa5f31f2725235a3234385ff06e5e1d08e9126b/openai-skills/jupyter-notebook/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a87ca70143c30713849372a43b2e92f0d651f4c2/openai-skills/jupyter-notebook/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a87ca70143c30713849372a43b2e92f0d651f4c2/openai-skills/jupyter-notebook/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6a2d08807df393078e7705d1ba4b65e1181cbc0c/openai-skills/jupyter-notebook/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6a2d08807df393078e7705d1ba4b65e1181cbc0c/openai-skills/jupyter-notebook/agents.prod.yaml"
   }
 }
