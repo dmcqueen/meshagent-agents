@@ -10,10 +10,10 @@ This agent helps users and teams capture, organize, and act on knowledge inside 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8547cc199ae1619b55c22ecda680ce1c368c781e/openai-skills/notion-knowledge-capture/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a4dd0bb392d1bbd4984ad268d34718a9f0147d86/openai-skills/notion-knowledge-capture/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8883e7085a6aca9b6df92e981f9a2bf0ff95a4dd/openai-skills/notion-knowledge-capture/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b6fecb6d7f584192518955f83518a50ea57fab81/openai-skills/notion-knowledge-capture/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8547cc199ae1619b55c22ecda680ce1c368c781e/openai-skills/notion-knowledge-capture/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a4dd0bb392d1bbd4984ad268d34718a9f0147d86/openai-skills/notion-knowledge-capture/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8883e7085a6aca9b6df92e981f9a2bf0ff95a4dd/openai-skills/notion-knowledge-capture/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b6fecb6d7f584192518955f83518a50ea57fab81/openai-skills/notion-knowledge-capture/agents.prod.yaml
