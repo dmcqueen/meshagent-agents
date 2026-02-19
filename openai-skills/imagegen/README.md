@@ -10,10 +10,10 @@ This agent helps users and teams create clear, actionable image-generation reque
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/522aefc610407c79592bfc3625bbde998a59e8ba/openai-skills/imagegen/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d23c468ba30d6ccee66e19dcd9bb024866a8e06/openai-skills/imagegen/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7b886cf9e0980895e63f0fbb8a6f52a6dd45388c/openai-skills/imagegen/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/04d24e4478a023302d5f6078c6c9db14aec51ae6/openai-skills/imagegen/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/522aefc610407c79592bfc3625bbde998a59e8ba/openai-skills/imagegen/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d23c468ba30d6ccee66e19dcd9bb024866a8e06/openai-skills/imagegen/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7b886cf9e0980895e63f0fbb8a6f52a6dd45388c/openai-skills/imagegen/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/04d24e4478a023302d5f6078c6c9db14aec51ae6/openai-skills/imagegen/agents.prod.yaml
