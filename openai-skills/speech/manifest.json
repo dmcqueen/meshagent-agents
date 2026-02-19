@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's speech skill",
   "long_description": "This agent lets users and teams work with speech-related tasks by answering domain-specific questions, clarifying ambiguous requests into concrete actions, and adapting guidance to the user\u2019s goals, constraints, and context. It helps produce clear, actionable plans for speech workflows, troubleshoot or refine speech processes, and generate tailored recommendations that move projects forward. The agent is suitable for collaborative workflows where teams need consistent, context-aware assistance on speech topics. When necessary it uses a modern model runtime to provide informed, concise responses.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9743b43c75398556b44976fc2a993c6e13153f7e/openai-skills/speech/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9743b43c75398556b44976fc2a993c6e13153f7e/openai-skills/speech/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c3a0d5f0d27dd99171bb920f82ef58662de87e0c/openai-skills/speech/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c3a0d5f0d27dd99171bb920f82ef58662de87e0c/openai-skills/speech/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/27bb6b8b31e3e15617098b18c5be5a1cba8ab661/openai-skills/speech/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/27bb6b8b31e3e15617098b18c5be5a1cba8ab661/openai-skills/speech/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/601eb6ac5bea88a08cf974c688ed9befe0ca4fdd/openai-skills/speech/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/601eb6ac5bea88a08cf974c688ed9befe0ca4fdd/openai-skills/speech/agents.prod.yaml"
   }
 }
