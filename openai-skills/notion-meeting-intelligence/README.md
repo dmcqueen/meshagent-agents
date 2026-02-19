@@ -10,10 +10,10 @@ This agent helps teams extract actionable insights and next steps from meeting c
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/57bfaf22fd35b29576de522952445e935729bda9/openai-skills/notion-meeting-intelligence/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c007782bf9956c4c913b8c0b9b5de1b7a7e3c0f0/openai-skills/notion-meeting-intelligence/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23867d6d42c9125cc8758eee58ef66116216dbbe/openai-skills/notion-meeting-intelligence/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d30148a6f6f10d7b4de62d2247cef485ceaa2154/openai-skills/notion-meeting-intelligence/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/57bfaf22fd35b29576de522952445e935729bda9/openai-skills/notion-meeting-intelligence/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c007782bf9956c4c913b8c0b9b5de1b7a7e3c0f0/openai-skills/notion-meeting-intelligence/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/23867d6d42c9125cc8758eee58ef66116216dbbe/openai-skills/notion-meeting-intelligence/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d30148a6f6f10d7b4de62d2247cef485ceaa2154/openai-skills/notion-meeting-intelligence/agents.prod.yaml
