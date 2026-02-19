@@ -10,10 +10,10 @@ This agent helps teams manage Netlify deployment tasks by interpreting user goal
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a06c0026540fae2e7a7d1b92d0e316f8cc8932da/openai-skills/netlify-deploy/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0992541bf5ac98bde78e08b0908ec7d730dad775/openai-skills/netlify-deploy/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5acda45492d9abae91d085a19de44e3cb7f04dfc/openai-skills/netlify-deploy/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d8935a4d6c947f56818664b267d51ff9a4686b84/openai-skills/netlify-deploy/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a06c0026540fae2e7a7d1b92d0e316f8cc8932da/openai-skills/netlify-deploy/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0992541bf5ac98bde78e08b0908ec7d730dad775/openai-skills/netlify-deploy/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5acda45492d9abae91d085a19de44e3cb7f04dfc/openai-skills/netlify-deploy/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d8935a4d6c947f56818664b267d51ff9a4686b84/openai-skills/netlify-deploy/agents.prod.yaml
