@@ -10,10 +10,10 @@ This agent helps users and teams clarify and document who owns specific security
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e289b1a6999f1e8158af3611ce6c38717d83cb1/openai-skills/security-ownership-map/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d4b893a32982a1c10e6f7ccab4804b8a63f36b99/openai-skills/security-ownership-map/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/be8f2cb075a123d68d41f48e136c99253ef04af7/openai-skills/security-ownership-map/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8352e49cb95662edb75451ced4f7ce26789a9b9f/openai-skills/security-ownership-map/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3e289b1a6999f1e8158af3611ce6c38717d83cb1/openai-skills/security-ownership-map/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d4b893a32982a1c10e6f7ccab4804b8a63f36b99/openai-skills/security-ownership-map/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/be8f2cb075a123d68d41f48e136c99253ef04af7/openai-skills/security-ownership-map/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8352e49cb95662edb75451ced4f7ce26789a9b9f/openai-skills/security-ownership-map/agents.prod.yaml
