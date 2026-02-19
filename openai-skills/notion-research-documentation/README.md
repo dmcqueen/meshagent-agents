@@ -10,10 +10,10 @@ This agent helps users interact with and produce research-focused documentation 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/74751b52ddfd2c8c17c4a335b69ca786bcaeca56/openai-skills/notion-research-documentation/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/81425a34cb0a05b7d747b27471a8210ceb1c030a/openai-skills/notion-research-documentation/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1307578acbe7abaea804e2f749172c27f3712667/openai-skills/notion-research-documentation/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/31bda1f7d5a4926dc27b0b55149b466afa41db95/openai-skills/notion-research-documentation/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/74751b52ddfd2c8c17c4a335b69ca786bcaeca56/openai-skills/notion-research-documentation/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/81425a34cb0a05b7d747b27471a8210ceb1c030a/openai-skills/notion-research-documentation/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1307578acbe7abaea804e2f749172c27f3712667/openai-skills/notion-research-documentation/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/31bda1f7d5a4926dc27b0b55149b466afa41db95/openai-skills/notion-research-documentation/agents.prod.yaml
