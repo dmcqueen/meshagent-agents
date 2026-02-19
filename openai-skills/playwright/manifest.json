@@ -4,11 +4,11 @@
   "description": "An agent that uses OpenAI's playwright skill",
   "long_description": "This agent helps teams and individuals work with Playwright by answering domain-specific questions, turning ambiguous testing or automation requests into clear, actionable steps, and adapting guidance to the user\u2019s goals and constraints. Users can get practical advice for writing, debugging, and organizing Playwright tests, convert high-level requirements into concrete test plans or scripts, and receive context-aware recommendations to improve reliability and maintainability. The agent is intended for conversational, task-focused support that helps produce runnable test artifacts and clear next steps rather than broad high-level strategy.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/381044e34e9a01b8825f11b2bea0223fc82c3e9b/openai-skills/playwright/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/381044e34e9a01b8825f11b2bea0223fc82c3e9b/openai-skills/playwright/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/27c37347ec64f3aae15e18b5d45bbc211ddb97df/openai-skills/playwright/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/27c37347ec64f3aae15e18b5d45bbc211ddb97df/openai-skills/playwright/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/98caa0d5701500ff02abb5340e2faf0ebe305f9d/openai-skills/playwright/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/98caa0d5701500ff02abb5340e2faf0ebe305f9d/openai-skills/playwright/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9c276411d8d0d5a64c2f1dc19d51197543eadadf/openai-skills/playwright/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9c276411d8d0d5a64c2f1dc19d51197543eadadf/openai-skills/playwright/agents.prod.yaml"
   }
 }
