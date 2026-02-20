@@ -1,14 +1,6 @@
 # meshagent-agents
 
-Repository of MeshAgent project manifests used for install links, publishing, and Webflow catalog sync.
-
-## Layout
-
-- `openai-skills/`: OpenAI skill-based agents.
-- `knowledge-work-plugins/`: domain/role-oriented plugin agents.
-- project folders at root (examples: `industry-report/`, `resume_multi/`, `meshagent-cordina/`, `meshagent-recruit/`).
-
-Each project folder is treated as one publishable agent project.
+Repository of MeshAgent project manifests used for install links and publishing.
 
 ## Files per project
 
@@ -46,28 +38,6 @@ Notes:
   - `us-central1-docker.pkg.dev/meshagent-life/meshagent-public/`
 
 When a project has no prod manifest, pipeline tooling materializes `agents.prod.yaml` from best available source YAML.
-
-## Update workflow
-
-From the utilities repo root (`meshagent-agents-utils/`):
-
-1. Preview:
-
-```bash
-deploy/scripts/maybe_push_agents_to_webflow.sh
-```
-
-2. Apply:
-
-```bash
-deploy/scripts/maybe_push_agents_to_webflow.sh --confirm
-```
-
-If you need to regenerate all metadata sidecars:
-
-```bash
-WEBFLOW_SYNC_REPO_METADATA_FORCE=1 deploy/scripts/maybe_push_agents_to_webflow.sh --confirm
-```
 
 ## Editing guidance
 
