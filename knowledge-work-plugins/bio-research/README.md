@@ -6,14 +6,14 @@ An agent that uses Anthropic's bio research knowledge work plugin
 
 ## Description
 
-This agent helps research teams explore biomedical topics and convert complex scientific literature and data context into concise, actionable summaries that support decision-making. Users can run focused literature syntheses, frame testable hypotheses, and produce evidence-oriented analyses to guide experimental design or computational workflows. It also assists with practical research tasks such as selecting scientific problems, planning single-cell RNA quality-control and analysis steps, and aligning instrument data with standardized formats to improve reproducibility. Brief model-driven guidance helps translate domain knowledge into clear next steps and deliverables for research projects.
+This plugin supports bio research workflows and is designed to help users complete practical work with less manual effort. It can support research exploration across biomedical topics, synthesize scientific context into focused, usable summaries, and assist with hypothesis framing and evidence-oriented analysis. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for bio research decisions, analysis, and communication.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/26b62027d612bf27fe74a2682c72d0894e6d16e9/knowledge-work-plugins/bio-research/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ced1f5c43c4c5fd43c4ce8c6cd294d668ad2bd89/knowledge-work-plugins/bio-research/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dedac920ee5648b7786e09af805b44212dbac5b6/knowledge-work-plugins/bio-research/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f2b44130d9f6fd794dfc94391a74598f183eb81c/knowledge-work-plugins/bio-research/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/26b62027d612bf27fe74a2682c72d0894e6d16e9/knowledge-work-plugins/bio-research/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ced1f5c43c4c5fd43c4ce8c6cd294d668ad2bd89/knowledge-work-plugins/bio-research/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/dedac920ee5648b7786e09af805b44212dbac5b6/knowledge-work-plugins/bio-research/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f2b44130d9f6fd794dfc94391a74598f183eb81c/knowledge-work-plugins/bio-research/agents.prod.yaml
