@@ -6,7 +6,7 @@ An agent that uses Anthropic's productivity knowledge work plugin
 
 ## Description
 
-This plugin supports productivity workflows and is designed to help users complete practical work with less manual effort. It can turn rough requests into structured plans and deliverables, summarize context and extract clear next actions, and support day-to-day execution across writing, planning, and decision support. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for productivity decisions, analysis, and communication.
+This agent helps teams and individuals turn rough ideas into structured plans, clear deliverables, and actionable next steps so work moves forward with less friction. Use it to summarize context, extract concise action items, and maintain or update ongoing task plans to support day-to-day execution across writing, planning, and decision-making. It can assist with managing memory of project details and keeping task lists current so workstreams remain coordinated and progress is visible. The outcome is faster alignment on what to do next and clearer, more reliable execution of knowledge work.
 
 ## Install Links
 
