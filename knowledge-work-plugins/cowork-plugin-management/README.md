@@ -6,7 +6,7 @@ An agent that uses Anthropic's cowork plugin management knowledge work plugin
 
 ## Description
 
-This plugin supports cowork plugin management workflows and is designed to help users complete practical work with less manual effort. It can help design and organize plugin workflows for agent capabilities, guide implementation planning for commands, skills, and docs, and improve consistency and maintainability of plugin artifacts. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for cowork plugin management decisions, analysis, and communication.
+This agent helps teams design, organize, and improve management workflows for coworking plugins, enabling clearer planning and coordination around plugin commands, skills, and documentation to produce more consistent and maintainable plugin artifacts. Users can get step-by-step guidance for structuring plugin capabilities, defining necessary skills, and preparing implementation plans that align with team goals and operational needs. It supports reviewing and refining artifacts so teams can reduce inconsistencies and speed up delivery of usable plugin features. The agent is focused on practical design and planning outcomes rather than executing runtime operations.
 
 ## Install Links
 
