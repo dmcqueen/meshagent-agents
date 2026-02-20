@@ -10,10 +10,10 @@ This agent helps finance teams analyze financial questions, summarize reports, a
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5c823cf5f3aa0cce53114961c1b81305d1d61248/knowledge-work-plugins/finance/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0caa9279898081a017dc6c15e938548dfe0742a8/knowledge-work-plugins/finance/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b5ae6714eed077f5635047005d50133de1918e1/knowledge-work-plugins/finance/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab82c5613b57c6be32f1d678ff1525b6464d7cca/knowledge-work-plugins/finance/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5c823cf5f3aa0cce53114961c1b81305d1d61248/knowledge-work-plugins/finance/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0caa9279898081a017dc6c15e938548dfe0742a8/knowledge-work-plugins/finance/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5b5ae6714eed077f5635047005d50133de1918e1/knowledge-work-plugins/finance/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ab82c5613b57c6be32f1d678ff1525b6464d7cca/knowledge-work-plugins/finance/agents.prod.yaml
