@@ -1,0 +1,19 @@
+# Claude Customer Support MeshAgent
+
+## Summary
+
+An agent that uses Anthropic's customer support knowledge work plugin with a nightly docs sync worker
+
+## Description
+
+This agent helps customer support teams find, synthesize, and act on information stored in their support knowledge base so they can resolve tickets faster and more consistently. Users can ask domain-specific questions, get drafted responses or knowledge-base articles, and convert vague requests into concrete triage steps or escalation plans tailored to their goals and constraints. It supports routine workflows like ticket triage, drafting replies, conducting research, creating or updating KB content, and preparing escalation handoffs to reduce resolution time and improve handoff clarity. Nightly documentation syncs keep source content up to date so outputs reflect recent knowledge.
+
+## Install Links
+
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4610dbab08a9d9de334c0ae55021957bfbb9588d/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c3fd2c5b50f7ae0d093f4e09fbdb4197831b833d/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
+
+## Raw SHA Links
+
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4610dbab08a9d9de334c0ae55021957bfbb9588d/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c3fd2c5b50f7ae0d093f4e09fbdb4197831b833d/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
