@@ -10,10 +10,10 @@ This plugin supports agents.prod workflows and is designed to help users complet
 
 ## Install Links
 
-- Dev: 
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/44bccf330f0ed636fd2fb654dd27122c5c9c3d1e/meshagent-recruit/agent.yaml
 - Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b39720bb54c4956e000ef79e626fbc6ff891a3e0/meshagent-recruit/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: 
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/44bccf330f0ed636fd2fb654dd27122c5c9c3d1e/meshagent-recruit/agent.yaml
 - Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b39720bb54c4956e000ef79e626fbc6ff891a3e0/meshagent-recruit/agents.prod.yaml
