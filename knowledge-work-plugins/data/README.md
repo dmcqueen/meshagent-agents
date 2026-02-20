@@ -6,7 +6,7 @@ An agent that uses Anthropic's data knowledge work plugin
 
 ## Description
 
-This plugin supports data workflows and is designed to help users complete practical work with less manual effort. It can analyze data-related questions and interpret findings clearly, help structure analytical workflows from question to conclusion, and produce concise explanations and summaries for stakeholders. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for data decisions, analysis, and communication.
+This agent helps users and teams analyze data questions end-to-end, guiding workflows from initial inquiry through validation, exploration, statistical analysis, and clear conclusions that stakeholders can act on. It can generate and refine SQL queries, produce concise explanations of findings, and design visualizations and interactive dashboards to present results effectively. Teams can use it to validate data quality, interpret analytical results, and iterate on analyses to ensure insights are robust and actionable. The agent is intended to integrate into data-focused workflows so users spend less time on routine tasks and more time applying insights.
 
 ## Install Links
 
