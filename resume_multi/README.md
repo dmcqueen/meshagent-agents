@@ -1,4 +1,4 @@
-# Jobpostingassistant
+# Job Posting Assistant
 
 ## Summary
 
