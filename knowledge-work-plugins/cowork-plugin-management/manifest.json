@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's cowork plugin management knowledge work plugin",
   "long_description": "This agent helps teams design, organize, and improve management of cowork plugins by guiding the planning and structuring of plugin workflows, commands, skills, and documentation to produce more consistent and maintainable plugin artifacts. Users can get concrete guidance on how to map agent capabilities to plugin features, plan implementation steps for commands and skills, and align documentation with intended workflows so plugins are easier to use and maintain. It supports collaborative decision-making around plugin structure and consistency, helping reduce rework and improve clarity for implementers and maintainers. The agent runs as a knowledge-work assistant for plugin management and focuses on actionable planning and organization rather than executing code.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/beaaa680788cce1e0a5f010a06a5264df303ab53/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/beaaa680788cce1e0a5f010a06a5264df303ab53/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/24f24612d098e750745807bbf9c9f8b7bf37b484/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/24f24612d098e750745807bbf9c9f8b7bf37b484/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f44e5ce69860d8d73adbb0d05bc320da9dba2d2b/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f44e5ce69860d8d73adbb0d05bc320da9dba2d2b/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f4334cf22d3825730d41dbce0474961f345e29b/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f4334cf22d3825730d41dbce0474961f345e29b/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml"
   }
 }
