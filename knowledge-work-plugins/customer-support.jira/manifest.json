@@ -1,14 +1,14 @@
 {
   "id": "claude-customer-support-meshagent",
   "name": "Claude Customer Support MeshAgent",
-  "description": "An agent that uses Anthropic's customer support knowledge work plugin with a nightly docs sync worker",
-  "long_description": "This agent helps customer support teams find, synthesize, and act on information stored in their support knowledge base so they can resolve tickets faster and more consistently. Users can ask domain-specific questions, get drafted responses or knowledge-base articles, and convert vague requests into concrete triage steps or escalation plans tailored to their goals and constraints. It supports routine workflows like ticket triage, drafting replies, conducting research, creating or updating KB content, and preparing escalation handoffs to reduce resolution time and improve handoff clarity. Nightly documentation syncs keep source content up to date so outputs reflect recent knowledge.",
+  "description": "An agent that uses Anthropic's customer support knowledge work plugin with Jira Rovo MCP integration and a nightly docs sync worker",
+  "long_description": "This agent helps customer support teams triage and resolve issues with Jira and Jira Service Management through Atlassian Rovo MCP integration, while using synced MeshAgent documentation for accurate product guidance. It supports core support workflows including ticket triage, duplicate checks, escalation packaging, customer-response drafting, knowledge-base drafting, and issue research with source attribution. Teams can use it to route work to the right queue, maintain consistent customer communication, and prepare high-quality escalation briefs with links to related Jira items. Nightly documentation sync keeps support guidance current, and connected Jira tooling improves traceability from intake through escalation and resolution.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4610dbab08a9d9de334c0ae55021957bfbb9588d/knowledge-work-plugins/customer-support.jira/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4610dbab08a9d9de334c0ae55021957bfbb9588d/knowledge-work-plugins/customer-support.jira/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/608ee54944481e8362555e9c3d50984e9f75ebdb/knowledge-work-plugins/customer-support.jira/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/608ee54944481e8362555e9c3d50984e9f75ebdb/knowledge-work-plugins/customer-support.jira/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c3fd2c5b50f7ae0d093f4e09fbdb4197831b833d/knowledge-work-plugins/customer-support.jira/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c3fd2c5b50f7ae0d093f4e09fbdb4197831b833d/knowledge-work-plugins/customer-support.jira/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1f74b8aa60e1dbdae84a1b29349d0ed5e7941c65/knowledge-work-plugins/customer-support.jira/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1f74b8aa60e1dbdae84a1b29349d0ed5e7941c65/knowledge-work-plugins/customer-support.jira/agents.prod.yaml"
   }
 }
