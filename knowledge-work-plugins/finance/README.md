@@ -6,7 +6,7 @@ An agent that uses Anthropic's finance knowledge work plugin
 
 ## Description
 
-This plugin supports finance workflows and is designed to help users complete practical work with less manual effort. It can analyze financial questions and explain implications clearly, summarize reports and highlight the most decision-relevant signals, and prepare structured outputs for planning, review, and stakeholder updates. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for finance decisions, analysis, and communication.
+This agent helps finance teams analyze questions and documents, summarize reports, and produce structured outputs for planning, reviews, and stakeholder updates to support better decision-making. Users can request variance analyses, reconciliation guidance, journal entry preparation, close-management support, and audit or SOX testing assistance to streamline month-end and control activities. The agent highlights the most decision-relevant signals in financial statements and produces clear explanations of implications for stakeholders. It is intended to be used as an assistive tool for producing actionable, audit-ready summaries and structured deliverables for finance workflows.
 
 ## Install Links
 
