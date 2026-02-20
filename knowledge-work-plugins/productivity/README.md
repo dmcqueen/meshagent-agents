@@ -10,10 +10,10 @@ This agent helps teams and individuals turn rough requests into structured plans
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8179807f0db05bf64546ee6040cd6de00197a757/knowledge-work-plugins/productivity/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4f3f2f9008e26c69bcc0ab5b5e8e9dc86222da3a/knowledge-work-plugins/productivity/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c7dce758022d92f80d46be00015446ed7179383e/knowledge-work-plugins/productivity/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a8e5cce7602e314ce51c88d4bd6da9a7e4a83af/knowledge-work-plugins/productivity/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8179807f0db05bf64546ee6040cd6de00197a757/knowledge-work-plugins/productivity/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4f3f2f9008e26c69bcc0ab5b5e8e9dc86222da3a/knowledge-work-plugins/productivity/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c7dce758022d92f80d46be00015446ed7179383e/knowledge-work-plugins/productivity/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3a8e5cce7602e314ce51c88d4bd6da9a7e4a83af/knowledge-work-plugins/productivity/agents.prod.yaml
