@@ -6,7 +6,7 @@ Agents for resume intake, analysis, and scheduled scoring.
 
 ## Description
 
-This plugin supports agents.prod workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in agents.prod work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for agents.prod decisions, analysis, and communication.
+JobPostingAssistant manages a hiring pipeline: mailbot ingests resume PDFs into the resumes table (deduped by normalized email), worker generates scheduled candidate scoring reports based on the job description, and chatbot answers questions and helps refine the plain-text job posting stored in room storage Agents for resume intake, analysis, and scheduled scoring.
 
 ## Install Links
 

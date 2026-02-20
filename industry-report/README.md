@@ -6,7 +6,7 @@ Agents for industry intelligence collection, event tracking, and reporting.
 
 ## Description
 
-This plugin supports agents.prod workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in agents.prod work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for agents.prod decisions, analysis, and communication.
+IndustryReportSystem gathers daily industry intelligence into Companies, People, Products, Features, Subscribers, and the current-week Events table. A mailbot manages subscriptions, a scheduled shard manager archives the weekly events into events_YYYY_MM_DD at Saturday night UTC midnight, a gatherer ingests x.com hashtag updates and web research, and a nightly reporter emails summaries to subscribers Agents for industry intelligence collection, event tracking, and reporting.
 
 ## Install Links
 

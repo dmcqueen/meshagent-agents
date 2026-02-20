@@ -6,7 +6,7 @@ MeshAgent service that captures recruiting form submissions (job postings and re
 
 ## Description
 
-This plugin supports agents.prod workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in agents.prod work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for agents.prod decisions, analysis, and communication.
+This plugin supports MeshAgent service that captures recruiting form submissions (job postings and resumes), stores them, and sends acknowledgement email workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in MeshAgent service that captures recruiting form submissions (job postings and resumes), stores them, and sends acknowledgement email work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for MeshAgent service that captures recruiting form submissions (job postings and resumes), stores them, and sends acknowledgement email decisions, analysis, and communication.
 
 ## Install Links
 

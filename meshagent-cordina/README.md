@@ -6,7 +6,7 @@ MeshAgent service that pairs the Cordina chatbot with the email worker.
 
 ## Description
 
-This plugin supports agents.prod workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in agents.prod work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for agents.prod decisions, analysis, and communication.
+This plugin supports MeshAgent service that pairs the Cordina chatbot with the email worker workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in MeshAgent service that pairs the Cordina chatbot with the email worker work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for MeshAgent service that pairs the Cordina chatbot with the email worker decisions, analysis, and communication.
 
 ## Install Links
 
