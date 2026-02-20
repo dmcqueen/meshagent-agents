@@ -10,10 +10,10 @@ This agent helps teams design, organize, and improve management of cowork plugin
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d7f0b3c49390c90d9af2c9445e264ac4cf1be233/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1d5d215ac91a5e02bfec75492eb05c14e7c19dfb/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a3a16e5cee8baf6918df588ea38237a493a97753/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/59ff5a0cde67059ca8c7887f085e521bf3c392fe/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d7f0b3c49390c90d9af2c9445e264ac4cf1be233/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1d5d215ac91a5e02bfec75492eb05c14e7c19dfb/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a3a16e5cee8baf6918df588ea38237a493a97753/knowledge-work-plugins/cowork-plugin-management/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/59ff5a0cde67059ca8c7887f085e521bf3c392fe/knowledge-work-plugins/cowork-plugin-management/agents.prod.yaml
