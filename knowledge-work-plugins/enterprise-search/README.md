@@ -6,7 +6,7 @@ An agent that uses Anthropic's enterprise search knowledge work plugin
 
 ## Description
 
-This plugin supports enterprise search workflows and is designed to help users complete practical work with less manual effort. It can find relevant internal information across large knowledge sources, synthesize results into concise, decision-ready summaries, and answer context-rich questions grounded in available enterprise content. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for enterprise search decisions, analysis, and communication.
+This agent lets teams quickly locate and synthesize relevant internal information from large enterprise knowledge sources so they can make faster, better-informed decisions. Users can run focused searches, gather and compare evidence from multiple documents, and receive concise, decision-ready summaries that directly reference the underlying content. It also supports designing search strategies and managing which sources are consulted, helping reduce time spent hunting for context and increasing confidence in answers to complex, context-rich questions. The agent is intended for practical knowledge work workflows where grounded, source-backed responses and clear synthesis are the primary outcomes.
 
 ## Install Links
 
