@@ -10,10 +10,10 @@ This agent helps customer support teams triage incoming issues, prioritize urgen
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/da41d0e260f01414ceb9ffc10d3b4941f93195d1/knowledge-work-plugins/customer-support/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cf422182acbb7e02f0366bac0fb823cc5ef31d3c/knowledge-work-plugins/customer-support/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7ff805df4d60940a39c68f684cdb8e42b142de3d/knowledge-work-plugins/customer-support/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b1b7e2bcc0c95f1840e6881a4be5d18f91838369/knowledge-work-plugins/customer-support/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/da41d0e260f01414ceb9ffc10d3b4941f93195d1/knowledge-work-plugins/customer-support/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cf422182acbb7e02f0366bac0fb823cc5ef31d3c/knowledge-work-plugins/customer-support/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7ff805df4d60940a39c68f684cdb8e42b142de3d/knowledge-work-plugins/customer-support/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b1b7e2bcc0c95f1840e6881a4be5d18f91838369/knowledge-work-plugins/customer-support/agents.prod.yaml
