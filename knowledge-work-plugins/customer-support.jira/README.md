@@ -1,4 +1,4 @@
-# Claude Customer Support Jira
+# Claude Customer Support With Jira Connector
 
 ## Summary
 
@@ -6,14 +6,14 @@ An agent that uses Anthropic's customer support knowledge work plugin with Jira 
 
 ## Description
 
-This agent helps customer support teams manage and resolve Jira-based tickets by turning vague requests into clear, actionable plans, drafting responses, and suggesting appropriate escalations or knowledge-base updates. Teams can use it to triage incoming issues, create or improve KB articles, and coordinate escalations to resolve customer problems more quickly and consistently. It also supports adapting guidance to specific goals and constraints so responses and workflows align with team priorities. A nightly sync ensures documentation stays current so the team’s knowledge and suggested actions reflect the latest information.
+This agent enables customer support teams to research issues, triage and escalate tickets, draft and refine responses, and create or update knowledge-base articles to improve resolution times and consistency. It helps turn ambiguous support requests into clear, actionable tasks and provides guidance tailored to user goals, constraints, and context so teams can prioritize work and communicate effectively. Nightly documentation syncs keep knowledge up to date while integrations with ticketing workflows let teams escalate and track issues within their existing support process. Overall, the agent streamlines customer-research, knowledge management, and response workflows to reduce friction across support operations.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a68cf3391385424aacfe30bcd710d02357425db4/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c63fc97318dddeec534bf2c5b23f2dca6c0517a3/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03de1a79875926a735a7eda85231b53d1bedf662/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a4e6dfcd4bddc4d759108b6410dc81f6109efa4b/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a68cf3391385424aacfe30bcd710d02357425db4/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c63fc97318dddeec534bf2c5b23f2dca6c0517a3/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03de1a79875926a735a7eda85231b53d1bedf662/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a4e6dfcd4bddc4d759108b6410dc81f6109efa4b/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
