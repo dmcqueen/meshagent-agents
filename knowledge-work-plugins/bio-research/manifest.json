@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's bio research knowledge work plugin",
   "long_description": "This agent helps research teams explore biomedical topics and convert complex scientific literature and data context into concise, actionable summaries that support decision-making. Users can run focused literature syntheses, frame testable hypotheses, and produce evidence-oriented analyses to guide experimental design or computational workflows. It also assists with practical research tasks such as selecting scientific problems, planning single-cell RNA quality-control and analysis steps, and aligning instrument data with standardized formats to improve reproducibility. Brief model-driven guidance helps translate domain knowledge into clear next steps and deliverables for research projects.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9f2e30058a4b2c575d2e9a8bd6ade858be2cb5b7/knowledge-work-plugins/bio-research/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9f2e30058a4b2c575d2e9a8bd6ade858be2cb5b7/knowledge-work-plugins/bio-research/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ccca31b0214476a32671816b26218476b48f46df/knowledge-work-plugins/bio-research/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ccca31b0214476a32671816b26218476b48f46df/knowledge-work-plugins/bio-research/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03827f1842172721aa0156e7bc59752b14f3f197/knowledge-work-plugins/bio-research/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/03827f1842172721aa0156e7bc59752b14f3f197/knowledge-work-plugins/bio-research/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b29009b24fa77d4d5bc5b826f838e40cd576dbbc/knowledge-work-plugins/bio-research/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b29009b24fa77d4d5bc5b826f838e40cd576dbbc/knowledge-work-plugins/bio-research/agents.prod.yaml"
   }
 }
