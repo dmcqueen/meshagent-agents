@@ -10,10 +10,10 @@ This agent helps product teams turn research, feedback, and data into clear, act
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/19a902ddfd2c3a9b171e36fad07dcac2caf62817/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/11c8700cf3e01ce310c8d3ce2ac6d5040e5ba789/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/19da7a877933eefe45a45ca3c925a4908775b2d3/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/afa6564d486471a23672c466129d33de503f86fc/knowledge-work-plugins/product-management/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/19a902ddfd2c3a9b171e36fad07dcac2caf62817/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/11c8700cf3e01ce310c8d3ce2ac6d5040e5ba789/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/19da7a877933eefe45a45ca3c925a4908775b2d3/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/afa6564d486471a23672c466129d33de503f86fc/knowledge-work-plugins/product-management/agents.prod.yaml
