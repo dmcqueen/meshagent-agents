@@ -6,14 +6,14 @@ An agent that uses Anthropic's enterprise search knowledge work plugin
 
 ## Description
 
-This agent enables teams to locate and synthesize relevant internal information from large enterprise knowledge repositories, producing concise, decision-ready summaries that help stakeholders act more quickly. Users can ask context-rich questions and receive answers grounded in available organizational content, with the agent surfacing the most pertinent sources and clarifying tradeoffs or next steps. It supports refining search strategy and managing sources to improve relevance over time, making it useful for research, onboarding, and cross-functional decision support. The agent is intended for use in enterprise environments where accuracy and traceability to internal content are important.
+This plugin supports enterprise search workflows and is designed to help users complete practical work with less manual effort. It can find relevant internal information across large knowledge sources, synthesize results into concise, decision-ready summaries, and answer context-rich questions grounded in available enterprise content. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for enterprise search decisions, analysis, and communication.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f146c8b87e78246f3534fe1fc76458f1b3e9b18a/knowledge-work-plugins/enterprise-search/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8d4b70e902c6c2dc90cef80aecf62ed205d8bf98/knowledge-work-plugins/enterprise-search/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5d4fb50b99670f1d514635cdd7bb5ac3ffe6a59e/knowledge-work-plugins/enterprise-search/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0415716f24b7961a0c75820529c7ebaf88b08a48/knowledge-work-plugins/enterprise-search/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f146c8b87e78246f3534fe1fc76458f1b3e9b18a/knowledge-work-plugins/enterprise-search/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8d4b70e902c6c2dc90cef80aecf62ed205d8bf98/knowledge-work-plugins/enterprise-search/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5d4fb50b99670f1d514635cdd7bb5ac3ffe6a59e/knowledge-work-plugins/enterprise-search/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0415716f24b7961a0c75820529c7ebaf88b08a48/knowledge-work-plugins/enterprise-search/agents.prod.yaml
