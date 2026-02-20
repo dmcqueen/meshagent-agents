@@ -9,7 +9,7 @@ variables:
 
 metadata:
   name: claude-customer-support-meshagent
-  description: An agent that uses Anthropic's customer support knowledge work plugin with a nightly docs sync worker
+  description: An agent that uses Anthropic's customer support knowledge work plugin with Jira Rovo MCP integration and a nightly docs sync worker
   annotations:
     meshagent.service.id: meshagent.claude-customer-support-meshagent
 
