@@ -6,7 +6,7 @@ Agents for resume intake, analysis, and scheduled scoring.
 
 ## Description
 
-JobPostingAssistant manages a hiring pipeline: mailbot ingests resume PDFs into the resumes table (deduped by normalized email), worker generates scheduled candidate scoring reports based on the job description, and chatbot answers questions and helps refine the plain-text job posting stored in room storage Agents for resume intake, analysis, and scheduled scoring.
+Job Posting Assistant manages a hiring pipeline: mailbot ingests resume PDFs into the resumes table (deduped by normalized email), worker generates scheduled candidate scoring reports based on the job description, and chatbot answers questions and helps refine the plain-text job posting stored in room storage Agents for resume intake, analysis, and scheduled scoring.
 
 ## Install Links
 

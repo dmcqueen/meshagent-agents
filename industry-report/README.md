@@ -6,7 +6,7 @@ Agents for industry intelligence collection, event tracking, and reporting.
 
 ## Description
 
-IndustryReportSystem gathers daily industry intelligence into Companies, People, Products, Features, Subscribers, and the current-week Events table. A mailbot manages subscriptions, a scheduled shard manager archives the weekly events into events_YYYY_MM_DD at Saturday night UTC midnight, a gatherer ingests x.com hashtag updates and web research, and a nightly reporter emails summaries to subscribers Agents for industry intelligence collection, event tracking, and reporting.
+Industry Report System gathers daily industry intelligence into Companies, People, Products, Features, Subscribers, and the current-week Events table. A mailbot manages subscriptions, a scheduled shard manager archives the weekly events into events_YYYY_MM_DD at Saturday night UTC midnight, a gatherer ingests x.com hashtag updates and web research, and a nightly reporter emails summaries to subscribers Agents for industry intelligence collection, event tracking, and reporting.
 
 ## Install Links
 
