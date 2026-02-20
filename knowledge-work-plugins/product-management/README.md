@@ -6,7 +6,7 @@ An agent that uses Anthropic's product management knowledge work plugin
 
 ## Description
 
-This plugin supports product management workflows and is designed to help users complete practical work with less manual effort. It can shape product requirements and prioritize roadmap decisions, synthesize user feedback into actionable product insights, and draft product docs for planning, alignment, and execution. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for product management decisions, analysis, and communication.
+This agent helps product teams turn research and feedback into clear, prioritized work by synthesizing user insights, drafting feature specifications, and shaping roadmap decisions to align stakeholders and measurable outcomes. Teams can use it to produce competitive briefs, define metrics and success criteria, update roadmaps, and create stakeholder communications that keep planning and execution coordinated. It supports recurring review workflows like metrics tracking and research synthesis so teams maintain momentum and make data-informed tradeoffs. Lightweight model/runtime details are abstracted away, letting teams focus on producing actionable product artifacts.
 
 ## Install Links
 
