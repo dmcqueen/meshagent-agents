@@ -6,7 +6,7 @@ An agent that uses Anthropic's customer support knowledge work plugin
 
 ## Description
 
-This plugin supports customer support workflows and is designed to help users complete practical work with less manual effort. It can triage customer issues and prioritize urgent cases, draft clear, empathetic responses and follow-up messages, and propose next steps that move tickets toward resolution. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for customer support decisions, analysis, and communication.
+This agent helps customer support teams triage incoming tickets, prioritize urgent cases, and move issues toward timely resolution by proposing clear next steps and escalation paths. It can draft empathetic, professional responses and follow-up messages tailored to customer context, and generate concise knowledge-base articles or research summaries to capture institutional knowledge. Teams can use the agent to streamline escalation decisions, reduce response times, and improve consistency across support communications. When connected to a compatible runtime, it operates as an interactive assistant for support workflows without replacing human judgment.
 
 ## Install Links
 
