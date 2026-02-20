@@ -75,9 +75,7 @@ container:
           if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-supportagent.txt ]]; then
             run_nonfatal "stage supportagent rules" cp /var/rules-claude-customer-support-supportagent.txt /data/agents/claude-customer-support-meshagent/rules-supportagent.txt
           fi
-          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-git-worker.txt ]]; then
-            run_nonfatal "stage worker rules" cp /var/rules-claude-customer-support-git-worker.txt /data/agents/claude-customer-support-meshagent/rules-git-worker.txt
-          fi
+          run_nonfatal "stage worker rules" cp /var/rules-claude-customer-support-git-worker.txt /data/agents/claude-customer-support-meshagent/rules-git-worker.txt
 
           if [[ -f /var/update-meshagent-docs.sh ]]; then
             run_nonfatal "stage docs sync script" cp /var/update-meshagent-docs.sh "${SYNC_SCRIPT}"
@@ -151,11 +149,13 @@ container:
     - path: /var/rules-claude-customer-support-git-worker.txt
       read_only: true
       text: |
-          When this worker runs, execute the docs sync script by running "bash /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh" using the shell tool.
-          Run the script once per run.
-          Read /data/.runtime/meshagent-docs-sync.status after the script completes. If /data/.runtime/meshagent-docs-sync.cloned exists, treat it as a clone event, send the email, and remove the marker file so it only notifies once.
-          Send a verbose status email using the email toolkit to {{AdminEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URLs, status, changed, event, before_commit, after_commit, agents_before_commit, agents_after_commit, agents_changed, cloned_repo, and any error details. If event=cloned or the clone marker exists, explicitly state which repo(s) were cloned. 
-          After sending (or deciding not to send), delete /data/.runtime/meshagent-docs-sync.status to avoid keeping status files in room storage.
+          Before running the sync, delete stale files with one shell command: "rm -f /data/.runtime/meshagent-docs-sync.status /data/.runtime/meshagent-docs-sync.cloned".
+          Execute the docs sync script exactly once by running "bash /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh" using the shell tool.
+          If script execution fails, immediately send a failure email to {{AdminEmail}} and include the script execution error text; do not report success.
+          If /data/.runtime/meshagent-docs-sync.status is missing after script execution, immediately send a failure email to {{AdminEmail}} with error=status file missing; do not report success.
+          Read /data/.runtime/meshagent-docs-sync.status after the script completes. If /data/.runtime/meshagent-docs-sync.cloned exists, treat it as a clone event and include it in the notification details.
+          Send a verbose status email using the email toolkit to {{AdminEmail}} when status=failure OR changed=true OR event=cloned OR the clone marker exists. Include timestamp, repo URLs, status, changed, event, before_commit, after_commit, agents_before_commit, agents_after_commit, agents_changed, cloned_repo, and any error details. If event=cloned or the clone marker exists, explicitly state which repo(s) were cloned.
+          After sending (or deciding not to send), delete /data/.runtime/meshagent-docs-sync.status and /data/.runtime/meshagent-docs-sync.cloned.
           Do not make any other changes.
     - path: /var/rules-claude-customer-support-mailbot.txt
       read_only: true
