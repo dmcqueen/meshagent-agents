@@ -6,7 +6,7 @@ An agent that uses Anthropic's marketing knowledge work plugin
 
 ## Description
 
-This plugin supports marketing workflows and is designed to help users complete practical work with less manual effort. It can generate campaign concepts and message variants for different audiences, plan content and channel strategies with clear goals, and refine copy for clarity, positioning, and consistency. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for marketing decisions, analysis, and communication.
+This agent helps marketing teams generate and refine campaign concepts, craft message variants tailored to different audiences, and plan content and channel strategies that align with clear goals. Users can produce consistent brand voice guidance, competitive briefs, and sequenced email or content drafts to accelerate execution and improve messaging clarity. It also supports content-level reviews and basic performance reporting to inform iteration and optimize outcomes. The agent is intended for practical marketing workstreams and collaboration rather than technical deployment tasks.
 
 ## Install Links
 
