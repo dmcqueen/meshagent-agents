@@ -10,10 +10,10 @@ This agent helps users and teams turn data questions into clear, actionable anal
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b2a7cbf8999e60ec00eacdf7558f8144e1fbd232/knowledge-work-plugins/data/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eee10b5ee75ba8c099f0133514a922d4b4f59ac4/knowledge-work-plugins/data/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86cd8924fe17b3ddcf1567746a64c25b5b87360d/knowledge-work-plugins/data/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/067c13cf2cdbfee9be94c7986cfa695c413d1810/knowledge-work-plugins/data/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b2a7cbf8999e60ec00eacdf7558f8144e1fbd232/knowledge-work-plugins/data/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/eee10b5ee75ba8c099f0133514a922d4b4f59ac4/knowledge-work-plugins/data/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/86cd8924fe17b3ddcf1567746a64c25b5b87360d/knowledge-work-plugins/data/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/067c13cf2cdbfee9be94c7986cfa695c413d1810/knowledge-work-plugins/data/agents.prod.yaml
