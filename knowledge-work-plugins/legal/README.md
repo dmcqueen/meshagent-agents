@@ -6,7 +6,7 @@ An agent that uses Anthropic's legal knowledge work plugin
 
 ## Description
 
-This plugin supports legal workflows and is designed to help users complete practical work with less manual effort. It can review legal text and surface key obligations or risks, draft and refine legal-facing language with clear structure, and summarize complex legal material into practical guidance. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for legal decisions, analysis, and communication.
+This agent helps legal teams and practitioners review and triage legal documents, identifying key obligations, risks, and compliance concerns so users can make informed decisions faster. It can draft, refine, and structure legal-facing language—such as contract clauses, vendor checks, and NDA responses—into clear, actionable drafts ready for human review. The agent also summarizes complex legal materials and prepares concise meeting briefings or response templates to streamline collaboration and reduce review time. Use it to accelerate document review workflows, surface priority issues, and produce practical next steps for legal stakeholders.
 
 ## Install Links
 
