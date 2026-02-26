@@ -2,13 +2,13 @@
   "id": "jira-rovo-mcp",
   "name": "Jira Rovo Mcp",
   "description": "Expose Atlassian Rovo MCP for Jira and Jira Service Management",
-  "long_description": "This agent lets users and teams interact with an Atlassian Rovo MCP integration for Jira and Jira Service Management to resolve customer support workflows and operational questions. It can turn ambiguous requests into concrete, actionable steps, help craft and refine tickets, and provide guidance tailored to specific goals, constraints, and context so teams can move work forward efficiently. By answering domain-specific questions about customer support processes and tooling, it supports faster issue resolution, clearer handoffs, and more consistent use of Jira-related features. The agent is designed to streamline daily support operations and improve outcomes for customers and internal stakeholders.",
+  "long_description": "This plugin supports customer support jira rovo mcp workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in customer support jira rovo mcp work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for customer support jira rovo mcp decisions, analysis, and communication.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e7781601a37d31052059ae1dd3638aa9347a8291/knowledge-work-plugins/customer-support-jira-rovo-mcp/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e7781601a37d31052059ae1dd3638aa9347a8291/knowledge-work-plugins/customer-support-jira-rovo-mcp/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/342e88f8b4ef3e4514b69c625eebdc83f6963a53/knowledge-work-plugins/customer-support-jira-rovo-mcp/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/342e88f8b4ef3e4514b69c625eebdc83f6963a53/knowledge-work-plugins/customer-support-jira-rovo-mcp/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2489390deb0c94ad28d408587493337ca74aa5aa/knowledge-work-plugins/customer-support-jira-rovo-mcp/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2489390deb0c94ad28d408587493337ca74aa5aa/knowledge-work-plugins/customer-support-jira-rovo-mcp/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/21a2a7cb22e74f11f339323bca0b0e67d85a8260/knowledge-work-plugins/customer-support-jira-rovo-mcp/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/21a2a7cb22e74f11f339323bca0b0e67d85a8260/knowledge-work-plugins/customer-support-jira-rovo-mcp/agents.prod.yaml"
   }
 }
