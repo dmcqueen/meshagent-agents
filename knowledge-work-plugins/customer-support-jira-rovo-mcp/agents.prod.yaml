@@ -11,5 +11,18 @@ ports:
         mcp:
           label: "jira-rovo"
           description: "Atlassian Rovo MCP Server"
+          oauth:
+            client_id: "MESHAGENT_OAUTH_CLIENT_ID"
+            client_secret: "MESHAGENT_OAUTH_CLIENT_SECRET"
+            authorization_endpoint: "https://auth.atlassian.com/authorize?audience=api.atlassian.com&prompt=consent"
+            token_endpoint: "https://auth.atlassian.com/oauth/token"
+            no_pkce: false
+            scopes:
+              - "read:jira-user"
+              - "read:jira-work"
+              - "write:jira-work"
+              - "read:servicedesk-request"
+              - "write:servicedesk-request"
+              - "offline_access"
 external:
   url: "https://mcp.atlassian.com"
