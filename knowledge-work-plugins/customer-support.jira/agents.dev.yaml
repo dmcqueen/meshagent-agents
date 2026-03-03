@@ -41,6 +41,7 @@ container:
 
           STARTUP_LOG="/data/meshagent-startup.log"
           SYNC_SCRIPT="/data/agents/claude-customer-support-with-jira-connector/update-meshagent-docs.sh"
+          ATLASSIAN_MCP_URL="https://mcp.atlassian.com/v1/mcp"
 
           mkdir -p /data
           touch "${STARTUP_LOG}"
@@ -59,6 +60,26 @@ container:
               local exit_code=$?
               log_startup "failed: ${description} (exit=${exit_code})"
             fi
+          }
+
+          ensure_atlassian_mcp_service() {
+            if [[ -z "${MESHAGENT_ROOM:-}" ]]; then
+              log_startup "skipped: ensure Atlassian MCP service (MESHAGENT_ROOM is not set)"
+              return 0
+            fi
+
+            local cmd=(
+              /usr/bin/meshagent service update
+              --create
+              --room "${MESHAGENT_ROOM}"
+              --mcp "${ATLASSIAN_MCP_URL}"
+            )
+
+            if [[ -n "${MESHAGENT_PROJECT_ID:-}" ]]; then
+              cmd+=(--project-id "${MESHAGENT_PROJECT_ID}")
+            fi
+
+            "${cmd[@]}"
           }
 
           mkdir -p /data/knowledge-work-plugins
@@ -96,6 +117,7 @@ container:
             -rr=agents/claude-customer-support-with-jira-connector/rules-supportagent.txt >> "${STARTUP_LOG}" 2>&1 &
           log_startup "started task-runner join in background (pid=$!)"
 
+          run_nonfatal "ensure Atlassian MCP service (dynamic OAuth discovery)" ensure_atlassian_mcp_service
           log_startup "starting meshagent multi join as pid 1"
           exec /usr/bin/meshagent multi join -c "chatbot \
             --agent-name claude-customer-support-with-jira-connector \
