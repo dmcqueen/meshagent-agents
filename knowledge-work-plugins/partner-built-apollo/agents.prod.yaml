@@ -1,0 +1,386 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: claude-partner-built-apollo
+  description: An agent that uses Anthropic's partner-built Apollo knowledge work plugin
+  annotations:
+    meshagent.service.id: meshagent.claude-partner-built-apollo
+    meshagent.plugin.path: partner-built/apollo
+
+agents:
+  - name: claude-partner-built-apollo
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+
+          set -e
+
+          mkdir -p /data/knowledge-work-plugins
+          mkdir -p /data/agents/claude-partner-built-apollo
+          if [ -d /knowledge-work-plugins ]; then
+            cp -R -n /knowledge-work-plugins/* /data/knowledge-work-plugins/ 2>/dev/null || true
+          fi
+          if [[ ! -f /data/agents/claude-partner-built-apollo/rules.txt ]]; then
+            cp /var/rules-claude-partner-built-apollo.txt /data/agents/claude-partner-built-apollo/rules.txt
+          fi
+
+          exec /usr/bin/meshagent chatbot join \
+            --require-storage \
+            --require-web-search \
+            --require-web-fetch \
+            --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/claude-partner-built-apollo/rules.txt \
+            --skill-dir /data/knowledge-work-plugins/skills/enrich-lead \
+            --skill-dir /data/knowledge-work-plugins/skills/prospect \
+            --skill-dir /data/knowledge-work-plugins/skills/sequence-load \
+    - path: /var/rules-claude-partner-built-apollo.txt
+      read_only: true
+      text: |
+          ONLY use the knowledge-work-plugins skills to answer questions and follow the pattern specified in the skill
+          you can use the storage tool to read skills not just the shell tool
+          when a question could be served by a skill, read the skill and follow the pattern specified in the skill
+          when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data.
+          when using the storage tool to read skills, the path should be prefixed with /data/knowledge-work-plugins (the folder where the plugins are located)
+          You have customizable rules stored in agents/claude-partner-built-apollo/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.
+          You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com
+          You have some slash commands available
+    - path: /knowledge-work-plugins/skills/enrich-lead/SKILL.md
+      text: |
+          ---
+          name: enrich-lead
+          description: "Instant lead enrichment. Drop a name, company, LinkedIn URL, or email and get the full contact card with email, phone, title, company intel, and next actions."
+          user-invocable: true
+          argument-hint: "[name, company, LinkedIn URL, or email]"
+          ---
+
+          # Enrich Lead
+
+          Turn any identifier into a full contact dossier. The user provides identifying info via "$ARGUMENTS".
+
+          ## Examples
+
+          - `/apollo:enrich-lead Tim Zheng at Apollo`
+          - `/apollo:enrich-lead https://www.linkedin.com/in/timzheng`
+          - `/apollo:enrich-lead sarah@stripe.com`
+          - `/apollo:enrich-lead Jane Smith, VP Engineering, Notion`
+          - `/apollo:enrich-lead CEO of Figma`
+
+          ## Step 1 — Parse Input
+
+          From "$ARGUMENTS", extract every identifier available:
+          - First name, last name
+          - Company name or domain
+          - LinkedIn URL
+          - Email address
+          - Job title (use as a matching hint)
+
+          If the input is ambiguous (e.g. just "CEO of Figma"), first use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with relevant title and domain filters to identify the person, then proceed to enrichment.
+
+          ## Step 2 — Enrich the Person
+
+          > **Credit warning**: Tell the user enrichment consumes 1 Apollo credit before calling.
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_people_match` with all available identifiers:
+          - `first_name`, `last_name` if name is known
+          - `domain` or `organization_name` if company is known
+          - `linkedin_url` if LinkedIn is provided
+          - `email` if email is provided
+          - Set `reveal_personal_emails` to `true`
+
+          If the match fails, try `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with looser filters and present the top 3 candidates. Ask the user to pick one, then re-enrich.
+
+          ## Step 3 — Enrich Their Company
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_organizations_enrich` with the person's company domain to pull firmographic context.
+
+          ## Step 4 — Present the Contact Card
+
+          Format the output exactly like this:
+
+          ---
+
+          **[Full Name]** | [Title]
+          [Company Name] · [Industry] · [Employee Count] employees
+
+          | Field | Detail |
+          |---|---|
+          | Email (work) | ... |
+          | Email (personal) | ... (if revealed) |
+          | Phone (direct) | ... |
+          | Phone (mobile) | ... |
+          | Phone (corporate) | ... |
+          | Location | City, State, Country |
+          | LinkedIn | URL |
+          | Company Domain | ... |
+          | Company Revenue | Range |
+          | Company Funding | Total raised |
+          | Company HQ | Location |
+
+          ---
+
+          ## Step 5 — Offer Next Actions
+
+          Ask the user which action to take:
+
+          1. **Save to Apollo** — Create this person as a contact via `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with `run_dedupe: true`
+          2. **Add to a sequence** — Ask which sequence, then run the sequence-load flow
+          3. **Find colleagues** — Search for more people at the same company using `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with `q_organization_domains_list` set to this company
+          4. **Find similar people** — Search for people with the same title/seniority at other companies
+    - path: /knowledge-work-plugins/skills/prospect/SKILL.md
+      text: |
+          ---
+          name: prospect
+          description: "Full ICP-to-leads pipeline. Describe your ideal customer in plain English and get a ranked table of enriched decision-maker leads with emails and phone numbers."
+          user-invocable: true
+          argument-hint: "[describe your ideal customer]"
+          ---
+
+          # Prospect
+
+          Go from an ICP description to a ranked, enriched lead list in one shot. The user describes their ideal customer via "$ARGUMENTS".
+
+          ## Examples
+
+          - `/apollo:prospect VP of Engineering at Series B+ SaaS companies in the US, 200-1000 employees`
+          - `/apollo:prospect heads of marketing at e-commerce companies in Europe`
+          - `/apollo:prospect CTOs at fintech startups, 50-500 employees, New York`
+          - `/apollo:prospect procurement managers at manufacturing companies with 1000+ employees`
+          - `/apollo:prospect SDR leaders at companies using Salesforce and Outreach`
+
+          ## Step 1 — Parse the ICP
+
+          Extract structured filters from the natural language description in "$ARGUMENTS":
+
+          **Company filters:**
+          - Industry/vertical keywords → `q_organization_keyword_tags`
+          - Employee count ranges → `organization_num_employees_ranges`
+          - Company locations → `organization_locations`
+          - Specific domains → `q_organization_domains_list`
+
+          **Person filters:**
+          - Job titles → `person_titles`
+          - Seniority levels → `person_seniorities`
+          - Person locations → `person_locations`
+
+          If the ICP is vague, ask 1-2 clarifying questions before proceeding. At minimum, you need a title/role and an industry or company size.
+
+          ## Step 2 — Search for Companies
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_companies_search` with the company filters:
+          - `q_organization_keyword_tags` for industry/vertical
+          - `organization_num_employees_ranges` for size
+          - `organization_locations` for geography
+          - Set `per_page` to 25
+
+          ## Step 3 — Enrich Top Companies
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_organizations_bulk_enrich` with the domains from the top 10 results. This reveals revenue, funding, headcount, and firmographic data to help rank companies.
+
+          ## Step 4 — Find Decision Makers
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with:
+          - `person_titles` and `person_seniorities` from the ICP
+          - `q_organization_domains_list` scoped to the enriched company domains
+          - `per_page` set to 25
+
+          ## Step 5 — Enrich Top Leads
+
+          > **Credit warning**: Tell the user exactly how many credits will be consumed before proceeding.
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_people_bulk_match` to enrich up to 10 leads per call with:
+          - `first_name`, `last_name`, `domain` for each person
+          - `reveal_personal_emails` set to `true`
+
+          If more than 10 leads, batch into multiple calls.
+
+          ## Step 6 — Present the Lead Table
+
+          Show results in a ranked table:
+
+          ### Leads matching: [ICP Summary]
+
+          | # | Name | Title | Company | Employees | Revenue | Email | Phone | ICP Fit |
+          |---|---|---|---|---|---|---|---|---|
+
+          **ICP Fit** scoring:
+          - **Strong** — title, seniority, company size, and industry all match
+          - **Good** — 3 of 4 criteria match
+          - **Partial** — 2 of 4 criteria match
+
+          **Summary**: Found X leads across Y companies. Z credits consumed.
+
+          ## Step 7 — Offer Next Actions
+
+          Ask the user:
+
+          1. **Save all to Apollo** — Bulk-create contacts via `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with `run_dedupe: true` for each lead
+          2. **Load into a sequence** — Ask which sequence and run the sequence-load flow for these contacts
+          3. **Deep-dive a company** — Run `/apollo:company-intel` on any company from the list
+          4. **Refine the search** — Adjust filters and re-run
+          5. **Export** — Format leads as a CSV-style table for easy copy-paste
+    - path: /knowledge-work-plugins/skills/sequence-load/SKILL.md
+      text: |
+          ---
+          name: sequence-load
+          description: "Find leads matching criteria and bulk-add them to an Apollo outreach sequence. Handles enrichment, contact creation, deduplication, and enrollment in one flow."
+          user-invocable: true
+          argument-hint: "[targeting criteria + sequence name]"
+          ---
+
+          # Sequence Load
+
+          Find, enrich, and load contacts into an outreach sequence — end to end. The user provides targeting criteria and a sequence name via "$ARGUMENTS".
+
+          ## Examples
+
+          - `/apollo:sequence-load add 20 VP Sales at SaaS companies to my "Q1 Outbound" sequence`
+          - `/apollo:sequence-load SDR managers at fintech startups → Cold Outreach v2`
+          - `/apollo:sequence-load list sequences` (shows all available sequences)
+          - `/apollo:sequence-load directors of engineering, 500+ employees, US → Demo Follow-up`
+          - `/apollo:sequence-load reload 15 more leads into "Enterprise Pipeline"`
+
+          ## Step 1 — Parse Input
+
+          From "$ARGUMENTS", extract:
+
+          **Targeting criteria:**
+          - Job titles → `person_titles`
+          - Seniority levels → `person_seniorities`
+          - Industry keywords → `q_organization_keyword_tags`
+          - Company size → `organization_num_employees_ranges`
+          - Locations → `person_locations` or `organization_locations`
+
+          **Sequence info:**
+          - Sequence name (text after "to", "into", or "→")
+          - Volume — how many contacts to add (default: 10 if not specified)
+
+          If the user just says "list sequences", skip to Step 2 and show all available sequences.
+
+          ## Step 2 — Find the Sequence
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_search` to find the target sequence:
+          - Set `q_name` to the sequence name from input
+
+          If no match or multiple matches:
+          - Show all available sequences in a table: | Name | ID | Status |
+          - Ask the user to pick one
+
+          ## Step 3 — Get Email Account
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_email_accounts_index` to list linked email accounts.
+
+          - If one account → use automatically
+          - If multiple → show them and ask which to send from
+
+          ## Step 4 — Find Matching People
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with the targeting criteria.
+          - Set `per_page` to the requested volume (or 10 by default)
+
+          Present the candidates in a preview table:
+
+          | # | Name | Title | Company | Location |
+          |---|---|---|---|---|
+
+          Ask: **"Add these [N] contacts to [Sequence Name]? This will consume [N] Apollo credits for enrichment."**
+
+          Wait for confirmation before proceeding.
+
+          ## Step 5 — Enrich and Create Contacts
+
+          For each approved lead:
+
+          1. **Enrich** — Use `mcp__claude_ai_Apollo_MCP__apollo_people_bulk_match` (batch up to 10 per call) with:
+             - `first_name`, `last_name`, `domain` for each person
+             - `reveal_personal_emails` set to `true`
+
+          2. **Create contacts** — For each enriched person, use `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with:
+             - `first_name`, `last_name`, `email`, `title`, `organization_name`
+             - `direct_phone` or `mobile_phone` if available
+             - `run_dedupe` set to `true`
+
+          Collect all created contact IDs.
+
+          ## Step 6 — Add to Sequence
+
+          Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_add_contact_ids` with:
+          - `id`: the sequence ID
+          - `emailer_campaign_id`: same sequence ID
+          - `contact_ids`: array of created contact IDs
+          - `send_email_from_email_account_id`: the chosen email account ID
+          - `sequence_active_in_other_campaigns`: `false` (safe default)
+
+          ## Step 7 — Confirm Enrollment
+
+          Show a summary:
+
+          ---
+
+          **Sequence loaded successfully**
+
+          | Field | Value |
+          |---|---|
+          | Sequence | [Name] |
+          | Contacts added | [count] |
+          | Sending from | [email address] |
+          | Credits used | [count] |
+
+          **Contacts enrolled:**
+
+          | Name | Title | Company | Email |
+          |---|---|---|---|
+
+          ---
+
+          ## Step 8 — Offer Next Actions
+
+          Ask the user:
+
+          1. **Load more** — Find and add another batch of leads
+          2. **Review sequence** — Show sequence details and all enrolled contacts
+          3. **Remove a contact** — Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_remove_or_stop_contact_ids` to remove specific contacts
+          4. **Pause a contact** — Re-add with `status: "paused"` and an `auto_unpause_at` date
+  environment:
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: claude-partner-built-apollo
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
