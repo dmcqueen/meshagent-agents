@@ -6,14 +6,14 @@ An agent that uses Anthropic's product management knowledge work plugin
 
 ## Description
 
-This agent helps product teams turn research and feedback into clear, prioritized work by synthesizing user insights, drafting feature specifications, and shaping roadmap decisions to align stakeholders and measurable outcomes. Teams can use it to produce competitive briefs, define metrics and success criteria, update roadmaps, and create stakeholder communications that keep planning and execution coordinated. It supports recurring review workflows like metrics tracking and research synthesis so teams maintain momentum and make data-informed tradeoffs. Lightweight model/runtime details are abstracted away, letting teams focus on producing actionable product artifacts.
+This plugin supports product management workflows and is designed to help users complete practical work with less manual effort. It can shape product requirements and prioritize roadmap decisions, synthesize user feedback into actionable product insights, and draft product docs for planning, alignment, and execution. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for product management decisions, analysis, and communication.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1488307830ef29704254a1a38f4106bfc57f885e/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a2706f3d356dd22064bfbf8f4233981bf025ac/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3eff81ba4c4378a0679a1efc736b92cc23b108a3/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1021e6b9c559d7bd10d0b5320c12c0a7872a8c42/knowledge-work-plugins/product-management/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1488307830ef29704254a1a38f4106bfc57f885e/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c4a2706f3d356dd22064bfbf8f4233981bf025ac/knowledge-work-plugins/product-management/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3eff81ba4c4378a0679a1efc736b92cc23b108a3/knowledge-work-plugins/product-management/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1021e6b9c559d7bd10d0b5320c12c0a7872a8c42/knowledge-work-plugins/product-management/agents.prod.yaml
