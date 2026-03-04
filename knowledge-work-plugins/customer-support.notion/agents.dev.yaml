@@ -105,10 +105,10 @@ container:
             log_startup "failed: stage docs sync script (/var/update-meshagent-docs.sh missing)"
           fi
 
-          if [[ -x "${SYNC_SCRIPT}" ]]; then
+          if [[ -f "${SYNC_SCRIPT}" ]]; then
             run_nonfatal "run docs sync script" bash "${SYNC_SCRIPT}"
           else
-            log_startup "skipped: run docs sync script (${SYNC_SCRIPT} missing or not executable)"
+            log_startup "skipped: run docs sync script (${SYNC_SCRIPT} missing)"
           fi
 
           SUPPORTAGENT_TOKEN="${MESHAGENT_TOKEN_SUPPORTAGENT:-}"
