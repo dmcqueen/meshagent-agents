@@ -1,0 +1,1763 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: claude-partner-built-brand-voice
+  description: An agent that uses Anthropic's partner-built Brand Voice knowledge work plugin
+  annotations:
+    meshagent.service.id: meshagent.claude-partner-built-brand-voice
+    meshagent.plugin.path: partner-built/brand-voice
+
+agents:
+  - name: claude-partner-built-brand-voice
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+
+          set -e
+
+          mkdir -p /data/knowledge-work-plugins
+          mkdir -p /data/agents/claude-partner-built-brand-voice
+          if [ -d /knowledge-work-plugins ]; then
+            cp -R -n /knowledge-work-plugins/* /data/knowledge-work-plugins/ 2>/dev/null || true
+          fi
+          if [[ ! -f /data/agents/claude-partner-built-brand-voice/rules.txt ]]; then
+            cp /var/rules-claude-partner-built-brand-voice.txt /data/agents/claude-partner-built-brand-voice/rules.txt
+          fi
+
+          exec /usr/bin/meshagent chatbot join \
+            --require-storage \
+            --require-web-search \
+            --require-web-fetch \
+            --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/claude-partner-built-brand-voice/rules.txt \
+            --rules-file /data/knowledge-work-plugins/commands/discover-brand.md \
+            --rules-file /data/knowledge-work-plugins/commands/enforce-voice.md \
+            --rules-file /data/knowledge-work-plugins/commands/generate-guidelines.md \
+            --skill-dir /data/knowledge-work-plugins/skills/brand-voice-enforcement \
+            --skill-dir /data/knowledge-work-plugins/skills/discover-brand \
+            --skill-dir /data/knowledge-work-plugins/skills/guideline-generation \
+    - path: /var/rules-claude-partner-built-brand-voice.txt
+      read_only: true
+      text: |
+          ONLY use the knowledge-work-plugins skills to answer questions and follow the pattern specified in the skill
+          you can use the storage tool to read skills not just the shell tool
+          when a question could be served by a skill, read the skill and follow the pattern specified in the skill
+          when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data.
+          when using the storage tool to read skills, the path should be prefixed with /data/knowledge-work-plugins (the folder where the plugins are located)
+          You have customizable rules stored in agents/claude-partner-built-brand-voice/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.
+          You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com
+          You have some slash commands available
+    - path: /knowledge-work-plugins/commands/discover-brand.md
+      text: |
+          ---
+          description: Search connected platforms for brand materials and produce a discovery report
+          argument-hint: "[company name or platforms to search]"
+          ---
+
+          Discover brand materials across the user's connected enterprise platforms. Search Notion, Confluence, Google Drive, Box, SharePoint, Figma, Gong, Granola, and Slack for brand guidelines, style guides, messaging frameworks, templates, and conversation transcripts.
+
+          If $ARGUMENTS includes a company name, use it for targeted searches. If platforms are specified, limit search to those platforms.
+
+          Before doing anything else, briefly orient the user on what's about to happen: the process will search their connected platforms, produce a discovery report, and then (optionally) generate and save brand guidelines to `.claude/brand-voice-guidelines.md` in the working folder. Nothing is saved until they explicitly approve. Keep the orientation to 2-3 sentences — don't recite the full workflow.
+
+          Follow the discover-brand skill instructions to:
+          1. Check `.claude/brand-voice.local.md` for settings (company name, enabled platforms, search depth)
+          2. Validate platform coverage (stop if no document platforms, warn if gaps)
+          3. Briefly confirm scope with the user (which platforms, include transcripts?)
+          4. Delegate to the discover-brand agent for autonomous 4-phase search
+          5. Present the structured discovery report with sources, brand elements, conflicts, and open questions
+          6. Offer next steps: generate guidelines, resolve open questions, save report, or expand search
+
+          **Platform validation:**
+          - If **no platforms** are connected, inform the user which MCP servers the plugin supports (Notion, Atlassian Confluence, Box, Figma, Gong, Granola, Microsoft 365) and that Google Drive and Slack are available as native Claude integrations.
+          - If **no document platforms** (Notion, Confluence, Google Drive, Box, Microsoft 365) are connected — only supplementary platforms like Slack, Gong, Granola, or Figma — stop and tell the user: "You don't have any document storage platforms connected. Brand guidelines and style guides almost always live on Google Drive, SharePoint, Notion, Confluence, or Box. Please connect at least one before running discovery."
+          - If **no primary file storage** (Google Drive, Microsoft 365, Box) is connected, warn: "None of your primary file storage platforms are connected. Brand documents frequently live on these. Discovery will proceed but results may have significant gaps."
+          - If **only one platform** is connected, warn: "Discovery works best with 2+ platforms for cross-source validation. Results from a single platform will have lower confidence scores."
+    - path: /knowledge-work-plugins/commands/enforce-voice.md
+      text: |
+          ---
+          description: Apply brand guidelines to content creation
+          argument-hint: "<content request>"
+          ---
+
+          **MANDATORY FIRST STEP — do this before anything else, including loading guidelines or processing the content request.** Check whether the user has a working folder selected for this session. You must verify this before starting any enforcement work. If there is no working folder, stop and warn the user: "You don't have a working folder selected. Without one, I can't load saved guidelines from a previous session, and any guidelines generated in this conversation won't be saved for future sessions either. Please select a working folder and re-run this command. If you'd like to proceed anyway (guidelines will only be usable in this session), let me know."  Wait for the user to confirm before continuing.
+
+          Load the user's brand guidelines and apply them to the content request provided in $ARGUMENTS.
+
+          Find brand guidelines using this sequence (stop as soon as found):
+          1. Session context — check if guidelines were generated earlier in this conversation
+          2. Local guidelines file — check for `.claude/brand-voice-guidelines.md` inside the user's working folder. Do NOT use a relative path from the agent's current working directory (in Cowork, the agent runs from a plugin cache directory). If no working folder is set, skip this step.
+          3. If not found, ask the user to run `/brand-voice:discover-brand`, `/brand-voice:generate-guidelines`, or paste guidelines directly
+
+          Once guidelines are loaded, follow the brand-voice-enforcement skill instructions to:
+          1. Analyze the content request (type, audience, key messages, requirements)
+          2. Apply voice constants ("We Are / We Are Not") and flex tone for context (formality, energy, technical depth)
+          3. Generate content applying voice, tone, messaging, and terminology guidelines
+          4. Validate output against brand do's and don'ts
+          5. Present the content with a brief explanation of brand choices made
+          6. Note any open questions from guidelines that affect this content
+          7. Offer to refine based on feedback
+    - path: /knowledge-work-plugins/commands/generate-guidelines.md
+      text: |
+          ---
+          description: Generate brand voice guidelines from documents, transcripts, discovery reports, or any combination
+          argument-hint: "<sources — documents, transcripts, or description of what you have>"
+          ---
+
+          **MANDATORY FIRST STEP — do this before anything else, including reading sources or processing arguments.** Check whether the user has a working folder selected for this session. You must verify this before starting any guideline generation work. If there is no working folder, stop and warn the user: "You don't have a working folder selected. Without one, I can't save guidelines to a file — they'll only exist in this conversation and won't persist to future sessions. Please select a working folder and re-run this command. If you'd like to proceed anyway, let me know."  Wait for the user to confirm before continuing.
+
+          Generate comprehensive, LLM-ready brand voice guidelines from whatever sources the user provides — brand documents, conversation transcripts, a discovery report from `/brand-voice:discover-brand`, or direct input.
+
+          Process the sources specified in $ARGUMENTS. If none specified, check:
+          1. Whether a discovery report was generated in this session
+          2. `.claude/brand-voice.local.md` for known brand material locations
+          3. Connected platforms (Notion, Confluence, Google Drive, Box, SharePoint, Gong) for existing materials
+          4. If nothing is available, suggest running `/brand-voice:discover-brand` first
+
+          Follow the guideline-generation skill instructions to:
+          1. Identify and classify all available sources (discovery report, documents, transcripts)
+          2. Delegate to document-analysis and conversation-analysis agents as needed
+          3. Synthesize findings into unified guidelines with "We Are / We Are Not" table and tone-by-context matrix
+          4. Assign confidence scores per section
+          5. Surface open questions with agent recommendations for any ambiguity
+          6. Present key findings and offer next steps
+          7. Save guidelines to `.claude/brand-voice-guidelines.md` inside the user's working folder (archiving any existing file first). Do NOT use a relative path from the agent's current working directory — in Cowork, the agent runs from a plugin cache directory, not the user's project.
+
+          After generation, guidelines are saved locally so `/brand-voice:enforce-voice` can automatically find them in future sessions.
+
+          Supported document formats: PDF, PowerPoint, Word, Markdown, plain text.
+          Supported transcript sources: Gong (MCP), Granola (MCP), Notion meeting notes, manual uploads.
+    - path: /knowledge-work-plugins/skills/brand-voice-enforcement/SKILL.md
+      text: |
+          ---
+          name: brand-voice-enforcement
+          description: >
+            This skill applies brand guidelines to content creation. It should be used when
+            the user asks to "write an email", "draft a proposal", "create a pitch deck",
+            "write a LinkedIn post", "draft a presentation", "write a Slack message",
+            "draft sales content", or any content creation request where brand voice should
+            be applied. Also triggers on "on-brand", "brand voice", "enforce voice",
+            "apply brand guidelines", "brand-aligned content", "write in our voice",
+            "use our brand tone", "make this sound like us", "rewrite this in our tone",
+            or "this doesn't sound on-brand". Not for generating guidelines from scratch
+            (use guideline-generation) or discovering brand materials (use discover-brand).
+          ---
+
+          # Brand Voice Enforcement
+
+          Apply existing brand guidelines to all sales and marketing content generation. Load the user's brand guidelines, apply voice constants and tone flexes to the content request, validate output, and explain brand choices.
+
+          ## Loading Brand Guidelines
+
+          Find the user's brand guidelines using this sequence. Stop as soon as you find them:
+
+          1. **Session context** — Check if brand guidelines were generated earlier in this session (via `/brand-voice:generate-guidelines`). If so, they are already in the conversation. Use them directly. Session-generated guidelines are the freshest and reflect the user's most recent intent.
+
+          2. **Local guidelines file** — Check for `.claude/brand-voice-guidelines.md` inside the user's working folder. Do NOT use a relative path from the agent's current working directory — in Cowork, the agent runs from a plugin cache directory, not the user's project. Resolve the path relative to the user's working folder. If no working folder is set, skip this step.
+
+          3. **Ask the user** — If none of the above found guidelines, tell the user:
+             "I couldn't find your brand guidelines. You can:
+             - Run `/brand-voice:discover-brand` to find brand materials across your platforms
+             - Run `/brand-voice:generate-guidelines` to create guidelines from documents or transcripts
+             - Paste guidelines directly into this chat or point me to a file"
+
+             Wait for the user to provide guidelines before proceeding.
+
+          Also read `.claude/brand-voice.local.md` for enforcement settings (even if guidelines came from another source):
+          - `strictness`: strict | balanced | flexible
+          - `always-explain`: whether to always explain brand choices
+
+          ## Enforcement Workflow
+
+          ### 1. Analyze the Content Request
+
+          Before writing, identify:
+          - **Content type**: email, presentation, proposal, social post, message, etc.
+          - **Target audience**: role, seniority, industry, company stage
+          - **Key messages needed**: which message pillars apply
+          - **Specific requirements**: length, format, tone overrides
+
+          ### 2. Apply Voice Constants
+
+          Voice is the brand's personality — it stays constant across all content:
+          - Apply "We Are / We Are Not" attributes from guidelines
+          - Use brand personality consistently
+          - Incorporate approved terminology; reject prohibited terms
+          - Follow messaging framework and value propositions
+
+          Refer to `references/voice-constant-tone-flexes.md` for the "voice constant, tone flexes" model.
+
+          ### 3. Flex Tone for Context
+
+          Tone adapts by content type and audience. Use the tone-by-context matrix from guidelines to set:
+          - **Formality**: How formal or casual should this be?
+          - **Energy**: How much urgency or enthusiasm?
+          - **Technical depth**: How detailed or accessible?
+
+          ### 4. Generate Content
+
+          Create content that:
+          - Matches brand voice attributes throughout
+          - Follows tone guidelines for this specific content type
+          - Incorporates key messages naturally (not forced)
+          - Uses preferred terminology
+          - Mirrors the quality and style of guideline examples
+
+          For complex or long-form content, delegate to the content-generation agent (defined in `agents/content-generation.md`).
+          For high-stakes content, delegate to the quality-assurance agent (defined in `agents/quality-assurance.md`) for validation.
+
+          ### 5. Validate and Explain
+
+          After generating content:
+          - Briefly highlight which brand guidelines were applied
+          - Explain key voice and tone decisions
+          - Note any areas where guidelines were adapted for context
+          - Offer to refine based on feedback
+
+          When `always-explain` is true in settings, include brand application notes with every response.
+
+          ## Handling Conflicts
+
+          When the user's request conflicts with brand guidelines:
+          1. Explain the conflict clearly
+          2. Provide a recommendation
+          3. Offer options: follow guidelines strictly, adapt for context, or override
+
+          Default to adapting guidelines with an explanation of the tradeoff.
+
+          ## Open Questions Awareness
+
+          Open questions are unresolved brand positioning decisions flagged during guideline generation, stored in the guidelines under an "Open Questions" section. When generating content, check if the brand guidelines contain open questions:
+          - If content touches an unresolved open question, note it
+          - Apply the agent's recommendation from the open question unless the user specifies otherwise
+          - Suggest resolving the question if it significantly impacts the content
+
+          ## Reference Files
+
+          - **`references/voice-constant-tone-flexes.md`** — The "voice constant, tone flexes" mental model, "We Are / We Are Not" table structure, and tone-by-context matrix explanation
+          - **`references/before-after-examples.md`** — Before/after content examples per content type showing enforcement in practice
+    - path: /knowledge-work-plugins/skills/brand-voice-enforcement/references/before-after-examples.md
+      text: |
+          # Before/After Content Examples
+
+          Concrete examples showing how brand voice enforcement transforms generic content into on-brand output. Each example shows the generic version, the enforced version, and annotations explaining what changed and why.
+
+          These examples use a fictional B2B SaaS company for illustration. During enforcement, replace all specifics (data points, product names, metrics) with data from the user's actual brand guidelines and context.
+
+          ## Cold Outreach Email
+
+          ### Before (Generic)
+          ```
+          Subject: Quick question about your sales process
+
+          Hi [Name],
+
+          I wanted to reach out because I think our product could be a great fit
+          for your team. We offer an AI-powered platform that helps sales teams
+          be more productive.
+
+          Would you be open to a quick 15-minute call to learn more?
+
+          Best,
+          [Sender]
+          ```
+
+          ### After (Brand Voice Enforced)
+          ```
+          Subject: [Company] is leaving pipeline on the table
+
+          Hi [Name],
+
+          Your team closed $12M last quarter — impressive. But our data shows
+          mid-market SaaS teams like yours typically lose 23% of qualified pipeline
+          to slow follow-ups.
+
+          [Product] fixes that. We help sales teams respond to buying signals in
+          real time, not hours later. [Customer X] saw their win rate jump 18%
+          in the first quarter.
+
+          Worth 15 minutes to see if the numbers apply to [Company]?
+
+          [Sender]
+          ```
+
+          ### What Changed
+          - **Voice: Confident** — leads with a bold claim and specific data (not "I think our product could be")
+          - **Voice: Data-driven** — concrete numbers (23%, 18%, $12M) replace vague "more productive"
+          - **Voice: Direct** — gets to the point immediately, no "I wanted to reach out"
+          - **Tone: Energy HIGH** — active language, short sentences, urgency
+          - **Tone: Formality MEDIUM** — professional but conversational
+          - **Tone: Technical depth LOW** — outcomes and impact, not feature descriptions
+          - **Terminology**: "buying signals" and "pipeline" (industry-specific but accessible to VP Sales)
+
+          ## Follow-Up Email
+
+          ### Before (Generic)
+          ```
+          Hi [Name],
+
+          Just following up on my previous email. I'd love to schedule a call
+          to discuss how we can help your team.
+
+          Let me know if you're available this week.
+
+          Thanks,
+          [Sender]
+          ```
+
+          ### After (Brand Voice Enforced)
+          ```
+          Hi [Name],
+
+          Quick update: we just published our Q4 benchmark report on enterprise
+          sales velocity. Three insights jumped out that are relevant to [Company]:
+
+          1. Teams using real-time signals close 31% faster than the industry average
+          2. The #1 pipeline killer isn't competition — it's response time
+          3. Mid-market wins are trending 15% larger when reps personalize within 2 hours
+
+          Happy to walk through how these benchmarks compare to your team's numbers.
+          The report is attached if you'd rather dig in yourself first.
+
+          [Sender]
+          ```
+
+          ### What Changed
+          - **Voice: Data-driven** — new value in every touch (benchmark data), not just "following up"
+          - **Voice: Approachable** — offers two paths (call or self-serve) without pressure
+          - **Voice: Confident** — shares proprietary insights, positions as expert
+          - **Tone: Energy MEDIUM** — informative, not pushy
+          - **Tone: Formality MEDIUM** — professional but not stiff
+          - **Key principle applied**: "Add new value each touch" — no empty follow-ups
+
+          ## Enterprise Proposal Executive Summary
+
+          ### Before (Generic)
+          ```
+          We are pleased to submit this proposal for your consideration. Our
+          company offers a comprehensive AI solution that can help improve your
+          sales team's performance. We believe our platform is the best choice
+          for organizations looking to modernize their sales operations.
+          ```
+
+          ### After (Brand Voice Enforced)
+          ```
+          [Company] processes 2,400 leads per quarter with a 12-person sales team.
+          Current pipeline-to-close conversion sits at 18% — below the 24% benchmark
+          for enterprise SaaS at your ARR stage.
+
+          This proposal outlines how [Product] closes that gap. Our platform
+          analyzes buying signals across your existing tech stack and surfaces
+          the 3-5 daily actions most likely to advance each deal. Typical results:
+          +31% win rate, -40% time to close, 2.1x pipeline per rep.
+
+          Implementation takes 3 weeks. ROI breaks even at week 6.
+          ```
+
+          ### What Changed
+          - **Voice: Data-driven** — opens with the client's own metrics, not "we are pleased"
+          - **Voice: Direct** — no filler language, every sentence carries information
+          - **Voice: Confident** — specific outcomes with numbers, clear implementation timeline
+          - **Tone: Formality HIGH** — structured, precise language
+          - **Tone: Energy MEDIUM** — measured confidence, not hype
+          - **Tone: Technical depth HIGH** — specific features (buying signals, tech stack analysis), ROI math
+
+          ## LinkedIn Post
+
+          ### Before (Generic)
+          ```
+          Excited to announce our new feature! We've been working hard on this
+          and we think it's going to change the way sales teams work. Check out
+          the link below to learn more! #sales #AI #innovation
+          ```
+
+          ### After (Brand Voice Enforced)
+          ```
+          The average sales rep spends 4.2 hours/day on tasks that don't close deals.
+
+          We analyzed 50,000 sales activities across 200 teams and found the pattern:
+          top performers aren't working harder — they're responding faster.
+
+          Today we're launching Signal Score: real-time prioritization that tells
+          your reps exactly which deal to work next, and why.
+
+          Early results from beta: 23% fewer lost deals from delayed follow-up.
+
+          Link in comments.
+          ```
+
+          ### What Changed
+          - **Voice: Data-driven** — opens with a statistic, not "excited to announce"
+          - **Voice: Confident** — specific research (50,000 activities, 200 teams)
+          - **Voice: Innovative** — describes what's new without hype
+          - **Voice: NOT hype-driven** — no "change the way sales teams work", replaced with measurable outcomes
+          - **Tone: Formality LOW-MEDIUM** — casual enough for LinkedIn, professional enough for B2B
+          - **Tone: Energy HIGH** — short sentences, bold opening stat
+          - **Tone: Technical depth LOW** — outcomes-focused, accessible to any reader
+          - **Terminology**: Avoided "revolutionary" and "game-changing" (prohibited terms)
+
+          ## Internal Slack Message
+
+          ### Before (Generic)
+          ```
+          Hey team, just a reminder that we should all be using the approved
+          messaging when talking to prospects. Please refer to the brand
+          guidelines document for more information.
+          ```
+
+          ### After (Brand Voice Enforced)
+          ```
+          Heads up — we updated the competitive positioning section in the brand
+          guidelines. Two big changes:
+
+          1. Against [Competitor]: lead with implementation speed (3 weeks vs. their 3 months)
+          2. Against Status Quo: new stat — teams using manual processes lose 23% of pipeline to timing
+
+          Updated doc is pinned in #sales-enablement. Questions? Tag me.
+          ```
+
+          ### What Changed
+          - **Voice: Direct** — specific changes, not vague "please refer to"
+          - **Voice: Data-driven** — concrete differentiators with numbers
+          - **Voice: Approachable** — casual, helpful tone appropriate for Slack
+          - **Tone: Formality LOW** — contractions, short sentences, "tag me"
+          - **Tone: Energy MEDIUM** — informative without being overly enthusiastic
+          - **Key principle**: Internal comms can be less polished, but voice attributes still apply
+
+          ## Using These Examples
+
+          When enforcing brand voice, reference the relevant content type example to calibrate:
+          1. Match the content type to the closest example above
+          2. Note which voice attributes are most active for that type
+          3. Apply the tone settings (formality, energy, technical depth)
+          4. Check "We Are Not" boundaries — make sure content doesn't cross them
+          5. Verify terminology compliance (preferred terms used, prohibited terms absent)
+    - path: /knowledge-work-plugins/skills/brand-voice-enforcement/references/voice-constant-tone-flexes.md
+      text: |
+          # Voice Constant, Tone Flexes
+
+          The core mental model for brand voice enforcement: voice is constant, tone flexes by context.
+
+          ## The Distinction
+
+          **Voice** is WHO the brand is — personality, values, identity. It never changes regardless of channel, audience, or content type. Think of it as the brand's character.
+
+          **Tone** is HOW the brand speaks in a given moment — formality, energy, technical depth. It adapts to context the way a person adjusts their tone when speaking to a friend vs. a CEO vs. a large audience.
+
+          ## Voice Constants: "We Are / We Are Not"
+
+          The "We Are / We Are Not" table is the anchor of brand voice. It defines the brand's personality in paired attributes — what the brand IS and the boundary it should never cross.
+
+          ### Structure
+
+          The table below is an illustrative example. During enforcement, use the "We Are / We Are Not" table from the user's own brand guidelines.
+
+          | We Are | We Are Not |
+          |--------|------------|
+          | **Confident** — we know our product and stand behind it | **Arrogant** — we never talk down to prospects or dismiss alternatives |
+          | **Approachable** — we make complex topics feel manageable | **Casual or sloppy** — approachable doesn't mean unprofessional |
+          | **Direct** — we get to the point quickly and clearly | **Blunt or aggressive** — directness includes empathy |
+          | **Data-driven** — we support claims with evidence | **Dry or academic** — data tells stories, not lectures |
+          | **Innovative** — we push boundaries and challenge status quo | **Hype-driven** — innovation is real, not buzzwords |
+
+          ### How to Use During Enforcement
+
+          For every piece of content:
+          1. Check each "We Are" attribute — does the content reflect this?
+          2. Check each "We Are Not" boundary — does the content avoid crossing it?
+          3. If a boundary is crossed, revise the specific passage
+          4. If an attribute is missing, find a natural place to express it
+
+          Not every attribute needs to appear in every piece of content. Prioritize the 2-3 most relevant attributes for the content type and audience.
+
+          ## Tone Flexes: The Three Dimensions
+
+          Tone adjusts along three independent dimensions:
+
+          ### 1. Formality
+          How formal or casual the language is.
+
+          | Level | Signals | When |
+          |-------|---------|------|
+          | High | Complete sentences, industry terminology, structured format | Proposals, RFPs, enterprise comms |
+          | Medium | Clear and professional but conversational | Most emails, presentations, blog posts |
+          | Low | Casual language, contractions, personality shows through | Social media, internal comms, Slack |
+
+          ### 2. Energy
+          How much enthusiasm, urgency, or dynamism the content conveys.
+
+          | Level | Signals | When |
+          |-------|---------|------|
+          | High | Active verbs, short sentences, exclamation-worthy excitement | Product launches, cold outreach hooks, social media |
+          | Medium | Steady pace, balanced between informative and engaging | Discovery content, follow-ups, case studies |
+          | Warm | Empathetic, supportive, understanding | Customer success, objection handling, bad news |
+          | Low | Measured, thoughtful, deliberate | Legal language, policy docs, sensitive topics |
+
+          ### 3. Technical Depth
+          How much domain expertise or technical detail is included.
+
+          | Level | Signals | When |
+          |-------|---------|------|
+          | High | Technical terminology, architecture details, specs | Technical audience, implementation proposals, API docs |
+          | Medium | Industry terms explained when needed, features described clearly | Mixed audience, product demos, mid-funnel content |
+          | Low | Outcome-focused, benefits over features, no jargon | Executive audience, cold outreach, social media |
+
+          ## Tone-by-Context Matrix
+
+          Combine the three dimensions for each content type:
+
+          | Context | Formality | Energy | Technical Depth | Key Principle |
+          |---------|-----------|--------|-----------------|---------------|
+          | Cold outreach | Medium | High | Low | Hook fast, earn attention |
+          | Discovery calls | Medium | Medium-High | Medium | Ask more than tell |
+          | Demo / presentation | Medium-High | High | High | Show, don't just describe |
+          | Enterprise proposal | High | Medium | High | ROI and precision |
+          | Follow-up email | Medium | Medium | Low-Medium | Add new value each touch |
+          | Social media | Low-Medium | High | Low | Brevity and personality |
+          | Customer success | Medium | Warm | Medium | Empathy and competence |
+          | Internal comms | Low | Medium | Varies | Authentic, less polished |
+
+          ## Applying Voice + Tone Together
+
+          **Example: Cold outreach email**
+
+          Voice constants active:
+          - **Confident** — lead with a strong value claim
+          - **Direct** — get to the point in sentence one
+          - **Approachable** — don't sound like a robot
+
+          Tone settings:
+          - Formality: Medium (professional but not stiff)
+          - Energy: High (earn attention quickly)
+          - Technical Depth: Low (outcomes, not features)
+
+          **Example: Enterprise proposal**
+
+          Voice constants active:
+          - **Data-driven** — every claim has supporting evidence
+          - **Confident** — strong positioning without hedging
+          - **Innovative** — show forward-thinking approach
+
+          Tone settings:
+          - Formality: High (structured, complete sentences)
+          - Energy: Medium (measured, not breathless)
+          - Technical Depth: High (detailed implementation, specs)
+
+          ## Common Enforcement Mistakes
+
+          1. **Applying all voice attributes at maximum intensity** — Not every attribute needs to shine in every sentence. Let 2-3 lead for the content type.
+          2. **Confusing voice with tone** — If the user asks for "casual" content, adjust TONE (lower formality, higher energy). Don't change VOICE (the brand's personality stays the same).
+          3. **Rigid enforcement over natural flow** — Guidelines are principles, not a checklist. Content should feel natural, not mechanically assembled.
+          4. **Ignoring the audience** — The same voice can sound very different to a CTO vs. a VP of Sales. Tone flexes handle this.
+    - path: /knowledge-work-plugins/skills/discover-brand/SKILL.md
+      text: |
+          ---
+          name: discover-brand
+          description: >
+            This skill orchestrates autonomous discovery of brand materials across enterprise
+            platforms (Notion, Confluence, Google Drive, Box, SharePoint, Figma, Gong, Granola, Slack).
+            It should be used when the user asks to "discover brand materials",
+            "find brand documents", "search for brand guidelines", "audit brand content",
+            "what brand materials do we have", "find our style guide", "where are our brand docs",
+            "do we have a style guide", "discover brand voice", "brand content audit",
+            or "find brand assets".
+          ---
+
+          # Brand Discovery
+
+          Orchestrate autonomous discovery of brand materials across enterprise platforms. This skill coordinates the discover-brand agent to search connected platforms (Notion, Confluence, Google Drive, Box, Microsoft 365, Figma, Gong, Granola, Slack), triage sources, and produce a structured discovery report with open questions.
+
+          ## Discovery Workflow
+
+          ### 0. Orient the User
+
+          Before starting, briefly explain what's about to happen so the user knows what to expect:
+
+          "Here's how brand discovery works:
+
+          1. **Search** — I'll search your connected platforms (Notion, Google Drive, Slack, etc.) for brand-related materials: style guides, pitch decks, templates, transcripts, and more.
+          2. **Analyze** — I'll categorize and rank what I find, pull the best sources, and produce a discovery report with what I found, any conflicts, and open questions.
+          3. **Generate guidelines** — Once you've reviewed the report, I can generate a structured brand voice guideline document from the results.
+          4. **Save** — Guidelines are saved to `.claude/brand-voice-guidelines.md` in your working folder once you approve them. Nothing is written until that step.
+
+          The search usually takes a few minutes depending on how many platforms are connected. Ready to get started?"
+
+          Wait for the user to confirm before proceeding. If they have questions about the process, answer them first.
+
+          ### 1. Check Settings
+
+          Read `.claude/brand-voice.local.md` if it exists. Extract:
+          - Company name
+          - Which platforms are enabled (notion, confluence, google-drive, box, microsoft-365, figma, gong, granola, slack)
+          - Search depth preference (standard or deep)
+          - Max sources limit
+          - Any known brand material locations listed under "Known Brand Materials"
+
+          If no settings file exists, proceed with all connected platforms and standard search depth.
+
+          ### 2. Validate Platform Coverage
+
+          Before confirming scope, check which platforms are actually connected and classify them:
+
+          **Document platforms** (where brand guidelines, style guides, templates, and decks live):
+          - Notion, Confluence, Google Drive, Box, Microsoft 365 (SharePoint/OneDrive)
+
+          **Supplementary platforms** (valuable for patterns, but not where brand docs are stored):
+          - Slack, Gong, Granola, Figma
+
+          Apply these rules:
+
+          1. **If zero document platforms are connected**: **Stop.** Tell the user: "You don't have any document storage platforms connected (Google Drive, SharePoint, Notion, Confluence, or Box). Brand guidelines and style guides almost always live on one of these. Please connect at least one before running discovery. Gong/Granola/Slack transcripts are valuable supplements but unlikely to contain formal brand documents."
+
+          2. **If no Google Drive AND no Microsoft 365 AND no Box**: **Warn** (but proceed): "None of your primary file storage platforms (Google Drive, SharePoint, Box) are connected. Brand documents frequently live on these platforms. Discovery will proceed with [connected platforms], but results may have significant gaps. Consider connecting Google Drive or SharePoint."
+
+          3. **If only one platform total is connected**: **Warn** (but proceed): "Only [platform] is connected. Discovery works best with 2+ platforms for cross-source validation. Results from a single platform will have lower confidence scores."
+
+          ### 3. Confirm Scope with User
+
+          Before launching discovery, confirm:
+          - Which platforms to search (default: all connected)
+          - Whether to include conversation transcripts (Gong, Granola) or just documents
+          - Any known locations to prioritize
+
+          Keep this brief — one question, not a questionnaire.
+
+          ### 4. Delegate to Discover-Brand Agent
+
+          Launch the discover-brand agent via the Task tool. Provide:
+          - Company name (from settings or user input)
+          - Enabled platforms
+          - Search depth
+          - Any known URLs or locations to check first
+
+          The agent executes the 4-phase discovery algorithm autonomously:
+          1. **Broad Discovery** — parallel searches across platforms
+          2. **Source Triage** — categorize and rank sources
+          3. **Deep Fetch** — retrieve and extract from top sources
+          4. **Discovery Report** — structured output with open questions
+
+          ### 5. Present Discovery Report
+
+          When the agent returns, present the report to the user with a summary:
+          - Total sources found and analyzed
+          - Key brand elements discovered
+          - Any conflicts between sources
+          - Open questions requiring team input
+
+          ### 6. Offer Next Steps
+
+          After presenting the report, offer:
+          1. **Generate guidelines now** — chain to `/brand-voice:generate-guidelines` using discovery report as input
+          2. **Resolve open questions first** — work through high-priority questions before generating
+          3. **Save report** — store the discovery report to Notion or as a local file
+          4. **Expand search** — search additional platforms or deeper if coverage is low
+
+          ## Open Questions
+
+          Open questions arise when the discovery agent encounters ambiguity it cannot resolve:
+          - Conflicting documents (e.g., 2023 style guide vs. 2024 brand update)
+          - Missing critical sections (e.g., no social media guidelines found)
+          - Inconsistent terminology across platforms
+
+          Every open question includes an agent recommendation. Present questions as "confirm or override" — not dead ends.
+
+          ## Integration with Other Skills
+
+          - **Guideline Generation**: The discovery report is returned by the discover-brand agent via the Task tool. Pass it directly to the guideline-generation skill as structured input, replacing the need for users to manually gather sources.
+          - **Brand Voice Enforcement**: Once guidelines are generated from discovery, enforcement uses them automatically.
+
+          ## Error Handling
+
+          - If zero platforms are connected, inform the user which platforms the plugin supports and how to connect them.
+          - If all searches return empty results, flag the discovery as "low coverage" and suggest the user provide documents manually or check platform connections.
+          - If a platform is connected but returns permission errors, note the gap and continue with other platforms.
+
+          ## Reference Files
+
+          For detailed discovery patterns and algorithms, consult:
+
+          - **`references/search-strategies.md`** — Platform-specific search queries, query patterns by platform, and tips for maximizing discovery coverage
+          - **`references/source-ranking.md`** — Source category definitions, ranking algorithm weights, and triage decision criteria
+    - path: /knowledge-work-plugins/skills/discover-brand/references/search-strategies.md
+      text: |
+          # Search Strategies by Platform
+
+          Platform-specific query patterns and tips for maximizing brand material discovery.
+
+          ## Notion (Primary Discovery Engine)
+
+          Notion AI Search federates across connected sources (Google Drive, SharePoint, OneDrive, Slack, Jira, Teams), making it the most valuable single search endpoint.
+
+          ### Query Patterns
+
+          **Direct brand searches:**
+          - "brand guidelines"
+          - "style guide"
+          - "brand voice"
+          - "tone of voice"
+          - "messaging framework"
+
+          **Sales and marketing content:**
+          - "pitch deck"
+          - "sales playbook"
+          - "email templates"
+          - "value proposition"
+          - "competitive positioning"
+
+          **Operational brand content:**
+          - "brand update"
+          - "rebrand"
+          - "launch messaging"
+          - "press release template"
+          - "social media guidelines"
+
+          ### Tips
+          - Notion AI Search returns results from connected sources — one search covers multiple platforms
+          - Search for the company name + "brand" to find company-specific guidelines
+          - Check for databases titled "Brand Assets", "Marketing Resources", or "Content Library"
+          - Look for pages tagged with "brand", "marketing", "style"
+
+          ## Atlassian Confluence
+
+          Enterprises often store official brand documentation in Confluence spaces.
+
+          ### Query Patterns
+
+          **Space-level search:**
+          - Search spaces named: "Marketing", "Brand", "Communications", "Sales Enablement"
+          - Check for spaces with labels: "brand", "style-guide", "guidelines"
+
+          **Page-level search:**
+          - "brand style guide"
+          - "voice and tone guidelines"
+          - "messaging framework"
+          - "content standards"
+          - "editorial guidelines"
+
+          **Template search:**
+          - "email template"
+          - "proposal template"
+          - "presentation template"
+
+          ### Tips
+          - Confluence spaces often have hierarchical page trees — find the brand root page and explore children
+          - Check for recently updated pages (brand guidelines evolve)
+          - Look for pages with many watchers — indicates important shared content
+          - Search attachments for PDF brand guides uploaded to Confluence pages
+
+          ## Box
+
+          Cloud file storage — official brand documents, shared decks, and style guides frequently live here.
+
+          ### Query Patterns
+
+          **Folder search:**
+          - "Brand Guidelines"
+          - "Marketing Assets"
+          - "Brand Kit"
+          - "Style Guide"
+          - "Sales Collateral"
+
+          **Document search:**
+          - "brand guide" (PDF, DOCX, Word)
+          - "style guide" (PDF, DOCX, Word)
+          - "messaging document"
+          - "brand standards"
+
+          ### Tips
+          - Box often contains the "source of truth" brand guides as PDFs or Word docs
+          - Check shared folders with company-wide access
+          - Look for folders shared with the marketing or brand team
+          - Search for recently modified brand documents to find the latest version
+          - Use Box metadata search to filter by content type or custom attributes
+
+          ## Google Drive
+
+          Google Drive stores shared brand documents, marketing materials, and official style guides.
+
+          ### Query Patterns
+
+          **Folder search:**
+          - "Brand Guidelines"
+          - "Marketing"
+          - "Brand Assets"
+          - "Style Guide"
+
+          **Document search:**
+          - "brand guide" (PDFs, Google Docs, Google Slides)
+          - "style guide"
+          - "messaging framework"
+          - "brand standards"
+          - "brand voice"
+
+          ### Tips
+          - Check shared drives — brand materials often live in team-wide shared drives
+          - Look for recently modified brand documents to find the latest version
+          - Search by owner (marketing team members) to surface brand-owned content
+          - Google Docs and Slides are common formats for living brand documents
+          - Check for Google Slides presentations with brand overview decks
+
+          ## Microsoft 365 (SharePoint / OneDrive)
+
+          Enterprise organizations often centralize brand documentation on SharePoint sites.
+
+          ### Query Patterns
+
+          **SharePoint site search:**
+          - Search marketing or communications SharePoint sites
+          - "brand guidelines"
+          - "style guide"
+          - "brand standards"
+          - "messaging framework"
+
+          **Document library search:**
+          - Check document libraries in marketing/communications sites
+          - "brand guide" (Word, PDF, PowerPoint)
+          - "brand book"
+          - "editorial guidelines"
+
+          **OneDrive search:**
+          - "brand" files in shared OneDrive folders
+          - "style guide" shared with the organization
+
+          ### Tips
+          - Check marketing/communications SharePoint sites first — most common location for brand docs
+          - Search document libraries for PDF brand guides and PowerPoint brand decks
+          - Look for brand-tagged content using SharePoint metadata
+          - OneDrive shared folders may contain working drafts of brand materials
+          - Use SharePoint search and document library tools when available
+
+          ## Slack
+
+          Slack channels contain informal brand discussions, decisions, and evolving brand voice patterns.
+
+          ### Query Patterns
+
+          **Channel search:**
+          - Look for channels: #brand, #marketing, #brand-voice, #style-guide, #creative
+          - Check channel topics and descriptions for brand-related content
+
+          **Message search:**
+          - "brand guidelines"
+          - "brand voice"
+          - "tone of voice"
+          - "style guide"
+          - "brand update"
+
+          **Pinned messages:**
+          - Check pinned messages in #brand and #marketing channels
+          - Pinned items often contain approved brand resources or decisions
+
+          ### Tips
+          - Search #brand and #marketing channels first — most likely to contain brand discussions
+          - Look for pinned messages — teams often pin brand guidelines and decisions
+          - Find brand discussion threads for context on brand evolution
+          - Slack is a conversational source — ranks as CONVERSATIONAL tier in source triage
+          - Recent messages may reveal brand changes not yet documented formally
+
+          ## Gong (Conversation Intelligence)
+
+          Sales call transcripts reveal how the brand actually communicates in practice.
+
+          ### Query Patterns
+
+          **Call search:**
+          - Search for calls tagged: "won", "closed-won" (successful brand application)
+          - Filter by top performers (their language patterns define implicit brand voice)
+          - Look for calls tagged: "demo", "discovery", "closing"
+
+          **Transcript search:**
+          - Search transcripts for company-specific value propositions
+          - Look for recurring phrases across successful calls
+          - Find calls where competitors are discussed (reveals positioning)
+
+          ### Tips
+          - Focus on successful calls — they represent brand voice that works
+          - Compare top performer language with average performer language
+          - Look for consistent opening lines and closing patterns
+          - Note objection handling language — reveals brand positioning under pressure
+
+          ## Granola (Meeting Intelligence)
+
+          Meeting notes and transcripts from the AI notepad for meetings.
+
+          ### Query Patterns
+
+          **Meeting search:**
+          - Query for meetings related to: "brand", "positioning", "messaging"
+          - List recent meetings and filter for customer-facing calls
+          - Search for strategy sessions and brand planning meetings
+
+          **Transcript retrieval:**
+          - Get full transcripts from high-signal meetings
+          - Look for recurring themes in meeting notes
+          - Find meetings with key stakeholders (marketing leads, executives)
+
+          ### Tips
+          - Granola captures both meeting notes and transcripts — both are valuable
+          - Meeting notes often contain summarized brand decisions and action items
+          - Look for recurring meeting series (weekly brand syncs, marketing standups)
+          - Cross-reference Granola meeting notes with Gong call transcripts when both are available
+
+          ## Figma (Brand Design Systems)
+
+          Visual brand elements inform voice and tone indirectly.
+
+          ### Query Patterns
+
+          **File search:**
+          - "brand design system"
+          - "design tokens"
+          - "brand kit"
+          - "style guide"
+          - "component library"
+
+          **Component search:**
+          - Look for files with brand colors, typography scales
+          - Find component documentation with usage guidelines
+          - Check for content/copy guidelines in design system docs
+
+          ### Tips
+          - Figma design systems often include writing guidelines alongside visual specs
+          - Check file descriptions and comments for brand context
+          - Look for "voice and tone" sections within design system documentation
+          - Brand personality descriptions in design files reveal voice attributes
+
+          ## Cross-Platform Search Tips
+
+          ### Maximizing Coverage
+          1. Start with Notion AI Search (broadest coverage via federation)
+          2. Follow up with Confluence for enterprise documentation
+          3. Check Google Drive for official brand documents
+          4. Check Box for cloud-stored brand documents
+          5. Search SharePoint/OneDrive for enterprise files
+          6. Search Slack for brand discussions and decisions
+          7. Search Gong for conversational brand patterns
+          8. Search Granola for meeting transcripts and notes
+          9. Review Figma for design-embedded brand guidelines
+
+          ### Avoiding Duplicates
+          - Track source URLs to detect the same document across platforms
+          - When the same content appears on multiple platforms, prefer the most recently updated version
+          - Note when Notion federation returns results from other platforms to avoid double-searching
+
+          ### Recency Focus
+          - Focus on content from the last 12 months for operational, conversational, and contextual sources
+          - Only search further back when looking for explicit brand documents (style guides, brand books)
+          - When results include older content, prefer the most recently updated version
+          - Flag any non-AUTHORITATIVE source older than 12 months — it may reflect outdated positioning
+
+          ### Handling No Results
+          - If a platform returns zero results, try broader queries ("marketing", "sales")
+          - Check if the platform is actually connected and authenticated
+          - Note the gap in the discovery report — the absence of content on a platform is itself useful information
+    - path: /knowledge-work-plugins/skills/discover-brand/references/source-ranking.md
+      text: |
+          # Source Ranking Algorithm
+
+          How to categorize, rank, and prioritize discovered brand sources.
+
+          ## Source Categories
+
+          ### AUTHORITATIVE
+          Official, approved brand documentation. Highest trust level.
+
+          **Signals:**
+          - Published style guides or brand books
+          - C-suite or marketing leadership authored/approved
+          - Lives in an official "Brand" folder or Confluence space
+          - Has version numbers or approval dates
+          - Referenced by other documents as "the brand guide"
+
+          **Examples:**
+          - "Acme Corp Brand Guidelines v3.2.pdf"
+          - "Official Style Guide" page in Confluence Marketing space
+          - Brand book in Google Drive with company-wide sharing
+          - Brand book in Box with company-wide sharing
+          - Official Style Guide in SharePoint Marketing site
+
+          **Trust weight:** 1.0 (baseline)
+
+          ### OPERATIONAL
+          Brand applied in practice. Shows how guidelines manifest in real content.
+
+          **Signals:**
+          - Templates actively used by teams
+          - Sales playbooks with messaging guidance
+          - Email sequences with established tone
+          - Presentation templates with brand messaging
+
+          **Examples:**
+          - "Cold Email Templates Q4 2024"
+          - "Enterprise Sales Playbook"
+          - "Customer Success Response Templates"
+          - Pitch deck templates in Google Slides
+          - Email templates in Outlook
+          - Sales playbook on SharePoint
+
+          **Trust weight:** 0.8
+
+          ### CONVERSATIONAL
+          Implicit brand voice from actual communications.
+
+          **Signals:**
+          - Sales call transcripts (especially successful ones)
+          - Meeting notes with customer-facing language
+          - Internal discussions about positioning
+          - Slack threads discussing brand decisions
+
+          **Examples:**
+          - Gong recordings of top performer calls
+          - Meeting notes from brand strategy sessions
+          - Customer success call transcripts
+          - Slack #brand channel discussions about tone
+
+          **Trust weight:** 0.6 (valuable for patterns, not prescriptive)
+
+          ### CONTEXTUAL
+          Background information that informs brand but doesn't define it directly.
+
+          **Signals:**
+          - Design files without explicit brand guidelines
+          - Competitor analysis documents
+          - Industry reports
+          - Product documentation
+
+          **Examples:**
+          - Figma component library (visual only)
+          - "Competitive Landscape Q3 2024"
+          - Product feature specifications
+
+          **Trust weight:** 0.3
+
+          ### STALE
+          Outdated content superseded by newer versions.
+
+          **Signals:**
+          - Older version when a newer version exists
+          - Pre-rebrand materials after a rebrand
+          - Documents explicitly marked as deprecated
+          - Content more than 2 years old without updates
+
+          **Examples:**
+          - "Brand Guidelines v1.0" when v3.2 exists
+          - "2022 Style Guide" when "2024 Brand Update" exists
+          - Documents in an "Archive" or "Deprecated" folder
+
+          **Trust weight:** 0.1 (flag for review, do not rely on)
+
+          ## Ranking Algorithm
+
+          Apply these five ranking factors in order of priority:
+
+          ### 1. Recency (Weight: 30%)
+
+          More recent sources are more likely to reflect current brand voice.
+
+          - **Score 1.0**: Updated within last 6 months
+          - **Score 0.7**: Updated within last year
+          - **Score 0.4**: Updated within last 2 years
+          - **Score 0.1**: Older than 2 years
+
+          When two sources conflict, the more recent one wins unless the older source is explicitly marked as the "official" guide.
+
+          Always prefer the most recent version of any document. When multiple sources cover the same topic, weight the newest one heavily. Flag any non-AUTHORITATIVE source older than 12 months in the discovery report.
+
+          ### Recency Cutoffs
+
+          In addition to soft recency scoring, apply hard cutoffs to prevent stale content from polluting discovery:
+
+          **AUTHORITATIVE sources**: No hard cutoff. Official brand guides remain valid regardless of age unless explicitly superseded by a newer version.
+
+          **OPERATIONAL, CONVERSATIONAL, CONTEXTUAL sources**: Exclude from deep fetch if older than 12 months, with one exception: if zero sources in a category fall within the 12-month window, include the single most recent source from that category and flag it as potentially stale.
+
+          **STALE sources**: Exclude entirely from deep fetch. Include in the discovery report for reference only.
+
+          These cutoffs apply at the deep-fetch stage (Phase 3). All sources are still collected during broad discovery (Phase 1) and triage (Phase 2) — the cutoffs filter what gets fully retrieved and analyzed.
+
+          ### 2. Explicitness (Weight: 25%)
+
+          Sources that explicitly define brand voice outrank those that merely demonstrate it.
+
+          - **Score 1.0**: Explicit brand instructions ("Our voice is...")
+          - **Score 0.7**: Documented tone guidelines ("Emails should be...")
+          - **Score 0.4**: Implicit patterns in templates or examples
+          - **Score 0.2**: Inferred from conversational patterns
+
+          ### 3. Authority (Weight: 20%)
+
+          Higher organizational authority indicates more trustworthy brand definitions.
+
+          - **Score 1.0**: Official brand team or C-suite authored
+          - **Score 0.7**: Marketing leadership authored
+          - **Score 0.4**: Team leads or senior ICs
+          - **Score 0.2**: Individual contributor or unknown author
+
+          ### 4. Specificity (Weight: 15%)
+
+          Detailed, actionable guidance outranks vague principles.
+
+          - **Score 1.0**: Specific rules with examples ("Use 'platform' not 'tool'")
+          - **Score 0.7**: Detailed guidelines ("Tone should be warm but professional")
+          - **Score 0.4**: General principles ("Be authentic")
+          - **Score 0.2**: Abstract values only ("We believe in innovation")
+
+          ### 5. Cross-Source Consistency (Weight: 10%)
+
+          Elements corroborated across multiple sources rank higher.
+
+          - **Score 1.0**: Appears in 3+ independent sources
+          - **Score 0.7**: Appears in 2 independent sources
+          - **Score 0.4**: Appears in 1 source only
+          - **Score 0.1**: Contradicted by another source
+
+          ## Composite Score Calculation
+
+          ```
+          final_score = (recency × 0.30) + (explicitness × 0.25) + (authority × 0.20)
+                      + (specificity × 0.15) + (consistency × 0.10)
+          ```
+
+          Multiply by category trust weight:
+          ```
+          ranked_score = final_score × category_trust_weight
+          ```
+
+          ### Example Scoring
+
+          **Source: "Brand Voice Guidelines v3.2" (Confluence, updated 3 months ago)**
+          - Recency: 1.0 (3 months old)
+          - Explicitness: 1.0 (explicit brand instructions)
+          - Authority: 1.0 (marketing VP authored)
+          - Specificity: 0.7 (good guidelines, some gaps)
+          - Consistency: 0.7 (corroborated by email templates)
+          - Category: AUTHORITATIVE (1.0)
+          - **Final: (1.0×0.30 + 1.0×0.25 + 1.0×0.20 + 0.7×0.15 + 0.7×0.10) × 1.0 = 0.925**
+
+          **Source: "Top Performer Call — Enterprise Close" (Gong, 2 months ago)**
+          - Recency: 1.0
+          - Explicitness: 0.2 (implicit patterns only)
+          - Authority: 0.4 (senior AE)
+          - Specificity: 0.7 (specific phrases used)
+          - Consistency: 0.4 (single source)
+          - Category: CONVERSATIONAL (0.6)
+          - **Final: (1.0×0.30 + 0.2×0.25 + 0.4×0.20 + 0.7×0.15 + 0.4×0.10) × 0.6 = 0.345**
+
+          ## Adaptive Scoring: No Authoritative Sources
+
+          When discovery finds **zero AUTHORITATIVE sources**, the scoring algorithm adapts to reflect that conversational and operational sources are the primary brand evidence.
+
+          ### Adjusted Trust Weights (No Authoritative Sources)
+
+          | Category | Default Weight | Adapted Weight | Rationale |
+          |----------|---------------|----------------|-----------|
+          | AUTHORITATIVE | 1.0 | 1.0 | (n/a — none found) |
+          | OPERATIONAL | 0.8 | 0.9 | Templates become primary explicit evidence |
+          | CONVERSATIONAL | 0.6 | 0.85 | Transcripts are the best signal for how the brand actually communicates |
+          | CONTEXTUAL | 0.3 | 0.4 | Design and competitive context more valuable without formal docs |
+          | STALE | 0.1 | 0.2 | Even old docs matter more when nothing current exists |
+
+          ### Adjusted Explicitness Scoring (No Authoritative Sources)
+
+          When no authoritative sources exist, conversational patterns carry more prescriptive weight:
+
+          - **Score 0.2 → 0.5**: "Inferred from conversational patterns" — these ARE the brand evidence now
+          - **Score 0.4 → 0.6**: "Implicit patterns in templates or examples"
+          - Other explicitness scores unchanged
+
+          ### Example: Transcript Scoring With Adaptation
+
+          **Source: "Top Performer Call — Enterprise Close" (Gong, 2 months ago)**
+          - Recency: 1.0
+          - Explicitness: 0.5 (adapted from 0.2 — patterns are primary evidence)
+          - Authority: 0.4 (senior AE)
+          - Specificity: 0.7 (specific phrases used)
+          - Consistency: 0.4 (single source)
+          - Category: CONVERSATIONAL (0.85 adapted)
+          - **Adapted score: (1.0×0.30 + 0.5×0.25 + 0.4×0.20 + 0.7×0.15 + 0.4×0.10) × 0.85 = 0.552**
+
+          This puts the transcript well above the 0.5 deep-fetch threshold, ensuring conversational sources meaningfully contribute to guideline generation.
+
+          ### When to Apply
+
+          Apply adaptive scoring when:
+          - Phase 2 triage produces zero AUTHORITATIVE sources
+          - Flag in the discovery report: "No formal brand guidelines found — scoring adapted to weight conversational and operational sources higher"
+
+          ## Triage Decision Criteria
+
+          ### Include in Deep Fetch (Top 5-15 sources)
+          - Ranked score > 0.5
+          - All AUTHORITATIVE sources regardless of score
+          - At least one source per category if available (this overrides the score threshold)
+          - At least one source per platform if available
+
+          ### Flag for Review
+          - Sources with conflicting information
+          - STALE sources that may still be referenced by teams
+          - Sources with high specificity but low authority
+
+          ### Exclude
+          - Ranked score < 0.1
+          - Clearly irrelevant results (e.g., "brand" used in product name, not brand guidelines)
+          - Duplicate content already captured from another platform
+    - path: /knowledge-work-plugins/skills/guideline-generation/SKILL.md
+      text: |
+          ---
+          name: guideline-generation
+          description: >
+            This skill generates, creates, or builds brand voice guidelines from source
+            materials. It should be used when the user asks to "generate brand guidelines",
+            "create a style guide", "extract brand voice", "create guidelines from calls",
+            "consolidate brand materials", "analyze my sales calls for brand voice",
+            "build a brand playbook from documents", "synthesize a voice and tone guide",
+            or uploads brand documents, transcripts, or meeting recordings for brand
+            analysis. Also triggers when the user has a discovery report and wants to
+            convert it into actionable guidelines.
+          ---
+
+          # Guideline Generation
+
+          Generate comprehensive, LLM-ready brand voice guidelines from any combination of sources — brand documents, sales call transcripts, discovery reports, or direct user input. Transform raw materials into structured, enforceable guidelines with confidence scoring and open questions.
+
+          ## Inputs
+
+          Accept any combination of:
+          - **Discovery report** from the discover-brand skill (structured, pre-triaged)
+          - **Brand documents** uploaded or from connected platforms (PDF, PPTX, DOCX, MD, TXT)
+          - **Conversation transcripts** from Gong, Granola, manual uploads, or Notion meeting notes
+          - **Direct user input** about their brand voice and values
+
+          When a discovery report is provided, use it as the primary input — sources are already triaged and ranked. Supplement with additional analysis as needed.
+
+          ## Generation Workflow
+
+          ### 1. Identify and Classify Sources
+
+          Determine what the user has provided. If no sources are available:
+          - Check if a discovery report exists from a previous `/brand-voice:discover-brand` run
+          - Check `.claude/brand-voice.local.md` for known brand material locations
+          - Suggest running discovery first: `/brand-voice:discover-brand`
+
+          ### 2. Process Sources
+
+          **For documents:** Delegate to the document-analysis agent for heavy parsing. Extract voice attributes, messaging themes, terminology, tone guidance, and examples.
+
+          **For transcripts:** Delegate to the conversation-analysis agent for pattern recognition. Extract implicit voice attributes, successful language patterns, tone by context, and anti-patterns.
+
+          **For discovery reports:** Extract pre-triaged sources, conflicts, and gaps. Use the ranked sources directly.
+
+          ### 3. Synthesize Into Guidelines
+
+          Merge all findings into a unified guideline document following the template in `references/guideline-template.md`. Key sections:
+
+          **"We Are / We Are Not" Table** — The core brand identity anchor:
+
+          | We Are | We Are Not |
+          |--------|------------|
+          | [Attribute — e.g., "Confident"] | [Counter — e.g., "Arrogant"] |
+          | [Attribute — e.g., "Approachable"] | [Counter — e.g., "Casual or sloppy"] |
+
+          Derive attributes from the most consistent patterns across sources. Each row should have supporting evidence.
+
+          **Voice Constants vs. Tone Flexes** — Clarify what stays fixed and what adapts:
+          - **Voice** = personality, values, "We Are / We Are Not" — constant across all content
+          - **Tone** = formality, energy, technical depth — flexes by context
+
+          **Tone-by-Context Matrix:**
+
+          | Context | Formality | Energy | Technical Depth | Example |
+          |---------|-----------|--------|-----------------|---------|
+          | Cold outreach | Medium | High | Low | "[example phrase]" |
+          | Enterprise proposal | High | Medium | High | "[example phrase]" |
+          | Social media | Low | High | Low | "[example phrase]" |
+
+          ### 4. Assign Confidence Scores
+
+          Score each section using the methodology in `references/confidence-scoring.md`:
+          - **High confidence**: 3+ corroborating sources, explicit guidance found
+          - **Medium confidence**: 1-2 sources, or inferred from patterns
+          - **Low confidence**: Single source, inferred, or conflicting data
+
+          ### 5. Surface Open Questions
+
+          Generate open questions for any ambiguity that cannot be resolved:
+
+          ```markdown
+          ## Open Questions for Team Discussion
+
+          ### High Priority (blocks guideline completion)
+          1. **[Question Title]**
+             - What was found: [conflicting or incomplete info]
+             - Agent recommendation: [suggested resolution with reasoning]
+             - Need from you: [specific decision or confirmation needed]
+          ```
+
+          Every open question MUST include an agent recommendation. Turn ambiguity into "confirm or override" — never a dead end.
+
+          ### 6. Quality Check
+
+          Before presenting, verify via the quality-assurance agent (defined in `agents/quality-assurance.md`):
+          - All major sections populated (including Brand Personality and Content Examples if sources support them)
+          - At least 3 voice attributes with evidence
+          - "We Are / We Are Not" table has 4+ rows
+          - Tone matrix covers at least 3 contexts
+          - Confidence scores assigned per section
+          - Source attribution for all extracted elements
+          - No PII exposed
+          - Open questions include recommendations
+
+          ### 7. Present and Offer Next Steps
+
+          Summarize key findings:
+          - Total sections generated with confidence breakdown
+          - Strongest voice attribute and most effective message
+          - Number of open questions (if any)
+
+          ### 8. Save for Future Sessions
+
+          The default save location is `.claude/brand-voice-guidelines.md` inside the user's working folder.
+
+          **Important:** The agent's working directory may not be the user's project root (especially in Cowork, where plugins run from a plugin cache directory). Always resolve the path relative to the user's working folder, not the current working directory. If no working folder is set, skip the file save and tell the user guidelines will only be available in this conversation.
+
+          1. **Resolve the save path.** The file MUST be saved to `.claude/brand-voice-guidelines.md` inside the user's working folder. Confirm the working folder path before writing.
+          2. **Check if guidelines already exist** at that path
+          3. **If they exist, archive the previous version:** Rename the existing file to `brand-voice-guidelines-YYYY-MM-DD.md` in the same directory (using today's date)
+          4. **Save new guidelines** to `.claude/brand-voice-guidelines.md` inside the working folder
+          5. **Confirm to the user** with the full absolute path: "Guidelines saved to `<full-path>`. `/brand-voice:enforce-voice` will find them automatically in future sessions."
+
+          The guidelines are also present in this conversation, so `/brand-voice:enforce-voice` can use them immediately without loading from file.
+
+          After saving, offer:
+          1. Walk through the guidelines section by section
+          2. Start creating content with `/brand-voice:enforce-voice`
+          3. Resolve open questions
+
+          ## Privacy and Security
+
+          Enforce these privacy constraints throughout the entire generation workflow, not only at output time:
+          - Redact customer names and contact information from all examples
+          - Anonymize company names in transcript excerpts if requested
+          - Flag any sensitive information detected during processing
+
+          ## Reference Files
+
+          - **`references/guideline-template.md`** — Complete output template with all sections, field definitions, and formatting guidance
+          - **`references/confidence-scoring.md`** — Confidence scoring methodology, thresholds, and examples
+    - path: /knowledge-work-plugins/skills/guideline-generation/references/confidence-scoring.md
+      text: |
+          # Confidence Scoring Methodology
+
+          How to assign and interpret confidence scores for generated brand guidelines.
+
+          ## Scoring Levels
+
+          ### High Confidence
+          The guideline section is well-supported and actionable.
+
+          **Criteria (must meet at least 3):**
+          - 3+ corroborating sources
+          - Explicit guidance found in at least one AUTHORITATIVE source
+          - Consistent across document and conversation analysis
+          - Specific, actionable instructions (not just vague principles)
+          - No unresolved conflicts
+
+          **Example:** Voice attribute "Confident but not arrogant" appears in the official style guide, is demonstrated in email templates, and matches patterns in top performer calls.
+
+          ### Medium Confidence
+          The section is reasonable but could benefit from more data or team confirmation.
+
+          **Criteria (must meet at least 2):**
+          - 1-2 corroborating sources
+          - Inferred from patterns rather than explicit instruction
+          - Minor inconsistencies resolved via recency or authority
+          - Actionable but some interpretation was required
+          - May have one unresolved conflict
+
+          **Example:** Tone for social media inferred from email templates and one Slack thread, but no official social media guidelines exist.
+
+          ### Low Confidence
+          The section is a best-effort recommendation. Team review strongly recommended.
+
+          **Criteria (must meet at least 2):**
+          - Single source only
+          - Primarily inferred from indirect evidence
+          - Significant interpretation required
+          - Unresolved conflicts between sources
+          - Limited specificity
+
+          **Example:** Competitive positioning derived from a single sales call where a competitor was discussed, with no supporting documentation.
+
+          ## Section-Level Scoring Guide
+
+          ### Voice Attributes
+          - **High**: Attributes appear in official brand guide AND are demonstrated in templates or calls
+          - **Medium**: Attributes appear in one document type only, or are inferred from multiple conversations
+          - **Low**: Attributes inferred from a single source or from indirect evidence
+
+          ### Messaging Framework
+          - **High**: Value propositions documented in official materials AND used consistently in sales conversations
+          - **Medium**: Documented but not observed in practice, OR observed but not documented
+          - **Low**: Extracted from a single pitch deck or single call
+
+          ### Tone Matrix
+          - **High**: Explicit tone guidance exists for the context AND matches observed behavior
+          - **Medium**: Tone inferred from 3+ examples of content in that context
+          - **Low**: Tone inferred from 1-2 examples, or extrapolated from similar contexts
+
+          ### Terminology
+          - **High**: Terms explicitly listed in a style guide or glossary
+          - **Medium**: Terms consistently used in templates and calls (pattern-based)
+          - **Low**: Terms observed in a single document or inferred from brand personality
+
+          ### Language Patterns (from transcripts)
+          - **High**: Pattern observed in 5+ calls across multiple speakers
+          - **Medium**: Pattern observed in 3-4 calls or from a single top performer
+          - **Low**: Pattern observed in 1-2 calls only
+
+          ### Transcript-Primary Scenarios
+
+          When guidelines are generated primarily from conversational sources (no AUTHORITATIVE documents available):
+          - Voice Attributes derived from 5+ transcripts = **Medium** (not Low)
+          - Messaging Framework from consistent patterns across 5+ calls = **Medium**
+          - Language Patterns weight increases from 10% to 20% in aggregate calculation (subtract 10% from Voice Attributes)
+
+          Note this in the guideline metadata: "Guidelines generated primarily from conversational sources — team review recommended to formalize."
+
+          ## Aggregate Confidence
+
+          Calculate overall guideline confidence as the weighted average of section scores:
+
+          | Section | Weight |
+          |---------|--------|
+          | Voice Attributes | 30% |
+          | Messaging Framework | 25% |
+          | Tone Matrix | 20% |
+          | Terminology | 15% |
+          | Language Patterns | 10% |
+
+          Convert scores: High = 1.0, Medium = 0.6, Low = 0.3
+
+          **Example:**
+          - Voice Attributes: High (1.0 x 0.30 = 0.30)
+          - Messaging: Medium (0.6 x 0.25 = 0.15)
+          - Tone: Medium (0.6 x 0.20 = 0.12)
+          - Terminology: High (1.0 x 0.15 = 0.15)
+          - Language: Low (0.3 x 0.10 = 0.03)
+          - **Overall: 0.75 = Medium-High confidence**
+
+          **Aggregate score thresholds:**
+          - 0.85–1.0 = High
+          - 0.60–0.84 = Medium
+          - Below 0.60 = Low
+
+          ## Presentation
+
+          Present confidence alongside each section header:
+
+          ```markdown
+          ## Voice Attributes (Confidence: High)
+          [content]
+
+          ## Tone Matrix (Confidence: Medium)
+          [content — note: no official social media guidelines found, tone inferred from email patterns]
+          ```
+
+          For Medium and Low confidence sections, include a brief note explaining why confidence is limited and what would raise it.
+
+          ## Relationship to Open Questions
+
+          Low confidence sections should generate corresponding open questions:
+
+          - **Low confidence + conflict** = High Priority open question
+          - **Low confidence + gap** = Medium Priority open question
+          - **Medium confidence + minor inconsistency** = Low Priority open question
+
+          Every open question includes a recommendation that, if confirmed, would raise the section's confidence score.
+    - path: /knowledge-work-plugins/skills/guideline-generation/references/guideline-template.md
+      text: |
+          # Brand Guidelines Output Template
+
+          The complete structure for generated brand voice guidelines. Fill each section based on discovered and analyzed sources. The following is a raw markdown template — copy and fill the sections below. Omit sections with no data rather than including empty placeholders.
+
+          # [Company Name] Brand Voice Guidelines
+
+          ## Generation Metadata
+          - Created: [date]
+          - Version: [N] (incremented from previous if updating)
+          - Replaces: [previous version date, if applicable]
+          - Sources: [list of documents and/or conversations analyzed]
+          - Documents processed: [N]
+          - Conversations analyzed: [N]
+          - Discovery report used: [Yes/No]
+          - Overall confidence: [High/Medium/Low]
+
+          ---
+
+          ## Executive Summary
+
+          [2-3 paragraph overview of the brand voice. What makes this brand distinctive?
+          What is the core personality? How should content feel to the reader?]
+
+          ---
+
+          ## We Are / We Are Not
+
+          The foundational brand identity anchor. Voice is constant — it doesn't change by channel or audience.
+
+          | We Are | We Are Not |
+          |--------|------------|
+          | **[Attribute 1]** — [brief description] | **[Counter 1]** — [what to avoid] |
+          | **[Attribute 2]** — [brief description] | **[Counter 2]** — [what to avoid] |
+          | **[Attribute 3]** — [brief description] | **[Counter 3]** — [what to avoid] |
+          | **[Attribute 4]** — [brief description] | **[Counter 4]** — [what to avoid] |
+          | **[Attribute 5]** — [brief description] | **[Counter 5]** — [what to avoid] |
+
+          ### Voice Attributes Detail
+
+          For each "We Are" attribute:
+
+          #### [Attribute 1]: [Name]
+          - **What it means**: [detailed description]
+          - **How it shows up**: [specific behaviors in content]
+          - **What to avoid**: [the "We Are Not" counterpart, expanded]
+          - **Evidence**: [source quote or pattern, with citation]
+          - **Confidence**: [High/Medium/Low]
+
+          [Repeat for each attribute]
+
+          ---
+
+          ## Brand Personality
+
+          - **Archetype**: [e.g., "The Expert Friend" — technically deep but never condescending]
+          - **If our brand were a person**: [brief personality sketch]
+          - **Core values expressed in voice**: [list]
+
+          ---
+
+          ## Messaging Framework
+
+          ### Primary Value Proposition
+          [Core value statement — one sentence]
+
+          Variations observed:
+          - "[Variation 1]" (Source: [doc])
+          - "[Variation 2]" (Source: [doc])
+
+          ### Key Message Pillars
+
+          1. **[Pillar Name]**
+             - Core idea: [one sentence]
+             - When to use: [contexts]
+             - Example phrasing: "[quote]"
+             - Frequency in conversations: [X]% (if transcript data available)
+             - Effectiveness: [High/Medium/Low] (if outcome data available)
+
+          2. **[Pillar Name]**
+             [same format]
+
+          3. **[Pillar Name]**
+             [same format]
+
+          ### Competitive Positioning
+          - vs. [Competitor A]: [how we differentiate]
+          - vs. [Competitor B]: [how we differentiate]
+          - vs. Status Quo: [why change is worth it]
+
+          ---
+
+          ## Tone-by-Context Matrix
+
+          Voice is constant. Tone flexes by context. These three dimensions adjust:
+
+          | Context | Formality | Energy | Technical Depth | Key Principle |
+          |---------|-----------|--------|-----------------|---------------|
+          | Cold outreach | Medium | High | Low | Hook fast, earn attention |
+          | Discovery calls | Medium | Medium-High | Medium | Ask more than tell |
+          | Demo / presentation | Medium-High | High | High | Show, don't just describe |
+          | Enterprise proposal | High | Medium | High | ROI and precision |
+          | Follow-up email | Medium | Medium | Low-Medium | Add new value each touch |
+          | Social media | Low-Medium | High | Low | Brevity and personality |
+          | Customer success | Medium | Warm | Medium | Empathy and competence |
+          | Internal comms | Low | Medium | Varies | Authentic, less polished |
+
+          ### Context-Specific Guidelines
+
+          #### Cold Outreach
+          - **Overall tone**: [description]
+          - **Opening approach**: [what works]
+          - **Do's**: [list]
+          - **Don'ts**: [list]
+          - **Example**: "[sample opening line]"
+
+          #### Discovery Calls
+          [same structure]
+
+          #### Proposals & RFPs
+          [same structure]
+
+          #### Social Media
+          [same structure]
+
+          ---
+
+          ## Terminology Guide
+
+          ### Must-Use Terms
+          | Term | Usage | Instead Of | Example |
+          |------|-------|------------|---------|
+          | [term] | [when/how to use] | [what it replaces] | "[in a sentence]" |
+
+          ### Preferred Terms
+          | Term | Usage | Example |
+          |------|-------|---------|
+          | [term] | [guidance] | "[in a sentence]" |
+
+          ### Avoid These Terms
+          | Term | Reason | Alternative |
+          |------|--------|-------------|
+          | [term] | [why to avoid] | [what to use instead] |
+
+          ### Never-Use Terms
+          | Term | Reason |
+          |------|--------|
+          | [term] | [why this is prohibited] |
+
+          ---
+
+          ## Language That Works
+
+          Ranked by effectiveness (from conversation analysis, if available):
+
+          ### Top Phrases
+          1. **"[Phrase]"** — Context: [when to use], Why it works: [analysis]
+          2. **"[Phrase]"** — Context: [when to use], Why it works: [analysis]
+
+          ### Questions That Engage
+          1. **"[Question]"** — Leads to: [typical outcome]
+          2. **"[Question]"** — Leads to: [typical outcome]
+
+          ### Objection Handling Patterns
+          1. **Objection**: "[common objection]"
+             **Response pattern**: "[how top performers respond]"
+             **Why it works**: [analysis]
+
+          ---
+
+          ## Language to Avoid
+
+          ### Anti-Patterns
+          1. **"[Phrase/pattern]"** — Problem: [what happens], Better: "[alternative]"
+          2. **"[Phrase/pattern]"** — Problem: [what happens], Better: "[alternative]"
+
+          ---
+
+          ## Content Examples
+
+          ### Excellent Examples
+          [Full example with annotation explaining what makes it on-brand]
+
+          ### Examples to Avoid
+          [Full example with annotation explaining what's off-brand and how to fix it]
+
+          ---
+
+          ## Confidence Scores
+
+          | Section | Confidence | Basis | Sources |
+          |---------|------------|-------|---------|
+          | Voice Attributes | [H/M/L] | [why] | [N sources] |
+          | Messaging Framework | [H/M/L] | [why] | [N sources] |
+          | Tone Matrix | [H/M/L] | [why] | [N sources] |
+          | Terminology | [H/M/L] | [why] | [N sources] |
+          | Language Patterns | [H/M/L] | [why] | [N sources] |
+
+          ---
+
+          ## Open Questions for Team Discussion
+
+          ### High Priority (blocks guideline completion)
+          1. **[Question Title]**
+             - What was found: [description of ambiguity]
+             - Agent recommendation: [suggested resolution]
+             - Need from you: [specific decision]
+
+          ### Medium Priority (improves quality)
+          [same format]
+
+          ### Low Priority (nice to have)
+          [same format]
+
+          ---
+
+          ## Data Gaps & Recommendations
+
+          [What's missing and specific actions to fill gaps]
+
+          - [ ] [Gap 1]: [recommendation to fill it]
+          - [ ] [Gap 2]: [recommendation to fill it]
+
+          ---
+
+          ## Appendix: Sources
+
+          | # | Source | Platform | Type | Date | Key Sections Used | Confidence |
+          |---|--------|----------|------|------|-------------------|------------|
+          | 1 | [title] | [platform] | [AUTHORITATIVE/OPERATIONAL/etc.] | [date] | [sections] | [H/M/L] |
+
+          ---
+
+          ## Template Usage Notes
+
+          - Omit sections with no data rather than including empty placeholders
+          - If transcript data is unavailable, omit the "Language That Works" and "Language to Avoid" sections
+          - If only documents are available (no transcripts), note this in metadata
+          - "We Are / We Are Not" table should have minimum 4 rows, ideally 5-7
+          - Tone matrix should cover at minimum: cold outreach, proposals, social media
+          - All examples must have source attribution
+          - Every open question must include an agent recommendation
+  environment:
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: claude-partner-built-brand-voice
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
