@@ -1,0 +1,75 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: codex
+  description: Use OpenAI Codex to assit you with developer tasks
+  annotations:
+    meshagent.service.id: meshagent.codex
+
+agents:
+  - name: codex
+    annotations:
+      meshagent.agent.type: ChatBot
+      meshagent.chatbot.threading: default-new
+
+container:
+  image: meshagent/shell-codex:default
+  writable_root_fs: true
+  command: >
+    /usr/bin/meshagent codex chatbot join
+    --codex-image=none
+    --command="bash -lc 'codex app-server -c model_providers.openai.name='OpenAI' -c model_providers.openai.base_url=$OPENAI_BASE_URL'"
+    -rr=agents/codex/rules.txt
+    --threading-mode=default-new
+    --thread-dir=/agents/codex/rules.txt
+    --mode=yolo
+    --working-dir=/data
+    --rule="if you need help with commands or the api, refer to docs.meshagent.com"
+    --rule="you also have the meshagent sdk preloaded to /src/meshagent-sdk if you want to check the api for how to do something"
+    --rule="you must never install packages within the /data folder"
+    --rule="the meshagent cli can be used to access various room features or inspect the room (run 'meshagent room --help' to get more help on room specific commands)"
+    --rule="you may use the web fetch tool to inspect web pages, text files, images, or pdfs from the web"
+    --rule="when building, copy the source to be built into /build to build inside your container, and copy output back to a folder within /data for the user to find it"
+    --rule="the mount in /data is a FUSE mount, so avoid using it for operations which are problematic on a FUSE mount"
+    --rule='You are an agent to assist users with a command line. The root of the filesystem that the user sees (the "Room" files) has been mounted in the /data folder. If the user is currently viewing a file, the file path is relative to /data. To write a file the user can see, you must write it inside /data and tell them the path, relative to the /data folder, not including the data folder'
+    --rule='You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com'
+  storage:
+    room:
+      - path: /data
+      - path: /home
+        subpath: /agents/codex/home
+    
+  environment:
+    - name: CODEX_HOME
+      value: /home
+
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: codex
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
