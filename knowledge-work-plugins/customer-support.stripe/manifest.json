@@ -4,11 +4,11 @@
   "description": "An agent that uses Anthropic's customer support knowledge work plugin with Stripe MCP integration and a nightly docs sync worker",
   "long_description": "This plugin supports customer support.stripe workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in customer support.stripe work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for customer support.stripe decisions, analysis, and communication.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/426deae8850dbfc022e3f955fe2ca08e2e834950/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/426deae8850dbfc022e3f955fe2ca08e2e834950/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d07ce532b5739b692420e7b5bf9a0f8d594446a/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d07ce532b5739b692420e7b5bf9a0f8d594446a/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2255d14b520b71fe548cac1d606b2d426c8e77c2/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2255d14b520b71fe548cac1d606b2d426c8e77c2/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ce9db7b426d9a7f381348140dd3f87d01eceb7e/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ce9db7b426d9a7f381348140dd3f87d01eceb7e/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml"
   }
 }
