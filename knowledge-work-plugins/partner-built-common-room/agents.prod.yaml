@@ -1,0 +1,1268 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: claude-partner-built-common-room
+  description: An agent that uses Anthropic's partner-built Common Room knowledge work plugin
+  annotations:
+    meshagent.service.id: meshagent.claude-partner-built-common-room
+    meshagent.plugin.path: partner-built/common-room
+
+agents:
+  - name: claude-partner-built-common-room
+    annotations:
+      meshagent.agent.type: ChatBot
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+    - path: /data
+      read_only: false
+    files:
+    - path: /var/start.sh
+      text: |
+          #!/bin/bash
+
+          set -e
+
+          mkdir -p /data/knowledge-work-plugins
+          mkdir -p /data/agents/claude-partner-built-common-room
+          if [ -d /knowledge-work-plugins ]; then
+            cp -R -n /knowledge-work-plugins/* /data/knowledge-work-plugins/ 2>/dev/null || true
+          fi
+          if [[ ! -f /data/agents/claude-partner-built-common-room/rules.txt ]]; then
+            cp /var/rules-claude-partner-built-common-room.txt /data/agents/claude-partner-built-common-room/rules.txt
+          fi
+
+          exec /usr/bin/meshagent chatbot join \
+            --require-storage \
+            --require-web-search \
+            --require-web-fetch \
+            --storage-tool-local-path=/knowledge-work-plugins:/knowledge-work-plugins \
+            --storage-tool-room-path=/:/data \
+            --script-tool \
+            -rr=agents/claude-partner-built-common-room/rules.txt \
+            --rules-file /data/knowledge-work-plugins/commands/generate-account-plan.md \
+            --rules-file /data/knowledge-work-plugins/commands/weekly-brief.md \
+            --skill-dir /data/knowledge-work-plugins/skills/account-research \
+            --skill-dir /data/knowledge-work-plugins/skills/call-prep \
+            --skill-dir /data/knowledge-work-plugins/skills/compose-outreach \
+            --skill-dir /data/knowledge-work-plugins/skills/contact-research \
+            --skill-dir /data/knowledge-work-plugins/skills/prospect \
+            --skill-dir /data/knowledge-work-plugins/skills/weekly-prep-brief \
+    - path: /var/rules-claude-partner-built-common-room.txt
+      read_only: true
+      text: |
+          ONLY use the knowledge-work-plugins skills to answer questions and follow the pattern specified in the skill
+          you can use the storage tool to read skills not just the shell tool
+          when a question could be served by a skill, read the skill and follow the pattern specified in the skill
+          when using the storage tool to read files attached or referenced by the user, in the room, or output by the shell tool, the file path should be prefixed with /data.
+          when using the storage tool to read skills, the path should be prefixed with /data/knowledge-work-plugins (the folder where the plugins are located)
+          You have customizable rules stored in agents/claude-partner-built-common-room/rules.txt, you can use the read_file tool to read your rules. You can use the write_file tool to update the contents of the rules file or other text files. Use the read_file tool to read PDFs, examine images, or read files with a text/* mime type from attachments or files.
+          You are a MeshAgent agent. MeshAgent is an agent operating system. You can find out more at www.meshagent.com and docs.meshagent.com
+          You have some slash commands available
+    - path: /knowledge-work-plugins/commands/generate-account-plan.md
+      text: |
+          ---
+          description: Generate a comprehensive strategic account plan
+          argument-hint: <company name or domain>
+          ---
+
+          Generate a comprehensive account plan for "$ARGUMENTS".
+
+          ## Process
+
+          1. **Full account research** — Follow the account-research skill to produce a complete account overview. Pull all available first-party (product), second-party (community), and third-party (intent) signals, CRM data, scores, and RoomieAI research.
+
+          2. **Stakeholder mapping** — Fetch the top 5 contacts at this company sorted by member score descending. Classify each into: Champion, Economic Buyer, Influencer, End User, or Unknown. Use Spark persona data if available; if Spark is unavailable, infer from engagement patterns and activity recency. If no activity data exists either, classify as Unknown.
+
+          3. **Engagement analysis** — Pull all organization activity for the last 90 days (up to 50 activities). Identify trends: is engagement growing, stable, or declining? Which contacts are most active? What channels are they engaging through?
+
+          4. **Web search (supplementary)** — If CR data is rich, skip. If data is thin or the user requests it, search for recent company news (last 30 days): funding, acquisitions, product launches, leadership changes, competitive moves.
+
+          5. **Synthesis** — Combine all data into a structured account plan. When the user's company context is available (see `references/my-company-context.md`), tailor the executive summary, opportunities, and action items to the user's product and ICP.
+
+          ## Output Format
+
+          ```
+          ## Account Plan: [Company Name]
+
+          ### Executive Summary
+          [3-4 sentences: relationship status, key opportunity, primary risk, recommended priority]
+
+          ### Account Overview
+          | Field | Value |
+          |-------|-------|
+          | Industry | ... |
+          | Size | ... |
+          | Domain | ... |
+          | CRM Owner | ... |
+          | Opp Stage | ... |
+          | ARR | ... |
+          | Scores | ... |
+
+          ### Stakeholder Map
+
+          **Champions**
+          - [Name] — [Title] — [Key signals, last activity date]
+
+          **Economic Buyers**
+          - [Name] — [Title] — [Key signals]
+
+          **Influencers**
+          - [Name] — [Title] — [Key signals]
+
+          **End Users**
+          - [Name] — [Title] — [Key signals]
+
+          ### Engagement Analysis
+          [Trend summary: growing/stable/declining, most active contacts, top channels, comparison to 90 days prior if data available]
+
+          ### Recent News [If web search was run]
+          [Web search findings with sources and dates]
+
+          ### Opportunities
+          1. [Signal-backed opportunity with specific next step]
+          2. ...
+
+          ### Risks
+          1. [Signal-backed risk with mitigation]
+          2. ...
+
+          ### Prioritized Action Items
+          1. [Specific action] — [Owner suggestion] — [Timeline]
+          2. ...
+          3. ...
+          ```
+
+          Ground every insight in actual data. Flag explicitly when data is thin or unavailable.
+
+          **If Common Room returns sparse data for this account**, produce an abbreviated plan that covers only the sections with real data. Do not generate a full account plan from minimal input — a short honest plan with gaps clearly noted is far more useful than a comprehensive-looking plan built on fabricated details. Omit sections (Stakeholder Map, Engagement Analysis, Opportunities, Risks) entirely if there is no data to support them.
+    - path: /knowledge-work-plugins/commands/weekly-brief.md
+      text: |
+          ---
+          description: Generate a weekly prep briefing from your calendar and Common Room
+          argument-hint: [date range, defaults to next 7 days]
+          ---
+
+          Generate a weekly prep briefing using Common Room and your calendar.
+
+          Follow the weekly-prep-brief skill:
+          1. Use the ~~calendar connector to retrieve all external customer-facing meetings scheduled for the next 7 days (or the date range specified in "$ARGUMENTS"). Filter out internal meetings — focus on calls with customers, prospects, or partners.
+          2. If no ~~calendar connector is available, ask the user to list their external calls (company name, date, attendees).
+          3. For each external meeting, run account research and contact research on attendees in parallel.
+          4. Compile into a single weekly briefing: week overview + per-meeting sections sorted by date.
+
+          Keep each per-meeting section tight and scannable. Total briefing should be readable in under 10 minutes.
+    - path: /knowledge-work-plugins/skills/account-research/SKILL.md
+      text: |
+          ---
+          name: account-research
+          description: "Research a company using Common Room data. Triggers on 'research [company]', 'tell me about [domain]', 'pull up signals for [account]', 'what's going on with [company]', or any account-level question."
+          ---
+
+          # Account Research
+
+          Retrieve and synthesize account information from Common Room. Handles four interaction patterns: full overviews, targeted field questions, sparse data situations, and combined MCP data + LLM reasoning.
+
+          ## Step 0: Load User Context (Me)
+
+          Before researching any account, fetch the `Me` object from Common Room. This provides:
+          - The user's profile, title, role, and Persona in CR
+          - The user's segments ("My Segments")
+
+          Default all queries to the user's own segments unless the user explicitly asks for a broader view. This keeps results scoped to their territory.
+
+          ## Step 1: Identify the Interaction Pattern
+
+          Determine what the user actually needs before deciding how much data to fetch:
+
+          **Pattern 1 — Full Overview:** "Tell me about Datadog" / "Summarize cloudflare.com"
+          → Fetch the full field set and produce a structured briefing.
+
+          **Pattern 2 — Targeted Question:** "Who owns the Snowflake account?" / "Is acme.io showing buying signals?" / "What's the employee count for notion.so?"
+          → Fetch only the relevant field(s). Return a direct, concise answer — do not produce a full brief for a simple question.
+
+          **Pattern 3 — Sparse Data:** "Tell me about tiny-startup.io"
+          → If Common Room has limited data for an account, say so honestly: "There is limited information available for this account." Never speculate or fill gaps with generic statements.
+
+          **Pattern 4 — Combined Reasoning:** Fetch structured MCP data, then layer in LLM analysis — e.g., "Stripe has 8,000 employees and is hiring heavily for AI roles. Based on your ICP of 1k–10k fintech companies, this is a strong fit."
+
+          ## Step 2: Look Up the Account
+
+          Search Common Room for the account by domain or company name. Exact match first; if no result, try partial match and confirm with the user before proceeding.
+
+          ## Step 3: Fetch the Right Fields
+
+          Use the Common Room object catalog to see available field groups and their contents. For full overviews, request all field groups. For targeted questions, request only what's relevant.
+
+          **Key field groups to know about:**
+          - **Scores** — always return as raw values or percentiles, never labels
+          - **Summary research** — RoomieAI output; often the richest qualitative signal
+          - **Top contacts** — sorted by score desc; use communityMemberID for full lookups
+
+          **Choosing what to fetch:**
+
+          | User query type | Fields to request |
+          |-----------------|------------------|
+          | Full account overview | All field groups |
+          | "Who owns this account?" | Company profiles & links, CRM fields |
+          | "Is this company a good fit?" | Key fields, scores, about |
+          | "What signals is this account showing?" | Scores, summary research, CRM fields |
+          | "Who are the top contacts?" | Top contacts |
+          | "What does RoomieAI say about them?" | Summary research, all research |
+          | "Find engineers at this account" | Prospects (with title filter) |
+
+          ## Step 4: Web Search (Sparse Data Only)
+
+          Common Room is the primary data source. Do not run web search when CR returns rich data.
+
+          When CR data is sparse (Pattern 3 — few fields returned, no activity, no scores), run a targeted web search to fill gaps:
+          - `"[company name]" news` — scoped to the last 30 days
+          - Look for: funding rounds, acquisitions, product launches, executive changes, press coverage
+
+          If the user explicitly asks for external context or recent news, run web search regardless of data richness.
+
+          ## Step 5: Apply Reasoning (Pattern 4)
+
+          When the user's question invites synthesis — not just data retrieval — layer in analysis:
+          - Compare account data to known ICP criteria from session context
+          - Identify fit signals (size, industry, tech stack, hiring patterns)
+          - Note timing signals (funding, trial status, recent activity spike)
+          - Frame insights as clearly derived from data, not assumed
+
+          When the user's company context is available (see `references/my-company-context.md`), position findings relative to the user's value proposition and ICP.
+
+          ## Step 6: Produce Output
+
+          Only include sections where Common Room returned actual data. Omit sections entirely rather than filling them with guesses.
+
+          **Full overview (when data is rich):**
+
+          ```
+          ## [Company Name] — Account Overview
+
+          **Snapshot**
+          [2–3 sentences: what they do, plan/stage, relationship status]
+
+          **Key Details**
+          [Employee count, industry, location, domain, funding — from key fields]
+
+          **CRM & Ownership** [If CRM fields returned]
+          [Owner, opp stage, ARR]
+
+          **Scores** [If scores returned]
+          [All available scores as raw values or percentiles]
+
+          **Signal Highlights** [If activity/signals exist]
+          [3–5 most important signals with dates]
+
+          **Top Contacts** [If contacts returned]
+          [Name | Title | Score — top 5 sorted by score desc]
+
+          **RoomieAI Research** [If summary research is non-null]
+          [Summary research output; list all available research topic names]
+
+          **Recommended Next Steps**
+          [2–3 specific, signal-backed actions]
+          ```
+
+          **Targeted question:** 1–3 sentence direct answer. No full brief needed.
+
+          **Sparse data (few fields returned, most sections would be empty):**
+
+          ```
+          ## [Company Name] — Account Overview (Limited Data)
+
+          **Data available:** [List exactly what Common Room returned]
+
+          [Present only the returned fields]
+
+          **Web Search**
+          [Findings from web search — or "No significant recent news found"]
+
+          **Note:** Common Room has limited data on this account. The account may need enrichment in Common Room.
+          ```
+
+          ## Quality Standards
+
+          - Scores must always be raw values or percentiles — never categorical labels
+          - For targeted questions, answer precisely and don't over-deliver
+          - Be explicit when data is missing or stale — don't speculate
+          - Keep full briefings readable in 2–3 minutes
+          - **Every fact must trace to a tool call** — don't include data not returned by Common Room
+
+          ## Reference Files
+
+          - **`references/signals-guide.md`** — signal type taxonomy and interpretation guide
+
+    - path: /knowledge-work-plugins/skills/account-research/references/signals-guide.md
+      text: |
+          # Common Room Signal Types — Interpretation Guide
+
+          ## Signal Categories
+
+          ### Product Signals (1st-Party)
+
+          | Signal | What it means |
+          |--------|--------------|
+          | Active seats increasing | Expansion within the account — outreach opportunity |
+          | Feature adoption (new features used) | Product engagement deepening — good for expansion talk |
+          | Login frequency spike | Increased engagement — follow up to understand why |
+          | Login frequency drop | Risk of disengagement or churn — proactive outreach needed |
+          | Trial started | Active evaluation — time-sensitive, prioritize |
+          | Trial nearing expiry | Decision point approaching — immediate action |
+          | Support tickets opened | Potential friction — check for patterns |
+
+          ### Community Signals (2nd-Party)
+
+          | Signal | What it means |
+          |--------|--------------|
+          | New community post | Actively engaged, has a question or idea |
+          | Reply / reaction to post | Community participation |
+          | Forum thread started | Seeking help or sharing feedback — can engage directly |
+          | Documentation viewed (specific page) | Researching a specific feature — high value if tied to expansion area |
+          | Event registration/attendance | Strong engagement and intent signal |
+
+          ### Intent Signals (3rd-Party)
+
+          | Signal | What it means |
+          |--------|--------------|
+          | Hiring for relevant roles | Growing team, budget exists |
+          | Funding announced | New budget likely available — reach out congratulating |
+          | Company news / press mention | Good hook for outreach |
+          | Tech stack change | May need new integrations |
+          | Competitive product removed from stack | Window of opportunity — very high priority |
+          | Website activity spike | Active research phase |
+
+          ### Relationship Signals
+
+          | Signal | What it means |
+          |--------|--------------|
+          | Recent meeting logged | Active relationship — context available |
+          | No meeting in 90+ days | Relationship cooling — check in |
+          | Open opportunity in CRM | Active deal — coordinate with AE |
+          | Champion job change | Relationship risk or opportunity |
+
+          ## Signal Interpretation Principles
+
+          1. **Recency matters most.** A signal from yesterday far outweighs one from 6 months ago. Always note timestamps.
+          2. **Signal clusters > single signals.** Multiple signals in the same direction are much stronger than any individual one.
+          3. **Absence of signals is a signal.** Minimal usage + no community engagement at a paid account = risk indicator.
+          4. **Contextualize against account stage.** Trial: conversion signals dominate. Mature customer: expansion and churn-risk. Prospect: intent signals are paramount.
+    - path: /knowledge-work-plugins/skills/call-prep/SKILL.md
+      text: |
+          ---
+          name: call-prep
+          description: "Prepare for a customer or prospect call using Common Room signals. Triggers on 'prep me for my call with [company]', 'prepare for a meeting with [company]', 'what should I know before talking to [company]', or any call preparation request."
+          ---
+
+          # Call Prep
+
+          Produce a complete, scannable call prep brief by combining account research, contact research, and signal synthesis from Common Room.
+
+          ## Prep Process
+
+          ### Step 1: Identify the Account and Attendees
+
+          Parse what the user has provided:
+          - **Company name** — required; look up the account in Common Room
+          - **Attendee names** — optional; if provided, research each one
+
+          **Calendar lookup:** If a `~~calendar` connector is available, search for upcoming meetings with the named company to automatically surface attendee names, meeting time, and any meeting notes or agenda. Use this to fill gaps the user didn't provide.
+
+          If neither attendees nor a calendar match can be found, ask: "Who will be on the call from [Company]? I can research each attendee to make your prep more useful."
+
+          ### Step 2: Run Account Research
+
+          Use the account-research skill process to build a full account snapshot. For call prep, prioritize:
+          - Recent product signals (what are they doing in the product right now?)
+          - Open opportunities or renewal timeline
+          - Any risk signals (declining usage, support tickets, churned seats)
+          - Key recent events (funding, executive change, new hire)
+
+          When reviewing activity history, prioritize Gong and call recording activities — these provide direct context about previous conversations. Do not filter out call recordings by activity origin.
+
+          ### Step 3: Run Contact Research for Each Attendee
+
+          For each external attendee, use the contact-research skill process. For call prep, focus on:
+          - Role and influence in the buying process
+          - Their personal activity and engagement history
+          - Any recent signals that suggest their current mood/priorities
+          - Spark persona classification if available
+
+          ### Step 4: Synthesize Talking Points and Objectives
+
+          Based on the combined account and contact research:
+          - Identify the **call objective** (e.g., discovery, demo, expansion conversation, renewal, QBR)
+          - Generate **3–5 tailored talking points** grounded in specific signal data
+          - Anticipate **2–3 likely objections or topics** the customer may raise
+          - Suggest a **recommended outcome** for the call
+
+          When the user's company context is available (see `references/my-company-context.md`), tailor talking points to the user's product and value proposition.
+
+          ### Step 5: Recency Check (Web Search)
+
+          After gathering all Common Room data, run a quick recency check to catch anything that happened since the last CR data sync. This is supplementary — CR data drives the prep; web search only adds recency.
+
+          **Company news:** Search `"[company name]" news` filtered to the last 14 days. Look for funding announcements, product launches, leadership changes, layoffs, partnerships, or press coverage.
+
+          **Attendee presence:** For each external attendee, search `"[full name]" "[company name]"` — look for recent articles, LinkedIn posts, conference talks, podcasts, or published opinions.
+
+          If a company news item is significant (e.g., just raised a round, announced a major hire), flag it in Signal Highlights. Otherwise, include findings briefly — don't let web search results overshadow CR signals.
+
+          ## Output Format
+
+          The output adapts to how much data Common Room returned. Only include sections where you have real data. Never fill a section with invented details.
+
+          ### When data is rich (multiple field groups returned, activity history, scores, signals):
+
+          ```
+          ## Call Prep: [Company] — [Date/Time if known]
+
+          **Meeting Context**
+          [Attendees, meeting type, and any known agenda]
+
+          ---
+
+          ### Company Snapshot
+          [4–6 bullets: key account status, signals, and recent activity]
+
+          ---
+
+          ### Attendee Profiles
+
+          **[Attendee Name] — [Title]**
+          [3–4 bullets: role, recent activity, Spark persona if available, personal hook]
+
+          [Repeat for each attendee]
+
+          ---
+
+          ### Signal Highlights
+          [Top 3 signals most relevant to this specific call]
+
+          ---
+
+          ### Talking Points
+          1. [Point tied to a specific signal]
+          2. [Point tied to a specific signal]
+          3. [Point tied to a specific signal]
+
+          ### Likely Topics / Objections to Prepare For
+          - [Topic or objection + suggested response]
+          - [Topic or objection + suggested response]
+
+          ### Recommended Call Outcome
+          [1–2 sentences: what success looks like for this meeting]
+          ```
+
+          ### When data is sparse (few fields returned, no activity, null sparkSummary):
+
+          ```
+          ## Call Prep: [Company] — [Date/Time if known]
+
+          **Data available:** [List exactly what Common Room returned — e.g., "Name, title, email, two tags. No activity history, no scores, no Spark data."]
+
+          ### What I Found
+          [Only the fields actually returned, presented as-is]
+
+          ### Web Search Results
+          [Findings from web search on the company and attendees — or "No significant results"]
+
+          ### Suggested Next Steps
+          - I can pull [specific field groups] from Common Room if available
+          - I can run deeper web searches on [specific topics]
+          - You may want to check Common Room directly for [what's missing]
+          ```
+
+          Do not generate a full call prep brief from sparse data. A short honest output is always better than a long fabricated one.
+
+          ## Quality Standards
+
+          - Ground every talking point in a real signal — no generic filler
+          - Keep the brief tight — it should be readable in 5 minutes or less
+          - Flag unknowns explicitly — if attendee research is thin, say so
+          - Time-box the research — don't over-research at the expense of speed
+          - **Never invent deal context** — no fabricated proposals, competitor comparisons, pricing, trial terms, or objections not returned by a tool call
+
+          ## Reference Files
+
+          - **`references/call-types-guide.md`** — guidance for different call types (discovery, expansion, renewal, QBR) and how to tailor prep accordingly
+    - path: /knowledge-work-plugins/skills/call-prep/references/call-types-guide.md
+      text: |
+          # Call Types — Prep Guide
+
+          ## Identifying the Call Type
+
+          If the user doesn't specify, infer from context: trial + early signals = Discovery/Demo; active CRM opportunity = Demo/Evaluation/Negotiation; existing customer + renewal date = Renewal/QBR; expansion signals = Expansion; support tickets + declining usage = Save call.
+
+          ---
+
+          ## Discovery Call
+
+          **Goal:** Understand the prospect's pain, context, and fit.
+
+          - Identify what signals triggered the meeting and prepare open-ended questions tied to those signals
+          - Form a hypothesis about their primary use case from Spark persona and activity data
+          - **Talking point structure:** Signal -> question -> how you might help
+
+          ## Demo Call
+
+          **Goal:** Show the product in context of their specific needs.
+
+          - Note which features they've already explored and competitors in their stack
+          - Identify audience (technical evaluator vs economic buyer) and match depth accordingly
+          - Highlight 1-2 features based on their known activity
+
+          ## Expansion Conversation
+
+          **Goal:** Identify and close upsell/cross-sell or seat expansion.
+
+          - Identify product areas with highest recent adoption and emerging teams/use cases
+          - Lead with usage data demonstrating value already delivered
+          - Present expansion as a natural next step tied to their business outcomes
+
+          ## Renewal / Retention Call
+
+          **Goal:** Secure renewal; address any risk.
+
+          - Check engagement trend, open support tickets, and champion status
+          - Quantify value delivered (usage stats, outcomes) as renewal justification
+          - Address risk signals directly and proactively — have a retention offer ready if needed
+
+          ## QBR (Quarterly Business Review)
+
+          **Goal:** Review progress, align on strategy, deepen executive relationship.
+
+          - Analyze 90-day signal trends and breadth of adoption across teams
+          - Lead with business outcomes, not feature usage — surface 1-2 surprising stats
+          - Come with a forward-looking agenda and next quarter goals
+
+          ## Save / Risk Call
+
+          **Goal:** Understand and reverse negative trajectory.
+
+          - Identify specific decline signals (what dropped and when) and check for unresolved tickets
+          - Acknowledge the signals without being defensive — ask questions before presenting solutions
+          - Have a concrete action plan ready
+    - path: /knowledge-work-plugins/skills/compose-outreach/SKILL.md
+      text: |
+          ---
+          name: compose-outreach
+          description: "Generate personalized outreach messages using Common Room signals. Triggers on 'draft outreach to [person]', 'write an email to [name]', 'compose a message for [contact]', or any outreach drafting request."
+          ---
+
+          # Compose Outreach
+
+          Generate three personalized outreach formats — email, call script, and LinkedIn message — grounded in Common Room signals for a specific company or contact.
+
+          ## Outreach Process
+
+          ### Step 1: Look Up the Target
+
+          Use Common Room MCP tools to find and retrieve data for the target (company and/or specific contact). Pull:
+          - Recent product activity and engagement signals
+          - Community activity (posts, questions, reactions)
+          - 3rd-party intent signals (job postings, news, funding)
+          - Relationship history (prior contact, meetings, email opens)
+
+          If the user specified a person, run contact-level research. If only a company was given, identify the best contact to target based on title, engagement, and role.
+
+          ### Step 2: Web Search for External Hooks (If CR Signals Are Thin)
+
+          If CR returned strong signals (recent activity, engagement, product usage), those should drive personalization — skip web search. If CR signals are thin or the prospect has little CR activity, run a web search for external hooks:
+
+          **What to search:**
+          - `"[company name]" funding OR acquisition OR launch OR announcement` — last 30 days
+          - `"[contact full name]" "[company name]"` — look for recent articles, interviews, LinkedIn posts, or conference talks
+
+          **Prioritize external hooks that are:**
+          - Very recent (< 2 weeks) — the prospect is likely still thinking about it
+          - Publicly visible — they know you could have seen it
+          - Change-signaling — growth, new role, new product, new market
+
+          If the user explicitly asks for web search or external hooks, run it regardless of CR signal richness.
+
+          ### Step 3: Spark Enrichment (If Available)
+
+          If Spark is available, run enrichment on the target contact to get persona classification, background, and influence signals. Use this to calibrate tone and message angle.
+
+          ### Step 4: Identify the Best Hooks
+
+          From the signal data, identify the 1–3 strongest personalization hooks. Rank by:
+          1. **Recency** — happened in the last 7–14 days
+          2. **Specificity** — a concrete action they took, not a general trend
+          3. **Relevance** — connects directly to a value your product delivers
+
+          Good hooks: posted a question in the community about X, just hired 5 engineers, recently started using [feature], company just raised Series B, trial nearing expiration, champion just changed jobs.
+
+          Bad hooks: "I noticed you're a customer" or generic industry trends.
+
+          ### Step 5: Generate All Three Formats
+
+          Use the strongest hooks to write all three formats. Each format has different constraints and conventions — follow the format-specific guidelines in `references/outreach-formats-guide.md`.
+
+          Always produce all three, clearly labeled.
+
+          When the user's company context is available (see `references/my-company-context.md`), ground the value bridge and pitch in the user's specific product and positioning.
+
+          ### Step 6: Annotate Your Choices
+
+          After the three drafts, include a brief note (2–4 sentences) explaining:
+          - Which signals were used and why they were chosen
+          - Any assumptions made (e.g., inferred call objective)
+          - Alternative angles if the primary hook doesn't land
+
+          ## Output Format
+
+          ```
+          ## Outreach for [Name / Company]
+
+          ### 📧 Email
+
+          **Subject:** [Subject line]
+
+          [Email body — 3–5 sentences]
+
+          ---
+
+          ### 📞 Call Script
+
+          **Opening:**
+          [Opening line — conversational, 1–2 sentences]
+
+          **Value Bridge:**
+          [Why you're calling and why now — 2–3 sentences tied to a signal]
+
+          **Ask:**
+          [Single, low-friction ask — e.g., 15-minute call, specific question]
+
+          ---
+
+          ### 💼 LinkedIn Message
+
+          [Under 300 characters. Warm, personal, no pitch.]
+
+          ---
+
+          ### Signal Notes
+          [2–4 sentences: which signals were used, why, and any alternative angles]
+          ```
+
+          ## When Signal Data Is Sparse
+
+          If Common Room returns minimal data on the target (e.g., just name, title, tags — no activity, no scores, no Spark):
+
+          1. **Do not draft outreach from thin air.** Outreach grounded in fabricated signals is worse than no outreach.
+          2. **Run web search first** — this becomes your primary personalization source. Look for recent news, LinkedIn posts, conference talks, company announcements.
+          3. **If web search also returns little**, present what you have honestly and ask the user for context:
+
+          ```
+          ## Outreach for [Name / Company] — Limited Data
+
+          **What I found:**
+          [Only the real data from CR and web search]
+
+          **I don't have enough signal to draft personalized outreach yet.** To write something strong, I'd need:
+          - Recent activity or engagement signals
+          - Context you have from prior conversations
+          - A specific reason for reaching out now
+
+          Can you share any of the above?
+          ```
+
+          ## Quality Standards
+
+          - Every message must reference something specific — generic outreach is not acceptable output
+          - Match tone to context: warm and conversational for inbound/community signals; more formal for cold/executive outreach
+          - The LinkedIn message must be under 300 characters — no exceptions
+          - The call script must be speakable naturally — read it aloud mentally to check rhythm
+          - **Never fabricate signals** — only reference data retrieved from Common Room or web search
+
+          ## Reference Files
+
+          - **`references/outreach-formats-guide.md`** — detailed format rules, examples, and tone guidelines for each channel
+    - path: /knowledge-work-plugins/skills/compose-outreach/references/outreach-formats-guide.md
+      text: |
+          # Outreach Formats — Guidelines and Examples
+
+          ## Email
+
+          ### Structure
+          - **Subject line:** 4-8 words, specific and curiosity-inducing. Reference the hook directly.
+          - **Opening:** Acknowledge the specific signal. Start with "You", "Your team", "Saw that", "Noticed" — not "I".
+          - **Value Bridge:** 1-2 sentences connecting their signal to something you can help with. Be concrete.
+          - **Ask:** Single, specific, low-friction next step.
+          - **Total length:** 3-5 sentences max. No paragraphs.
+
+          ### Example
+
+          > Subject: Question about your [feature] usage
+          >
+          > Noticed your team has been deep in [feature] recently — you've hit [usage metric] in the last two weeks. That usually means teams are running into [common blocker] around this stage. Happy to walk through how [similar company] handled it if useful. 15 minutes this week?
+
+          ---
+
+          ## Call Script
+
+          Three parts — a guide, not a word-for-word read:
+
+          **Opening (10-15 seconds):** State your name and company, then reference the specific hook immediately.
+
+          **Value Bridge (20-30 seconds):** Explain why this is worth their time *right now*, tied to a concrete outcome.
+
+          **Ask (10 seconds):** Single, specific, low-friction — e.g., "Do you have 15 minutes to explore if that's relevant?"
+
+          ---
+
+          ## LinkedIn Message
+
+          ### Constraints
+          - **300 characters maximum** (platform limit is 400 — we target 300 to prevent overruns)
+          - No attachments, no links in the first message
+          - No pitch — just open a door
+
+          ### Structure
+          - Personal acknowledgment (what you noticed about them)
+          - One brief sentence on why you reached out
+          - Soft invitation to connect or respond
+
+          ### Example
+
+          > Saw your post about [topic] in [community] — our team has been thinking about the same problem. Would love to share what we've learned. Open to a quick chat?
+
+          ---
+
+          ## Tone Calibration by Context
+
+          | Context | Tone | Approach |
+          |---------|------|----------|
+          | Inbound / trial / active community member | Warm, helpful, collaborative | Lead with their activity, offer help |
+          | Cold outreach (no prior relationship) | Professional, respectful, brief | Lead with signal, be direct about why now |
+          | Re-engagement (went dark) | Casual, low-pressure | Short, acknowledge the gap, easy ask |
+          | Executive outreach | Formal, concise, outcome-focused | Lead with business impact, not product |
+          | Champion job change | Warm, congratulatory | Celebrate them, then gently explore new opportunity |
+
+          ---
+
+          ## What to Avoid (All Channels)
+
+          - Starting with filler ("I hope this email finds you well") or defensive language ("I know you're busy but...")
+          - Multi-paragraph messages with multiple asks
+          - Vague subject lines like "Following up" or "Quick question"
+          - Fabricated familiarity ("I've been following your company for a while...")
+    - path: /knowledge-work-plugins/skills/contact-research/SKILL.md
+      text: |
+          ---
+          name: contact-research
+          description: "Research a specific person using Common Room data. Triggers on 'who is [name]', 'look up [email]', 'research [contact]', 'is [name] a warm lead', or any contact-level question."
+          ---
+
+          # Contact Research
+
+          Retrieve a comprehensive contact profile from Common Room. Supports lookup by email, social handle, or name + company. Returns enriched data including activity history, Spark, scores, website visits, and CRM fields.
+
+          ## Step 1: Locate the Contact
+
+          Common Room supports multiple lookup methods — use whichever the user has provided:
+
+          | What the user gives | Lookup method |
+          |---------------------|--------------|
+          | Email address | Look up by email (most reliable) |
+          | LinkedIn, Twitter/X, or GitHub handle | Look up by social handle — specify handle type explicitly |
+          | Name + company | Identity resolution by name + org domain; present matches if ambiguous |
+          | Name only | Search by name; if multiple matches, show a brief list and ask the user to confirm |
+
+          If no match is found, respond: "Common Room doesn't have a record for this person." Do not speculate or fabricate profile data.
+
+          ## Step 2: Fetch Contact Fields
+
+          Use the Common Room object catalog to see available field groups and their contents. For full profiles, request all groups. For targeted questions, request only what's relevant.
+
+          **Key field groups to know about:**
+          - **Scores** — always return as raw values or percentiles, never labels
+          - **Recent activity** — use `Contact Initiated` filter (last 60 days) for their actions, not your team's
+          - **Website visits** — total count + specific pages (last 12 weeks)
+          - **Spark** — retrieve all Sparks when tracking engagement evolution over time
+
+          ## Step 3: Run Spark Enrichment (If Available)
+
+          If Spark is available, use it. Spark provides:
+          - Professional background and job history
+          - Social presence and influence signals
+          - Persona classification: Champion, Economic Buyer, Technical Evaluator, End User, or Gatekeeper
+          - Inferred role in the buying process
+
+          If Spark is unavailable but real activity data exists (recent actions, website visits, community engagement), infer a persona from those signals. If neither Spark nor activity data is available, classify as Unknown — do not guess a persona from title alone.
+
+          Retrieve **all Sparks** (not just the most recent) when the user wants to understand how this contact's engagement has evolved over time.
+
+          ## Step 4: Assess Account Context
+
+          Pull an abbreviated account snapshot for this contact's parent company. Note:
+          - Open opportunities, expansion signals, or churn risk at the account level
+          - Whether other contacts at this company are also active
+          - How this person's engagement compares to their colleagues
+
+          ## Step 5: Identify Conversation Angles
+
+          Based on activity and signals, surface the strongest 2–3 hooks:
+          - A recent `Contact Initiated` activity (community post, product event, support ticket)
+          - A specific web page they visited recently — especially if it signals evaluation intent
+          - A job change, promotion, or company news
+          - Their Spark persona and what that suggests about communication style
+          - Their role in a known active deal
+
+          ## Output Format
+
+          Only include sections where data was actually returned. Omit sections with no data rather than filling them with guesses.
+
+          **When data is rich:**
+
+          ```
+          ## [Contact Name] — Profile
+
+          **Overview**
+          [2 sentences: who they are, their role, and relationship status]
+
+          **Details**
+          - Title: [title]
+          - Company: [company]
+          - Email: [email]
+          - LinkedIn: [URL]
+          - Other profiles: [Twitter/X, GitHub, CRM link if available]
+
+          **Scores** [If scores returned]
+          [All scores as raw values or percentiles]
+
+          **Recent Activity** (last 60 days) [If activity returned]
+          [3–5 bullets with dates]
+
+          **Website Visits** (last 12 weeks) [If visit data exists]
+          [Total visit count + list of pages visited]
+
+          **Spark Profile** [If Spark data is non-null]
+          [Persona type, background summary, influence signals]
+
+          **Segments** [If segments returned]
+          [List of segment names this contact belongs to]
+
+          **Account Context**
+          [1–2 sentences on their company's status]
+
+          **Conversation Starters**
+          [2–3 specific, signal-backed openers]
+          ```
+
+          **When data is sparse (e.g., only name, title, email, tags returned; sparkSummary is null):**
+
+          ```
+          ## [Contact Name] — Profile (Limited Data)
+
+          **Data available:** [List exactly what Common Room returned]
+
+          [Present only the returned fields]
+
+          **Web Search**
+          [Any findings from searching their name + company]
+
+          **Note:** Common Room has limited data on this contact. No activity history, scores, or Spark profile available. I can run deeper web searches or look up their company for additional context.
+          ```
+
+          Do not generate conversation starters, persona inferences, or engagement assessments from sparse data. These require real signals.
+
+          ## Quality Standards
+
+          - Lookup must use the correct method for the input type — don't guess on email vs. handle
+          - Scores as raw/percentile only — never labels
+          - `Contact Initiated` activity (last 60 days) is the primary engagement signal — lead with it
+          - If Spark is unavailable, say so — don't fabricate a persona from title alone
+          - Flag any contact where the most recent activity is older than 30 days
+
+          ## Reference Files
+
+          - **`references/contact-signals-guide.md`** — full field descriptions, Spark persona guide, and conversation starter principles
+    - path: /knowledge-work-plugins/skills/contact-research/references/contact-signals-guide.md
+      text: |
+          # Contact Signals — Interpretation Guide
+
+          ## Contact Signal Types
+
+          ### Activity Signals
+
+          | Signal | Interpretation |
+          |--------|---------------|
+          | Email open / reply | Actively aware of your org; replied = higher intent |
+          | Meeting attended | Relationship established; note meeting type (demo, QBR, etc.) |
+          | Community post or reply | Has a question, problem, or idea — high engagement signal |
+          | Support ticket opened | Experiencing friction — empathy opportunity |
+          | Documentation page visited | Researching a specific area — note which pages |
+          | Product login | Active user — check frequency and recency |
+          | Event registered/attended | Strong engagement and intent signal |
+
+          ### Relationship Signals
+
+          | Signal | Interpretation |
+          |--------|---------------|
+          | No activity in 30+ days | Relationship cooling — gentle check-in appropriate |
+          | No activity in 90+ days | Dormant — may need re-engagement from a different angle |
+          | Consistent activity across multiple channels | Champion or highly engaged user — high-value contact |
+          | Activity spike after dormancy | Something changed — investigate why |
+
+          ### Job / Professional Signals
+
+          | Signal | Interpretation |
+          |--------|---------------|
+          | Recent job change (new company) | Warm intro opportunity at new company; relationship may shift at old one |
+          | Promotion at same company | Growing influence — relationship becomes more valuable |
+          | Title change to decision-maker role | Upgrade the relationship strategy |
+          | Company expansion (new hires in their team) | Budget may be available; expansion opportunity |
+
+          ## Spark Persona Classification
+
+          - *Champion* — daily user, advocates internally
+          - *Economic Buyer* — holds budget authority, may not use product directly
+          - *Technical Evaluator* — evaluates fit and integration, influences technical decisions
+          - *End User* — primary product user, influences renewal through NPS/feedback
+          - *Gatekeeper* — controls access, must be navigated carefully
+
+          ## Conversation Starters
+
+          A strong starter references something specific, shows homework, opens a door without forcing one, and connects to value.
+
+          - "I saw your question in the community about [topic] — we just released a feature that addresses exactly that. Would it be useful to walk through it?"
+          - "Your team's usage of [feature] jumped last month — curious if you're running into [common blocker] at that stage."
+    - path: /knowledge-work-plugins/skills/prospect/SKILL.md
+      text: |
+          ---
+          name: prospect
+          description: "Build targeted account or contact lists using Common Room's Prospector. Triggers on 'find companies that match [criteria]', 'build a prospect list', 'find contacts at [type of company]', 'show me companies hiring [role]', or any list-building request."
+          ---
+
+          # Prospecting
+
+          Build targeted account and contact lists using Common Room's Prospector. Supports iterative refinement through natural conversation, intent-based discovery, and both net-new prospecting and signal-based queries against existing accounts.
+
+          ## Critical Distinction: Two Object Types
+
+          Common Room's Prospector operates against two fundamentally different object types. Always clarify which one is in play before running a query:
+
+          **`ProspectorOrganization`** — Companies **not yet in Common Room**
+          - Net-new companies that match specified criteria
+          - Available fields are firmographic only: name, domain, size, industry, capital raised, annual revenue, location
+          - Fewer filter options — no signal-based filters, no scores, no activity history
+          - Use when: building a brand-new target list, territory planning, top-of-funnel expansion
+
+          **`Organization`** (in Common Room) — Companies **already in your CR workspace**
+          - Full signal data available: product usage, community activity, CRM fields, scores, custom fields
+          - Much richer filter set — includes signal-based, score-based, segment-based, and firmographic filters
+          - Use when: finding warm accounts to prioritize, identifying expansion candidates, surfacing intent signals within existing pipeline
+
+          When a user's request could apply to both (e.g., "Show companies hiring AI engineers this month"), clarify:
+          > "Are you looking for net-new companies not yet in Common Room, or filtering accounts already in your workspace?"
+
+          The catalog should make this distinction explicit so the LLM can select the right Prospector endpoint.
+
+          ## Step 0: Load User Context (Me)
+
+          Fetch the `Me` object to get the user's segments. When prospecting against `Organization` records (accounts already in CR), default to filtering within "My Segments" unless the user asks for a broader search.
+
+          ## Step 1: Gather Targeting Criteria
+
+          If criteria are already provided, proceed. Otherwise ask:
+
+          > "What kind of accounts or contacts are you looking for? For example: company size, industry, job titles, signals like recent product activity or community engagement, geographic region, or specific intent signals like recent funding or job postings."
+
+          Use the Common Room object catalog to see available filters for each object type. The key distinction:
+          - **ProspectorOrganization** — firmographic and technographic filters only (industry, size, geography, funding, tech stack)
+          - **Organization** — all firmographic filters plus signal-based, score-based, segment-based, and CRM filters
+
+          **Lookalike search:** If the user asks to "find companies like [X]", first look up the reference company in Common Room (or via web search if not in CR). Extract its key attributes — industry, employee range, tech stack, funding stage, geography — and propose those as filter criteria. Present the derived criteria to the user for confirmation before running the search, since lookalike targeting works best when the user can refine which attributes matter most.
+
+          ## Step 2: Support Iterative Refinement
+
+          Prospecting is conversational. Support multi-turn refinement naturally:
+
+          1. Run initial query with provided criteria
+          2. If results are large (50+), summarize and offer: "I found [N] results. Want to narrow by [suggested filter]?"
+          3. If results are too few (< 5), suggest: "Only [N] results with those filters — I can broaden by relaxing [specific criterion]."
+          4. Apply each refinement as a follow-up query, not a new search from scratch
+
+          Example flow:
+          - Rep: "Find cybersecurity companies in California." → 500 results
+          - Rep: "Only show ones over 300 employees using AWS." → 47 results
+          - Rep: "Focus on the ones with recent hiring activity." → 12 results ✓
+
+          ## Step 3: Run the Query and Present Results
+
+          Execute the Prospector query with confirmed criteria. Sort by signal strength or fit score where available (not alphabetically).
+
+          **For `ProspectorOrganization` (net-new) results:**
+
+          | Company | Domain | Industry | Size | Capital Raised | Revenue | Location |
+          |---------|--------|----------|------|---------------|---------|----------|
+
+          **For `Organization` (in CR) results:**
+
+          | Company | Industry | Size | Top Signal | Signal Date | Score | CRM Stage |
+          |---------|----------|------|-----------|-------------|-------|-----------|
+
+          Flag any results where data is thin or the most recent signal is older than 90 days.
+
+          ## Step 3.5: Enrich Net-New Results with Web Search
+
+          For `ProspectorOrganization` results (net-new companies not in CR), run a quick web search on the top 3–5 companies to add context beyond firmographics. CR has no behavioral signals for these companies, so web search fills the gap — look for recent funding, product launches, leadership changes, or news coverage. Include findings as brief annotations next to each company in the results.
+
+          ## Step 4: Offer Next Steps
+
+          - "Want me to draft outreach for the top 3–5 prospects?"
+          - "Should I run a full account brief on any of these?"
+          - "Want to refine the criteria or add another filter?"
+          - "I can format this as a CSV if you'd like to export it."
+          - "For any net-new companies here, I can add them to Common Room for enrichment." *(future capability)*
+
+          ## Quality Standards
+
+          - Always confirm which object type (ProspectorOrg vs Organization) before running the query
+          - Default to "My Segments" when querying Organization records, unless user specifies otherwise
+          - Support iterative refinement — treat each follow-up as a filter adjustment, not a fresh start
+          - Never mix result fields from ProspectorOrganization and Organization in the same list
+          - Fewer high-quality results beat a long unqualified list
+          - **Only show data the query returned** — leave blank or "—" for missing fields, don't invent values
+
+          ## Reference Files
+
+          - **`references/prospect-guide.md`** — filter types, signal-based sorting, object type distinctions, and list-building strategies
+    - path: /knowledge-work-plugins/skills/prospect/references/prospect-guide.md
+      text: |
+          # Common Room Prospector — Usage Guide
+
+          ## The Two Object Types (Critical)
+
+          Never conflate these — they have different fields and filter sets.
+
+          | | `ProspectorOrganization` (Net-New) | `Organization` (Already in CR) |
+          |---|---|---|
+          | **Source** | Common Room's external data graph | CR workspace (full enrichment + signal history) |
+          | **Available fields** | Company name, domain, size, industry, capital raised, revenue, location | Everything — signals, scores, CRM data, RoomieAI, community activity |
+          | **Available filters** | Firmographic and technographic only | All firmographic plus signal-based, score-based, segment-based, and CRM filters |
+          | **Use for** | Territory planning, top-of-funnel list building | Prioritizing warm accounts, expansion candidates, intent signals |
+
+          ## Deciding Which Object Type to Use
+
+          | User says... | Likely object type |
+          |-------------|-------------------|
+          | "Which of my accounts are showing buying signals?" | `Organization` |
+          | "Find fintech companies in London I haven't talked to" | `ProspectorOrganization` |
+          | "Find new companies matching our ICP" | `ProspectorOrganization` |
+          | "Show accounts that haven't engaged in 90 days" | `Organization` |
+          | Ambiguous — could apply to both | Ask: "Are you looking for net-new companies, or filtering accounts already in your workspace?" |
+
+          ## Iterative Refinement
+
+          - Start with the user's initial criteria
+          - For large results (50+), return count first: "I found 500 results. Want to narrow by size or tech stack?"
+          - Accept follow-up refinements as filter adjustments — not a fresh search
+          - Suggest relaxing criteria if results are fewer than 5
+
+          ## Common Pitfalls
+
+          - **Conflating object types** — Never mix ProspectorOrganization and Organization results in the same list.
+          - **Not scoping to "My Segments"** — When querying Organization records, scope to the user's segments by default.
+          - **Over-filtering** — If under 5 results, suggest relaxing one criterion.
+    - path: /knowledge-work-plugins/skills/weekly-prep-brief/SKILL.md
+      text: |
+          ---
+          name: weekly-prep-brief
+          description: "Generate a comprehensive weekly briefing for all external calls in the next 7 days. Triggers on 'weekly prep brief', 'prepare my week', 'what calls do I have this week', 'Monday prep', or any weekly planning request."
+          ---
+
+          # Weekly Prep Brief
+
+          Generate a single comprehensive weekly briefing that covers every external customer or prospect call in the next 7 days, with per-meeting account and contact research from Common Room.
+
+          ## Briefing Process
+
+          ### Step 1: Get the Week's External Meetings
+
+          **Option A — Calendar connected:**
+          Use the `~~calendar` connector to fetch all meetings scheduled in the next 7 days (or a user-specified range). Filter to keep only external meetings — those with attendees from outside your organization. Discard internal-only meetings, one-on-ones with colleagues, and recurring internal syncs.
+
+          Identify for each external meeting:
+          - Company name
+          - Meeting date and time
+          - External attendee names and email addresses
+
+          **Option B — No calendar connected:**
+          Ask the user: "To build your weekly prep brief, I'll need your upcoming external calls. Please list them: company name, date/time, and attendee names."
+
+          Accept freeform input and parse it into a structured list before proceeding.
+
+          ### Step 2: Confirm the Meeting List
+
+          Present the identified meetings to the user for confirmation before beginning research:
+
+          > "Here are the external calls I found for this week. Let me know if anything's missing or should be excluded:
+          > - [Company] — [Day], [Time] — [Attendees]
+          > - ..."
+
+          This prevents wasted research on cancelled or incorrect meetings.
+
+          ### Step 3: Research Each Meeting
+
+          For each confirmed external meeting, run in parallel where possible:
+          1. **Account research** — full account snapshot using the account-research skill
+          2. **Contact research** — profile for each external attendee using the contact-research skill
+
+          Common Room data is the primary source. After CR research, run a quick **recency check** for each company — this is supplementary, not primary:
+          - Search `"[company name]" news` scoped to the last 7 days
+          - For executive attendees, search their name for recent public posts or interviews
+          - Only include findings that are genuinely noteworthy (funding, leadership changes, major press). Don't pad the brief with generic news.
+
+          Depth calibration:
+          - For high-priority accounts (large accounts, open opportunities, renewal risk), produce full depth research
+          - For lower-priority or short meetings, produce abbreviated snapshots (3–4 bullets each)
+
+          ### Step 4: Synthesize the Weekly Brief
+
+          Compile all per-meeting research into a single structured document, sorted by meeting date/time.
+
+          Open with a brief week-level overview that flags:
+          - Any accounts with urgent signals (at-risk, trial expiring, expansion opportunity)
+          - Any meetings that need special preparation or executive involvement
+          - Total external call count and estimated time commitment
+
+          ## Output Format
+
+          ```
+          # Weekly Prep Brief — Week of [Date]
+
+          ## Week Overview
+          [2–4 bullets: key themes, flagged priorities, call count]
+
+          ---
+
+          ## [Monday / Tuesday / etc.]
+
+          ### [Company Name] — [Time]
+          **Attendees:** [Names and titles]
+          **Meeting type:** [Discovery / QBR / Renewal / Expansion / etc. — inferred if possible]
+
+          **Company Snapshot**
+          [4–5 bullets: account status, top signals, recent activity]
+
+          **Attendee Profiles**
+          - **[Name]** ([Title]): [2–3 bullets on their signals, persona, conversation angle]
+          - [Repeat per attendee]
+
+          **Top Signals This Week**
+          [2–3 most relevant signals for this specific call]
+
+          **This Week's News** [If notable news found]
+          [Only genuinely noteworthy findings — funding, leadership changes, major press]
+
+          **Recommended Objectives**
+          [1–2 sentences: what to accomplish in this meeting]
+
+          ---
+
+          [Repeat per meeting, sorted by date/time]
+          ```
+
+          ## When a Meeting Has Sparse Data
+
+          If Common Room returns limited data for a particular meeting's account or attendees, use a compressed format for that meeting instead of the full template:
+
+          ```
+          ### [Company Name] — [Time] ⚠️ Limited Data
+          **Attendees:** [Names and titles if known]
+          **Data available:** [What Common Room actually returned]
+
+          **Web Search Results**
+          [Findings from web search — company news, attendee LinkedIn profiles]
+
+          **Note:** Common Room has limited data on this account. The rep may want to check directly in CR or gather context from colleagues before this call.
+          ```
+
+          Do not generate a full meeting prep section (company snapshot, signal highlights, talking points, recommended objectives) from sparse data. A short honest section is more useful than a fabricated full one.
+
+          ## Quality Standards
+
+          - Keep each meeting section scannable — reps read these in the morning, often on mobile
+          - Always sort by date/time ascending
+          - Flag urgent situations prominently (risk, trial expiration, open opps) — don't bury them
+          - If a meeting has very thin Common Room data, use the sparse-data format above — never fill the full template with guesses
+          - Total brief should be readable in 10–15 minutes for a week with 4–6 meetings
+          - **Every fact must come from a tool call** — no invented deal context, activity, or signals
+
+          ## Reference Files
+
+          - **`references/briefing-guide.md`** — guidelines for structuring briefings, prioritization logic, and how to handle edge cases (cancelled meetings, new accounts with no data, etc.)
+    - path: /knowledge-work-plugins/skills/weekly-prep-brief/references/briefing-guide.md
+      text: |
+          # Weekly Prep Brief — Structure and Edge Cases
+
+          ## Briefing Depth Guidelines
+
+          Calibrate research depth based on account type:
+
+          | Account Type | Depth |
+          |-------------|-------|
+          | Strategic account (large, high ARR) | Full — account + all attendees |
+          | Active opportunity (open deal) | Full — with emphasis on deal signals |
+          | Renewal within 90 days | Full — with emphasis on risk/health signals |
+          | Mid-market customer, routine call | Standard — abbreviated account + key attendee |
+          | Small account, quick check-in | Minimal — 3-4 bullets, single attendee |
+          | Brand new prospect (first meeting) | Full contact + account — first impressions matter |
+
+          ## Week Overview Priorities
+
+          Flag these situations prominently at the top of the brief:
+
+          - Trial expiring within 7 days, renewal due within 30 days, or churn risk signals detected
+          - Open critical support tickets or unresolved escalations
+          - Expansion signals worth raising in the call
+          - Executive stakeholder or new champion attending
+          - Champion recently changed jobs or competitive signals in the account
+          - Recent company funding, product milestone, or strong community advocacy (use as opener)
+
+          ## Edge Cases
+
+          - **No Common Room data:** Note it explicitly, run external web research, recommend the rep check with their team for offline context.
+          - **Multiple meetings with the same company:** Research the account once, share across meetings, differentiate by attendees and objectives.
+          - **7+ meetings in a week:** Ask whether to prioritize full research for specific accounts or run abbreviated prep for all; default to full for strategic.
+          - **Same-day meeting:** Skip confirmation, produce compressed version (company snapshot + top signals + 1-2 talking points), mark as "[Quick Prep]".
+          - **Cancelled meetings:** Exclude silently; if status is unclear, include with "[Status unclear — confirm this meeting is still on.]"
+  environment:
+    - name: MESHAGENT_TOKEN
+      token:  
+        identity: claude-partner-built-common-room
+        api:
+          livekit: {}
+          queues:
+            list: true
+          messaging:
+            broadcast: true
+            list: true
+            send: true
+          database:
+            list_tables: true
+          sync: {}
+          storage: {}
+          containers:
+            logs: true
+            use_containers: true
+          developer:
+            logs: true
+          agents:
+            register_agent: true
+            register_public_toolkit: true
+            register_private_toolkit: true
+            call: true
+            use_agents: true
+            use_tools: true
+            allowed_toolkits: null
