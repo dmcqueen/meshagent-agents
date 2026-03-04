@@ -80,10 +80,12 @@ container:
           ## Usage
 
           ```
-          /call-summary
+          /call-summary <notes or transcript>
           ```
 
-          Then paste your notes, transcript, or upload a recording.
+          Process these call notes: $ARGUMENTS
+
+          If a file is referenced: @$1
 
           ---
 
@@ -247,10 +249,12 @@ container:
           ## Usage
 
           ```
-          /forecast
+          /forecast [period]
           ```
 
-          Then provide your pipeline data and targets.
+          Generate a forecast for: $ARGUMENTS
+
+          If a file is referenced: @$1
 
           ---
 
@@ -460,10 +464,12 @@ container:
           ## Usage
 
           ```
-          /pipeline-review
+          /pipeline-review [segment or rep]
           ```
 
-          Then provide your pipeline data.
+          Review pipeline for: $ARGUMENTS
+
+          If a file is referenced: @$1
 
           ---
 
