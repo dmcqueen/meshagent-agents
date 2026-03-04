@@ -332,6 +332,42 @@ container:
           } >> "${LOG_FILE_AGENTS}" 2>&1
 
           write_status "success"
+    - path: /knowledge-work-plugins/CONNECTORS.md
+      text: |
+          # Connectors
+
+          ## How tool references work
+
+          Plugin files use placeholder categories like `~~support platform` and `~~project tracker`.
+          This deployment maps those categories to Notion using the Notion MCP Server.
+
+          ## Notion MCP mapping
+
+          - `~~support platform` -> Notion support/tickets database (if configured in your workspace)
+          - `~~project tracker` -> Notion projects/tasks databases
+          - `~~knowledge base` -> Notion wiki/docs pages
+          - `~~chat` -> Team chat MCP if separately connected
+          - `~~email` -> Email toolkit/MCP if separately connected
+          - `~~CRM` -> CRM MCP if separately connected
+          - `~~cloud storage` -> Storage MCP if separately connected
+
+          ## Expected behavior in commands
+
+          - `/triage` should search Notion for duplicate/related issues when `~~support platform` is connected.
+          - `/escalate` should include related Notion issue links and update workflow state when write access is available.
+          - `/research` should use Notion history/docs for known issues and prior resolutions before external web search.
+
+          ## Connection checklist
+
+          1. Add Notion MCP Server in MCP settings.
+          2. Authenticate with a Notion account that has access to the required pages and databases.
+          3. Confirm tooling is visible in the runtime tool list.
+          4. If Notion is unavailable, continue with drafting-only flow and ask the user before assuming state changes.
+
+          ## Notes
+
+          - Use least-privilege Notion permissions for the MCP connection.
+          - Do not assume every database/page is writable; handle read-only resources gracefully.
     - path: /knowledge-work-plugins/commands/draft-response.md
       text: |
           ---
