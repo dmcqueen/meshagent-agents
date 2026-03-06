@@ -2,7 +2,7 @@ version: v1
 kind: ServiceTemplate
 metadata:
   name: claude-engineering-sentry
-  description: Engineering worker that triages Sentry issues into Jira using incident-response and ticket-triage skills
+  description: Polling worker that scans unresolved Sentry issues and creates or updates Jira tickets with severity and priority triage.
   annotations:
     meshagent.service.id: meshagent.claude-engineering-sentry
 
