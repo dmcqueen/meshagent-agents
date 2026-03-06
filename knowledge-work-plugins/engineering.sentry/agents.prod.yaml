@@ -5,7 +5,6 @@ metadata:
   description: Engineering worker that triages Sentry issues into Jira using incident-response and ticket-triage skills
   annotations:
     meshagent.service.id: meshagent.claude-engineering-sentry
-    meshagent.plugin.path: engineering.sentry
 
 variables:
 - name: sentry_auth_token
@@ -63,45 +62,14 @@ agents:
 
 container:
   image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
-  command: /bin/bash /var/start.sh
+  command: meshagent codex worker join --queue=sentry-jira.schedule --threading-mode=default-new --thread-dir=/agents/claude-engineering-sentry/threads --delegate-shell-token --room-rules=/agents/claude-engineering-sentry/rules.txt --copy-env=SENTRY_AUTH_TOKEN,SENTRY_ORG,SENTRY_PROJECT,SENTRY_URL,JIRA_API_TOKEN,JIRA_BASE_URL,JIRA_EMAIL,JIRA_PROJECT_KEY,JIRA_ISSUE_TYPE --rules-file=/rules/assistant.txt --rules-file=/rules/incident-response-skill.md --rules-file=/rules/ticket-triage-skill.md
   storage:
-    room:
-    - path: /data
-      read_only: false
     files:
-    - path: /var/start.sh
-      text: |
-          #!/bin/bash
-
-          set -euo pipefail
-
-          mkdir -p /data/agents/claude-engineering-sentry
-          mkdir -p /data/knowledge-work-plugins/skills/incident-response
-          mkdir -p /data/knowledge-work-plugins/skills/ticket-triage
-
-          if [[ ! -f /data/agents/claude-engineering-sentry/rules.txt ]]; then
-            cp /var/rules-claude-engineering-sentry.txt /data/agents/claude-engineering-sentry/rules.txt
-          fi
-
-          cp /var/skill-incident-response.md /data/knowledge-work-plugins/skills/incident-response/SKILL.md
-          cp /var/skill-ticket-triage.md /data/knowledge-work-plugins/skills/ticket-triage/SKILL.md
-
-          exec meshagent codex worker join \
-            --queue=sentry-jira.schedule \
-            --threading-mode=default-new \
-            --thread-dir=/agents/claude-engineering-sentry/threads \
-            --delegate-shell-token \
-            --room-rules=/agents/claude-engineering-sentry/rules.txt \
-            --copy-env=SENTRY_AUTH_TOKEN,SENTRY_ORG,SENTRY_PROJECT,SENTRY_URL,JIRA_API_TOKEN,JIRA_BASE_URL,JIRA_EMAIL,JIRA_PROJECT_KEY,JIRA_ISSUE_TYPE \
-            --rules-file=/data/knowledge-work-plugins/skills/incident-response/SKILL.md \
-            --rules-file=/data/knowledge-work-plugins/skills/ticket-triage/SKILL.md
-    - path: /var/rules-claude-engineering-sentry.txt
-      text: |
+      - path: /rules/assistant.txt
+        text: |
           You are a Sentry-to-Jira engineering triage worker.
 
-          Use these two skills as your operating framework on every run:
-          - /data/knowledge-work-plugins/skills/incident-response/SKILL.md
-          - /data/knowledge-work-plugins/skills/ticket-triage/SKILL.md
+          Apply the incident-response and ticket-triage skill guidance on every run.
 
           Primary workflow:
           1) Use sentry-cli to list unresolved exceptions in $SENTRY_ORG / $SENTRY_PROJECT.
@@ -133,8 +101,8 @@ container:
           - sentry-cli --url "$SENTRY_URL" issues info <ISSUE_ID>
           - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$JIRA_BASE_URL/rest/api/3/search?..."
           - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Content-Type: application/json" -X POST "$JIRA_BASE_URL/rest/api/3/issue"
-    - path: /var/skill-incident-response.md
-      text: |
+      - path: /rules/incident-response-skill.md
+        text: |
           ---
           name: incident-response
           description: Triage and manage production incidents. Trigger when production failures, outages, high-impact errors, or SEV classifications are needed.
@@ -160,8 +128,8 @@ container:
           3. Mitigate first, root cause second
           4. Resolve and verify
           5. Capture postmortem actions
-    - path: /var/skill-ticket-triage.md
-      text: |
+      - path: /rules/ticket-triage-skill.md
+        text: |
           ---
           name: ticket-triage
           description: Triage incoming issues by category, priority (P1-P4), and routing recommendation.
@@ -198,7 +166,7 @@ container:
 
           ## Duplicate Handling
 
-          Before creating a new issue, search for existing records by unique correlation key (for this workflow: `sentry-<SENTRY_ISSUE_ID>` label). Reuse existing issues instead of creating duplicates.
+          Before creating a new issue, search for existing records by unique correlation key (for this workflow: sentry-<SENTRY_ISSUE_ID> label). Reuse existing issues instead of creating duplicates.
   environment:
     - name: SENTRY_AUTH_TOKEN
       secret:
