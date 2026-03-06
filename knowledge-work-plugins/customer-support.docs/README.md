@@ -10,10 +10,10 @@ This plugin supports customer support workflows and is designed to help users co
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3730824d0f459df7e59d817669f67b3a44a4c38f/knowledge-work-plugins/customer-support.docs/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5fe1af1c7ae45face46cf217f6bba97d6f430304/knowledge-work-plugins/customer-support.docs/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/81e5ff6dd354c176fc9dddaa21ceadb0948fb1cd/knowledge-work-plugins/customer-support.docs/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/20271d485815942551944632e9fd3c47612a0e05/knowledge-work-plugins/customer-support.docs/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3730824d0f459df7e59d817669f67b3a44a4c38f/knowledge-work-plugins/customer-support.docs/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5fe1af1c7ae45face46cf217f6bba97d6f430304/knowledge-work-plugins/customer-support.docs/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/81e5ff6dd354c176fc9dddaa21ceadb0948fb1cd/knowledge-work-plugins/customer-support.docs/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/20271d485815942551944632e9fd3c47612a0e05/knowledge-work-plugins/customer-support.docs/agents.prod.yaml
