@@ -10,10 +10,16 @@ This plugin supports partner-built Slack workflows and is designed to help users
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/747f4282f8dca96b4e9a0310fa03b46a23ce93c9/knowledge-work-plugins/partner-built-slack/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7a9f58ef268ec54fd80e19c898d8fc2b38214278/knowledge-work-plugins/partner-built-slack/agents.prod.yaml
+Dev
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/747f4282f8dca96b4e9a0310fa03b46a23ce93c9/knowledge-work-plugins/partner-built-slack/agents.dev.yaml
+
+Prod
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7a9f58ef268ec54fd80e19c898d8fc2b38214278/knowledge-work-plugins/partner-built-slack/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/747f4282f8dca96b4e9a0310fa03b46a23ce93c9/knowledge-work-plugins/partner-built-slack/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7a9f58ef268ec54fd80e19c898d8fc2b38214278/knowledge-work-plugins/partner-built-slack/agents.prod.yaml
+Dev
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/747f4282f8dca96b4e9a0310fa03b46a23ce93c9/knowledge-work-plugins/partner-built-slack/agents.dev.yaml
+
+Prod
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7a9f58ef268ec54fd80e19c898d8fc2b38214278/knowledge-work-plugins/partner-built-slack/agents.prod.yaml
