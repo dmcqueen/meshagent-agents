@@ -10,10 +10,10 @@ This plugin supports customer support.jira workflows and is designed to help use
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c326c9d8d09e4c278cee04b83d319117b20ec13f/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4be58e7752032ff3e633b5a67e73e40d5ccad720/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/75b372c6a57e3db26f51cc1ed367025594a23a66/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a79a237ad25cb02003b83f95f69dff868d802d1e/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c326c9d8d09e4c278cee04b83d319117b20ec13f/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4be58e7752032ff3e633b5a67e73e40d5ccad720/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/75b372c6a57e3db26f51cc1ed367025594a23a66/knowledge-work-plugins/customer-support.jira/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a79a237ad25cb02003b83f95f69dff868d802d1e/knowledge-work-plugins/customer-support.jira/agents.prod.yaml
