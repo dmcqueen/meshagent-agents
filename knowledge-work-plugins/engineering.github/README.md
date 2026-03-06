@@ -10,10 +10,16 @@ This plugin supports engineering.github workflows and is designed to help users 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9105ee4907b3119c5dd15d9ad4f020ab4ddd1e3/knowledge-work-plugins/engineering.github/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/50283e909622e79d32811a5942c6d5b79ff8efb6/knowledge-work-plugins/engineering.github/agents.prod.yaml
+Dev
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9105ee4907b3119c5dd15d9ad4f020ab4ddd1e3/knowledge-work-plugins/engineering.github/agents.dev.yaml
+
+Prod
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/50283e909622e79d32811a5942c6d5b79ff8efb6/knowledge-work-plugins/engineering.github/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9105ee4907b3119c5dd15d9ad4f020ab4ddd1e3/knowledge-work-plugins/engineering.github/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/50283e909622e79d32811a5942c6d5b79ff8efb6/knowledge-work-plugins/engineering.github/agents.prod.yaml
+Dev
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b9105ee4907b3119c5dd15d9ad4f020ab4ddd1e3/knowledge-work-plugins/engineering.github/agents.dev.yaml
+
+Prod
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/50283e909622e79d32811a5942c6d5b79ff8efb6/knowledge-work-plugins/engineering.github/agents.prod.yaml
