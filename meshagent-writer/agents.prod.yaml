@@ -44,6 +44,17 @@ container:
           set -e
 
           mkdir -p /data/skills
+          mkdir -p /data/blogs
+          if [ ! -f /data/blogs/README.md ]; then
+            cat > /data/blogs/README.md <<'EOF'
+          MeshAgent writer blog output folder.
+
+          - Container path: /data/blogs
+          - Room Files path: blogs/
+
+          Files written to /data/blogs/<topic>.md are visible in Room Files at blogs/<topic>.md.
+          EOF
+          fi
           if [ -d /skills ]; then
             cp -R -n /skills/* /data/skills/ 2>/dev/null || true
           fi
@@ -73,10 +84,12 @@ container:
                 --require-shell \
                 --require-apply-patch \
                 --require-web-search \
+                --require-storage \
                 --use-memory=meshagent_writer \
                 --memory-model=gpt-5.3-codex \
-                --shell-tool-room-path=/:/data:rw \
-                --shell-image=meshagent/shell-codex:default \
+                --shell-tool-room-path=/:/data \
+                --storage-tool-room-path=/:/data \
+                --shell-image=meshagent/shell-terminal:default \
                 --delegate-shell-token \
                 ${skill_args_str} \
                 --rule='You are a MeshAgent tutorial writer. The MeshAgent SDK source is available at /src/meshagent-sdk, use it as the source of truth for APIs and CLI examples.' \
@@ -106,10 +119,12 @@ container:
                 --require-shell \
                 --require-apply-patch \
                 --require-web-search \
+                --require-storage \
                 --use-memory=meshagent_writer \
                 --memory-model=gpt-5.3-codex \
-                --shell-tool-room-path=/:/data:rw \
-                --shell-image=meshagent/shell-codex:default \
+                --shell-tool-room-path=/:/data \
+                --storage-tool-room-path=/:/data \
+                --shell-image=meshagent/shell-terminal:default \
                 --delegate-shell-token \
                 ${skill_args_str} \
                 --rule='You are a MeshAgent tutorial writer. The MeshAgent SDK source is available at /src/meshagent-sdk, use it as the source of truth for APIs and CLI examples.' \
