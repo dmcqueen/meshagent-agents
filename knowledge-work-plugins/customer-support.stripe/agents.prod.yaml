@@ -82,6 +82,8 @@ container:
             "${cmd[@]}"
           }
 
+          run_nonfatal "ensure Stripe MCP service (dynamic OAuth discovery)" ensure_stripe_mcp_service
+
           mkdir -p /data/knowledge-work-plugins
           mkdir -p /data/agents/claude-customer-support-with-stripe-connector
           if [ -d /knowledge-work-plugins ]; then
@@ -117,7 +119,6 @@ container:
             -rr=agents/claude-customer-support-with-stripe-connector/rules-supportagent.txt >> "${STARTUP_LOG}" 2>&1 &
           log_startup "started task-runner join in background (pid=$!)"
 
-          run_nonfatal "ensure Stripe MCP service (dynamic OAuth discovery)" ensure_stripe_mcp_service
           log_startup "starting meshagent multi join as pid 1"
           exec /usr/bin/meshagent multi join -c "chatbot \
             --agent-name claude-customer-support-with-stripe-connector \
