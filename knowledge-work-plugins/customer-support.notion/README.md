@@ -10,10 +10,10 @@ This plugin supports customer support.notion workflows and is designed to help u
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d909be7c8d0b9b3659b3301e029776bd3fea904e/knowledge-work-plugins/customer-support.notion/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4e5cf22fb4083f4b6e596db7618867ba5ccd20a5/knowledge-work-plugins/customer-support.notion/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d2e57fafe2000c46081967f1adfad5e434510c58/knowledge-work-plugins/customer-support.notion/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/77adac66d7f75039dbe6bdb02de150bad9289394/knowledge-work-plugins/customer-support.notion/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d909be7c8d0b9b3659b3301e029776bd3fea904e/knowledge-work-plugins/customer-support.notion/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4e5cf22fb4083f4b6e596db7618867ba5ccd20a5/knowledge-work-plugins/customer-support.notion/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d2e57fafe2000c46081967f1adfad5e434510c58/knowledge-work-plugins/customer-support.notion/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/77adac66d7f75039dbe6bdb02de150bad9289394/knowledge-work-plugins/customer-support.notion/agents.prod.yaml
