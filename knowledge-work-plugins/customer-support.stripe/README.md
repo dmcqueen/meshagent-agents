@@ -10,10 +10,10 @@ This plugin supports customer support.stripe workflows and is designed to help u
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2a96b455bd5c1d07f2fa32d92523d5048246ea18/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/36a7bf3ce36e4a8e7727f809590fe122bdb19f6c/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml
+- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/972b0a55a85950abd5a91ef66a10d13dde4c0ec1/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml
+- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a3038012880f2e16ca41d4039e34267f0e1edbc1/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2a96b455bd5c1d07f2fa32d92523d5048246ea18/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/36a7bf3ce36e4a8e7727f809590fe122bdb19f6c/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml
+- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/972b0a55a85950abd5a91ef66a10d13dde4c0ec1/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml
+- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a3038012880f2e16ca41d4039e34267f0e1edbc1/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml
