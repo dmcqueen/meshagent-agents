@@ -55,7 +55,7 @@ container:
           done < <(find /data/skills -type f -iname 'skill.md' -print0)
 
           skill_args_str=""
-          if [ ${#skill_args[@]} -gt 0 ]; then
+          if [ -n "${skill_args[*]}" ]; then
             printf -v skill_args_str ' %q' "${skill_args[@]}"
           fi
 
@@ -66,6 +66,8 @@ container:
                 --model=gpt-5.3-codex \
                 --threading-mode=default-new \
                 --thread-dir=/agents/meshagent_writer/threads \
+                --room-rules=/agents/meshagent_writer/rules.txt \
+                --room-rules=/agents/meshagent_writer/chatbot-rules.txt \
                 --working-dir=/data \
                 --require-toolkit=email \
                 --require-shell \
@@ -88,6 +90,8 @@ container:
                 --queue={{email}} \
                 --email-address={{email}} \
                 --toolkit-name=email \
+                --room-rules=/agents/meshagent_writer/rules.txt \
+                --room-rules=/agents/meshagent_writer/mailbot-rules.txt \
                 --rule='You send updates about MeshAgent blogs.'; \
               worker \
                 --agent-name=meshagent_writer \
@@ -95,6 +99,8 @@ container:
                 --model=gpt-5.3-codex \
                 --threading-mode=auto \
                 --thread-dir=/agents/meshagent_writer/threads \
+                --room-rules=/agents/meshagent_writer/rules.txt \
+                --room-rules=/agents/meshagent_writer/worker-rules.txt \
                 --working-dir=/data \
                 --require-toolkit=email \
                 --require-shell \
