@@ -4,11 +4,11 @@
   "description": "Polling worker that scans unresolved Sentry issues and creates or updates Jira tickets with severity and priority triage.",
   "long_description": "This plugin supports engineering sentry workflows and is designed to help users complete practical work with less manual effort. It can poll Sentry for unresolved exceptions on a recurring schedule, deduplicate findings against Jira and create missing bug tickets automatically, and run with a deliberately narrow skill scope focused on incident-response and ticket-triage only. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for engineering sentry decisions, analysis, and communication.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5fe11ea43318bbbcb0052adec137b1248d9dc9c5/knowledge-work-plugins/engineering-sentry/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5fe11ea43318bbbcb0052adec137b1248d9dc9c5/knowledge-work-plugins/engineering-sentry/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bd425bda231036ff4444165a37ce40f25fc53bf7/knowledge-work-plugins/engineering-sentry/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/bd425bda231036ff4444165a37ce40f25fc53bf7/knowledge-work-plugins/engineering-sentry/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/91ece86fd1fb8f7e600f2a4718db0d91f33970ca/knowledge-work-plugins/engineering-sentry/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/91ece86fd1fb8f7e600f2a4718db0d91f33970ca/knowledge-work-plugins/engineering-sentry/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/92e98d5fd9ac9ff61f836474951f8d85c827b61e/knowledge-work-plugins/engineering-sentry/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/92e98d5fd9ac9ff61f836474951f8d85c827b61e/knowledge-work-plugins/engineering-sentry/agents.prod.yaml"
   }
 }
