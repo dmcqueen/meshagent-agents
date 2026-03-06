@@ -60,7 +60,6 @@ container:
           fi
 
           exec /usr/bin/meshagent multi join \
-            --room="${MESHAGENT_ROOM}" \
             -c "chatbot \
                 --agent-name=meshagent_writer \
                 --model=gpt-5.3-codex \
