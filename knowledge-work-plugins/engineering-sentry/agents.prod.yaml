@@ -57,6 +57,9 @@ variables:
 agents:
 - name: claude-engineering-sentry
   annotations:
+    meshagent.agent.type: ChatBot
+- name: claude-engineering-sentry
+  annotations:
     meshagent.agent.type: Worker
     meshagent.agent.schedule: '{"schedule":"*/5 * * * *","queue":"sentry-jira.schedule","name":"SentryJiraTriage","payload":{"prompt":"Run the Sentry-to-Jira triage workflow now. Process unresolved Sentry issues, dedupe in Jira, create missing bugs, and return a concise summary."}}'
 
