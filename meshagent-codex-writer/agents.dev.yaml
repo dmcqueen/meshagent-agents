@@ -17,7 +17,7 @@ agents:
     description: "Nightly worker that writes a beginner tutorial blog post."
     annotations:
       meshagent.agent.type: "Worker"
-      meshagent.agent.schedule: '{"schedule":"0 10 * * *","queue":"meshagent_codex_writer_jobs","name":"NightlyMeshAgentCodexWriter","payload":{"prompt":"Create a beginner MeshAgent SDK tutorial blog post. Choose one SDK area (for example, Room API) and one concrete item (for example, database). Explain what it is, how it works, and what it can do. Provide CLI-first setup steps, schema creation, and usage examples, then add a simple agent example that uses it. Test the steps so you know that the guide works and note any assumptions. Save the blog to /data/blogs/<topic>.md."}}'
+      meshagent.agent.schedule: '{"schedule":"0 10 * * *","queue":"meshagent_codex_writer_jobs","name":"NightlyMeshAgentCodexWriter","payload":{"prompt":"Create a beginner MeshAgent SDK tutorial blog post. Choose one SDK area (for example, Room API) and one concrete item (for example, database). Explain what it is, how it works, and what it can do. Provide CLI-first setup steps, schema creation, and usage examples, then add a simple agent example that uses it. Test the steps so you know that the guide works and note any assumptions. Save the blog to /data/codex-blogs/<topic>.md."}}'
 
 container:
   image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz
@@ -57,7 +57,7 @@ container:
             --room="${MESHAGENT_ROOM}" \
             ${skill_args_str} \
             --rule='You are a MeshAgent tutorial writer. The MeshAgent SDK source is available at /src/meshagent-sdk, use it as the source of truth for APIs and CLI examples.' \
-            --rule='You help write beginner-friendly blog posts about MeshAgent, when writing blogs include CLI-first steps and save each draft to /data/blogs/<topic>.md. Mention the saved path in your reply.' \
+            --rule='You help write beginner-friendly blog posts about MeshAgent, when writing blogs include CLI-first steps and save each draft to /data/codex-blogs/<topic>.md. Mention the saved path in your reply.' \
             --rule='When asked to run the nightly job on-demand, use the shell tool to send a JSON payload to the meshagent_codex_writer_jobs queue via meshagent room queue send.' \
             --rule='when building, copy the source to be built into /build to build inside your container, and copy output back to a folder within /data for the user to find it' \
             --rule='the mount in /data is a FUSE mount, so avoid using it for operations which are problematic on a FUSE mount' \
@@ -78,7 +78,7 @@ container:
             --rule='Each job produces a beginner tutorial blog post. Choose one SDK area and one item, explain what it is, how it works, and what it can do, then show CLI-first steps including setup, schema, and usage. Add a simple agent example that uses the item. Test steps when possible and note any assumptions.' \
             --rule='when building, copy the source to be built into /build to build inside your container, and copy output back to a folder within /data for the user to find it' \
             --rule='the mount in /data is a FUSE mount, so avoid using it for operations which are problematic on a FUSE mount' \
-            --rule='Save the blog to /data/blogs/<topic>.md and include a short completion summary in the job output.' &
+            --rule='Save the blog to /data/codex-blogs/<topic>.md and include a short completion summary in the job output.' &
           worker_pid=$!
 
           wait "$chatbot_pid" "$worker_pid"
@@ -118,7 +118,7 @@ container:
 
           ## Output
 
-          - Save the blog post as markdown to /data/blogs/<topic>.md.
+          - Save the blog post as markdown to /data/codex-blogs/<topic>.md.
           - Include the file path in the response.
 
   environment:
