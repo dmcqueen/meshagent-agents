@@ -65,10 +65,67 @@ agents:
 
 container:
   image: meshagent/shell-codex:default
-  command: meshagent codex worker join --queue=sentry-jira.schedule --threading-mode=default-new --thread-dir=/agents/claude-engineering-sentry/threads --delegate-shell-token --room-rules=/agents/claude-engineering-sentry/rules.txt --copy-env=SENTRY_AUTH_TOKEN,SENTRY_ORG,SENTRY_PROJECT,SENTRY_URL,JIRA_API_TOKEN,JIRA_BASE_URL,JIRA_EMAIL,JIRA_PROJECT_KEY,JIRA_ISSUE_TYPE --rules-file=/rules/assistant.txt --rules-file=/rules/incident-response-skill.md --rules-file=/rules/ticket-triage-skill.md
+  command: /bin/bash /var/start.sh
   storage:
+    room:
+      - path: /data
+        read_only: false
     files:
-      - path: /rules/assistant.txt
+      - path: /var/start.sh
+        text: |
+          #!/bin/bash
+
+          set -u -o pipefail
+
+          STARTUP_LOG="/data/meshagent-startup.log"
+
+          mkdir -p /data
+          touch "${STARTUP_LOG}"
+
+          log_startup() {
+            local message="$1"
+            echo "[startup] $(date -u +"%Y-%m-%dT%H:%M:%SZ") ${message}" >> "${STARTUP_LOG}"
+          }
+
+          run_nonfatal() {
+            local description="$1"
+            shift
+            if "$@"; then
+              log_startup "ok: ${description}"
+            else
+              local exit_code=$?
+              log_startup "failed: ${description} (exit=${exit_code})"
+            fi
+          }
+
+          mkdir -p /data/agents/claude-engineering-sentry
+          run_nonfatal "stage chatbot rules" cp /var/rules-claude-engineering-sentry-chatbot.txt /data/agents/claude-engineering-sentry/rules-chatbot.txt
+          run_nonfatal "stage worker rules" cp /var/rules-claude-engineering-sentry-worker.txt /data/agents/claude-engineering-sentry/rules-worker.txt
+
+          log_startup "starting meshagent multi join as pid 1"
+          exec /usr/bin/meshagent multi join -c "chatbot \
+            --agent-name claude-engineering-sentry \
+            --require-web-search \
+            --require-web-fetch \
+            --script-tool \
+            --room-rules /agents/claude-engineering-sentry/rules-chatbot.txt \
+            --rules-file /rules/incident-response-skill.md \
+            --rules-file /rules/ticket-triage-skill.md; \
+            worker \
+            --agent-name claude-engineering-sentry \
+            --queue sentry-jira.schedule \
+            --require-shell \
+            --room-rules /agents/claude-engineering-sentry/rules-worker.txt \
+            --rules-file /rules/incident-response-skill.md \
+            --rules-file /rules/ticket-triage-skill.md"
+      - path: /var/rules-claude-engineering-sentry-chatbot.txt
+        text: |
+          You are the claude-engineering-sentry chatbot.
+          This service includes a scheduled worker that polls unresolved Sentry issues and creates or updates Jira tickets.
+          Use incident-response and ticket-triage frameworks for severity and priority questions.
+          Keep responses concise and operational.
+          Never expose secrets, tokens, or authentication material.
+      - path: /var/rules-claude-engineering-sentry-worker.txt
         text: |
           You are a Sentry-to-Jira engineering triage worker.
 
