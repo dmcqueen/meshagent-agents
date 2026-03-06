@@ -1,0 +1,214 @@
+version: v1
+kind: ServiceTemplate
+metadata:
+  name: claude-engineering-sentry
+  description: Polling worker that scans unresolved Sentry issues and creates or updates Jira tickets with severity and priority triage.
+  annotations:
+    meshagent.service.id: meshagent.claude-engineering-sentry
+
+variables:
+- name: sentry_auth_token
+  description: Sentry auth token with read access to org/project issues
+  optional: false
+  obscure: true
+  annotations:
+    meshagent.secret.id: sentry-auth-token
+    meshagent.secret.identity: sentry
+    meshagent.secret.type: token
+
+- name: sentry_org
+  description: Sentry organization slug
+  optional: false
+
+- name: sentry_project
+  description: Sentry project slug
+  optional: false
+
+- name: sentry_host
+  description: Sentry host URL (use https://sentry.io for SaaS)
+  optional: false
+
+- name: jira_api_token
+  description: Jira API token with permission to create issues
+  optional: false
+  obscure: true
+  annotations:
+    meshagent.secret.id: jira-api-token
+    meshagent.secret.identity: jira
+    meshagent.secret.type: token
+
+- name: jira_base_url
+  description: Jira site URL (for example https://yourcompany.atlassian.net)
+  optional: false
+
+- name: jira_user_email
+  description: Jira user email for API auth
+  optional: false
+
+- name: jira_project_key
+  description: Jira project key where bugs are created
+  optional: false
+
+- name: jira_issue_type
+  description: Jira issue type (usually Bug)
+  optional: false
+  default: Bug
+
+agents:
+- name: claude-engineering-sentry
+  annotations:
+    meshagent.agent.type: Worker
+    meshagent.agent.schedule: '{"schedule":"*/5 * * * *","queue":"sentry-jira.schedule","name":"SentryJiraTriage","payload":{"prompt":"Run the Sentry-to-Jira triage workflow now. Process unresolved Sentry issues, dedupe in Jira, create missing bugs, and return a concise summary."}}'
+
+container:
+  image: us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz
+  command: meshagent codex worker join --queue=sentry-jira.schedule --threading-mode=default-new --thread-dir=/agents/claude-engineering-sentry/threads --delegate-shell-token --room-rules=/agents/claude-engineering-sentry/rules.txt --copy-env=SENTRY_AUTH_TOKEN,SENTRY_ORG,SENTRY_PROJECT,SENTRY_URL,JIRA_API_TOKEN,JIRA_BASE_URL,JIRA_EMAIL,JIRA_PROJECT_KEY,JIRA_ISSUE_TYPE --rules-file=/rules/assistant.txt --rules-file=/rules/incident-response-skill.md --rules-file=/rules/ticket-triage-skill.md
+  storage:
+    files:
+      - path: /rules/assistant.txt
+        text: |
+          You are a Sentry-to-Jira engineering triage worker.
+
+          Apply the incident-response and ticket-triage skill guidance on every run.
+
+          Primary workflow:
+          1) Use sentry-cli to list unresolved exceptions in $SENTRY_ORG / $SENTRY_PROJECT.
+          2) For each Sentry issue, collect context: title, culprit, status, first seen, last seen, event count, and top stack trace details.
+          3) Classify severity (SEV1-SEV4) using incident-response criteria.
+          4) Assign support priority (P1-P4) and routing rationale using ticket-triage criteria.
+          5) In Jira, search for an existing issue labeled sentry-<SENTRY_ISSUE_ID> in project $JIRA_PROJECT_KEY.
+          6) If no match exists, create one with issue type $JIRA_ISSUE_TYPE and labels: sentry, auto-triage, sentry-<SENTRY_ISSUE_ID>, sev-<SEV>, p-<P>.
+          7) If a match exists, do not create duplicates; report existing issue key and any changed severity/priority assessment.
+          8) Return a concise summary table: Sentry issue id, SEV, Priority, action (created/existing/skipped), Jira key.
+
+          Jira payload requirements:
+          - Summary: "[Sentry][SEVx/Px] <issue_title>"
+          - Description sections: Impact, Evidence, Reproduction Hints, Severity Assessment, Priority/Routing, Sentry Link.
+          - Include direct Sentry issue URL.
+
+          Required command conventions:
+          - Use sentry-cli only for Sentry access.
+          - Use Jira REST API via curl.
+          - Authenticate Jira calls with Basic auth using $JIRA_EMAIL:$JIRA_API_TOKEN.
+
+          Safety rules:
+          - Never expose tokens in output.
+          - Never invent missing fields; explicitly mark unknown values.
+          - If sentry-cli is unavailable, stop and report missing dependency.
+
+          Helpful command patterns:
+          - sentry-cli --url "$SENTRY_URL" issues list --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" --query "is:unresolved"
+          - sentry-cli --url "$SENTRY_URL" issues info <ISSUE_ID>
+          - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$JIRA_BASE_URL/rest/api/3/search?..."
+          - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Content-Type: application/json" -X POST "$JIRA_BASE_URL/rest/api/3/issue"
+      - path: /rules/incident-response-skill.md
+        text: |
+          ---
+          name: incident-response
+          description: Triage and manage production incidents. Trigger when production failures, outages, high-impact errors, or SEV classifications are needed.
+          ---
+
+          # Incident Response
+
+          Guide incident response from detection through mitigation and resolution.
+
+          ## Severity Classification
+
+          | Level | Criteria | Response Time |
+          |-------|----------|---------------|
+          | SEV1 | Service down, all users affected, data/security at risk | Immediate |
+          | SEV2 | Major feature degraded, many users affected | Within 15 min |
+          | SEV3 | Minor feature issue, some users affected | Within 1 hour |
+          | SEV4 | Low-impact issue | Next business day |
+
+          ## Response Framework
+
+          1. Triage scope and impact
+          2. Communicate factual status
+          3. Mitigate first, root cause second
+          4. Resolve and verify
+          5. Capture postmortem actions
+      - path: /rules/ticket-triage-skill.md
+        text: |
+          ---
+          name: ticket-triage
+          description: Triage incoming issues by category, priority (P1-P4), and routing recommendation.
+          ---
+
+          # Ticket Triage
+
+          Rapidly categorize and prioritize issues so they route correctly.
+
+          ## Category Taxonomy
+
+          - Bug
+          - Performance
+          - Security
+          - Data
+          - Integration
+          - Account
+          - Billing
+          - How-to
+          - Feature request
+
+          ## Priority Framework
+
+          - P1: Critical outage, data/security risk, broad impact
+          - P2: Major feature broken, no workaround
+          - P3: Partial breakage, workaround exists
+          - P4: Minor issue, question, or enhancement
+
+          ## Routing Rules
+
+          - Engineering: confirmed bugs, infra issues, performance degradation
+          - Security: data exposure, unauthorized access, vulnerability indicators
+          - Support: how-to or known issues with clear workaround
+
+          ## Duplicate Handling
+
+          Before creating a new issue, search for existing records by unique correlation key (for this workflow: sentry-<SENTRY_ISSUE_ID> label). Reuse existing issues instead of creating duplicates.
+  environment:
+    - name: SENTRY_AUTH_TOKEN
+      secret:
+        identity: sentry
+        id: sentry-auth-token
+
+    - name: SENTRY_ORG
+      value: "{{sentry_org}}"
+
+    - name: SENTRY_PROJECT
+      value: "{{sentry_project}}"
+
+    - name: SENTRY_URL
+      value: "{{sentry_host}}"
+
+    - name: JIRA_API_TOKEN
+      secret:
+        identity: jira
+        id: jira-api-token
+
+    - name: JIRA_BASE_URL
+      value: "{{jira_base_url}}"
+
+    - name: JIRA_EMAIL
+      value: "{{jira_user_email}}"
+
+    - name: JIRA_PROJECT_KEY
+      value: "{{jira_project_key}}"
+
+    - name: JIRA_ISSUE_TYPE
+      value: "{{jira_issue_type}}"
+
+    - name: MESHAGENT_TOKEN
+      token:
+        identity: claude-engineering-sentry
+        api:
+          queues: {}
+          secrets: {}
+          containers: {}
+          sync: {}
+          agents: {}
+          storage: {}
+          database: {}
+          developer: {}
+          messaging: {}
