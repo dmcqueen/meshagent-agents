@@ -8,22 +8,22 @@ variables:
     description: "External, fully user-supplied email address to receive docs sync status notifications."
 
 metadata:
-  name: claude-customer-support-meshagent
-  description: An agent that uses Anthropic's customer support knowledge work plugin with a nightly docs sync worker
+  name: claude-customer-support-with-stripe-connector
+  description: An agent that uses Anthropic's customer support knowledge work plugin with Stripe MCP integration and a nightly docs sync worker
   annotations:
-    meshagent.service.id: meshagent.claude-customer-support-meshagent
+    meshagent.service.id: meshagent.claude-customer-support-with-stripe-connector
 
 agents:
-  - name: claude-customer-support-meshagent
+  - name: claude-customer-support-with-stripe-connector
     annotations:
       meshagent.agent.type: ChatBot
-  - name: claude-customer-support-meshagent
+  - name: claude-customer-support-with-stripe-connector
     annotations:
       meshagent.agent.type: MailBot
-  - name: claude-customer-support-meshagent
+  - name: claude-customer-support-with-stripe-connector
     annotations:
       meshagent.agent.type: Worker
-      meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"docs-sync","name":"SyncMeshagentDocs","payload":{"prompt":"Run the meshagent docs sync workflow from /data/agents/claude-customer-support-meshagent/rules-git-worker.txt"}}'
+      meshagent.agent.schedule: '{"schedule":"0 0 * * *","queue":"docs-sync","name":"SyncMeshagentDocs","payload":{"prompt":"Run the meshagent docs sync workflow from /data/agents/claude-customer-support-with-stripe-connector/rules-git-worker.txt"}}'
 
 container:
   image: us-central1-docker.pkg.dev/meshagent-life/meshagent-public/shell-terminal:{SERVER_VERSION}-esgz
@@ -40,7 +40,8 @@ container:
           set -u -o pipefail
 
           STARTUP_LOG="/data/meshagent-startup.log"
-          SYNC_SCRIPT="/data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh"
+          SYNC_SCRIPT="/data/agents/claude-customer-support-with-stripe-connector/update-meshagent-docs.sh"
+          STRIPE_MCP_URL="https://mcp.stripe.com"
 
           mkdir -p /data
           touch "${STARTUP_LOG}"
@@ -61,21 +62,41 @@ container:
             fi
           }
 
+          ensure_stripe_mcp_service() {
+            if [[ -z "${MESHAGENT_ROOM:-}" ]]; then
+              log_startup "skipped: ensure Stripe MCP service (MESHAGENT_ROOM is not set)"
+              return 0
+            fi
+
+            local cmd=(
+              /usr/bin/meshagent service update
+              --create
+              --room "${MESHAGENT_ROOM}"
+              --mcp "${STRIPE_MCP_URL}"
+            )
+
+            if [[ -n "${MESHAGENT_PROJECT_ID:-}" ]]; then
+              cmd+=(--project-id "${MESHAGENT_PROJECT_ID}")
+            fi
+
+            "${cmd[@]}"
+          }
+
           mkdir -p /data/knowledge-work-plugins
-          mkdir -p /data/agents/claude-customer-support-meshagent
+          mkdir -p /data/agents/claude-customer-support-with-stripe-connector
           if [ -d /knowledge-work-plugins ]; then
             run_nonfatal "sync knowledge-work-plugins into room storage" cp -R -n /knowledge-work-plugins/. /data/knowledge-work-plugins/
           fi
-          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-chatbot.txt ]]; then
-            run_nonfatal "stage chatbot rules" cp /var/rules-claude-customer-support-chatbot.txt /data/agents/claude-customer-support-meshagent/rules-chatbot.txt
+          if [[ ! -f /data/agents/claude-customer-support-with-stripe-connector/rules-chatbot.txt ]]; then
+            run_nonfatal "stage chatbot rules" cp /var/rules-claude-customer-support-chatbot.txt /data/agents/claude-customer-support-with-stripe-connector/rules-chatbot.txt
           fi
-          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-mailbot.txt ]]; then
-            run_nonfatal "stage mailbot rules" cp /var/rules-claude-customer-support-mailbot.txt /data/agents/claude-customer-support-meshagent/rules-mailbot.txt
+          if [[ ! -f /data/agents/claude-customer-support-with-stripe-connector/rules-mailbot.txt ]]; then
+            run_nonfatal "stage mailbot rules" cp /var/rules-claude-customer-support-mailbot.txt /data/agents/claude-customer-support-with-stripe-connector/rules-mailbot.txt
           fi
-          if [[ ! -f /data/agents/claude-customer-support-meshagent/rules-supportagent.txt ]]; then
-            run_nonfatal "stage supportagent rules" cp /var/rules-claude-customer-support-supportagent.txt /data/agents/claude-customer-support-meshagent/rules-supportagent.txt
+          if [[ ! -f /data/agents/claude-customer-support-with-stripe-connector/rules-supportagent.txt ]]; then
+            run_nonfatal "stage supportagent rules" cp /var/rules-claude-customer-support-supportagent.txt /data/agents/claude-customer-support-with-stripe-connector/rules-supportagent.txt
           fi
-          run_nonfatal "stage worker rules" cp /var/rules-claude-customer-support-git-worker.txt /data/agents/claude-customer-support-meshagent/rules-git-worker.txt
+          run_nonfatal "stage worker rules" cp /var/rules-claude-customer-support-git-worker.txt /data/agents/claude-customer-support-with-stripe-connector/rules-git-worker.txt
 
           if [[ -f /var/update-meshagent-docs.sh ]]; then
             run_nonfatal "stage docs sync script" cp /var/update-meshagent-docs.sh "${SYNC_SCRIPT}"
@@ -93,15 +114,17 @@ container:
           SUPPORTAGENT_TOKEN="${MESHAGENT_TOKEN_SUPPORTAGENT:-}"
           MESHAGENT_TOKEN="${SUPPORTAGENT_TOKEN}" /usr/bin/meshagent task-runner join \
             --require-shell \
-            -rr=agents/claude-customer-support-meshagent/rules-supportagent.txt >> "${STARTUP_LOG}" 2>&1 &
+            -rr=agents/claude-customer-support-with-stripe-connector/rules-supportagent.txt >> "${STARTUP_LOG}" 2>&1 &
           log_startup "started task-runner join in background (pid=$!)"
 
+          run_nonfatal "ensure Stripe MCP service (dynamic OAuth discovery)" ensure_stripe_mcp_service
           log_startup "starting meshagent multi join as pid 1"
           exec /usr/bin/meshagent multi join -c "chatbot \
-            --agent-name claude-customer-support-meshagent \
+            --agent-name claude-customer-support-with-stripe-connector \
             --require-web-search \
+            --mcp \
             --require-toolkit=SupportAgent \
-            --room-rules /agents/claude-customer-support-meshagent/rules-chatbot.txt \
+            --room-rules /agents/claude-customer-support-with-stripe-connector/rules-chatbot.txt \
             --rules-file /data/knowledge-work-plugins/commands/draft-response.md \
             --rules-file /data/knowledge-work-plugins/commands/escalate.md \
             --rules-file /data/knowledge-work-plugins/commands/kb-article.md \
@@ -113,10 +136,11 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/response-drafting \
             --skill-dir /data/knowledge-work-plugins/skills/ticket-triage; \
             mailbot \
-            --agent-name claude-customer-support-meshagent \
+            --agent-name claude-customer-support-with-stripe-connector \
             --email-address {{MailbotEmail}} \
             --reply-all \
             --require-web-search \
+            --mcp \
             --toolkit-name=email \
             --require-toolkit=SupportAgent \
             --rules-file /data/knowledge-work-plugins/commands/draft-response.md \
@@ -129,13 +153,13 @@ container:
             --skill-dir /data/knowledge-work-plugins/skills/knowledge-management \
             --skill-dir /data/knowledge-work-plugins/skills/response-drafting \
             --skill-dir /data/knowledge-work-plugins/skills/ticket-triage \
-            --room-rules /agents/claude-customer-support-meshagent/rules-mailbot.txt; \
+            --room-rules /agents/claude-customer-support-with-stripe-connector/rules-mailbot.txt; \
             worker \
-            --agent-name claude-customer-support-meshagent \
+            --agent-name claude-customer-support-with-stripe-connector \
             --queue docs-sync \
             --require-shell \
             --require-toolkit=email \
-            --room-rules /agents/claude-customer-support-meshagent/rules-git-worker.txt"
+            --room-rules /agents/claude-customer-support-with-stripe-connector/rules-git-worker.txt"
     - path: /var/rules-claude-customer-support-chatbot.txt
       read_only: true
       text: |
@@ -150,7 +174,7 @@ container:
       read_only: true
       text: |
           Before running the sync, delete stale files with one shell command: "rm -f /data/.runtime/meshagent-docs-sync.status /data/.runtime/meshagent-docs-sync.cloned".
-          Execute the docs sync script exactly once by running "bash /data/agents/claude-customer-support-meshagent/update-meshagent-docs.sh" using the shell tool.
+          Execute the docs sync script exactly once by running "bash /data/agents/claude-customer-support-with-stripe-connector/update-meshagent-docs.sh" using the shell tool.
           If script execution fails, immediately send a failure email to {{AdminEmail}} and include the script execution error text; do not report success.
           If /data/.runtime/meshagent-docs-sync.status is missing after script execution, immediately send a failure email to {{AdminEmail}} with error=status file missing; do not report success.
           Read /data/.runtime/meshagent-docs-sync.status after the script completes. If /data/.runtime/meshagent-docs-sync.cloned exists, treat it as a clone event and include it in the notification details.
@@ -160,7 +184,7 @@ container:
     - path: /var/rules-claude-customer-support-mailbot.txt
       read_only: true
       text: |
-          You are the mailbot for the claude-customer-support-meshagent service. You provide customer support for MeshAgent users.
+          You are the mailbot for the claude-customer-support-with-stripe-connector service. You provide customer support for MeshAgent users.
           Use the SupportAgent tool for factual details from downloaded docs before finalizing answers.
           If SupportAgent cannot find an answer in docs, say so and ask a targeted follow-up question.
           For MeshAgent support replies, use skills in /data/knowledge-work-plugins for drafting and response quality.
@@ -175,7 +199,7 @@ container:
           MeshAgent is an agent operating system. You can find out more at www.meshagent.com.
           Focus on MeshAgent product, platform, SDK, CLI, agents, rooms, mailbots, workers, deployments, billing, and documented policies using downloaded docs in room storage.
           Answer only MeshAgent support questions. If not enough info, respond with a brief clarification request.
-          You have customizable rules stored in /data/agents/claude-customer-support-meshagent/rules-supportagent.txt, you can use the shell tool to read your rules.
+          You have customizable rules stored in /data/agents/claude-customer-support-with-stripe-connector/rules-supportagent.txt, you can use the shell tool to read your rules.
           MeshAgent docs are in /data/meshagent-docs.
           Example agent yamls are in /data/meshagent-agents.
           Prefer /data/meshagent-docs over /data/meshagent-agents when both cover a topic.
@@ -308,6 +332,42 @@ container:
           } >> "${LOG_FILE_AGENTS}" 2>&1
 
           write_status "success"
+    - path: /knowledge-work-plugins/CONNECTORS.md
+      text: |
+          # Connectors
+
+          ## How tool references work
+
+          Plugin files use placeholder categories like `~~support platform` and `~~project tracker`.
+          This deployment maps those categories to Stripe using the Stripe MCP Server.
+
+          ## Stripe MCP mapping
+
+          - `~~support platform` -> Stripe account data for support workflows (customers, subscriptions, invoices, payment intents, charges, refunds, disputes)
+          - `~~project tracker` -> External tracker MCP if separately connected (not provided by Stripe MCP)
+          - `~~knowledge base` -> Stripe documentation via Stripe MCP docs/search tools
+          - `~~chat` -> Team chat MCP if separately connected
+          - `~~email` -> Email toolkit/MCP if separately connected
+          - `~~CRM` -> CRM MCP if separately connected
+          - `~~cloud storage` -> Storage MCP if separately connected
+
+          ## Expected behavior in commands
+
+          - `/triage` should search Stripe customer/payment artifacts for duplicate or related billing issues when `~~support platform` is connected.
+          - `/escalate` should include relevant Stripe object IDs (customer, invoice, charge, payment_intent, dispute, refund) for finance/engineering handoff.
+          - `/research` should use Stripe account history and Stripe docs context before external web search.
+
+          ## Connection checklist
+
+          1. Add Stripe MCP Server in MCP settings.
+          2. Authenticate with a Stripe account that has access to the required billing and payment resources.
+          3. Confirm tooling is visible in the runtime tool list.
+          4. If Stripe is unavailable, continue with drafting-only flow and ask the user before assuming state changes.
+
+          ## Notes
+
+          - Use least-privilege Stripe permissions for the MCP connection.
+          - Do not assume every resource is writable; handle read-only resources gracefully.
     - path: /knowledge-work-plugins/commands/draft-response.md
       text: |
           ---
@@ -2065,7 +2125,7 @@ container:
   environment:
     - name: MESHAGENT_TOKEN
       token:  
-        identity: claude-customer-support-meshagent
+        identity: claude-customer-support-with-stripe-connector
         api:
           livekit: {}
           queues:
