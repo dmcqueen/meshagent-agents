@@ -59,7 +59,7 @@ container:
             printf -v skill_args_str ' %q' "${skill_args[@]}"
           fi
 
-          exec /usr/bin/meshagent multi join \
+          /usr/bin/meshagent multi join \
             -c "chatbot \
                 --agent-name=meshagent_writer \
                 --model=gpt-5.3-codex \
