@@ -52,7 +52,6 @@ variables:
 - name: jira_issue_type
   description: Jira issue type (usually Bug)
   optional: false
-  default: Bug
 
 agents:
 - name: claude-engineering-sentry
