@@ -107,6 +107,7 @@ container:
             --require-web-search \
             --require-web-fetch \
             --script-tool \
+            --require-shell \
             --shell-image atlassian/jira-software:latest \
             --room-rules /agents/claude-engineering-sentry/rules-chatbot.txt \
             --rules-file /rules/incident-response-skill.md \
