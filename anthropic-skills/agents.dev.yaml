@@ -53,7 +53,6 @@ container:
             --script-tool \
             --web-search \
             --use-memory agents/claudeskills/memories \
-            --memory-model claude-sonnet-4-6 \
             --require-storage \
             --storage-tool-room-path=/:/data \
             -rr=agents/claudeskills/rules.txt \
