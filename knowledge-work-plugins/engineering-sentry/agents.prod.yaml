@@ -108,7 +108,7 @@ container:
             --require-web-fetch \
             --script-tool \
             --require-shell \
-            --shell-image us-central1-docker.pkg.dev/meshagent-public/sentry-jira-shell:latest \
+            --shell-image us-central1-docker.pkg.dev/meshagent-public/images/sentry-jira-shell:latest \
             --copy-env=SENTRY_AUTH_TOKEN \
             --copy-env=SENTRY_ORG \
             --copy-env=SENTRY_PROJECT \
@@ -125,7 +125,7 @@ container:
             --agent-name claude-engineering-sentry \
             --queue sentry-jira.schedule \
             --require-shell \
-            --shell-image us-central1-docker.pkg.dev/meshagent-public/sentry-jira-shell:latest \
+            --shell-image us-central1-docker.pkg.dev/meshagent-public/images/sentry-jira-shell:latest \
             --copy-env=SENTRY_AUTH_TOKEN \
             --copy-env=SENTRY_ORG \
             --copy-env=SENTRY_PROJECT \
