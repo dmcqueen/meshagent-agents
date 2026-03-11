@@ -118,6 +118,7 @@ container:
             --shell-copy-env=JIRA_EMAIL \
             --shell-copy-env=JIRA_PROJECT_KEY \
             --shell-copy-env=JIRA_ISSUE_TYPE \
+            --shell-copy-env=JIRA_AUTO_INIT \
             --room-rules /agents/claude-engineering-sentry/rules-chatbot.txt \
             --rules-file /rules/incident-response-skill.md \
             --rules-file /rules/ticket-triage-skill.md; \
@@ -135,6 +136,7 @@ container:
             --shell-copy-env=JIRA_EMAIL \
             --shell-copy-env=JIRA_PROJECT_KEY \
             --shell-copy-env=JIRA_ISSUE_TYPE \
+            --shell-copy-env=JIRA_AUTO_INIT \
             --room-rules /agents/claude-engineering-sentry/rules-worker.txt \
             --rules-file /rules/incident-response-skill.md \
             --rules-file /rules/ticket-triage-skill.md"
@@ -150,14 +152,12 @@ container:
 
           Jira CLI expectations:
           - jira is preinstalled.
-          - Container attempts jira auto-init from env vars:
-            JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN, optional JIRA_PROJECT_KEY.
-          - If jira still reports missing config, run non-interactive init:
-            jira init --installation cloud --server "$JIRA_BASE_URL" --login "$JIRA_EMAIL" --auth-type basic --project "$JIRA_PROJECT_KEY" --force
-          - If jira CLI config is still missing or jira me fails, switch to Jira REST immediately for auth + reads:
+          - Jira CLI config may be missing in ephemeral shells.
+          - Do not treat jira init/jira me as required for normal ticket operations.
+          - Use Jira REST for auth + reads/writes by default:
             - auth check: curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Accept: application/json" "$JIRA_BASE_URL/rest/api/3/myself"
             - ticket list: curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Accept: application/json" --get "$JIRA_BASE_URL/rest/api/3/search/jql" --data-urlencode "jql=project = $JIRA_PROJECT_KEY ORDER BY updated DESC"
-          - Do not loop repeatedly on jira init/jira me failures.
+          - Run jira init only if explicitly requested for CLI ergonomics.
 
           Never ask user to paste tokens when required env vars already exist.
           Use incident-response and ticket-triage frameworks for severity and priority questions.
@@ -180,14 +180,10 @@ container:
           1) sentry-cli --version
           2) jira version
           3) Verify required env vars are non-empty (without printing secret values).
-          4) Verify Jira auth in this order:
-             - First try jira me.
-             - If jira me fails due missing config/auth, run one non-interactive init attempt:
-               jira init --installation cloud --server "$JIRA_BASE_URL" --login "$JIRA_EMAIL" --auth-type basic --project "$JIRA_PROJECT_KEY" --force
-             - Retry jira me once.
-             - If jira me still fails, verify auth with Jira REST:
-               curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Accept: application/json" "$JIRA_BASE_URL/rest/api/3/myself"
-          5) If both jira me and Jira REST auth fail, stop and report exact failing step.
+          4) Verify Jira auth with Jira REST:
+             curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Accept: application/json" "$JIRA_BASE_URL/rest/api/3/myself"
+          5) If Jira REST auth fails, stop and report exact failing step.
+          6) jira me is optional diagnostics only; do not block workflow on jira CLI config errors.
 
           Primary workflow:
           1) Use sentry-cli to list unresolved exceptions in $SENTRY_ORG / $SENTRY_PROJECT.
@@ -206,8 +202,8 @@ container:
 
           Required command conventions:
           - Use sentry-cli only for Sentry access.
-          - Prefer jira CLI for Jira reads if jira me is working.
-          - If jira CLI config/auth is unavailable, use Jira REST API via curl for reads and writes.
+          - Use Jira REST API via curl for Jira reads and writes by default.
+          - jira CLI usage is optional and never required to create/update tickets.
           - Authenticate Jira calls with Basic auth using $JIRA_EMAIL:$JIRA_API_TOKEN when using curl.
 
           Safety rules:
@@ -218,7 +214,7 @@ container:
           Helpful command patterns:
           - sentry-cli --url "$SENTRY_URL" issues list --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" --query "is:unresolved"
           - sentry-cli --url "$SENTRY_URL" issues info <ISSUE_ID>
-          - jira me
+          - jira me (optional diagnostics)
           - jira project list
           - jira issue list --plain
           - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$JIRA_BASE_URL/rest/api/3/myself"
@@ -324,6 +320,9 @@ container:
 
     - name: JIRA_AUTH_TYPE
       value: "basic"
+
+    - name: JIRA_AUTO_INIT
+      value: "0"
 
     - name: MESHAGENT_TOKEN
       token:
