@@ -106,7 +106,7 @@ container:
               worker \
                 --agent-name=meshagent_writer \
                 --queue=meshagent_writer_jobs \
-                --model=-claude-sonnet-4-6 \
+                --model=claude-sonnet-4-6 \
                 --threading-mode=auto \
                 --thread-dir=/agents/meshagent_writer/threads \
                 --room-rules=/agents/meshagent_writer/rules.txt \
