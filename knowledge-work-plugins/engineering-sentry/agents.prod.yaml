@@ -53,10 +53,6 @@ variables:
   description: Jira issue type (usually Bug)
   optional: false
 
-- name: jira_auth_type
-  description: Jira auth type for jira CLI init (basic or bearer)
-  optional: true
-
 agents:
 - name: claude-engineering-sentry
   annotations:
@@ -122,7 +118,6 @@ container:
             --shell-copy-env=JIRA_EMAIL \
             --shell-copy-env=JIRA_PROJECT_KEY \
             --shell-copy-env=JIRA_ISSUE_TYPE \
-            --shell-copy-env=JIRA_AUTH_TYPE \
             --room-rules /agents/claude-engineering-sentry/rules-chatbot.txt \
             --rules-file /rules/incident-response-skill.md \
             --rules-file /rules/ticket-triage-skill.md; \
@@ -140,7 +135,6 @@ container:
             --shell-copy-env=JIRA_EMAIL \
             --shell-copy-env=JIRA_PROJECT_KEY \
             --shell-copy-env=JIRA_ISSUE_TYPE \
-            --shell-copy-env=JIRA_AUTH_TYPE \
             --room-rules /agents/claude-engineering-sentry/rules-worker.txt \
             --rules-file /rules/incident-response-skill.md \
             --rules-file /rules/ticket-triage-skill.md"
@@ -175,7 +169,7 @@ container:
           - sentry-cli and jira CLI are installed in the shell image.
           - Required env vars are expected:
             SENTRY_URL, SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN,
-            JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN, JIRA_PROJECT_KEY, JIRA_ISSUE_TYPE, optional JIRA_AUTH_TYPE.
+            JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN, JIRA_PROJECT_KEY, JIRA_ISSUE_TYPE.
           - Do not ask humans to run jira init when env vars are present; initialize non-interactively yourself.
 
           Mandatory preflight (run at start of every scheduled execution):
@@ -321,7 +315,7 @@ container:
       value: "{{jira_issue_type}}"
 
     - name: JIRA_AUTH_TYPE
-      value: "{{jira_auth_type}}"
+      value: "basic"
 
     - name: MESHAGENT_TOKEN
       token:
