@@ -190,10 +190,17 @@ container:
           2) For each Sentry issue, collect context: title, culprit, status, first seen, last seen, event count, and top stack trace details.
           3) Classify severity (SEV1-SEV4) using incident-response criteria.
           4) Assign support priority (P1-P4) and routing rationale using ticket-triage criteria.
-          5) In Jira, search for an existing issue labeled sentry-<SENTRY_ISSUE_ID> in project $JIRA_PROJECT_KEY.
-          6) If no match exists, create one with issue type $JIRA_ISSUE_TYPE and labels: sentry, auto-triage, sentry-<SENTRY_ISSUE_ID>, sev-<SEV>, p-<P>.
-          7) If a match exists, do not create duplicates; report existing issue key and any changed severity/priority assessment.
-          8) Return a concise summary table: Sentry issue id, SEV, Priority, action (created/existing/skipped), Jira key.
+          5) Dedupe key MUST be exactly: sentry-<SENTRY_ISSUE_ID>.
+          6) Run Jira dedupe search via REST with quoted label value:
+             jql=project = $JIRA_PROJECT_KEY AND labels = "sentry-<SENTRY_ISSUE_ID>" ORDER BY created DESC
+          7) If dedupe search HTTP status is not 200, or JSON cannot be parsed, STOP and report failure.
+             Never create a Jira ticket when dedupe search is uncertain.
+          8) If dedupe search returns one or more issues, do not create duplicates; report existing key(s).
+          9) Only when dedupe count is exactly 0, create one issue with labels:
+             sentry, auto-triage, sentry-<SENTRY_ISSUE_ID>, sev-<SEV>, p-<P>.
+          10) Build Jira JSON payload with jq -n (or equivalent JSON serializer); never hand-build JSON strings.
+          11) Require create response HTTP 201 and returned key; otherwise report failure.
+          12) Return a concise summary table: Sentry issue id, SEV, Priority, action (created/existing/skipped), Jira key.
 
           Jira payload requirements:
           - Summary: "[Sentry][SEVx/Px] <issue_title>"
@@ -210,6 +217,9 @@ container:
           - Never expose tokens in output.
           - Never invent missing fields; explicitly mark unknown values.
           - If sentry-cli is unavailable, stop and report missing dependency.
+          - If Jira dedupe search fails, do not create tickets in that run.
+          - Always quote sentry label values in JQL (labels = "sentry-<id>").
+          - Never build Jira create payloads via naive string concatenation.
 
           Helpful command patterns:
           - sentry-cli --url "$SENTRY_URL" issues list --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" --query "is:unresolved"
@@ -219,6 +229,8 @@ container:
           - jira issue list --plain
           - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$JIRA_BASE_URL/rest/api/3/myself"
           - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" --get "$JIRA_BASE_URL/rest/api/3/search/jql" --data-urlencode "jql=project = $JIRA_PROJECT_KEY ORDER BY updated DESC"
+          - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" --get "$JIRA_BASE_URL/rest/api/3/search/jql" --data-urlencode "jql=project = $JIRA_PROJECT_KEY AND labels = \"sentry-<SENTRY_ISSUE_ID>\" ORDER BY created DESC" --data-urlencode "fields=key" --data-urlencode "maxResults=1"
+          - jq -n --arg project "$JIRA_PROJECT_KEY" --arg issue_type "$JIRA_ISSUE_TYPE" --arg summary "$SUMMARY" --arg sid "$SENTRY_ISSUE_ID" '{fields:{project:{key:$project},issuetype:{name:$issue_type},summary:$summary,labels:["sentry","auto-triage",("sentry-"+$sid)]}}'
           - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Content-Type: application/json" -X POST "$JIRA_BASE_URL/rest/api/3/issue"
       - path: /rules/incident-response-skill.md
         text: |
