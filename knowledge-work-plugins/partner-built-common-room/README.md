@@ -10,10 +10,16 @@ This plugin supports partner-built Common Room workflows and is designed to help
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/adaa34a4f527092f99d8e8eff0fc7f1700faa7d9/knowledge-work-plugins/partner-built-common-room/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6118e5fa065af4d4372e941d5a6b55a9dc4beb8a/knowledge-work-plugins/partner-built-common-room/agents.prod.yaml
+Dev
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/adaa34a4f527092f99d8e8eff0fc7f1700faa7d9/knowledge-work-plugins/partner-built-common-room/agents.dev.yaml
+
+Prod
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6118e5fa065af4d4372e941d5a6b55a9dc4beb8a/knowledge-work-plugins/partner-built-common-room/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/adaa34a4f527092f99d8e8eff0fc7f1700faa7d9/knowledge-work-plugins/partner-built-common-room/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6118e5fa065af4d4372e941d5a6b55a9dc4beb8a/knowledge-work-plugins/partner-built-common-room/agents.prod.yaml
+Dev
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/adaa34a4f527092f99d8e8eff0fc7f1700faa7d9/knowledge-work-plugins/partner-built-common-room/agents.dev.yaml
+
+Prod
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6118e5fa065af4d4372e941d5a6b55a9dc4beb8a/knowledge-work-plugins/partner-built-common-room/agents.prod.yaml

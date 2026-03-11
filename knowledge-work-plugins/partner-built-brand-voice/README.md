@@ -10,10 +10,16 @@ This plugin supports partner-built Brand Voice workflows and is designed to help
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cd6f072886a447d5581c84f18e3857d2e36275ca/knowledge-work-plugins/partner-built-brand-voice/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/79b08f16512a67393fc2286e65bf43b841d2c6ae/knowledge-work-plugins/partner-built-brand-voice/agents.prod.yaml
+Dev
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cd6f072886a447d5581c84f18e3857d2e36275ca/knowledge-work-plugins/partner-built-brand-voice/agents.dev.yaml
+
+Prod
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/79b08f16512a67393fc2286e65bf43b841d2c6ae/knowledge-work-plugins/partner-built-brand-voice/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cd6f072886a447d5581c84f18e3857d2e36275ca/knowledge-work-plugins/partner-built-brand-voice/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/79b08f16512a67393fc2286e65bf43b841d2c6ae/knowledge-work-plugins/partner-built-brand-voice/agents.prod.yaml
+Dev
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cd6f072886a447d5581c84f18e3857d2e36275ca/knowledge-work-plugins/partner-built-brand-voice/agents.dev.yaml
+
+Prod
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/79b08f16512a67393fc2286e65bf43b841d2c6ae/knowledge-work-plugins/partner-built-brand-voice/agents.prod.yaml

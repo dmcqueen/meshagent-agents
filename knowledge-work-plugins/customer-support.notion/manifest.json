@@ -2,13 +2,13 @@
   "id": "claude-customer-support-with-notion-connector",
   "name": "Claude Customer Support With Notion Connector",
   "description": "An agent that uses Anthropic's customer support knowledge work plugin with Notion MCP integration and a nightly docs sync worker",
-  "long_description": "This plugin supports customer support.notion workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in customer support.notion work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for customer support.notion decisions, analysis, and communication.",
+  "long_description": "This plugin supports customer support notion workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in customer support notion work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for customer support notion decisions, analysis, and communication.",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/704064fc70bee0799721478ab608a784b16070a8/knowledge-work-plugins/customer-support.notion/agents.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/704064fc70bee0799721478ab608a784b16070a8/knowledge-work-plugins/customer-support.notion/agents.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d2e57fafe2000c46081967f1adfad5e434510c58/knowledge-work-plugins/customer-support.notion/agents.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/d2e57fafe2000c46081967f1adfad5e434510c58/knowledge-work-plugins/customer-support.notion/agents.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4e6c1a23d78d224c825cfdbce9256af2a43e5935/knowledge-work-plugins/customer-support.notion/agents.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4e6c1a23d78d224c825cfdbce9256af2a43e5935/knowledge-work-plugins/customer-support.notion/agents.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/77adac66d7f75039dbe6bdb02de150bad9289394/knowledge-work-plugins/customer-support.notion/agents.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/77adac66d7f75039dbe6bdb02de150bad9289394/knowledge-work-plugins/customer-support.notion/agents.prod.yaml"
   }
 }

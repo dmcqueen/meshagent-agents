@@ -10,10 +10,16 @@ This plugin supports legal workflows and is designed to help users complete prac
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8327ccf434b38bbcd9264ab08fc9a950021622a6/knowledge-work-plugins/legal/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/40e27c4681196ffc475559e969236a761896201c/knowledge-work-plugins/legal/agents.prod.yaml
+Dev
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8327ccf434b38bbcd9264ab08fc9a950021622a6/knowledge-work-plugins/legal/agents.dev.yaml
+
+Prod
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/40e27c4681196ffc475559e969236a761896201c/knowledge-work-plugins/legal/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8327ccf434b38bbcd9264ab08fc9a950021622a6/knowledge-work-plugins/legal/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/40e27c4681196ffc475559e969236a761896201c/knowledge-work-plugins/legal/agents.prod.yaml
+Dev
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8327ccf434b38bbcd9264ab08fc9a950021622a6/knowledge-work-plugins/legal/agents.dev.yaml
+
+Prod
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/40e27c4681196ffc475559e969236a761896201c/knowledge-work-plugins/legal/agents.prod.yaml

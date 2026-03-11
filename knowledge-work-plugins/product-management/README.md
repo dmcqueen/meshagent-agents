@@ -10,10 +10,16 @@ This plugin supports product management workflows and is designed to help users 
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3eff81ba4c4378a0679a1efc736b92cc23b108a3/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1021e6b9c559d7bd10d0b5320c12c0a7872a8c42/knowledge-work-plugins/product-management/agents.prod.yaml
+Dev
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3eff81ba4c4378a0679a1efc736b92cc23b108a3/knowledge-work-plugins/product-management/agents.dev.yaml
+
+Prod
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1021e6b9c559d7bd10d0b5320c12c0a7872a8c42/knowledge-work-plugins/product-management/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3eff81ba4c4378a0679a1efc736b92cc23b108a3/knowledge-work-plugins/product-management/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1021e6b9c559d7bd10d0b5320c12c0a7872a8c42/knowledge-work-plugins/product-management/agents.prod.yaml
+Dev
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3eff81ba4c4378a0679a1efc736b92cc23b108a3/knowledge-work-plugins/product-management/agents.dev.yaml
+
+Prod
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1021e6b9c559d7bd10d0b5320c12c0a7872a8c42/knowledge-work-plugins/product-management/agents.prod.yaml

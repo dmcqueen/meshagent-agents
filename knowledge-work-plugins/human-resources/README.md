@@ -10,10 +10,16 @@ This plugin supports human resources workflows and is designed to help users com
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7dbff0473fe5dbf8413dbb8b3a1ec004c92246b5/knowledge-work-plugins/human-resources/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3749d395432fcbd7e0d94223fd2b8a4d3b4b9919/knowledge-work-plugins/human-resources/agents.prod.yaml
+Dev
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7dbff0473fe5dbf8413dbb8b3a1ec004c92246b5/knowledge-work-plugins/human-resources/agents.dev.yaml
+
+Prod
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3749d395432fcbd7e0d94223fd2b8a4d3b4b9919/knowledge-work-plugins/human-resources/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7dbff0473fe5dbf8413dbb8b3a1ec004c92246b5/knowledge-work-plugins/human-resources/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3749d395432fcbd7e0d94223fd2b8a4d3b4b9919/knowledge-work-plugins/human-resources/agents.prod.yaml
+Dev
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/7dbff0473fe5dbf8413dbb8b3a1ec004c92246b5/knowledge-work-plugins/human-resources/agents.dev.yaml
+
+Prod
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/3749d395432fcbd7e0d94223fd2b8a4d3b4b9919/knowledge-work-plugins/human-resources/agents.prod.yaml

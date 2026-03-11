@@ -6,14 +6,20 @@ An agent that uses Anthropic's customer support knowledge work plugin with Strip
 
 ## Description
 
-This plugin supports customer support.stripe workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in customer support.stripe work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for customer support.stripe decisions, analysis, and communication.
+This plugin supports customer support stripe workflows and is designed to help users complete practical work with less manual effort. It can answer domain-specific questions in customer support stripe work, turn ambiguous requests into actionable outputs, and adapt guidance to user goals, constraints, and context. Built-in guidance and reusable skills help keep outputs consistent, context-aware, and action-oriented. It works well for both quick answers and multi-step tasks that require planning, drafting, and refinement. Teams can use it as a day-to-day assistant for customer support stripe decisions, analysis, and communication.
 
 ## Install Links
 
-- Dev: https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d07ce532b5739b692420e7b5bf9a0f8d594446a/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml
-- Prod: https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ce9db7b426d9a7f381348140dd3f87d01eceb7e/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml
+Dev
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/972b0a55a85950abd5a91ef66a10d13dde4c0ec1/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml
+
+Prod
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a3038012880f2e16ca41d4039e34267f0e1edbc1/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml
 
 ## Raw SHA Links
 
-- Dev: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9d07ce532b5739b692420e7b5bf9a0f8d594446a/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml
-- Prod: https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9ce9db7b426d9a7f381348140dd3f87d01eceb7e/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml
+Dev
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/972b0a55a85950abd5a91ef66a10d13dde4c0ec1/knowledge-work-plugins/customer-support.stripe/agents.dev.yaml
+
+Prod
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/a3038012880f2e16ca41d4039e34267f0e1edbc1/knowledge-work-plugins/customer-support.stripe/agents.prod.yaml
