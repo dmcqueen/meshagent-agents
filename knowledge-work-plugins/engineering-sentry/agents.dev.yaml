@@ -109,15 +109,15 @@ container:
             --script-tool \
             --require-shell \
             --shell-image us-central1-docker.pkg.dev/meshagent-life/meshagent-public/sentry-jira-shell:latest \
-            --copy-env=SENTRY_AUTH_TOKEN \
-            --copy-env=SENTRY_ORG \
-            --copy-env=SENTRY_PROJECT \
-            --copy-env=SENTRY_URL \
-            --copy-env=JIRA_API_TOKEN \
-            --copy-env=JIRA_BASE_URL \
-            --copy-env=JIRA_EMAIL \
-            --copy-env=JIRA_PROJECT_KEY \
-            --copy-env=JIRA_ISSUE_TYPE \ 
+            --shell-copy-env=SENTRY_AUTH_TOKEN \
+            --shell-copy-env=SENTRY_ORG \
+            --shell-copy-env=SENTRY_PROJECT \
+            --shell-copy-env=SENTRY_URL \
+            --shell-copy-env=JIRA_API_TOKEN \
+            --shell-copy-env=JIRA_BASE_URL \
+            --shell-copy-env=JIRA_EMAIL \
+            --shell-copy-env=JIRA_PROJECT_KEY \
+            --shell-copy-env=JIRA_ISSUE_TYPE \
             --room-rules /agents/claude-engineering-sentry/rules-chatbot.txt \
             --rules-file /rules/incident-response-skill.md \
             --rules-file /rules/ticket-triage-skill.md; \
@@ -126,15 +126,15 @@ container:
             --queue sentry-jira.schedule \
             --require-shell \
             --shell-image us-central1-docker.pkg.dev/meshagent-life/meshagent-public/sentry-jira-shell:latest \
-            --copy-env=SENTRY_AUTH_TOKEN \
-            --copy-env=SENTRY_ORG \
-            --copy-env=SENTRY_PROJECT \
-            --copy-env=SENTRY_URL \
-            --copy-env=JIRA_API_TOKEN \
-            --copy-env=JIRA_BASE_URL \
-            --copy-env=JIRA_EMAIL \
-            --copy-env=JIRA_PROJECT_KEY \
-            --copy-env=JIRA_ISSUE_TYPE \ 
+            --shell-copy-env=SENTRY_AUTH_TOKEN \
+            --shell-copy-env=SENTRY_ORG \
+            --shell-copy-env=SENTRY_PROJECT \
+            --shell-copy-env=SENTRY_URL \
+            --shell-copy-env=JIRA_API_TOKEN \
+            --shell-copy-env=JIRA_BASE_URL \
+            --shell-copy-env=JIRA_EMAIL \
+            --shell-copy-env=JIRA_PROJECT_KEY \
+            --shell-copy-env=JIRA_ISSUE_TYPE \
             --room-rules /agents/claude-engineering-sentry/rules-worker.txt \
             --rules-file /rules/incident-response-skill.md \
             --rules-file /rules/ticket-triage-skill.md"
