@@ -154,6 +154,10 @@ container:
             JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN, optional JIRA_PROJECT_KEY.
           - If jira still reports missing config, run non-interactive init:
             jira init --installation cloud --server "$JIRA_BASE_URL" --login "$JIRA_EMAIL" --auth-type basic --project "$JIRA_PROJECT_KEY" --force
+          - If jira CLI config is still missing or jira me fails, switch to Jira REST immediately for auth + reads:
+            - auth check: curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Accept: application/json" "$JIRA_BASE_URL/rest/api/3/myself"
+            - ticket list: curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Accept: application/json" --get "$JIRA_BASE_URL/rest/api/3/search/jql" --data-urlencode "jql=project = $JIRA_PROJECT_KEY ORDER BY updated DESC"
+          - Do not loop repeatedly on jira init/jira me failures.
 
           Never ask user to paste tokens when required env vars already exist.
           Use incident-response and ticket-triage frameworks for severity and priority questions.
@@ -176,11 +180,14 @@ container:
           1) sentry-cli --version
           2) jira version
           3) Verify required env vars are non-empty (without printing secret values).
-          4) Verify Jira auth with jira me.
-          5) If jira me fails due missing config, run:
-             jira init --installation cloud --server "$JIRA_BASE_URL" --login "$JIRA_EMAIL" --auth-type basic --project "$JIRA_PROJECT_KEY" --force
-             then retry jira me once.
-          6) If preflight fails, stop and report exact failing step.
+          4) Verify Jira auth in this order:
+             - First try jira me.
+             - If jira me fails due missing config/auth, run one non-interactive init attempt:
+               jira init --installation cloud --server "$JIRA_BASE_URL" --login "$JIRA_EMAIL" --auth-type basic --project "$JIRA_PROJECT_KEY" --force
+             - Retry jira me once.
+             - If jira me still fails, verify auth with Jira REST:
+               curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Accept: application/json" "$JIRA_BASE_URL/rest/api/3/myself"
+          5) If both jira me and Jira REST auth fail, stop and report exact failing step.
 
           Primary workflow:
           1) Use sentry-cli to list unresolved exceptions in $SENTRY_ORG / $SENTRY_PROJECT.
@@ -199,8 +206,8 @@ container:
 
           Required command conventions:
           - Use sentry-cli only for Sentry access.
-          - Prefer jira CLI for Jira reads (me, project/issue lookup) after preflight.
-          - Use Jira REST API via curl for issue create/update if jira CLI commands are insufficient.
+          - Prefer jira CLI for Jira reads if jira me is working.
+          - If jira CLI config/auth is unavailable, use Jira REST API via curl for reads and writes.
           - Authenticate Jira calls with Basic auth using $JIRA_EMAIL:$JIRA_API_TOKEN when using curl.
 
           Safety rules:
@@ -214,7 +221,8 @@ container:
           - jira me
           - jira project list
           - jira issue list --plain
-          - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$JIRA_BASE_URL/rest/api/3/search?..."
+          - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$JIRA_BASE_URL/rest/api/3/myself"
+          - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" --get "$JIRA_BASE_URL/rest/api/3/search/jql" --data-urlencode "jql=project = $JIRA_PROJECT_KEY ORDER BY updated DESC"
           - curl -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Content-Type: application/json" -X POST "$JIRA_BASE_URL/rest/api/3/issue"
       - path: /rules/incident-response-skill.md
         text: |
