@@ -44,6 +44,17 @@ container:
           set -e
 
           mkdir -p /data/skills
+          mkdir -p /data/blogs
+          if [ ! -f /data/blogs/README.md ]; then
+            cat > /data/blogs/README.md <<'EOF'
+          MeshAgent writer blog output folder.
+
+          - Container path: /data/blogs
+          - Room Files path: blogs/
+
+          Files written to /data/blogs/<topic>.md are visible in Room Files at blogs/<topic>.md.
+          EOF
+          fi
           if [ -d /skills ]; then
             cp -R -n /skills/* /data/skills/ 2>/dev/null || true
           fi
@@ -55,26 +66,28 @@ container:
           done < <(find /data/skills -type f -iname 'skill.md' -print0)
 
           skill_args_str=""
-          if [ ${#skill_args[@]} -gt 0 ]; then
+          if [ -n "${skill_args[*]}" ]; then
             printf -v skill_args_str ' %q' "${skill_args[@]}"
           fi
 
-          exec /usr/bin/meshagent multi join \
+          /usr/bin/meshagent multi join \
             -c "chatbot \
                 --agent-name=meshagent_writer \
-                --model=gpt-5.3-codex \
+                --model=claude-sonnet-4-6  \
                 --threading-mode=default-new \
                 --thread-dir=/agents/meshagent_writer/threads \
-                --working-dir=/data \
+                --room-rules=/agents/meshagent_writer/rules.txt \
+                --room-rules=/agents/meshagent_writer/chatbot-rules.txt \
                 --require-toolkit=email \
                 --require-shell \
-                --require-apply-patch \
+                --shell-image=meshagent/shell-terminal:default \
+                --shell-tool-room-path=/:/data \
+                --script-tool \
                 --require-web-search \
                 --use-memory=meshagent_writer \
-                --memory-model=gpt-5.3-codex \
-                --shell-tool-room-path=/:/data:rw \
-                --shell-image=meshagent/shell-codex:default \
-                --delegate-shell-token \
+                --memory-model=claude-sonnet-4-6  \
+                --require-storage \
+                --storage-tool-room-path=/:/data \
                 ${skill_args_str} \
                 --rule='You are a MeshAgent tutorial writer. The MeshAgent SDK source is available at /src/meshagent-sdk, use it as the source of truth for APIs and CLI examples.' \
                 --rule='You help write beginner-friendly blog posts about MeshAgent, when writing blogs include CLI-first steps and save each draft to /data/blogs/<topic>.md. Mention the saved path in your reply.' \
@@ -87,23 +100,27 @@ container:
                 --queue={{email}} \
                 --email-address={{email}} \
                 --toolkit-name=email \
+                --room-rules=/agents/meshagent_writer/rules.txt \
+                --room-rules=/agents/meshagent_writer/mailbot-rules.txt \
                 --rule='You send updates about MeshAgent blogs.'; \
               worker \
                 --agent-name=meshagent_writer \
                 --queue=meshagent_writer_jobs \
-                --model=gpt-5.3-codex \
+                --model=claude-sonnet-4-6 \
                 --threading-mode=auto \
                 --thread-dir=/agents/meshagent_writer/threads \
+                --room-rules=/agents/meshagent_writer/rules.txt \
+                --room-rules=/agents/meshagent_writer/worker-rules.txt \
                 --working-dir=/data \
                 --require-toolkit=email \
                 --require-shell \
-                --require-apply-patch \
                 --require-web-search \
+                --require-storage \
                 --use-memory=meshagent_writer \
-                --memory-model=gpt-5.3-codex \
-                --shell-tool-room-path=/:/data:rw \
-                --shell-image=meshagent/shell-codex:default \
-                --delegate-shell-token \
+                --memory-model=claude-sonnet-4-6 \
+                --shell-tool-room-path=/:/data \
+                --storage-tool-room-path=/:/data \
+                --shell-image=meshagent/shell-terminal:default \
                 ${skill_args_str} \
                 --rule='You are a MeshAgent tutorial writer. The MeshAgent SDK source is available at /src/meshagent-sdk, use it as the source of truth for APIs and CLI examples.' \
                 --rule='Each job produces a beginner tutorial blog post. Choose one SDK area and one item, explain what it is, how it works, and what it can do, then show CLI-first steps including setup, schema, and usage. Add a simple agent example that uses the item. Test steps when possible and note any assumptions.' \
