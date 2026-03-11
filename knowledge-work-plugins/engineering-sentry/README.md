@@ -11,15 +11,15 @@ This plugin supports engineering sentry workflows and is designed to help users 
 ## Install Links
 
 Dev
-https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f6c203e129ca7b534d093544935b7a9d5a08d4b8/knowledge-work-plugins/engineering-sentry/agents.dev.yaml
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6a227ebd9da7cd046cd2a0e691061bc9b56ad896/knowledge-work-plugins/engineering-sentry/agents.dev.yaml
 
 Prod
-https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cdb8b976afd125abd9a9907529e14ab40abccb15/knowledge-work-plugins/engineering-sentry/agents.prod.yaml
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d22f8a733a7f5dd44bc11d132b1adf19228f7b9/knowledge-work-plugins/engineering-sentry/agents.prod.yaml
 
 ## Raw SHA Links
 
 Dev
-https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f6c203e129ca7b534d093544935b7a9d5a08d4b8/knowledge-work-plugins/engineering-sentry/agents.dev.yaml
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6a227ebd9da7cd046cd2a0e691061bc9b56ad896/knowledge-work-plugins/engineering-sentry/agents.dev.yaml
 
 Prod
-https://raw.githubusercontent.com/dmcqueen/meshagent-agents/cdb8b976afd125abd9a9907529e14ab40abccb15/knowledge-work-plugins/engineering-sentry/agents.prod.yaml
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/6d22f8a733a7f5dd44bc11d132b1adf19228f7b9/knowledge-work-plugins/engineering-sentry/agents.prod.yaml
