@@ -94,7 +94,7 @@ container:
           memory:
             list: true
             memories:
-              - name: default
+              - name: memories
                 namespace: ["agents", "claudeskills"]
                 permissions:
                   ingest: true
