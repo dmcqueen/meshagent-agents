@@ -53,7 +53,6 @@ container:
             --script-tool \
             --web-search \
             --use-memory agents/claudeskills/memories \
-            --memory-model claude-sonnet-4-6 \
             --require-storage \
             --storage-tool-room-path=/:/data \
             -rr=agents/claudeskills/rules.txt \
@@ -91,4 +90,12 @@ container:
             use_agents: true
             use_tools: true
             allowed_toolkits: null
-          memory: {} 
+          memory:
+            list: true
+            memories:
+              - name: memories
+                namespace: ["agents", "claudeskills"]
+                permissions:
+                  ingest: true
+                  recall: true
+                  query: true
