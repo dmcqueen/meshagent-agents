@@ -1,0 +1,352 @@
+version: v1
+kind: ServiceTemplate
+metadata:
+  name: claude-engineering-sentry-github
+  description: Webhook-triggered worker that processes Sentry exceptions and creates or updates GitHub issues with severity and priority triage.
+  annotations:
+    meshagent.service.id: meshagent.claude-engineering-sentry-github
+
+variables:
+- name: sentry_auth_token
+  description: Sentry auth token with read access to org/project issues
+  optional: false
+  obscure: true
+  annotations:
+    meshagent.secret.id: sentry-auth-token
+    meshagent.secret.identity: sentry
+    meshagent.secret.type: token
+
+- name: sentry_org
+  description: Sentry organization slug
+  optional: false
+
+- name: sentry_project
+  description: Sentry project slug
+  optional: false
+
+- name: sentry_host
+  description: Sentry host URL (use https://sentry.io for SaaS)
+  optional: false
+
+- name: github_token
+  description: GitHub token with repo issue read/write permissions
+  optional: false
+  obscure: true
+  annotations:
+    meshagent.secret.id: github-token
+    meshagent.secret.identity: github
+    meshagent.secret.type: token
+
+- name: github_owner
+  description: GitHub repository owner (org or user)
+  optional: false
+
+- name: github_repo
+  description: GitHub repository name
+  optional: false
+
+- name: domain
+  description: Public URL used to expose the Sentry webhook endpoint
+  type: route
+  optional: false
+  annotations:
+    meshagent.route.port: "5003"
+
+- name: sentry_webhook_secret
+  description: Shared secret configured in Sentry webhook settings
+  optional: false
+  obscure: true
+  annotations:
+    meshagent.secret.id: sentry-webhook-secret
+    meshagent.secret.identity: sentry
+    meshagent.secret.type: token
+
+agents:
+- name: claude-engineering-sentry-github
+  annotations:
+    meshagent.agent.type: ChatBot
+- name: claude-engineering-sentry-github
+  annotations:
+    meshagent.agent.type: Worker
+
+container:
+  image: meshagent/shell-codex:default
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+      - path: /data
+        read_only: false
+    files:
+      - path: /var/start.sh
+        text: |
+          #!/bin/bash
+
+          set -u -o pipefail
+
+          STARTUP_LOG="/data/meshagent-startup.log"
+
+          mkdir -p /data
+          touch "${STARTUP_LOG}"
+
+          log_startup() {
+            local message="$1"
+            echo "[startup] $(date -u +"%Y-%m-%dT%H:%M:%SZ") ${message}" >> "${STARTUP_LOG}"
+          }
+
+          run_nonfatal() {
+            local description="$1"
+            shift
+            if "$@"; then
+              log_startup "ok: ${description}"
+            else
+              local exit_code=$?
+              log_startup "failed: ${description} (exit=${exit_code})"
+            fi
+          }
+
+          mkdir -p /data/agents/claude-engineering-sentry-github
+          run_nonfatal "stage chatbot rules" cp /var/rules-claude-engineering-sentry-github-chatbot.txt /data/agents/claude-engineering-sentry-github/rules-chatbot.txt
+          run_nonfatal "stage worker rules" cp /var/rules-claude-engineering-sentry-github-worker.txt /data/agents/claude-engineering-sentry-github/rules-worker.txt
+
+          log_startup "starting meshagent multi join as pid 1"
+          exec /usr/bin/meshagent multi join -c "chatbot \
+            --agent-name claude-engineering-sentry-github \
+            --require-web-search \
+            --require-web-fetch \
+            --script-tool \
+            --require-shell \
+            --shell-image us-central1-docker.pkg.dev/meshagent-life/meshagent-public/sentry-github-shell:latest \
+            --shell-copy-env=SENTRY_AUTH_TOKEN \
+            --shell-copy-env=SENTRY_ORG \
+            --shell-copy-env=SENTRY_PROJECT \
+            --shell-copy-env=SENTRY_URL \
+            --shell-copy-env=GITHUB_TOKEN \
+            --shell-copy-env=GH_TOKEN \
+            --shell-copy-env=GITHUB_OWNER \
+            --shell-copy-env=GITHUB_REPO \
+            --room-rules /agents/claude-engineering-sentry-github/rules-chatbot.txt \
+            --rules-file /rules/incident-response-skill.md \
+            --rules-file /rules/ticket-triage-skill.md; \
+            worker \
+            --agent-name claude-engineering-sentry-github \
+            --queue sentry-github.schedule \
+            --require-shell \
+            --shell-image us-central1-docker.pkg.dev/meshagent-life/meshagent-public/sentry-github-shell:latest \
+            --shell-copy-env=SENTRY_AUTH_TOKEN \
+            --shell-copy-env=SENTRY_ORG \
+            --shell-copy-env=SENTRY_PROJECT \
+            --shell-copy-env=SENTRY_URL \
+            --shell-copy-env=GITHUB_TOKEN \
+            --shell-copy-env=GH_TOKEN \
+            --shell-copy-env=GITHUB_OWNER \
+            --shell-copy-env=GITHUB_REPO \
+            --room-rules /agents/claude-engineering-sentry-github/rules-worker.txt \
+            --rules-file /rules/incident-response-skill.md \
+            --rules-file /rules/ticket-triage-skill.md"
+      - path: /var/rules-claude-engineering-sentry-github-chatbot.txt
+        text: |
+          You are the claude-engineering-sentry-github chatbot.
+          This service includes a scheduled worker that polls unresolved Sentry issues and creates or updates GitHub issues.
+          The shell-image for this service includes BOTH sentry-cli and gh.
+          Assume these CLIs are installed and runnable unless a command proves otherwise.
+          Assume Sentry/GitHub env vars are available in shell via --shell-copy-env.
+
+          If user asks for Sentry/GitHub data, run commands directly in shell; do not ask whether the tools exist.
+
+          GitHub expectations:
+          - gh is preinstalled.
+          - Use GH_TOKEN/GITHUB_TOKEN env for auth.
+          - Use gh api for repository reads/writes by default.
+          - For dedupe, use the sentry-<SENTRY_ISSUE_ID> label.
+
+          Never ask user to paste tokens when required env vars already exist.
+          Keep responses concise and operational.
+          Never expose secrets, tokens, or authentication material.
+      - path: /var/rules-claude-engineering-sentry-github-worker.txt
+        text: |
+          You are a Sentry-to-GitHub engineering triage worker.
+
+          Apply the incident-response and ticket-triage skill guidance on every run.
+
+          Tooling contract:
+          - sentry-cli and gh are installed in the shell image.
+          - Required env vars are expected:
+            SENTRY_URL, SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN,
+            GITHUB_TOKEN or GH_TOKEN, GITHUB_OWNER, GITHUB_REPO.
+          - This worker is webhook-driven. Process the webhook payload first.
+            If webhook payload includes a specific Sentry issue id, process only that issue.
+            If payload is missing issue details, fall back to querying unresolved Sentry issues.
+
+          Mandatory preflight (run at start of every scheduled execution):
+          1) sentry-cli --version
+          2) gh --version
+          3) Verify required env vars are non-empty (without printing secret values).
+          4) Verify GitHub auth:
+             gh api user -q '.login'
+          5) Verify repository access:
+             gh api "repos/$GITHUB_OWNER/$GITHUB_REPO" -q '.full_name'
+          6) If preflight fails, stop and report exact failing step.
+
+          Primary workflow:
+          1) Use sentry-cli to list unresolved exceptions in $SENTRY_ORG / $SENTRY_PROJECT.
+          2) For each Sentry issue, collect context: title, culprit, status, first seen, last seen, event count, and top stack trace details.
+          3) Classify severity (SEV1-SEV4) using incident-response criteria.
+          4) Assign support priority (P1-P4) and routing rationale using ticket-triage criteria.
+          5) Dedupe key MUST be exactly: sentry-<SENTRY_ISSUE_ID>.
+          6) Run GitHub dedupe search via REST:
+             gh api "repos/$GITHUB_OWNER/$GITHUB_REPO/issues?state=all&labels=sentry-<SENTRY_ISSUE_ID>&per_page=1"
+          7) If dedupe search fails or JSON cannot be parsed, STOP and report failure.
+             Never create a GitHub issue when dedupe search is uncertain.
+          8) If dedupe search returns one or more issues, do not create duplicates; report existing issue number(s).
+          9) Only when dedupe count is exactly 0, create one issue with labels:
+             sentry, auto-triage, sentry-<SENTRY_ISSUE_ID>, sev-<SEV>, p-<P>.
+          10) Build GitHub JSON payload with jq -n (or equivalent JSON serializer); never hand-build JSON strings.
+          11) Require create response HTTP 201 and returned issue number; otherwise report failure.
+          12) Return a concise summary table: Sentry issue id, SEV, Priority, action (created/existing/skipped), GitHub issue.
+
+          GitHub payload requirements:
+          - Title: "[Sentry][SEVx/Px] <issue_title>"
+          - Body sections: Impact, Evidence, Reproduction Hints, Severity Assessment, Priority/Routing, Sentry Link.
+          - Include direct Sentry issue URL.
+
+          Required command conventions:
+          - Use sentry-cli only for Sentry access.
+          - Use gh api for GitHub reads and writes by default.
+          - Never use interactive gh auth/login flows; rely on token env vars.
+
+          Safety rules:
+          - Never expose tokens in output.
+          - Never invent missing fields; explicitly mark unknown values.
+          - If sentry-cli is unavailable, stop and report missing dependency.
+          - If GitHub dedupe search fails, do not create tickets in that run.
+
+          Helpful command patterns:
+          - sentry-cli --url "$SENTRY_URL" issues list --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" --query "is:unresolved"
+          - sentry-cli --url "$SENTRY_URL" issues info <ISSUE_ID>
+          - gh api user -q '.login'
+          - gh api "repos/$GITHUB_OWNER/$GITHUB_REPO" -q '.full_name'
+          - gh api "repos/$GITHUB_OWNER/$GITHUB_REPO/issues?state=all&labels=sentry-<SENTRY_ISSUE_ID>&per_page=1"
+          - jq -n --arg title "$TITLE" --arg body "$BODY" --arg sid "$SENTRY_ISSUE_ID" '{title:$title, body:$body, labels:["sentry","auto-triage",("sentry-"+$sid)]}'
+          - gh api -X POST "repos/$GITHUB_OWNER/$GITHUB_REPO/issues" --input -
+      - path: /rules/incident-response-skill.md
+        text: |
+          ---
+          name: incident-response
+          description: Triage and manage production incidents. Trigger when production failures, outages, high-impact errors, or SEV classifications are needed.
+          ---
+
+          # Incident Response
+
+          Guide incident response from detection through mitigation and resolution.
+
+          ## Severity Classification
+
+          | Level | Criteria | Response Time |
+          |-------|----------|---------------|
+          | SEV1 | Service down, all users affected, data/security at risk | Immediate |
+          | SEV2 | Major feature degraded, many users affected | Within 15 min |
+          | SEV3 | Minor feature issue, some users affected | Within 1 hour |
+          | SEV4 | Low-impact issue | Next business day |
+
+          ## Response Framework
+
+          1. Triage scope and impact
+          2. Communicate factual status
+          3. Mitigate first, root cause second
+          4. Resolve and verify
+          5. Capture postmortem actions
+      - path: /rules/ticket-triage-skill.md
+        text: |
+          ---
+          name: ticket-triage
+          description: Triage incoming issues by category, priority (P1-P4), and routing recommendation.
+          ---
+
+          # Ticket Triage
+
+          Rapidly categorize and prioritize issues so they route correctly.
+
+          ## Category Taxonomy
+
+          - Bug
+          - Performance
+          - Security
+          - Data
+          - Integration
+          - Account
+          - Billing
+          - How-to
+          - Feature request
+
+          ## Priority Framework
+
+          - P1: Critical outage, data/security risk, broad impact
+          - P2: Major feature broken, no workaround
+          - P3: Partial breakage, workaround exists
+          - P4: Minor issue, question, or enhancement
+
+          ## Routing Rules
+
+          - Engineering: confirmed bugs, infra issues, performance degradation
+          - Security: data exposure, unauthorized access, vulnerability indicators
+          - Support: how-to or known issues with clear workaround
+
+          ## Duplicate Handling
+
+          Before creating a new issue, search for existing records by unique correlation key (for this workflow: sentry-<SENTRY_ISSUE_ID> label). Reuse existing issues instead of creating duplicates.
+  environment:
+    - name: SENTRY_AUTH_TOKEN
+      secret:
+        identity: sentry
+        id: sentry-auth-token
+
+    - name: SENTRY_ORG
+      value: "{{sentry_org}}"
+
+    - name: SENTRY_PROJECT
+      value: "{{sentry_project}}"
+
+    - name: SENTRY_URL
+      value: "{{sentry_host}}"
+
+    - name: GITHUB_TOKEN
+      secret:
+        identity: github
+        id: github-token
+
+    - name: GH_TOKEN
+      secret:
+        identity: github
+        id: github-token
+
+    - name: GITHUB_OWNER
+      value: "{{github_owner}}"
+
+    - name: GITHUB_REPO
+      value: "{{github_repo}}"
+
+    - name: MESHAGENT_TOKEN
+      token:
+        identity: claude-engineering-sentry-github
+        api:
+          queues: {}
+          secrets: {}
+          containers: {}
+          sync: {}
+          agents: {}
+          storage: {}
+          database: {}
+          developer: {}
+          messaging: {}
+
+ports:
+- num: 5003
+  public: false
+  published: true
+  endpoints:
+  - path: /sentry
+    annotations:
+      meshagent.request.processor: sentry
+      meshagent.request.queue: sentry-github.schedule
+      meshagent.request.validation.method: sentry
+      meshagent.request.validation.secret: sentry-webhook-secret
