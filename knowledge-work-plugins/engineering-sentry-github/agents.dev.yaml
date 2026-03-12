@@ -350,3 +350,7 @@ ports:
       meshagent.request.queue: sentry-github.schedule
       meshagent.request.validation.method: sentry
       meshagent.request.validation.secret: sentry-webhook-secret
+  - path: /sentry-debug
+    annotations:
+      meshagent.request.processor: sentry
+      meshagent.request.queue: sentry-github.schedule
