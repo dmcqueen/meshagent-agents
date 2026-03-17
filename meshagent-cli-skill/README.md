@@ -11,3 +11,7 @@ https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqu
 
 Prod
 https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4e360993aafa961349fdadc1051072493600ed8e/meshagent-cli-skill/agent.yaml
+
+## Raw SHA Link
+
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4e360993aafa961349fdadc1051072493600ed8e/meshagent-cli-skill/agent.yaml
