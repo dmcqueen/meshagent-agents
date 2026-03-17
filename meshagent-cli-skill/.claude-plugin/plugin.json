@@ -1,0 +1,8 @@
+{
+  "name": "meshagent-cli-skill",
+  "version": "0.1.0",
+  "description": "Basic MeshAgent CLI skill and command pack for operating projects, rooms, services, and agents from a MeshAgent agent.",
+  "author": {
+    "name": "Codex"
+  }
+}
