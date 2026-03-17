@@ -4,11 +4,11 @@
   "description": "A MeshAgent room agent for operating the MeshAgent CLI end to end. It loads the meshagent-cli-operator skill as its primary workflow and can inspect, create, update, deploy, and troubleshoot MeshAgent projects, rooms, services, and agent runtimes.",
   "long_description": "",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ff3801339081ce9e37c9a4d5152e3bd91a6268f/meshagent-cli-skill/meshagent.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ff3801339081ce9e37c9a4d5152e3bd91a6268f/meshagent-cli-skill/meshagent.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b99de8dab41abd0c904c4c93b87f507268450ae4/meshagent-cli-skill/meshagent.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b99de8dab41abd0c904c4c93b87f507268450ae4/meshagent-cli-skill/meshagent.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ff3801339081ce9e37c9a4d5152e3bd91a6268f/meshagent-cli-skill/meshagent.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/0ff3801339081ce9e37c9a4d5152e3bd91a6268f/meshagent-cli-skill/meshagent.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b99de8dab41abd0c904c4c93b87f507268450ae4/meshagent-cli-skill/meshagent.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b99de8dab41abd0c904c4c93b87f507268450ae4/meshagent-cli-skill/meshagent.yaml"
   }
 }
