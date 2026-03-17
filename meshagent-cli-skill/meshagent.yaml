@@ -47,9 +47,10 @@ container:
             cp /var/rules.txt /data/agents/meshagent-cli-skill/rules.txt
           fi
 
-          exec /usr/bin/meshagent chatbot join \
+          exec /usr/bin/meshagent process join \
             --room="${MESHAGENT_ROOM}" \
             --agent-name=meshagent-cli-skill \
+            --channel chat \
             --threading-mode=default-new \
             --thread-dir=/data/agents/meshagent-cli-skill/threads \
             --room-rules=/data/agents/meshagent-cli-skill/rules.txt \
