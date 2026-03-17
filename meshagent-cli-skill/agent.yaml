@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: meshagent-cli-skill
-  description: "A process-backed MeshAgent room agent that carries the meshagent-cli-operator skill."
+  description: "A MeshAgent room agent for operating the MeshAgent CLI end to end. It loads the meshagent-cli-operator skill as its primary workflow and can inspect, create, update, deploy, and troubleshoot MeshAgent projects, rooms, services, and agent runtimes."
   annotations:
     meshagent.service.id: "meshagent.meshagent-cli-skill"
 
