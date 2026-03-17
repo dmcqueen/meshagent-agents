@@ -1,6 +1,14 @@
 version: v1
 kind: ServiceTemplate
-variables: []
+variables:
+  - name: meshagent_api_key
+    description: MeshAgent API key for project-level CLI operations such as creating rooms and deploying services.
+    optional: false
+    obscure: true
+    annotations:
+      meshagent.secret.id: meshagent-api-key
+      meshagent.secret.identity: meshagent
+      meshagent.secret.type: token
 
 metadata:
   name: meshagent-cli-skill
@@ -62,10 +70,12 @@ container:
             --require-storage \
             --shell-tool-room-path=/:/data \
             --storage-tool-room-path=/:/data \
+            --shell-copy-env=MESHAGENT_API_KEY \
             --shell-image=meshagent/shell-codex:default \
             --delegate-shell-token \
             --skill-dir /data/meshagent-cli-skill/skills/meshagent-cli-operator \
             --rule='Use the meshagent-cli-operator skill whenever the user is asking to inspect, create, update, deploy, or troubleshoot something with the MeshAgent CLI.' \
+            --rule='Do not use meshagent auth whoami as the sole authentication check in this runtime. Prefer checking whether MESHAGENT_API_KEY or MESHAGENT_TOKEN is present and then test the actual target command.' \
             --rule='The root of the filesystem that the user sees (the Room files) has been mounted in the /data folder. If the user is currently viewing a file, the file path is relative to /data. To write a file the user can see, you must write it inside /data and tell them the path relative to /data, not including the data folder.' \
             --rule='Prefer /usr/bin/meshagent when executing MeshAgent CLI commands inside this container.'
 
@@ -73,6 +83,8 @@ container:
         text: |
           You are a MeshAgent room agent running in meshagent/shell-codex:default.
           Use the meshagent-cli-operator skill for MeshAgent CLI work.
+          Do not treat `meshagent auth whoami` as the source of truth for CLI capability in this runtime.
+          Prefer `MESHAGENT_API_KEY` for project-level operations and `MESHAGENT_TOKEN` for room-scoped operations.
           Prefer /usr/bin/meshagent when running MeshAgent CLI commands.
           The Room files are mounted in /data. If you write a file for the user, write it under /data and report the path relative to /data.
 
@@ -279,6 +291,8 @@ container:
           
           - The MeshAgent CLI is expected at `/usr/bin/meshagent`.
           - `meshagent` on `PATH` is an acceptable fallback.
+          - `MESHAGENT_API_KEY` may be present for project-level, non-interactive CLI operations.
+          - `MESHAGENT_TOKEN` may be present for room-scoped MeshAgent access and delegated shell execution.
           - The user-visible room filesystem is mounted at `/data`.
           - To create or modify files the user should see, write them under `/data` and report paths relative to `/data`.
           - Do not assume a repo-local virtualenv or checkout exists inside the container.
@@ -320,6 +334,10 @@ container:
           - Prefer the smallest command path that can complete the task.
           - Use `--help` on the exact subcommand before composing long invocations.
           - When executing commands in this runtime, prefer `/usr/bin/meshagent ...` so command examples match the container image.
+          - Do not use `meshagent auth whoami` as the sole test for whether the CLI can act. That command checks interactive login state and can report `Not logged in` even when `MESHAGENT_API_KEY` or `MESHAGENT_TOKEN` is available.
+          - For project-level operations such as creating rooms, listing projects, or deploying services, prefer `MESHAGENT_API_KEY` when it is present.
+          - For room-scoped operations, `MESHAGENT_TOKEN` may be sufficient even when there is no interactive login session.
+          - When authorization is uncertain, test the actual target read command and inspect the resulting error before concluding that authentication is missing.
           - Treat `/data` as the writable user-visible workspace. If a command writes files for the user, keep them under `/data`.
           - Do not expose secret values unless the user explicitly asks for them.
           - Treat delete and overwrite operations as destructive. Confirm the target and blast radius before executing them.
@@ -457,6 +475,10 @@ container:
           echo "Wrote ${OUTPUT_PATH}"
 
   environment:
+    - name: MESHAGENT_API_KEY
+      secret:
+        identity: meshagent
+        id: meshagent-api-key
     - name: MESHAGENT_TOKEN
       token:
         identity: meshagent-cli-skill
