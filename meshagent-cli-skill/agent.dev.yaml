@@ -55,7 +55,8 @@ container:
             --storage-tool-room-path=/:/data \
             --shell-image=meshagent/shell-codex:default \
             --delegate-shell-token \
-            --skill-dir /data/skills/meshagent-cli-skill/skills/meshagent-cli-operator
+            --skill-dir /data/skills/meshagent-cli-skill/skills/meshagent-cli-operator \
+            --rule='Use the meshagent-cli-operator skill for MeshAgent CLI tasks.'
 
       - path: /meshagent-cli-skill/.claude-plugin/plugin.json
         text: |
@@ -311,7 +312,10 @@ container:
           - This skill is primarily for room-scoped work in the current room. Prefer `meshagent room ...`, room service commands, service deployment into the current room, room storage access, and runtime commands that operate within the current room.
           - If a command accepts `--room`, it must target `MESHAGENT_ROOM` only. Omit `--room` when the command already defaults to the current room, or set it explicitly to `MESHAGENT_ROOM`. Do not use a different room value.
           - For website, route, and public hostname work, default to `*.meshagent.dev` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+          - When the user asks to make, update, or deploy a site in room context, create or deploy the site in the current room and return the resulting public URL. Do not stop at local file edits or local build success when the requested outcome is a live room site.
           - For contact forms, mail-driven sites, or other room workflows that must actually deliver email, `meshagent mailbox ...` is a normal allowed path. You may provision the mailbox or provider setup needed for the current room workflow, wire the site or service to it, and verify that delivery works before declaring success.
+          - Do not satisfy "send an email" requirements with `mailto:` unless the user explicitly asks for a client-side-only form or explicitly accepts client-local email composition instead of backend delivery.
+          - Do not modify unrelated example apps, sample repos, bundled SDK examples, or maintainer reference projects to satisfy a room deployment request. For room-site work, create or update the assets and services that belong to the current room workflow.
           - When authorization is uncertain, test the actual target read command for the current room before concluding that authentication is missing.
           - Treat `/data` as the writable user-visible workspace. If a command writes files for the user, keep them under `/data`.
           - Do not expose secret values unless the user explicitly asks for them.
@@ -463,6 +467,8 @@ container:
           - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
           - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
           - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
+          - For room-site requests, deploy in the current room and return the public URL. Do not treat local example-app edits or local build output as completion of a room deployment request.
+          - For email-delivery requirements in room sites, use mailbox/provider-backed delivery. Do not substitute `mailto:` unless the user explicitly asks for a client-side-only form.
           - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
           
           ## Notes
