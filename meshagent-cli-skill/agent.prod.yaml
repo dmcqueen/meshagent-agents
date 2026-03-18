@@ -45,7 +45,6 @@ container:
             --room="${MESHAGENT_ROOM}" \
             --agent-name=meshagent-cli-skill \
             --channel chat \
-            --room-rules=/var/rules.txt \
             --working-dir=/data \
             --require-shell \
             --require-apply-patch \
@@ -57,15 +56,6 @@ container:
             --shell-image=meshagent/shell-codex:default \
             --delegate-shell-token \
             --skill-dir /data/skills/meshagent-cli-skill/skills/meshagent-cli-operator
-
-      - path: /var/rules.txt
-        text: |
-          You are a MeshAgent room agent running in meshagent/shell-codex:default.
-          Use the meshagent-cli-operator skill for MeshAgent CLI work.
-          The current room is the value of `MESHAGENT_ROOM`.
-          The Room files are mounted at `/data`. If you write a file for the user, write it under `/data` and report the path relative to `/data`.
-          For website, route, and public service hostname work in this environment, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
-          Prefer `/usr/bin/meshagent` when running MeshAgent CLI commands in this container.
 
       - path: /meshagent-cli-skill/.claude-plugin/plugin.json
         text: |
