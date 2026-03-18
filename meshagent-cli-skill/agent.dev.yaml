@@ -321,6 +321,11 @@ container:
             4. Provision or deploy a room-local MailBot with SMTP/provider configuration if available.
             5. Expose the MailBot toolkit and send the message through `new_email_thread` with the exact requested external recipient in `to`.
             6. Return the live public URL only after the site is deployed and the outbound email path has been verified.
+          - For this simple website-form case, prefer the smallest working room-local design:
+            - one site/backend in the current room
+            - one room-local MailBot with `toolkit_name`
+            - no scheduled workers, shard workers, gather workers, or broader multi-agent system unless the user explicitly asks for that architecture
+          - Do not escalate a simple contact-form request into a larger reporting, subscription, mailbox-management, or scheduled-email system unless the user explicitly asks for those features.
           - Do not invent custom MailBot integration layers, placeholder HTTP services, or synthetic environment variables such as `MAILBOT_URL` or `MAILBOT_TOKEN` unless the user explicitly asks for that architecture and those values actually exist in the runtime. Prefer the MeshAgent-native MailBot deployment plus toolkit path.
           - Do not satisfy "send an email" requirements with `mailto:` unless the user explicitly asks for a client-side-only form or explicitly accepts client-local email composition instead of backend delivery.
           - Do not modify unrelated example apps, sample repos, bundled SDK examples, or maintainer reference projects to satisfy a room deployment request. For room-site work, create or update the assets and services that belong to the current room workflow.
@@ -343,31 +348,34 @@ container:
           5. Prefer the MailBot `new_email_thread` tool for outbound email creation. Set `to` to the exact requested destination address.
           6. Do not implement this with `mailto:` and do not route it through a queue alias unless the queue item is guaranteed to be addressed in the exact way the MailBot expects.
           7. Do not invent a custom MailBot URL/token API bridge. Use the actual deployed room-local MailBot and its MeshAgent-native toolkit integration.
-          8. Verify the result end to end:
+          8. Keep the architecture minimal for this use case:
+             - do not add scheduled tasks, background workers, subscriber databases, or newsletter/reporting flows
+             - do not deploy extra agents beyond what is needed for the site/backend and room-local MailBot
+          9. Verify the result end to end:
              - the site is reachable at a public URL
              - the backend accepts a valid submission
              - the strongest assessable outbound-mail evidence is present
              - the exact remaining blocker is identified when the mail path cannot be verified further
              - the room retains enough evidence to answer later whether a specific submission was accepted and whether the outbound mail send was attempted successfully
-          9. If SMTP/provider credentials are missing, stop and report the exact missing configuration instead of claiming the site is fully working.
-          10. Do not describe the site as complete or done if the requested outbound delivery path is not actually operational.
-          11. Use the MeshAgent mail codepath as the source of truth for what is assessable:
+          10. If SMTP/provider credentials are missing, stop and report the exact missing configuration instead of claiming the site is fully working.
+          11. Do not describe the site as complete or done if the requested outbound delivery path is not actually operational.
+          12. Use the MeshAgent mail codepath as the source of truth for what is assessable:
              - `MailBot` and `MailChannel` save outbound mail into `.emails/.../message.eml` and `.emails/.../message.json`, and insert rows into the `emails` table, before SMTP send is attempted.
              - then they call `aiosmtplib.send(...)`.
              - therefore:
                - a `.emails/` artifact alone means the outbound message was constructed and persisted
                - MeshAgent's persisted state alone does not prove that `aiosmtplib.send(...)` returned successfully
-          12. If the room already has an email/submission database, use it to record submission ID, validation result, MailBot send attempt, and final status. If not, add minimal durable per-submission and per-send evidence before claiming the workflow is complete.
-          13. For backend workflows that trigger MailBot sends, add durable per-submission evidence that records:
+          13. If the room already has an email/submission database, use it to record submission ID, validation result, MailBot send attempt, and final status. If not, add minimal durable per-submission and per-send evidence before claiming the workflow is complete.
+          14. For backend workflows that trigger MailBot sends, add durable per-submission evidence that records:
              - submission ID
              - validation result
              - whether the MailBot/tool call returned success or raised an exception
              - the matching outbound `.emails/...` path or `emails` table row when available
-          14. If you did not explicitly record whether the MailBot/tool call returned success or raised an exception, only claim what is still assessable later:
+          15. If you did not explicitly record whether the MailBot/tool call returned success or raised an exception, only claim what is still assessable later:
              - the submission was accepted
              - outbound mail was constructed and persisted
              - send success is unverified
-          15. If there is no matching outbound `.emails/...` path or `emails` table row for a submission, do not claim that MeshAgent made any outbound email attempt for that submission.
+          16. If there is no matching outbound `.emails/...` path or `emails` table row for a submission, do not claim that MeshAgent made any outbound email attempt for that submission.
           
           ## Out Of Scope
           
@@ -517,6 +525,7 @@ container:
           - For room-site requests, deploy in the current room and return the public URL. Do not treat local example-app edits or local build output as completion of a room deployment request.
           - For email-delivery requirements in room sites, prefer MailBot `new_email_thread` with provider-backed delivery. Do not substitute `mailto:` unless the user explicitly asks for a client-side-only form.
           - For simple contact-form sites, do not default to mailbox/queue alias routing when direct outbound MailBot delivery would satisfy the request more reliably.
+          - For a simple website form that sends one email to one destination, keep the design minimal: room-local site/backend plus room-local MailBot. Do not default to scheduled workers, reporting systems, subscriber-management flows, or broader multi-agent orchestration unless the user explicitly asks for that architecture.
           - Do not invent custom MailBot URL/token bridges or placeholder env vars for room email delivery when the MeshAgent-native MailBot toolkit path is available.
           - For external email workflows, do not treat a form 200 response, queue acceptance, MailBot request acceptance, or a `.emails/` artifact alone as completion. Prefer implementations that leave durable evidence of submission receipt and what outbound-mail state is actually assessable later.
           - If the room already has an email/submission database, prefer using that room database for durable evidence and status tracking.
