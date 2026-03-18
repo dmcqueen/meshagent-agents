@@ -1,0 +1,539 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: meshagent-cli-skill
+  description: "A MeshAgent room agent for operating the MeshAgent CLI end to end. It loads the meshagent-cli-operator skill as its primary workflow and can inspect, create, update, deploy, and troubleshoot MeshAgent projects, rooms, services, and agent runtimes."
+  annotations:
+    meshagent.service.id: "meshagent.meshagent-cli-skill"
+
+agents:
+  - name: meshagent-cli-skill
+    description: "A chat agent specialized in operating the MeshAgent CLI."
+    annotations:
+      meshagent.agent.type: "ChatBot"
+      meshagent.chatbot.threading: "default-new"
+
+container:
+  image: meshagent/shell-codex:default
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+      - path: /data
+        read_only: false
+    files:
+      - path: /var/start.sh
+        text: |
+          #!/bin/bash
+          set -euo pipefail
+
+          mkdir -p /data/meshagent-cli-skill
+          mkdir -p /data/agents/meshagent-cli-skill
+
+          if [ -d /meshagent-cli-skill ]; then
+            cp -R -n /meshagent-cli-skill/* /data/meshagent-cli-skill/ 2>/dev/null || true
+          fi
+
+          if [ -d /meshagent-cli-skill/.claude-plugin ]; then
+            mkdir -p /data/meshagent-cli-skill/.claude-plugin
+            cp -R -n /meshagent-cli-skill/.claude-plugin/* /data/meshagent-cli-skill/.claude-plugin/ 2>/dev/null || true
+          fi
+
+          chmod +x /data/meshagent-cli-skill/skills/meshagent-cli-operator/scripts/refresh_cli_reference.sh 2>/dev/null || true
+          /data/meshagent-cli-skill/skills/meshagent-cli-operator/scripts/refresh_cli_reference.sh || true
+
+          if [ ! -f /data/agents/meshagent-cli-skill/rules.txt ]; then
+            cp /var/rules.txt /data/agents/meshagent-cli-skill/rules.txt
+          fi
+
+          exec /usr/bin/meshagent process join \
+            --room="${MESHAGENT_ROOM}" \
+            --agent-name=meshagent-cli-skill \
+            --channel chat \
+            --threading-mode=default-new \
+            --thread-dir=/data/agents/meshagent-cli-skill/threads \
+            --room-rules=/data/agents/meshagent-cli-skill/rules.txt \
+            --working-dir=/data \
+            --require-shell \
+            --require-apply-patch \
+            --require-web-search \
+            --require-web-fetch \
+            --require-storage \
+            --shell-tool-room-path=/:/data \
+            --storage-tool-room-path=/:/data \
+            --shell-image=meshagent/shell-codex:default \
+            --delegate-shell-token \
+            --skill-dir /data/meshagent-cli-skill/skills/meshagent-cli-operator \
+            --rule='Use the meshagent-cli-operator skill whenever the user is asking to inspect, create, update, deploy, or troubleshoot something with the MeshAgent CLI.' \
+            --rule='This agent is primarily for current-room MeshAgent CLI work. The current room is the value of MESHAGENT_ROOM. Do not use meshagent auth commands, meshagent setup, meshagent api-key commands, project creation, interactive project activation, token generation, or project secrets commands. If a command accepts --room, do not target any room other than MESHAGENT_ROOM.' \
+            --rule='For website, route, and public service hostname work in this environment, default to *.meshagent.app hostnames. Do not default to a different MeshAgent public domain unless the user explicitly asks for one.' \
+            --rule='The root of the filesystem that the user sees (the Room files) has been mounted in the /data folder. If the user is currently viewing a file, the file path is relative to /data. To write a file the user can see, you must write it inside /data and tell them the path relative to /data, not including the data folder.' \
+            --rule='Prefer /usr/bin/meshagent when executing MeshAgent CLI commands inside this container.'
+
+      - path: /var/rules.txt
+        text: |
+          You are a MeshAgent room agent running in meshagent/shell-codex:default.
+          Use the meshagent-cli-operator skill for MeshAgent CLI work.
+          This agent is primarily for room-scoped CLI work and relies on the delegated room token.
+          The current room is the value of `MESHAGENT_ROOM`.
+          Do not use `meshagent auth ...`, `meshagent setup`, `meshagent api-key ...`, `meshagent project create`, `meshagent project activate -i`, `meshagent token generate`, or project secret commands.
+          If a command accepts `--room`, do not target a room other than `MESHAGENT_ROOM`.
+          For website, route, and public service hostname work in this environment, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+          Prefer /usr/bin/meshagent when running MeshAgent CLI commands.
+          The Room files are mounted in /data. If you write a file for the user, write it under /data and report the path relative to /data.
+
+      - path: /meshagent-cli-skill/.claude-plugin/plugin.json
+        text: |
+          {
+            "name": "meshagent-cli-skill",
+            "version": "0.1.0",
+            "description": "Basic MeshAgent CLI skill and command pack for operating projects, rooms, services, and agents from a MeshAgent agent.",
+            "author": {
+              "name": "Codex"
+            }
+          }
+
+      - path: /meshagent-cli-skill/commands/meshagent-agent.md
+        text: |
+          ---
+          description: Join, run, or deploy MeshAgent agent runtimes including chatbot, worker, task-runner, mailbot, voicebot, process, codex, multi, and meeting-transcriber.
+          argument-hint: "<agent runtime task>"
+          ---
+          
+          # /meshagent-agent
+          
+          Use this command for agent runtime orchestration.
+          
+          ## Primary command groups
+          
+          - `meshagent chatbot ...`
+          - `meshagent worker ...`
+          - `meshagent task-runner ...`
+          - `meshagent mailbot ...`
+          - `meshagent voicebot ...`
+          - `meshagent process ...`
+          - `meshagent codex ...`
+          - `meshagent multi ...`
+          - `meshagent meeting-transcriber ...`
+          
+          ## Operating rules
+          
+          1. Identify the target room and runtime type first.
+          2. Use `--help` on the exact runtime command before composing long join or deploy invocations.
+          3. Reuse existing flags, rules files, skill dirs, and environment wiring when modifying an existing agent command.
+
+      - path: /meshagent-cli-skill/commands/meshagent-inspect.md
+        text: |
+          ---
+          description: Inspect MeshAgent state, sessions, calls, tokens, versions, and other diagnostics without changing resources.
+          argument-hint: "<inspection or troubleshooting task>"
+          ---
+          
+          # /meshagent-inspect
+          
+          Use this command for non-destructive MeshAgent inspection and troubleshooting.
+          
+          ## Primary command groups
+          
+          - `meshagent version`
+          - `meshagent auth whoami`
+          - `meshagent session ...`
+          - `meshagent token ...`
+          - `meshagent call ...`
+          - `meshagent rooms ...`
+          - `meshagent room ...`
+          - `meshagent service show`
+          - `meshagent service list`
+          - `meshagent port ...`
+          
+          ## Operating rules
+          
+          1. Prefer read-only commands first.
+          2. If the request escalates from inspection to mutation, switch to the more specific command file or keep following the skill.
+          3. Include the exact command path you used in the final summary.
+
+      - path: /meshagent-cli-skill/commands/meshagent-project.md
+        text: |
+          ---
+          description: Project-scoped MeshAgent administration for auth, projects, api keys, secrets, webhooks, routes, mailboxes, and scheduled tasks.
+          argument-hint: "<project admin task>"
+          ---
+          
+          # /meshagent-project
+          
+          Use this command when the request is primarily about project-level administration.
+          
+          ## Primary command groups
+          
+          - `meshagent setup`
+          - `meshagent auth ...`
+          - `meshagent project ...`
+          - `meshagent api-key ...`
+          - `meshagent secret ...`
+          - `meshagent webhook ...`
+          - `meshagent mailbox ...`
+          - `meshagent route ...`
+          - `meshagent scheduled-task ...`
+          
+          ## Operating rules
+          
+          1. Confirm the active project before making changes.
+          2. Never print secret values unless the user explicitly asks for them and the command returns them.
+          3. For create or update operations, restate the exact target resource first.
+          4. Verify changes with a read command immediately afterward.
+
+      - path: /meshagent-cli-skill/commands/meshagent-room.md
+        text: |
+          ---
+          description: Room lifecycle and room API operations in MeshAgent, including agents, storage, messaging, containers, services, database, memory, and sync.
+          argument-hint: "<room task>"
+          ---
+          
+          # /meshagent-room
+          
+          Use this command when the request targets a room or something running inside a room.
+          
+          ## Primary command groups
+          
+          - `meshagent rooms ...`
+          - `meshagent room agent ...`
+          - `meshagent room secret ...`
+          - `meshagent room queue ...`
+          - `meshagent room messaging ...`
+          - `meshagent room storage ...`
+          - `meshagent room service ...`
+          - `meshagent room developer ...`
+          - `meshagent room database ...`
+          - `meshagent room memory ...`
+          - `meshagent room container ...`
+          - `meshagent room sync ...`
+          - `meshagent port ...`
+          
+          ## Operating rules
+          
+          1. Resolve the room name first.
+          2. Inspect current room state before changing it.
+          3. Use the room-scoped command instead of the project-scoped equivalent when the request is clearly about a single room.
+
+      - path: /meshagent-cli-skill/commands/meshagent-service.md
+        text: |
+          ---
+          description: Service and deployment workflows in MeshAgent, including service specs, templates, MCP bridges, helper services, and webservers.
+          argument-hint: "<service or deployment task>"
+          ---
+          
+          # /meshagent-service
+          
+          Use this command for MeshAgent service lifecycle and service-adjacent runtime operations.
+          
+          ## Primary command groups
+          
+          - `meshagent service ...`
+          - `meshagent mcp ...`
+          - `meshagent helper ...`
+          - `meshagent webserver ...`
+          - `meshagent codex ...`
+          
+          ## Operating rules
+          
+          1. Inspect or validate specs before create or update when possible.
+          2. Prefer `validate`, `render-template`, `show`, or `list` before destructive or state-changing commands.
+          3. After deploy or update, verify the resulting service state and surface any follow-up steps.
+
+      - path: /meshagent-cli-skill/commands/meshagent.md
+        text: |
+          ---
+          description: General MeshAgent CLI operator. Route a request to the right meshagent subcommand and execute it safely.
+          argument-hint: "<goal, room, service, project, or meshagent command>"
+          ---
+          
+          # /meshagent
+          
+          Use this command for any request that involves the MeshAgent CLI.
+          
+          ## Workflow
+          
+          1. Read [SKILL.md](../skills/meshagent-cli-operator/SKILL.md).
+          2. Pick the narrowest MeshAgent command path that fits the request.
+          3. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) or run `meshagent <path> --help`.
+          4. Prefer inspection before mutation.
+          5. After any change, verify with the corresponding `show`, `list`, or read command.
+          
+          ## Coverage
+          
+          This command is the generic entrypoint for:
+          - auth and setup
+          - projects, api keys, secrets, routes, webhooks, mailboxes, and scheduled tasks
+          - rooms, room APIs, ports, sessions, calls, and participant tokens
+          - services, MCP bridges, webservers, and helper services
+          - chatbot, worker, task-runner, mailbot, voicebot, process, codex, multi, and meeting-transcriber flows
+
+      - path: /meshagent-cli-skill/skills/meshagent-cli-operator/SKILL.md
+        text: |
+          ---
+          name: meshagent-cli-operator
+          description: Operate the MeshAgent CLI primarily at room scope. Use this skill for inspecting, updating, deploying, and troubleshooting the current room, its storage, its services, and room-scoped MeshAgent runtimes. Do not use this skill for meshagent auth or meshagent setup workflows.
+          ---
+          
+          # MeshAgent CLI Operator
+          
+          Use this skill for any task that should be completed with the MeshAgent CLI.
+          
+          ## Runtime assumptions
+          
+          This skill assumes it is running inside a MeshAgent room container based on `meshagent/shell-codex:default`.
+          
+          - The MeshAgent CLI is expected at `/usr/bin/meshagent`.
+          - `meshagent` on `PATH` is an acceptable fallback.
+          - `MESHAGENT_TOKEN` may be present for room-scoped MeshAgent access and delegated shell execution.
+          - The current room is the value of `MESHAGENT_ROOM`.
+          - The default public MeshAgent domain in this environment is `meshagent.app`.
+          - The user-visible room filesystem is mounted at `/data`.
+          - To create or modify files the user should see, write them under `/data` and report paths relative to `/data`.
+          - Do not assume a repo-local virtualenv or checkout exists inside the container.
+          - Do not install packages into `/data`.
+          
+          ## Quick start
+          
+          1. Resolve the CLI binary.
+          2. Identify the narrowest command path that matches the request.
+          3. If flags are uncertain, consult `references/command_groups.md`, then `references/meshagent_cli_help.md`, or run `meshagent <path> --help`.
+          4. Prefer read-only inspection before mutation.
+          5. After a change, verify the result with the corresponding read command.
+          
+          ## Resolve the CLI
+          
+          Prefer these paths in order:
+          
+          1. `/usr/bin/meshagent`
+          2. `meshagent`
+          
+          If neither exists, stop and report that the MeshAgent CLI is unavailable.
+          
+          ## Command routing
+          
+          Start with `references/command_groups.md` to choose the right area:
+          
+          - room lifecycle and room APIs
+          - service and deployment workflows
+          - agent runtime orchestration
+          - inspection and diagnostics
+          
+          Use `references/meshagent_cli_help.md` for the exact installed command tree and flags.
+          
+          Follow the explicit top-level command policy in `references/command_groups.md`:
+          
+          - `USE`: normal command family for this skill
+          - `USE WITH CAUTION`: allowed only when clearly needed and tightly scoped
+          - `DON'T USE`: out of scope for this skill
+          
+          ## Operating rules
+          
+          - Scope the target first: room, room service, room storage path, room participant, room queue, room port, or agent runtime.
+          - Prefer the smallest command path that can complete the task.
+          - Use `--help` on the exact subcommand before composing long invocations.
+          - When executing commands in this runtime, prefer `/usr/bin/meshagent ...` so command examples match the container image.
+          - This skill is primarily for room-scoped work in the current room. Prefer `meshagent room ...`, room service commands, service deployment into the current room, room storage access, and runtime commands that operate within the current room.
+          - If a command accepts `--room`, it must target `MESHAGENT_ROOM` only. Omit `--room` when the command already defaults to the current room, or set it explicitly to `MESHAGENT_ROOM`. Do not use a different room value.
+          - For website, route, and public hostname work, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+          - When authorization is uncertain, test the actual target read command for the current room before concluding that authentication is missing.
+          - Treat `/data` as the writable user-visible workspace. If a command writes files for the user, keep them under `/data`.
+          - Do not expose secret values unless the user explicitly asks for them.
+          - Treat delete and overwrite operations as destructive. Confirm the target and blast radius before executing them.
+          - After create, update, deploy, or delete, run the appropriate verification command and summarize the resulting state.
+          
+          ## Out Of Scope
+          
+          Do not use these commands as part of this skill:
+          
+          - `meshagent auth ...`
+          - `meshagent setup`
+          - `meshagent api-key ...`
+          - `meshagent project create`
+          - `meshagent project activate -i`
+          - `meshagent token generate`
+          - `meshagent secret ...`
+          
+          Avoid these project-wide or account-wide command families unless the user explicitly asks for them and the task clearly cannot be completed with room-scoped commands:
+          
+          - `meshagent project ...`
+          - `meshagent webhook ...`
+          - `meshagent route ...`
+          - `meshagent scheduled-task ...`
+          - project-wide `meshagent service ...` operations that are not targeting the current room
+          
+          Treat these command families as `USE WITH CAUTION`, not defaults:
+          
+          - `meshagent project list`
+          - `meshagent project activate PROJECT_ID` only when a room task clearly requires switching to a specific existing project first
+          - `meshagent webhook ...`
+          - `meshagent route ...`
+          - `meshagent mailbox ...`
+          - `meshagent scheduled-task ...`
+          - `meshagent helper ...`
+          - `meshagent helpers ...`
+          - `meshagent test`
+          
+          ## Bundled resources
+          
+          - `references/command_groups.md`: fast routing map for the CLI.
+          - `references/meshagent_cli_help.md`: generated full CLI help for the installed MeshAgent version.
+          - `scripts/refresh_cli_reference.sh`: maintainer utility to regenerate the help reference when the installed CLI changes. This is not required for normal in-room operation.
+
+      - path: /meshagent-cli-skill/skills/meshagent-cli-operator/references/command_groups.md
+        text: |
+          # MeshAgent CLI command groups
+          
+          Use this file to choose the narrowest MeshAgent CLI area before reading the full help reference.
+          
+          Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...` and write user-visible artifacts under `/data`.
+          For this skill, the current room is the value of `MESHAGENT_ROOM`.
+          For website, route, and public hostname work in this environment, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+          
+          ## Top-level command policy
+          
+          Use the following status values exactly:
+          
+          - `USE`: normal command family for this skill.
+          - `USE WITH CAUTION`: allowed only when clearly needed and with tight scope.
+          - `DON'T USE`: out of scope for this skill.
+          
+          ### `USE`
+          
+          - `meshagent call`
+            Use for room-scoped inspection, verification, or targeted invocation when the task is about the current room or a room-local agent/tool.
+          - `meshagent session`
+            Use for diagnostics, active session inspection, and troubleshooting related to the current room workflow.
+          - `meshagent token`
+            Use for token inspection or troubleshooting when it is directly relevant to the current room task. Do not use `meshagent token generate`.
+          - `meshagent service`
+            Use for service validation, rendering, inspection, and deployment when the target is the current room or a room-specific service flow. If a `--room` flag is used, it must match the current room. Do not use project-global service modes.
+          - `meshagent mcp`
+            Use for room-relevant MCP bridge or connector work when it supports the current room workflow.
+          - `meshagent rooms`
+            Use for room listing, inspection, and room creation/update/delete only when the user explicitly wants room lifecycle work in the current project. If a command targets a room by name or ID, do not use it for a room other than the current room unless the user explicitly asks for room lifecycle work.
+          - `meshagent meeting-transcriber`
+            Use for transcriber runtime flows when the task is clearly about deploying or operating that runtime.
+          - `meshagent port`
+            Use for room port inspection and exposure work tied to the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent webserver`
+            Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer `*.meshagent.app` hostnames by default in this environment.
+          - `meshagent codex`
+            Use for Codex-backed runtime operations that stay within room scope.
+          - `meshagent multi`
+            Use for multi-agent runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent voicebot`
+            Use for voicebot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent chatbot`
+            Use for chatbot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent process`
+            Use for process-backed room agents in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent mailbot`
+            Use for mailbot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent task-runner`
+            Use for task-runner deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent worker`
+            Use for worker runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent room`
+            Use first for room-scoped agents, services, storage, messaging, database, memory, containers, sync, and developer operations in the current room.
+          
+          ### `USE WITH CAUTION`
+          
+          - `meshagent version`
+            Use only when the user explicitly asks about the installed CLI version or version-specific behavior.
+          - `meshagent project`
+            Use only for project context needed to complete room work. Subcommand policy:
+            - `meshagent project list`: allowed for read-only discovery of available projects.
+            - `meshagent project activate PROJECT_ID`: allowed only when a room task clearly requires switching to a specific existing project first.
+            - `meshagent project activate -i`: don't use, because the interactive flow can create a new project.
+            - `meshagent project create`: don't use, because creating new projects is broader than this skill's room-focused scope.
+          - `meshagent webhook`
+            Use only when the room task requires project-level webhook configuration tied to the room's workflow.
+          - `meshagent secret`
+            Don't use. Project secret management is broader than this skill's room-focused scope.
+          - `meshagent mailbox`
+            Use only when the room task requires mailbox setup for a room-local mailbot or workflow.
+          - `meshagent route`
+            Use only when the room task requires route configuration backing the current room's service exposure. Prefer `*.meshagent.app` hostnames by default in this environment.
+          - `meshagent scheduled-task`
+            Use only when the room task requires scheduled execution tied to the current room's workflow.
+          - `meshagent helper`
+            Use only when the user explicitly needs developer helper HTTP services such as hosted schemas or toolkits.
+          - `meshagent helpers`
+            Same caution level as `meshagent helper`; treat it as an equivalent alias and use only when the user explicitly needs developer helper HTTP services.
+          - `meshagent test`
+            Use only for explicit testing or debugging workflows. It is not a normal room-operator command family, but it should remain available when the user asks for test-tool behavior.
+          
+          ### `DON'T USE`
+          
+          - `meshagent setup`
+            Do not use. Initial CLI setup is out of scope for this skill.
+          - `meshagent auth`
+            Do not use. Interactive auth and user-session management are out of scope for this skill.
+          - `meshagent api-key`
+            Do not use. API key creation and management are out of scope for this skill.
+          - `meshagent token generate`
+            Do not use. Minting participant tokens is broader than this skill's room-focused scope.
+          - `meshagent project create`
+            Do not use. Creating new projects is broader than this skill's room-focused scope.
+          - `meshagent project activate -i`
+            Do not use. The interactive activation flow can create new projects and is too broad for this skill.
+          - `meshagent secret`
+            Do not use. Project secret management is broader than this skill's room-focused scope.
+          
+          ## Preferred routing
+          
+          - For room-scoped tasks, start with `meshagent room ...`.
+          - For runtime deployment tasks, prefer the specific runtime family such as `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, `meshagent webserver ...`, or `meshagent multi ...`.
+          - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
+          - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
+          - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
+          - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
+          
+          ## Notes
+          
+          - `meshagent room ...` is the deepest public area. Use it for room-scoped agents, storage, messaging, services, database tables, memories, containers, and sync.
+          - For this skill, prefer room-scoped commands over project-scoped commands whenever both could satisfy the request.
+          - The generated help reference also captures hidden aliases and locally available internal namespaces, including `meshagent test` when that command is present in the installed CLI.
+          - The help reference documents command names and flags. In this runtime, prefer `/usr/bin/meshagent` as the executable path.
+          - If the installed CLI version changes, rerun `scripts/refresh_cli_reference.sh`.
+
+      - path: /meshagent-cli-skill/skills/meshagent-cli-operator/scripts/refresh_cli_reference.sh
+        text: |
+          #!/usr/bin/env bash
+          
+          set -euo pipefail
+          
+          SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          SKILL_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+          OUTPUT_PATH="${SKILL_DIR}/references/meshagent_cli_help.md"
+          
+          if command -v python3 >/dev/null 2>&1; then
+            PYTHON_BIN="$(command -v python3)"
+          elif command -v python >/dev/null 2>&1; then
+            PYTHON_BIN="$(command -v python)"
+          else
+            echo "python or python3 is required to regenerate MeshAgent CLI help" >&2
+            exit 1
+          fi
+          
+          TMP_FILE="$(mktemp)"
+          trap 'rm -f "${TMP_FILE}"' EXIT
+          
+          "${PYTHON_BIN}" -m typer meshagent.cli.cli utils docs --name meshagent \
+            | sed 's/{/\\&#123;/g; s/}/\\&#125;/g' \
+            > "${TMP_FILE}"
+          
+          {
+            printf '%s\n' '# MeshAgent CLI Help' ''
+            printf '%s\n' '_Generated from the installed MeshAgent CLI environment using `scripts/refresh_cli_reference.sh`._' ''
+            cat "${TMP_FILE}"
+          } > "${OUTPUT_PATH}"
+          
+          echo "Wrote ${OUTPUT_PATH}"
+
+  environment:
+    - name: MESHAGENT_TOKEN
+      token:
+        identity: meshagent-cli-skill
