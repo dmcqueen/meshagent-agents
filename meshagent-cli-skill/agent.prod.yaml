@@ -27,30 +27,25 @@ container:
           #!/bin/bash
           set -euo pipefail
 
-          mkdir -p /data/meshagent-cli-skill
-          mkdir -p /data/agents/meshagent-cli-skill
+          mkdir -p /data/skills/meshagent-cli-skill
 
           if [ -d /meshagent-cli-skill ]; then
-            cp -R -n /meshagent-cli-skill/* /data/meshagent-cli-skill/ 2>/dev/null || true
+            cp -R -n /meshagent-cli-skill/* /data/skills/meshagent-cli-skill/ 2>/dev/null || true
           fi
 
           if [ -d /meshagent-cli-skill/.claude-plugin ]; then
-            mkdir -p /data/meshagent-cli-skill/.claude-plugin
-            cp -R -n /meshagent-cli-skill/.claude-plugin/* /data/meshagent-cli-skill/.claude-plugin/ 2>/dev/null || true
+            mkdir -p /data/skills/meshagent-cli-skill/.claude-plugin
+            cp -R -n /meshagent-cli-skill/.claude-plugin/* /data/skills/meshagent-cli-skill/.claude-plugin/ 2>/dev/null || true
           fi
 
-          chmod +x /data/meshagent-cli-skill/skills/meshagent-cli-operator/scripts/refresh_cli_reference.sh 2>/dev/null || true
-          /data/meshagent-cli-skill/skills/meshagent-cli-operator/scripts/refresh_cli_reference.sh || true
-
-          if [ ! -f /data/agents/meshagent-cli-skill/rules.txt ]; then
-            cp /var/rules.txt /data/agents/meshagent-cli-skill/rules.txt
-          fi
+          chmod +x /data/skills/meshagent-cli-skill/skills/meshagent-cli-operator/scripts/refresh_cli_reference.sh 2>/dev/null || true
+          /data/skills/meshagent-cli-skill/skills/meshagent-cli-operator/scripts/refresh_cli_reference.sh || true
 
           exec /usr/bin/meshagent process join \
             --room="${MESHAGENT_ROOM}" \
             --agent-name=meshagent-cli-skill \
             --channel chat \
-            --room-rules=/data/agents/meshagent-cli-skill/rules.txt \
+            --room-rules=/var/rules.txt \
             --working-dir=/data \
             --require-shell \
             --require-apply-patch \
@@ -61,7 +56,7 @@ container:
             --storage-tool-room-path=/:/data \
             --shell-image=meshagent/shell-codex:default \
             --delegate-shell-token \
-            --skill-dir /data/meshagent-cli-skill/skills/meshagent-cli-operator
+            --skill-dir /data/skills/meshagent-cli-skill/skills/meshagent-cli-operator
 
       - path: /var/rules.txt
         text: |
