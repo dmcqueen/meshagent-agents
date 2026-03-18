@@ -332,6 +332,7 @@ container:
           - When authorization is uncertain, test the actual target read command for the current room before concluding that authentication is missing.
           - Treat `/data` as the writable user-visible workspace. If a command writes files for the user, keep them under `/data`.
           - If the room already has database tables or room-database storage for email or submission tracking, prefer using that existing room database as the durable audit trail for contact-form submissions and outbound email status instead of inventing a parallel tracking mechanism.
+          - For a simple contact-form workflow, do not perform manual room database setup unless the user explicitly asks for it. When using a room-local MailBot, rely on the platform-created `.emails/...` storage and `emails` table for the built-in mail record.
           - Do not expose secret values unless the user explicitly asks for them.
           - Treat delete and overwrite operations as destructive. Confirm the target and blast radius before executing them.
           - After create, update, deploy, or delete, run the appropriate verification command and summarize the resulting state. For workflows whose goal is email delivery, do not declare success until you have verified the strongest outcome that MeshAgent can actually assess from the current implementation, or clearly state the exact remaining blocker.
@@ -365,17 +366,18 @@ container:
              - therefore:
                - a `.emails/` artifact alone means the outbound message was constructed and persisted
                - MeshAgent's persisted state alone does not prove that `aiosmtplib.send(...)` returned successfully
-          13. If the room already has an email/submission database, use it to record submission ID, validation result, MailBot send attempt, and final status. If not, add minimal durable per-submission and per-send evidence before claiming the workflow is complete.
-          14. For backend workflows that trigger MailBot sends, add durable per-submission evidence that records:
+          13. For this simple path, do not create or install new room database tables unless the user explicitly asks for custom submission tracking.
+          14. Treat the MailBot-managed `.emails/...` artifacts and `emails` table as the default built-in evidence for outbound mail activity.
+          15. If the user explicitly asks for custom submission tracking, or the room already has an application-specific audit table, then record:
              - submission ID
              - validation result
              - whether the MailBot/tool call returned success or raised an exception
              - the matching outbound `.emails/...` path or `emails` table row when available
-          15. If you did not explicitly record whether the MailBot/tool call returned success or raised an exception, only claim what is still assessable later:
+          16. If you did not explicitly record whether the MailBot/tool call returned success or raised an exception, only claim what is still assessable later:
              - the submission was accepted
              - outbound mail was constructed and persisted
              - send success is unverified
-          16. If there is no matching outbound `.emails/...` path or `emails` table row for a submission, do not claim that MeshAgent made any outbound email attempt for that submission.
+          17. If there is no matching outbound `.emails/...` path or `emails` table row for a submission, do not claim that MeshAgent made any outbound email attempt for that submission.
           
           ## Out Of Scope
           
@@ -528,7 +530,7 @@ container:
           - For a simple website form that sends one email to one destination, keep the design minimal: room-local site/backend plus room-local MailBot. Do not default to scheduled workers, reporting systems, subscriber-management flows, or broader multi-agent orchestration unless the user explicitly asks for that architecture.
           - Do not invent custom MailBot URL/token bridges or placeholder env vars for room email delivery when the MeshAgent-native MailBot toolkit path is available.
           - For external email workflows, do not treat a form 200 response, queue acceptance, MailBot request acceptance, or a `.emails/` artifact alone as completion. Prefer implementations that leave durable evidence of submission receipt and what outbound-mail state is actually assessable later.
-          - If the room already has an email/submission database, prefer using that room database for durable evidence and status tracking.
+          - If the room already has an email/submission database, prefer using that room database for durable evidence and status tracking. Otherwise, for the simple case, do not create a new custom room database unless the user explicitly asks for it.
           - For MailBot-backed outbound mail, validate against the actual MeshAgent send sequence: outbound mail is first persisted into `.emails/...` and the `emails` table, then SMTP send is attempted. MeshAgent's persisted state proves message construction and persistence, but not successful SMTP handoff unless the workflow records the MailBot/tool result explicitly.
           - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
           
