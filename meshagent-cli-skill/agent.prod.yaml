@@ -56,13 +56,7 @@ container:
             --shell-image=meshagent/shell-codex:default \
             --delegate-shell-token \
             --skill-dir /data/skills/meshagent-cli-skill/skills/meshagent-cli-operator \
-            --rule='Use the meshagent-cli-operator skill for MeshAgent CLI tasks.' \
-            --rule='This packaged agent operates in the current room only. The current room is the value of MESHAGENT_ROOM. If a MeshAgent CLI command accepts --room, target MESHAGENT_ROOM only unless the user explicitly asks for cross-room work.' \
-            --rule='The user-visible room filesystem is mounted at /data. For room work, create and modify files under /data. Do not treat image-bundled source trees such as /src, SDK examples, sample repos, or maintainer reference projects as the target workspace for room tasks.' \
-            --rule='For room-site requests, create or update the site assets in /data, deploy the site in the current room, and return the resulting public URL. Do not stop at local edits or local build success when the requested outcome is a live room site.' \
-            --rule='For email-delivery requirements in room sites, use mailbox/provider-backed delivery and verify the delivery path before declaring success. Do not substitute mailto: unless the user explicitly asks for a client-side-only form or explicitly accepts client-local email composition.' \
-            --rule='Do not invent custom MailBot URL/token integration layers or placeholder mail configuration for room workflows. Prefer the MeshAgent-native MailBot deployment plus toolkit path when MailBot is the chosen delivery mechanism.' \
-            --rule='Prefer /usr/bin/meshagent when executing MeshAgent CLI commands inside this container. Verify the final state with the appropriate read, show, list, or live URL check before reporting success.'
+            --rule='Use the meshagent-cli-operator skill for MeshAgent CLI tasks.'
 
       - path: /meshagent-cli-skill/.claude-plugin/plugin.json
         text: |
@@ -332,9 +326,11 @@ container:
           - Do not modify unrelated example apps, sample repos, bundled SDK examples, or maintainer reference projects to satisfy a room deployment request. For room-site work, create or update the assets and services that belong to the current room workflow.
           - When authorization is uncertain, test the actual target read command for the current room before concluding that authentication is missing.
           - Treat `/data` as the writable user-visible workspace. If a command writes files for the user, keep them under `/data`.
+          - If the room already has database tables or room-database storage for email or submission tracking, prefer using that existing room database as the durable audit trail for contact-form submissions and outbound email status instead of inventing a parallel tracking mechanism.
           - Do not expose secret values unless the user explicitly asks for them.
           - Treat delete and overwrite operations as destructive. Confirm the target and blast radius before executing them.
-          - After create, update, deploy, or delete, run the appropriate verification command and summarize the resulting state. For workflows whose goal is email delivery, do not declare success until you have verified that the configured mailbot/provider path can actually send the message, or clearly state the exact remaining blocker.
+          - After create, update, deploy, or delete, run the appropriate verification command and summarize the resulting state. For workflows whose goal is email delivery, do not declare success until you have verified the strongest outcome that MeshAgent can actually assess from the current implementation, or clearly state the exact remaining blocker.
+          - Do not treat a successful form POST, a queued request, a `new_email_thread` success response, service startup, or a `.emails/` artifact by itself as proof of a successful outbound send.
           
           ## Contact-Form Workflow
           
@@ -350,10 +346,28 @@ container:
           8. Verify the result end to end:
              - the site is reachable at a public URL
              - the backend accepts a valid submission
-             - the MailBot accepts the outbound email request
-             - the provider or runtime reports successful send, or the exact remaining blocker is identified
+             - the strongest assessable outbound-mail evidence is present
+             - the exact remaining blocker is identified when the mail path cannot be verified further
+             - the room retains enough evidence to answer later whether a specific submission was accepted and whether the outbound mail send was attempted successfully
           9. If SMTP/provider credentials are missing, stop and report the exact missing configuration instead of claiming the site is fully working.
           10. Do not describe the site as complete or done if the requested outbound delivery path is not actually operational.
+          11. Use the MeshAgent mail codepath as the source of truth for what is assessable:
+             - `MailBot` and `MailChannel` save outbound mail into `.emails/.../message.eml` and `.emails/.../message.json`, and insert rows into the `emails` table, before SMTP send is attempted.
+             - then they call `aiosmtplib.send(...)`.
+             - therefore:
+               - a `.emails/` artifact alone means the outbound message was constructed and persisted
+               - MeshAgent's persisted state alone does not prove that `aiosmtplib.send(...)` returned successfully
+          12. If the room already has an email/submission database, use it to record submission ID, validation result, MailBot send attempt, and final status. If not, add minimal durable per-submission and per-send evidence before claiming the workflow is complete.
+          13. For backend workflows that trigger MailBot sends, add durable per-submission evidence that records:
+             - submission ID
+             - validation result
+             - whether the MailBot/tool call returned success or raised an exception
+             - the matching outbound `.emails/...` path or `emails` table row when available
+          14. If you did not explicitly record whether the MailBot/tool call returned success or raised an exception, only claim what is still assessable later:
+             - the submission was accepted
+             - outbound mail was constructed and persisted
+             - send success is unverified
+          15. If there is no matching outbound `.emails/...` path or `emails` table row for a submission, do not claim that MeshAgent made any outbound email attempt for that submission.
           
           ## Out Of Scope
           
@@ -504,6 +518,9 @@ container:
           - For email-delivery requirements in room sites, prefer MailBot `new_email_thread` with provider-backed delivery. Do not substitute `mailto:` unless the user explicitly asks for a client-side-only form.
           - For simple contact-form sites, do not default to mailbox/queue alias routing when direct outbound MailBot delivery would satisfy the request more reliably.
           - Do not invent custom MailBot URL/token bridges or placeholder env vars for room email delivery when the MeshAgent-native MailBot toolkit path is available.
+          - For external email workflows, do not treat a form 200 response, queue acceptance, MailBot request acceptance, or a `.emails/` artifact alone as completion. Prefer implementations that leave durable evidence of submission receipt and what outbound-mail state is actually assessable later.
+          - If the room already has an email/submission database, prefer using that room database for durable evidence and status tracking.
+          - For MailBot-backed outbound mail, validate against the actual MeshAgent send sequence: outbound mail is first persisted into `.emails/...` and the `emails` table, then SMTP send is attempted. MeshAgent's persisted state proves message construction and persistence, but not successful SMTP handoff unless the workflow records the MailBot/tool result explicitly.
           - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
           
           ## Notes
