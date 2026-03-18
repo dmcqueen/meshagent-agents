@@ -326,11 +326,12 @@ container:
           - This skill is primarily for room-scoped work in the current room. Prefer `meshagent room ...`, room service commands, service deployment into the current room, room storage access, and runtime commands that operate within the current room.
           - If a command accepts `--room`, it must target `MESHAGENT_ROOM` only. Omit `--room` when the command already defaults to the current room, or set it explicitly to `MESHAGENT_ROOM`. Do not use a different room value.
           - For website, route, and public hostname work, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+          - For contact forms, mail-driven sites, or other room workflows that must actually deliver email, `meshagent mailbox ...` is a normal allowed path. You may provision the mailbox or provider setup needed for the current room workflow, wire the site or service to it, and verify that delivery works before declaring success.
           - When authorization is uncertain, test the actual target read command for the current room before concluding that authentication is missing.
           - Treat `/data` as the writable user-visible workspace. If a command writes files for the user, keep them under `/data`.
           - Do not expose secret values unless the user explicitly asks for them.
           - Treat delete and overwrite operations as destructive. Confirm the target and blast radius before executing them.
-          - After create, update, deploy, or delete, run the appropriate verification command and summarize the resulting state.
+          - After create, update, deploy, or delete, run the appropriate verification command and summarize the resulting state. For workflows whose goal is email delivery, do not declare success until you have verified that the configured mailbox/provider path can actually send the message, or clearly state the exact remaining blocker.
           
           ## Out Of Scope
           
@@ -358,7 +359,6 @@ container:
           - `meshagent project activate PROJECT_ID` only when a room task clearly requires switching to a specific existing project first
           - `meshagent webhook ...`
           - `meshagent route ...`
-          - `meshagent mailbox ...`
           - `meshagent scheduled-task ...`
           - `meshagent helper ...`
           - `meshagent helpers ...`
@@ -408,6 +408,8 @@ container:
             Use for room port inspection and exposure work tied to the current room. If a `--room` flag is used, it must match the current room.
           - `meshagent webserver`
             Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer `*.meshagent.app` hostnames by default in this environment.
+          - `meshagent mailbox`
+            Use for room workflows that need real outbound email delivery, including contact-form sites, room-local mailbot flows, and mailbox-backed notification paths. When email delivery is part of the requested outcome, mailbox/provider provisioning and end-to-end delivery verification are part of the normal workflow.
           - `meshagent codex`
             Use for Codex-backed runtime operations that stay within room scope.
           - `meshagent multi`
@@ -441,8 +443,6 @@ container:
             Use only when the room task requires project-level webhook configuration tied to the room's workflow.
           - `meshagent secret`
             Don't use. Project secret management is broader than this skill's room-focused scope.
-          - `meshagent mailbox`
-            Use only when the room task requires mailbox setup for a room-local mailbot or workflow.
           - `meshagent route`
             Use only when the room task requires route configuration backing the current room's service exposure. Prefer `*.meshagent.app` hostnames by default in this environment.
           - `meshagent scheduled-task`
