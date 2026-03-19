@@ -27,10 +27,19 @@ container:
           #!/bin/bash
           set -euo pipefail
 
+          echo "[startup] Initializing meshagent-cli-skill..."
           mkdir -p /data/skills/meshagent-skills
 
+          echo "[startup] Checking for /meshagent-skills directory..."
           if [ -d /meshagent-skills ]; then
+            echo "[startup] Found /meshagent-skills, copying files..."
+            ls -la /meshagent-skills | head -20
             cp -R -n /meshagent-skills/* /data/skills/meshagent-skills/ 2>/dev/null || true
+            echo "[startup] Copy complete"
+          else
+            echo "[startup] WARNING: /meshagent-skills directory not found" >&2
+            echo "[startup] Checking root directory contents:"
+            ls -la / | grep -E "meshagent|skills" || true
           fi
 
           if [ -d /meshagent-skills/.claude-plugin ]; then
@@ -38,26 +47,30 @@ container:
             cp -R -n /meshagent-skills/.claude-plugin/* /data/skills/meshagent-skills/.claude-plugin/ 2>/dev/null || true
           fi
 
+          echo "[startup] Verifying required skills..."
           if [ ! -f /data/skills/meshagent-skills/skills/meshagent-cli-operator/SKILL.md ]; then
-            echo "Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-cli-operator/SKILL.md" >&2
+            echo "[startup] ERROR: Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-cli-operator/SKILL.md" >&2
+            echo "[startup] Directory contents of /data/skills/meshagent-skills:"
+            find /data/skills/meshagent-skills -type f | head -20 || true
             exit 1
           fi
 
           if [ ! -f /data/skills/meshagent-skills/skills/meshagent-mail-operator/SKILL.md ]; then
-            echo "Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-mail-operator/SKILL.md" >&2
+            echo "[startup] ERROR: Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-mail-operator/SKILL.md" >&2
             exit 1
           fi
 
           if [ ! -f /data/skills/meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md ]; then
-            echo "Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md" >&2
+            echo "[startup] ERROR: Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md" >&2
             exit 1
           fi
 
           if [ ! -f /data/skills/meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md ]; then
-            echo "Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md" >&2
+            echo "[startup] ERROR: Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md" >&2
             exit 1
           fi
 
+          echo "[startup] All skills verified! Starting meshagent process..."
           exec /usr/bin/meshagent process join \
             --room="${MESHAGENT_ROOM}" \
             --agent-name=meshagent-cli-skill \
