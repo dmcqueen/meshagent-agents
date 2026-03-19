@@ -4,11 +4,11 @@
   "description": "A MeshAgent room agent for operating the MeshAgent CLI end to end. It loads the meshagent-cli-operator skill for general CLI work, the meshagent-mail-operator skill for mail workflows, the meshagent-scheduling-operator skill for scheduled-task workflows, and the meshagent-webmaster-operator skill for websites and routes.",
   "long_description": "",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e80ea5787fc33f44d4c160aca20a6d5af805ae9/meshagent-skills/agent.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/9e80ea5787fc33f44d4c160aca20a6d5af805ae9/meshagent-skills/agent.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/de0bd29840303bf9d5aa554a2f1c235533c0df51/meshagent-skills/agent.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/de0bd29840303bf9d5aa554a2f1c235533c0df51/meshagent-skills/agent.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f536620cffd74db983ada8e4846c7d985274c7b/meshagent-skills/agent.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/8f536620cffd74db983ada8e4846c7d985274c7b/meshagent-skills/agent.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1ed22da488dff06358c26314f9e2777f31e91e33/meshagent-skills/agent.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/1ed22da488dff06358c26314f9e2777f31e91e33/meshagent-skills/agent.prod.yaml"
   }
 }
