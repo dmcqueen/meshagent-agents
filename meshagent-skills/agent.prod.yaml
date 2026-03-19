@@ -74,35 +74,43 @@ container:
           echo "[startup] Room: ${MESHAGENT_ROOM:-unset}"
           echo "[startup] Project ID: ${MESHAGENT_PROJECT_ID:-will use default}"
           
-          # Build process join command with project context
-          PROCESS_JOIN_ARGS=(
-            "process"
-            "join"
-            "--room=${MESHAGENT_ROOM}"
-            "--agent-name=meshagent-cli-skill"
-            "--channel=chat"
-            "--working-dir=/data"
-            "--require-shell"
-            "--require-apply-patch"
-            "--require-web-search"
-            "--require-web-fetch"
-            "--require-storage"
-            "--shell-tool-room-path=/:/data"
-            "--storage-tool-room-path=/:/data"
-            "--shell-image=meshagent/shell-codex:default
-            "--delegate-shell-token"
-            "--skill-dir=/data/skills/meshagent-skills/skills"
-          )
-          
-          # Add project ID if available
-          if [[ -n "${MESHAGENT_PROJECT_ID:-}" ]]; then
-            PROCESS_JOIN_ARGS+=("--project-id=${MESHAGENT_PROJECT_ID}")
+          # Start meshagent process, optionally with project ID
+          if [ -n "${MESHAGENT_PROJECT_ID:-}" ]; then
+            exec /usr/bin/meshagent process join \
+              --project-id="${MESHAGENT_PROJECT_ID}" \
+              --room="${MESHAGENT_ROOM}" \
+              --agent-name=meshagent-cli-skill \
+              --channel chat \
+              --working-dir=/data \
+              --require-shell \
+              --require-apply-patch \
+              --require-web-search \
+              --require-web-fetch \
+              --require-storage \
+              --shell-tool-room-path=/:/data \
+              --storage-tool-room-path=/:/data \
+              --shell-image=meshagent/shell-codex:default \
+              --delegate-shell-token \
+              --skill-dir /data/skills/meshagent-skills/skills \
+              --rule='For MeshAgent CLI tasks, use the installed skills from the configured skill dir. Default to meshagent-cli-operator for general CLI work, use meshagent-mail-operator for mailbox, inbox, MailBot, or contact-form email workflows, use meshagent-scheduling-operator for scheduled-task workflows, and use meshagent-webmaster-operator for websites, webservers, routes, or public hostname workflows.'
+          else
+            exec /usr/bin/meshagent process join \
+              --room="${MESHAGENT_ROOM}" \
+              --agent-name=meshagent-cli-skill \
+              --channel chat \
+              --working-dir=/data \
+              --require-shell \
+              --require-apply-patch \
+              --require-web-search \
+              --require-web-fetch \
+              --require-storage \
+              --shell-tool-room-path=/:/data \
+              --storage-tool-room-path=/:/data \
+              --shell-image=meshagent/shell-codex:default \
+              --delegate-shell-token \
+              --skill-dir /data/skills/meshagent-skills/skills \
+              --rule='For MeshAgent CLI tasks, use the installed skills from the configured skill dir. Default to meshagent-cli-operator for general CLI work, use meshagent-mail-operator for mailbox, inbox, MailBot, or contact-form email workflows, use meshagent-scheduling-operator for scheduled-task workflows, and use meshagent-webmaster-operator for websites, webservers, routes, or public hostname workflows.'
           fi
-          
-          # Add the rule (must be last)
-          PROCESS_JOIN_ARGS+=("--rule=For MeshAgent CLI tasks, use the installed skills from the configured skill dir. Default to meshagent-cli-operator for general CLI work, use meshagent-mail-operator for mailbox, inbox, MailBot, or contact-form email workflows, use meshagent-scheduling-operator for scheduled-task workflows, and use meshagent-webmaster-operator for websites, webservers, routes, or public hostname workflows.")
-          
-          exec /usr/bin/meshagent "${PROCESS_JOIN_ARGS[@]}"
 
       - path: /meshagent-skills/.claude-plugin/plugin.json
         text: |
