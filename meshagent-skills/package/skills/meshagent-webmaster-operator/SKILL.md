@@ -40,6 +40,7 @@ Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
 - For website, route, and public hostname work, default to `*.__MESHAGENT_PUBLIC_DOMAIN__` hostnames unless the user explicitly asks for a different MeshAgent public domain.
 - Create and modify site assets under `/data`.
 - Do not stop at local file edits or a successful local `webserver check` when the requested outcome is a live room website.
+- If the public URL returns a timeout, `502`, or another unsuccessful response after deploy, treat the task as still in progress. Inspect the deployed room service and related room state, repair the deployment, and retest instead of asking the user whether you should continue with normal debugging.
 - Prefer `meshagent webserver deploy` when the goal is a deployed room website. Use `meshagent route ...` directly only when route management is explicitly requested or when you need manual routing without `--domain`.
 - Use `meshagent webserver check` before deploy when the routes file or asset mapping may be invalid.
 - Use `meshagent webserver spec` when the user explicitly wants the generated service spec or when inspecting deployment shape before mutating.
@@ -49,6 +50,7 @@ Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
 - Prefer `--domain` on `meshagent webserver deploy` when the site should be publicly reachable and the route should follow the deploy.
 - If using `meshagent route create` or `update` manually, verify the domain, room, and published port exactly before mutating.
 - If a route already exists and targets a different room, stop and report that conflict instead of silently repointing it.
+- If the deployed site service is restarting, unhealthy, or failing to serve traffic, inspect the exact deployed service configuration, the room-visible site files under `/data`, and the relevant room service or container state before concluding. Repair the mismatch and redeploy when the issue is within the room workflow.
 - Do not modify unrelated example apps, sample repos, bundled SDK examples, or maintainer reference projects to satisfy a room deployment request.
 - After deploy or route mutation, verify the resulting service and route state with the corresponding read commands and report the live public URL.
 
@@ -58,8 +60,9 @@ Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
 2. Build or update the site assets under `/data`.
 3. Validate the routes file with `meshagent webserver check`.
 4. Deploy with `meshagent webserver deploy`, usually with `--room "${MESHAGENT_ROOM}"`, `--website-path`, and `--domain`.
-5. Verify the resulting service and route state.
-6. Return the exact public URL, or the exact remaining blocker if the site is not actually reachable yet.
+5. Verify the resulting service state, route state, and public URL behavior.
+6. If the site is not actually reachable or the service is unhealthy, inspect the deployed state, repair it, redeploy, and retest.
+7. Return the exact public URL, or the exact remaining blocker if the site is not actually reachable yet.
 
 ## Command-specific guidance
 
@@ -76,7 +79,7 @@ Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
 - Prefer `meshagent webserver deploy` for room-site deployment.
 - Use `--website-path` consistently so the deployed container can resolve the routes file and referenced assets.
 - Use `--domain` when you want deploy to create or update the route automatically.
-- If the request is specifically about a public website, do not call the task complete until deploy and route verification are done.
+- If the request is specifically about a public website, do not call the task complete until deploy, route verification, and a successful public URL check are done.
 
 ### Route management
 
