@@ -19,6 +19,11 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 - Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
 - The sample static webserver YAML in the MeshAgent server repository lives at `meshagent-router/meshagent/router/templates/webserver.yaml`.
 
+## Live room execution
+
+- If this skill is running inside a live MeshAgent room runtime, first use the existing MeshAgent CLI session and room context before asking the user to log in again.
+- If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
+
 ## Primary command groups
 
 - `meshagent route create`
@@ -76,6 +81,10 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 2. Confirm the exact hostname, room, and published port.
 3. Create, update, or delete the route.
 4. Verify that the hostname points to the intended room and service port.
+
+## Verification rules
+
+- Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
 
 ## Out of scope
 
