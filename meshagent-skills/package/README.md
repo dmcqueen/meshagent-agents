@@ -1,28 +1,29 @@
 # MeshAgent Skills
 
-This package contains MeshAgent CLI commands and skills for room operations, mail workflows, scheduled tasks, and website deployment.
+This package contains MeshAgent CLI commands and skills for room operations, SDK reference lookups, mail workflows, scheduled tasks, and website/domain workflows.
 
 ## Package layout
 
 - `commands/`
   Slash-command entrypoints for MeshAgent CLI requests.
 - `skills/meshagent-cli-operator/`
-  General room-scoped MeshAgent CLI operations and the shared room runtime contract for this package.
+  General MeshAgent CLI usage and command routing.
+- `skills/meshagent-sdk-operator/`
+  SDK/docs lookup guidance for using the preloaded `/src/meshagent-sdk` checkout, docs, and examples.
 - `skills/meshagent-mail-operator/`
-  Mailbox, MailBot, inbox evidence, and contact-form email workflows.
+  Mailbox administration, SMTP behavior, and inbound mail queue inspection.
 - `skills/meshagent-scheduling-operator/`
-  `meshagent scheduled-task ...` workflows tied to a room or clearly scoped project workflow.
+  `meshagent scheduled-task ...` workflows plus queue verification guidance.
 - `skills/meshagent-webmaster-operator/`
-  `meshagent webserver ...`, `meshagent route ...`, and public website deployment workflows.
+  Domain mappings and a static webserver reference example.
 
 ## Review Notes
 
 - The machine-readable compatibility source is `compat.json`.
 - The packaged CLI references are anchored to the MeshAgent CLI version recorded in `compat.json`.
-- The shared room runtime assumptions for these skills are defined in `skills/meshagent-cli-operator/SKILL.md`.
 - The generated CLI reference lives at `skills/meshagent-cli-operator/references/meshagent_cli_help.md`.
 - The package-local maintenance entrypoints live under `scripts/` so the CLI reference can be regenerated and validated from any repository that vendors this package.
-- User-visible files created by these skills should live under `/data` when running inside the room container.
+- The SDK reference skill assumes the live room image preloads the SDK checkout at `/src/meshagent-sdk`.
 
 ## Update Workflow
 
