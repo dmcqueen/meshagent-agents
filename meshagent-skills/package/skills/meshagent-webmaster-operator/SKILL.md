@@ -22,6 +22,8 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 ## Live room execution
 
 - If this skill is running inside a live MeshAgent room runtime, first use the existing MeshAgent CLI session and room context before asking the user to log in again.
+- If `MESHAGENT_API_URL` is present and the user wants a default MeshAgent-managed hostname, derive it from the API environment: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
+- If `MESHAGENT_API_URL` is absent or ambiguous, inspect existing routes or ask before choosing a managed public hostname.
 - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
 
 ## Primary command groups
