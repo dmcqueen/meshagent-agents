@@ -127,29 +127,30 @@ container:
         text: |
           # MeshAgent Skills
           
-          This package contains MeshAgent CLI commands and skills for room operations, mail workflows, scheduled tasks, and website deployment.
+          This package contains MeshAgent CLI commands and skills for room operations, SDK reference lookups, mail workflows, scheduled tasks, and website/domain workflows.
           
           ## Package layout
           
           - `commands/`
             Slash-command entrypoints for MeshAgent CLI requests.
           - `skills/meshagent-cli-operator/`
-            General room-scoped MeshAgent CLI operations and the shared room runtime contract for this package.
+            General MeshAgent CLI usage and command routing.
+          - `skills/meshagent-sdk-operator/`
+            SDK/docs lookup guidance for using the preloaded `/src/meshagent-sdk` checkout, docs, and examples.
           - `skills/meshagent-mail-operator/`
-            Mailbox, MailBot, inbox evidence, and contact-form email workflows.
+            Mailbox administration, SMTP behavior, and inbound mail queue inspection.
           - `skills/meshagent-scheduling-operator/`
-            `meshagent scheduled-task ...` workflows tied to a room or clearly scoped project workflow.
+            `meshagent scheduled-task ...` workflows plus queue verification guidance.
           - `skills/meshagent-webmaster-operator/`
-            `meshagent webserver ...`, `meshagent route ...`, and public website deployment workflows.
+            Domain mappings and a static webserver reference example.
           
           ## Review Notes
           
           - The machine-readable compatibility source is `compat.json`.
           - The packaged CLI references are anchored to the MeshAgent CLI version recorded in `compat.json`.
-          - The shared room runtime assumptions for these skills are defined in `skills/meshagent-cli-operator/SKILL.md`.
           - The generated CLI reference lives at `skills/meshagent-cli-operator/references/meshagent_cli_help.md`.
           - The package-local maintenance entrypoints live under `scripts/` so the CLI reference can be regenerated and validated from any repository that vendors this package.
-          - User-visible files created by these skills should live under `/data` when running inside the room container.
+          - The SDK reference skill assumes the live room image preloads the SDK checkout at `/src/meshagent-sdk`.
           
           ## Update Workflow
           
@@ -610,6 +611,10 @@ container:
               / "meshagent_cli_help.md"
           )
           SPECIALIZED_SKILLS = {
+              "meshagent-sdk-operator": SKILLS_ROOT
+              / "skills"
+              / "meshagent-sdk-operator"
+              / "SKILL.md",
               "meshagent-mail-operator": SKILLS_ROOT
               / "skills"
               / "meshagent-mail-operator"
@@ -632,6 +637,7 @@ container:
               "references/command_groups.md",
               "references/meshagent_cli_help.md",
           )
+          SKILLS_WITHOUT_CLI_REFERENCES = {"meshagent-sdk-operator"}
           
           
           def parse_args() -> argparse.Namespace:
@@ -770,7 +776,10 @@ container:
                           errors.append(
                               f"{skill_name} references sibling skill {other_skill_name}"
                           )
-                  if skill_name != "meshagent-cli-operator":
+                  if (
+                      skill_name != "meshagent-cli-operator"
+                      and skill_name not in SKILLS_WITHOUT_CLI_REFERENCES
+                  ):
                       for runtime_reference in RUNTIME_REFERENCES:
                           if runtime_reference not in current_skill_text:
                               errors.append(
@@ -1796,6 +1805,45 @@ container:
           ## Out of scope
           
           - General cron design that is not tied to an actual MeshAgent scheduled task.
+
+      - path: /meshagent-skills/skills/meshagent-sdk-operator/SKILL.md
+        text: |
+          ---
+          name: meshagent-sdk-operator
+          description: Use the preloaded MeshAgent SDK checkout and bundled docs/examples to look up APIs and implementation patterns before writing code.
+          ---
+          
+          # MeshAgent SDK Operator
+          
+          Use this skill when the task is mainly about how to use the MeshAgent SDK in code.
+          
+          ## Use this skill when
+          
+          - The user wants an example of how to use a MeshAgent SDK API.
+          - The task involves writing code against the MeshAgent room APIs, toolkits, queues, storage, or related SDK surfaces.
+          - The user needs to check how the MeshAgent docs or examples implement a pattern before coding it.
+          - The user wants to inspect the SDK source to confirm an API shape instead of guessing.
+          
+          ## References
+          
+          - In the live room image, the MeshAgent SDK checkout is preloaded at `/src/meshagent-sdk`.
+          - Start with `/src/meshagent-sdk/meshagent-docs` for documentation.
+          - Use `/src/meshagent-sdk/meshagent-docs/examples` when you need concrete implementation examples.
+          - Use `/src/meshagent-sdk/meshagent-docs/room_api` when the question is about room client APIs such as agents, queues, storage, messaging, database, or services.
+          - If the docs and examples are unclear, inspect the actual SDK source under `/src/meshagent-sdk`.
+          
+          ## Operating rules
+          
+          - Prefer the preloaded docs, examples, and source over guessing API names or method signatures.
+          - Match the actual SDK that corresponds to the language being used.
+          - If the task is "how do we normally do this with MeshAgent?", search the preloaded docs/examples first.
+          - When an example exists, follow its structure before inventing a new integration pattern.
+          - Use the SDK source to confirm exact method names, argument shapes, and return types when the docs are ambiguous.
+          
+          ## Out of scope
+          
+          - This skill does not replace CLI help for command flags.
+          - This skill does not define deployment workflow by itself.
 
       - path: /meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md
         text: |
