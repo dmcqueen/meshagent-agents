@@ -12,6 +12,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - The task involves `meshagent mailbox ...` provisioning, inspection, update, or deletion.
 - The user needs to understand how inbound email is routed into a room queue.
 - The user needs enough SMTP detail to write code that sends email from a room workflow.
+- The user wants a room-hosted workflow such as a contact form to send email correctly.
 - The user wants to inspect or consume incoming mail messages through the CLI or room API.
 
 ## References
@@ -40,6 +41,17 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Inbound email to that mailbox is delivered into the configured queue.
 - The queue name is part of the mailbox configuration. Do not invent it.
 - Creating a mailbox does not by itself create a consumer, service, or agent.
+- For room-hosted outbound email workflows, the mailbox email address is the sender identity to use. Do not synthesize a sender address from the participant name and mail domain.
+
+## Outbound delivery workflow
+
+- For a room-hosted email workflow, first inspect or provision the mailbox that will own the sender address.
+- If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
+- If no mailbox exists and the task requires sending mail from the room, create one before claiming the workflow is complete.
+- Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
+- If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
+- Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
+- If a room website or service needs to send email, keep its durable assets under `/data` rather than `/tmp` or `/src`.
 
 ## Queue inspection
 
@@ -59,11 +71,14 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not hardcode or assume a production-only or development-only mail hostname. Use the domain configured for the current runtime.
 - In a live room workflow, first check whether the default room SMTP values already work before asking the user for manual `SMTP_*` settings.
 - Only ask for explicit SMTP overrides when the room's default username, token, domain, or port is known to be insufficient for the target provider.
+- SMTP transport defaults do not define the sender email address. The sender address should come from the mailbox-backed workflow, not from the participant name.
 
 ## Verification rules
 
 - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
 - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
 - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
+- If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
+- If tool calls fail on `.` `/` `/tmp` or `/src`, switch to room-visible paths under `/data` instead of retrying the same workflow against non-room file paths.
 - If SMTP rejects delivery, report the exact observed blocker.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
