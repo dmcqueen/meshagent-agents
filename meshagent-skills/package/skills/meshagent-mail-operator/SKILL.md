@@ -18,6 +18,11 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 - Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
 
+## Live room execution
+
+- If this skill is running inside a live MeshAgent room runtime, first use the existing MeshAgent CLI session and room context before asking for login or manual re-authentication.
+- If mailbox or queue access is uncertain, try the corresponding room-scoped or mailbox read command first and use the observed result.
+
 ## Primary command groups
 
 - `meshagent mailbox create`
@@ -54,6 +59,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
 - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
 - If SMTP rejects delivery, report the exact observed blocker.
+- Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
 
 ## Out of scope
 
