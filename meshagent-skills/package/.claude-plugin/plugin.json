@@ -1,0 +1,8 @@
+{
+  "name": "meshagent-skills",
+  "version": "0.1.0",
+  "description": "MeshAgent CLI skill pack with commands and skills for room, mail, scheduling, and website workflows.",
+  "author": {
+    "name": "Codex"
+  }
+}
