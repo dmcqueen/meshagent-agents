@@ -1,6 +1,6 @@
 # MeshAgent CLI Help
 
-_Packaged CLI help reference for MeshAgent CLI `0.31.3`._
+_Packaged CLI help reference for MeshAgent CLI `0.31.4`._
 
 _Generated from the installed `meshagent` binary with recursive `--help` capture up to depth 1 and timeout 2s per command._
 
@@ -694,7 +694,7 @@ $ meshagent room --help
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ───────────────────────────────────────────────────────────────────╮
 │ agent      Interact with agents and toolkits                                 │
-│ secret     Manage secrets for your project                                   │
+│ secret     Manage secrets in a room                                          │
 │ queue      Use queues in a room                                              │
 │ messaging  Send and receive messages                                         │
 │ storage    Manage storage for a room                                         │
