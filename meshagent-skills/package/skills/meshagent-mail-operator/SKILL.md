@@ -21,6 +21,24 @@ Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
 
 - Use the companion references in `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
 
+## Primary command groups
+
+- `meshagent mailbox create`
+- `meshagent mailbox show`
+- `meshagent mailbox list`
+- `meshagent mailbox update`
+- `meshagent mailbot join`
+- `meshagent mailbot service`
+- `meshagent mailbot spec`
+- `meshagent mailbot deploy`
+
+## Primary verification surfaces
+
+- `meshagent room agent ...` for toolkit discovery and MailBot interaction checks
+- `meshagent room storage ...` for persisted outbound mail artifacts such as `room://.emails`
+- `meshagent room database ...` for `emails` table checks when the room stores mail evidence there
+- room storage paths under `room://.emails`
+
 ## Default operating model
 
 For simple contact-form and room-email workflows, prefer the smallest working room-local design:
