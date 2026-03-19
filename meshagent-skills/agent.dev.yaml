@@ -827,6 +827,8 @@ container:
           
           - If this skill is running inside a live MeshAgent room agent or room shell, first try the existing runtime context before asking the user to log in again.
           - If `MESHAGENT_ROOM` is present, prefer room-scoped commands and pass `--room "${MESHAGENT_ROOM}"` when the command requires it.
+          - If `MESHAGENT_API_URL` is present and the task needs a default MeshAgent-managed public hostname, derive the suffix from that API URL: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
+          - If `MESHAGENT_API_URL` is absent or does not clearly identify the environment, inspect an existing route in the current project or ask before inventing a managed public hostname.
           - If authentication is uncertain, test a room-scoped read command first. Do not claim that the CLI is unauthenticated until an actual MeshAgent command fails for that reason.
           - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use, not as something to ignore by default.
           
@@ -860,7 +862,7 @@ container:
           
           Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...` and write user-visible artifacts under `/data`.
           For this skill, the current room is the value of `MESHAGENT_ROOM`.
-          For website, route, and public hostname work in this environment, default to `*.meshagent.dev` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+          For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
           
           ## Top-level command policy
           
@@ -889,7 +891,7 @@ container:
           - `meshagent port`
             Use for room port inspection and exposure work tied to the current room. If a `--room` flag is used, it must match the current room.
           - `meshagent webserver`
-            Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer `*.meshagent.dev` hostnames by default in this environment.
+            Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer the managed hostname suffix derived from `MESHAGENT_API_URL` by default in this environment.
           - `meshagent codex`
             Use for Codex-backed runtime operations that stay within room scope.
           - `meshagent multi`
@@ -926,7 +928,7 @@ container:
           - `meshagent mailbox`
             Use for mailbox provisioning or inspection when a room workflow needs it.
           - `meshagent route`
-            Use only when the room task requires route configuration backing the current room's service exposure. Prefer `*.meshagent.dev` hostnames by default in this environment.
+            Use only when the room task requires route configuration backing the current room's service exposure. Prefer the managed hostname suffix derived from `MESHAGENT_API_URL` by default in this environment.
           - `meshagent scheduled-task`
             Use only when the room task requires scheduled execution tied to the current room's workflow.
           - `meshagent helper`
@@ -1885,6 +1887,8 @@ container:
           ## Live room execution
           
           - If this skill is running inside a live MeshAgent room runtime, first use the existing MeshAgent CLI session and room context before asking the user to log in again.
+          - If `MESHAGENT_API_URL` is present and the user wants a default MeshAgent-managed hostname, derive it from the API environment: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
+          - If `MESHAGENT_API_URL` is absent or ambiguous, inspect existing routes or ask before choosing a managed public hostname.
           - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
           
           ## Primary command groups
