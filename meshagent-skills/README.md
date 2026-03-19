@@ -7,15 +7,15 @@ A MeshAgent room agent for operating the MeshAgent CLI end to end. It loads the 
 ## Install Links
 
 Dev
-https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/48877343c2f3d4802c41ac54c670c109c9034235/meshagent-skills/agent.dev.yaml
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c9f1911fd5ca7eb8bda4ac84d32a6f0b59655bf/meshagent-skills/agent.dev.yaml
 
 Prod
-https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4f83cba39fe7257184234d27dfd1e6a7db5b842e/meshagent-skills/agent.prod.yaml
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b162f28c47623e22be766d4c8293766d9fa4f45b/meshagent-skills/agent.prod.yaml
 
 ## Raw SHA Links
 
 Dev
-https://raw.githubusercontent.com/dmcqueen/meshagent-agents/48877343c2f3d4802c41ac54c670c109c9034235/meshagent-skills/agent.dev.yaml
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/2c9f1911fd5ca7eb8bda4ac84d32a6f0b59655bf/meshagent-skills/agent.dev.yaml
 
 Prod
-https://raw.githubusercontent.com/dmcqueen/meshagent-agents/4f83cba39fe7257184234d27dfd1e6a7db5b842e/meshagent-skills/agent.prod.yaml
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b162f28c47623e22be766d4c8293766d9fa4f45b/meshagent-skills/agent.prod.yaml
