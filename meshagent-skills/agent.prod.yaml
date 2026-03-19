@@ -1,0 +1,1942 @@
+version: v1
+kind: ServiceTemplate
+variables: []
+
+metadata:
+  name: meshagent-cli-skill
+  description: "A MeshAgent room agent for operating the MeshAgent CLI end to end. It loads the meshagent-cli-operator skill for general CLI work, the meshagent-mail-operator skill for mail workflows, the meshagent-scheduling-operator skill for scheduled-task workflows, and the meshagent-webmaster-operator skill for websites and routes."
+  annotations:
+    meshagent.service.id: "meshagent.meshagent-cli-skill"
+
+agents:
+  - name: meshagent-cli-skill
+    description: "A chat agent specialized in operating the MeshAgent CLI."
+    annotations:
+      meshagent.agent.type: "ChatBot"
+
+container:
+  image: meshagent/shell-codex:default
+  command: /bin/bash /var/start.sh
+  storage:
+    room:
+      - path: /data
+        read_only: false
+    files:
+      - path: /var/start.sh
+        text: |
+          #!/bin/bash
+          set -euo pipefail
+
+          mkdir -p /data/skills/meshagent-skills
+
+          if [ -d /meshagent-skills ]; then
+            cp -R -n /meshagent-skills/* /data/skills/meshagent-skills/ 2>/dev/null || true
+          fi
+
+          if [ -d /meshagent-skills/.claude-plugin ]; then
+            mkdir -p /data/skills/meshagent-skills/.claude-plugin
+            cp -R -n /meshagent-skills/.claude-plugin/* /data/skills/meshagent-skills/.claude-plugin/ 2>/dev/null || true
+          fi
+
+          if [ ! -f /data/skills/meshagent-skills/skills/meshagent-cli-operator/SKILL.md ]; then
+            echo "Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-cli-operator/SKILL.md" >&2
+            exit 1
+          fi
+
+          if [ ! -f /data/skills/meshagent-skills/skills/meshagent-mail-operator/SKILL.md ]; then
+            echo "Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-mail-operator/SKILL.md" >&2
+            exit 1
+          fi
+
+          if [ ! -f /data/skills/meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md ]; then
+            echo "Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md" >&2
+            exit 1
+          fi
+
+          if [ ! -f /data/skills/meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md ]; then
+            echo "Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md" >&2
+            exit 1
+          fi
+
+          exec /usr/bin/meshagent process join \
+            --room="${MESHAGENT_ROOM}" \
+            --agent-name=meshagent-cli-skill \
+            --channel chat \
+            --working-dir=/data \
+            --require-shell \
+            --require-apply-patch \
+            --require-web-search \
+            --require-web-fetch \
+            --require-storage \
+            --shell-tool-room-path=/:/data \
+            --storage-tool-room-path=/:/data \
+            --shell-image=meshagent/shell-codex:default \
+            --delegate-shell-token \
+            --skill-dir /data/skills/meshagent-skills/skills \
+            --rule='For MeshAgent CLI tasks, use the installed skills from the configured skill dir. Default to meshagent-cli-operator for general CLI work, use meshagent-mail-operator for mailbox, inbox, MailBot, or contact-form email workflows, use meshagent-scheduling-operator for scheduled-task workflows, and use meshagent-webmaster-operator for websites, webservers, routes, or public hostname workflows.'
+
+      - path: /meshagent-skills/.claude-plugin/plugin.json
+        text: |
+          {
+            "name": "meshagent-skills",
+            "version": "0.1.0",
+            "description": "MeshAgent CLI skill pack with commands and skills for room, mail, scheduling, and website workflows.",
+            "author": {
+              "name": "Codex"
+            }
+          }
+
+      - path: /meshagent-skills/README.md
+        text: |
+          # MeshAgent Skills
+          
+          This package contains MeshAgent CLI commands and skills for room operations, mail workflows, scheduled tasks, and website deployment.
+          
+          ## Package layout
+          
+          - `commands/`
+            Slash-command entrypoints for MeshAgent CLI requests.
+          - `skills/meshagent-cli-operator/`
+            General room-scoped MeshAgent CLI operations and the shared room runtime contract for this package.
+          - `skills/meshagent-mail-operator/`
+            Mailbox, MailBot, inbox evidence, and contact-form email workflows.
+          - `skills/meshagent-scheduling-operator/`
+            `meshagent scheduled-task ...` workflows tied to a room or clearly scoped project workflow.
+          - `skills/meshagent-webmaster-operator/`
+            `meshagent webserver ...`, `meshagent route ...`, and public website deployment workflows.
+          
+          ## Review Notes
+          
+          - The machine-readable compatibility source is `compat.json`.
+          - The packaged CLI references are anchored to the MeshAgent CLI version recorded in `compat.json`.
+          - The shared room runtime assumptions for these skills are defined in `skills/meshagent-cli-operator/SKILL.md`.
+          - The generated CLI reference lives at `skills/meshagent-cli-operator/references/meshagent_cli_help.md`.
+          - The package-local maintenance entrypoints live under `scripts/` so the CLI reference can be regenerated and validated from any repository that vendors this package.
+          - User-visible files created by these skills should live under `/data` when running inside the room container.
+          
+          ## Update Workflow
+          
+          1. Install the target MeshAgent CLI version.
+          2. Update `compat.json`.
+          3. Run `python3 scripts/sync_meshagent_cli_reference.py --meshagent-bin <meshagent>` to regenerate `skills/meshagent-cli-operator/references/meshagent_cli_help.md` from the installed CLI.
+          4. Review `skills/meshagent-cli-operator/references/command_groups.md` against `meshagent --help`.
+          5. Run `python3 scripts/validate_meshagent_skills.py --meshagent-bin <meshagent>`.
+          
+          ## Command Map
+          
+          - `commands/meshagent.md`
+            General entrypoint for MeshAgent CLI work.
+          - `commands/meshagent-room.md`
+            Room lifecycle and room-scoped operations.
+          - `commands/meshagent-service.md`
+            Service specs, deploys, MCP, helpers, and webserver-adjacent work.
+          - `commands/meshagent-project.md`
+            Project-scoped administration such as routes, mailboxes, and scheduled tasks.
+          - `commands/meshagent-agent.md`
+            Agent runtime orchestration such as chatbot, worker, mailbot, process, and related runtimes.
+          - `commands/meshagent-inspect.md`
+            Read-only inspection and diagnostics.
+
+      - path: /meshagent-skills/commands/meshagent-agent.md
+        text: |
+          ---
+          description: Join, run, or deploy MeshAgent agent runtimes including chatbot, worker, task-runner, mailbot, voicebot, process, codex, multi, and meeting-transcriber.
+          argument-hint: "<agent runtime task>"
+          ---
+          
+          # /meshagent-agent
+          
+          Use this command for agent runtime orchestration.
+          
+          ## Primary command groups
+          
+          - `meshagent chatbot ...`
+          - `meshagent worker ...`
+          - `meshagent task-runner ...`
+          - `meshagent mailbot ...`
+          - `meshagent voicebot ...`
+          - `meshagent process ...`
+          - `meshagent codex ...`
+          - `meshagent multi ...`
+          - `meshagent meeting-transcriber ...`
+          
+          ## Operating rules
+          
+          1. Identify the target room and runtime type first.
+          2. Use `--help` on the exact runtime command before composing long join or deploy invocations.
+          3. Reuse existing flags, rules files, skill dirs, and environment wiring when modifying an existing agent command.
+          4. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for MailBot-backed contact forms, mailbox-linked delivery flows, or inbox-toolkit work.
+
+      - path: /meshagent-skills/commands/meshagent-inspect.md
+        text: |
+          ---
+          description: Inspect MeshAgent state, sessions, calls, tokens, versions, and other diagnostics without changing resources.
+          argument-hint: "<inspection or troubleshooting task>"
+          ---
+          
+          # /meshagent-inspect
+          
+          Use this command for non-destructive MeshAgent inspection and troubleshooting.
+          
+          ## Primary command groups
+          
+          - `meshagent version`
+          - `meshagent auth whoami`
+          - `meshagent session ...`
+          - `meshagent token ...`
+          - `meshagent call ...`
+          - `meshagent rooms ...`
+          - `meshagent room ...`
+          - `meshagent service show`
+          - `meshagent service list`
+          - `meshagent port ...`
+          
+          ## Operating rules
+          
+          1. Prefer read-only commands first.
+          2. If the request escalates from inspection to mutation, switch to the more specific command file or keep following the skill.
+          3. Include the exact command path you used in the final summary.
+
+      - path: /meshagent-skills/commands/meshagent-project.md
+        text: |
+          ---
+          description: Project-scoped MeshAgent administration for auth, projects, api keys, secrets, webhooks, routes, mailboxes, and scheduled tasks.
+          argument-hint: "<project admin task>"
+          ---
+          
+          # /meshagent-project
+          
+          Use this command when the request is primarily about project-level administration.
+          
+          ## Primary command groups
+          
+          - `meshagent setup`
+          - `meshagent auth ...`
+          - `meshagent project ...`
+          - `meshagent api-key ...`
+          - `meshagent secret ...`
+          - `meshagent webhook ...`
+          - `meshagent mailbox ...`
+          - `meshagent route ...`
+          - `meshagent scheduled-task ...`
+          
+          ## Operating rules
+          
+          1. Confirm the active project before making changes.
+          2. Never print secret values unless the user explicitly asks for them and the command returns them.
+          3. For create or update operations, restate the exact target resource first.
+          4. Verify changes with a read command immediately afterward.
+          5. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for mailbox provisioning tied to room inbox or MailBot workflows.
+          6. Use [SKILL.md](../skills/meshagent-scheduling-operator/SKILL.md) for scheduled-task operations.
+          7. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for route management or public hostname work backing room websites.
+
+      - path: /meshagent-skills/commands/meshagent-room.md
+        text: |
+          ---
+          description: Room lifecycle and room API operations in MeshAgent, including agents, storage, messaging, containers, services, database, memory, and sync.
+          argument-hint: "<room task>"
+          ---
+          
+          # /meshagent-room
+          
+          Use this command when the request targets a room or something running inside a room.
+          
+          ## Primary command groups
+          
+          - `meshagent rooms ...`
+          - `meshagent room agent ...`
+          - `meshagent room secret ...`
+          - `meshagent room queue ...`
+          - `meshagent room messaging ...`
+          - `meshagent room storage ...`
+          - `meshagent room service ...`
+          - `meshagent room developer ...`
+          - `meshagent room database ...`
+          - `meshagent room memory ...`
+          - `meshagent room container ...`
+          - `meshagent room sync ...`
+          - `meshagent port ...`
+          
+          ## Operating rules
+          
+          1. Resolve the room name first.
+          2. Inspect current room state before changing it.
+          3. Use the room-scoped command instead of the project-scoped equivalent when the request is clearly about a single room.
+          4. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for room websites, webserver deploys, or public site exposure tied to this room.
+
+      - path: /meshagent-skills/commands/meshagent-service.md
+        text: |
+          ---
+          description: Service and deployment workflows in MeshAgent, including service specs, templates, MCP bridges, helper services, and webservers.
+          argument-hint: "<service or deployment task>"
+          ---
+          
+          # /meshagent-service
+          
+          Use this command for MeshAgent service lifecycle and service-adjacent runtime operations.
+          
+          ## Primary command groups
+          
+          - `meshagent service ...`
+          - `meshagent mcp ...`
+          - `meshagent helper ...`
+          - `meshagent webserver ...`
+          - `meshagent codex ...`
+          
+          ## Operating rules
+          
+          1. Inspect or validate specs before create or update when possible.
+          2. Prefer `validate`, `render-template`, `show`, or `list` before destructive or state-changing commands.
+          3. After deploy or update, verify the resulting service state and surface any follow-up steps.
+          4. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for websites, `meshagent webserver ...`, public URL delivery, or route-backed site exposure.
+
+      - path: /meshagent-skills/commands/meshagent.md
+        text: |
+          ---
+          description: General MeshAgent CLI operator. Route a request to the right meshagent subcommand and execute it safely.
+          argument-hint: "<goal, room, service, project, or meshagent command>"
+          ---
+          
+          # /meshagent
+          
+          Use this command for any request that involves the MeshAgent CLI.
+          
+          ## Workflow
+          
+          1. Start with [SKILL.md](../skills/meshagent-cli-operator/SKILL.md).
+          2. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for contact forms, email delivery, mailboxes, inbox evidence, or MailBot toolkits.
+          3. Use [SKILL.md](../skills/meshagent-scheduling-operator/SKILL.md) for scheduled tasks, cron-based dispatch, or queue scheduling.
+          4. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for websites, webservers, routes, domains, or public URL exposure.
+          5. Pick the narrowest MeshAgent command path that fits the request.
+          6. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) or run `meshagent <path> --help`.
+          7. Prefer inspection before mutation.
+          8. After any change, verify with the corresponding `show`, `list`, or read command.
+          
+          ## Coverage
+          
+          This command is the generic entrypoint for:
+          - auth and setup
+          - projects, api keys, secrets, routes, webhooks, mailboxes, and scheduled tasks
+          - rooms, room APIs, ports, sessions, calls, and participant tokens
+          - services, MCP bridges, webservers, and helper services
+          - chatbot, worker, task-runner, mailbot, voicebot, process, codex, multi, and meeting-transcriber flows
+
+      - path: /meshagent-skills/compat.json
+        text: |
+          {
+            "meshagent_cli_version": "0.31.3"
+          }
+
+      - path: /meshagent-skills/scripts/sync_meshagent_cli_reference.py
+        text: |
+          #!/usr/bin/env python3
+          import argparse
+          import json
+          import re
+          import subprocess
+          import sys
+          from collections import deque
+          from pathlib import Path
+          
+          
+          SKILLS_ROOT = Path(__file__).resolve().parents[1]
+          DEFAULT_BIN = Path("meshagent")
+          DEFAULT_COMPAT = SKILLS_ROOT / "compat.json"
+          DEFAULT_OUTPUT = (
+              SKILLS_ROOT
+              / "skills"
+              / "meshagent-cli-operator"
+              / "references"
+              / "meshagent_cli_help.md"
+          )
+          DEFAULT_DISPLAY_BIN = "meshagent"
+          
+          
+          def parse_args() -> argparse.Namespace:
+              parser = argparse.ArgumentParser(
+                  description="Generate the packaged MeshAgent CLI help reference."
+              )
+              parser.add_argument(
+                  "--meshagent-bin",
+                  default=str(DEFAULT_BIN),
+                  help=f"Path to meshagent CLI. Default: {DEFAULT_BIN}",
+              )
+              parser.add_argument(
+                  "--compat-json",
+                  default=str(DEFAULT_COMPAT),
+                  help=f"Path to compat.json. Default: {DEFAULT_COMPAT}",
+              )
+              parser.add_argument(
+                  "--output",
+                  default=str(DEFAULT_OUTPUT),
+                  help=f"Path to meshagent_cli_help.md. Default: {DEFAULT_OUTPUT}",
+              )
+              parser.add_argument(
+                  "--display-bin",
+                  default=DEFAULT_DISPLAY_BIN,
+                  help=f"Command label to render in console examples. Default: {DEFAULT_DISPLAY_BIN}",
+              )
+              parser.add_argument(
+                  "--max-depth",
+                  type=int,
+                  default=1,
+                  help="Maximum command depth to crawl from the root. Default: 1",
+              )
+              parser.add_argument(
+                  "--timeout-seconds",
+                  type=int,
+                  default=2,
+                  help="Per-command help timeout in seconds. Default: 2",
+              )
+              return parser.parse_args()
+          
+          
+          def load_cli_version(path: Path) -> str:
+              payload = json.loads(path.read_text(encoding="utf-8"))
+              version = payload.get("meshagent_cli_version")
+              if not isinstance(version, str) or not version.strip():
+                  raise ValueError(f"meshagent_cli_version missing in {path}")
+              return version.strip()
+          
+          
+          def parse_commands(help_text: str) -> list[str]:
+              commands: list[str] = []
+              in_commands = False
+              for line in help_text.splitlines():
+                  if re.match(r"^╭─ Commands ", line):
+                      in_commands = True
+                      continue
+                  if in_commands and line.startswith("╰"):
+                      in_commands = False
+                      continue
+                  if not in_commands:
+                      continue
+                  stripped = line.strip()
+                  if not stripped.startswith("│"):
+                      continue
+                  inner = stripped.strip("│").strip()
+                  if not inner:
+                      continue
+                  name = inner.split()[0]
+                  if name.startswith("-"):
+                      continue
+                  commands.append(name)
+              return commands
+          
+          
+          def run_help(meshagent_bin: str, path: list[str], timeout_seconds: int) -> tuple[int, str, bool]:
+              cmd = [meshagent_bin] + path + ["--help"]
+              try:
+                  completed = subprocess.run(
+                      cmd,
+                      capture_output=True,
+                      text=True,
+                      timeout=timeout_seconds,
+                  )
+                  output = completed.stdout if completed.stdout else completed.stderr
+                  return completed.returncode, output.rstrip(), False
+              except subprocess.TimeoutExpired as exc:
+                  output = (exc.stdout or "") or (exc.stderr or "")
+                  if isinstance(output, bytes):
+                      output = output.decode("utf-8", errors="replace")
+                  output = output.rstrip()
+                  return 124, output, True
+          
+          
+          def heading_for(path: list[str]) -> str:
+              level = 2 + max(len(path) - 1, 0)
+              hashes = "#" * min(level, 6)
+              command = "meshagent" if not path else "meshagent " + " ".join(path)
+              return f"{hashes} `{command}`"
+          
+          
+          def render_reference(
+              meshagent_bin: str,
+              display_bin: str,
+              cli_version: str,
+              max_depth: int,
+              timeout_seconds: int,
+          ) -> str:
+              queue: deque[list[str]] = deque([[]])
+              seen: set[tuple[str, ...]] = set()
+              sections: list[str] = []
+          
+              while queue:
+                  path = queue.popleft()
+                  key = tuple(path)
+                  if key in seen:
+                      continue
+                  seen.add(key)
+          
+                  returncode, output, timed_out = run_help(meshagent_bin, path, timeout_seconds)
+                  sections.append(heading_for(path))
+                  sections.append("")
+                  cmd = "$ " + " ".join([display_bin] + path + ["--help"])
+                  sections.append("```console")
+                  sections.append(cmd)
+                  if output:
+                      sections.append(output)
+                  sections.append("```")
+                  if returncode != 0:
+                      status = "timed out" if timed_out else f"exited with code {returncode}"
+                      sections.append("")
+                      sections.append(f"_Help capture {status} for this command path._")
+                      sections.append("")
+                      continue
+                  sections.append("")
+          
+                  if len(path) >= max_depth:
+                      continue
+          
+                  for command in parse_commands(output):
+                      queue.append(path + [command])
+          
+              lines = [
+                  "# MeshAgent CLI Help",
+                  "",
+                  f"_Packaged CLI help reference for MeshAgent CLI `{cli_version}`._",
+                  "",
+                  (
+                      f"_Generated from the installed `meshagent` binary with recursive `--help` capture "
+                      f"up to depth {max_depth} and timeout {timeout_seconds}s per command._"
+                  ),
+                  "",
+              ]
+              lines.extend(sections)
+              return "\n".join(lines).rstrip() + "\n"
+          
+          
+          def main() -> int:
+              args = parse_args()
+              compat_path = Path(args.compat_json).resolve()
+              output_path = Path(args.output).resolve()
+              meshagent_bin = args.meshagent_bin
+          
+              if "/" in meshagent_bin:
+                  meshagent_path = Path(meshagent_bin).resolve()
+                  meshagent_bin = str(meshagent_path)
+                  if not meshagent_path.is_file():
+                      print(f"meshagent CLI not found: {meshagent_path}", file=sys.stderr)
+                      return 1
+          
+              cli_version = load_cli_version(compat_path)
+              rendered = render_reference(
+                  meshagent_bin=meshagent_bin,
+                  display_bin=args.display_bin,
+                  cli_version=cli_version,
+                  max_depth=args.max_depth,
+                  timeout_seconds=args.timeout_seconds,
+              )
+              output_path.write_text(rendered, encoding="utf-8")
+              print(f"Wrote {output_path}")
+              return 0
+          
+          
+          if __name__ == "__main__":
+              raise SystemExit(main())
+
+      - path: /meshagent-skills/scripts/validate_meshagent_skills.py
+        text: |
+          #!/usr/bin/env python3
+          import argparse
+          import json
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+          
+          
+          SKILLS_ROOT = Path(__file__).resolve().parents[1]
+          DEFAULT_BIN = Path("meshagent")
+          DEFAULT_COMPAT = SKILLS_ROOT / "compat.json"
+          DEFAULT_README = SKILLS_ROOT / "README.md"
+          DEFAULT_PLUGIN = SKILLS_ROOT / ".claude-plugin" / "plugin.json"
+          DEFAULT_SKILL = SKILLS_ROOT / "skills" / "meshagent-cli-operator" / "SKILL.md"
+          DEFAULT_COMMAND_GROUPS = (
+              SKILLS_ROOT
+              / "skills"
+              / "meshagent-cli-operator"
+              / "references"
+              / "command_groups.md"
+          )
+          DEFAULT_HELP = (
+              SKILLS_ROOT
+              / "skills"
+              / "meshagent-cli-operator"
+              / "references"
+              / "meshagent_cli_help.md"
+          )
+          SPECIALIZED_SKILLS = {
+              "meshagent-mail-operator": SKILLS_ROOT
+              / "skills"
+              / "meshagent-mail-operator"
+              / "SKILL.md",
+              "meshagent-scheduling-operator": SKILLS_ROOT
+              / "skills"
+              / "meshagent-scheduling-operator"
+              / "SKILL.md",
+              "meshagent-webmaster-operator": SKILLS_ROOT
+              / "skills"
+              / "meshagent-webmaster-operator"
+              / "SKILL.md",
+          }
+          SHARED_RUNTIME_LINE = "Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`."
+          SHARED_RUNTIME_DUPLICATES = (
+              "The MeshAgent CLI is expected at `/usr/bin/meshagent`",
+              "The current room is `MESHAGENT_ROOM`.",
+              "The writable user-visible workspace is `/data`.",
+              "The default public MeshAgent domain in this environment is `meshagent.app`.",
+          )
+          
+          
+          def parse_args() -> argparse.Namespace:
+              parser = argparse.ArgumentParser(description="Validate meshagent-skills consistency.")
+              parser.add_argument(
+                  "--meshagent-bin",
+                  default=str(DEFAULT_BIN),
+                  help=f"Path to meshagent CLI. Default: {DEFAULT_BIN}",
+              )
+              parser.add_argument(
+                  "--compat-json",
+                  default=str(DEFAULT_COMPAT),
+                  help=f"Path to compat.json. Default: {DEFAULT_COMPAT}",
+              )
+              return parser.parse_args()
+          
+          
+          def load_text(path: Path) -> str:
+              return path.read_text(encoding="utf-8")
+          
+          
+          def parse_top_level_commands(help_text: str) -> set[str]:
+              commands: set[str] = set()
+              in_commands = False
+              for line in help_text.splitlines():
+                  if re.match(r"^╭─ Commands ", line):
+                      in_commands = True
+                      continue
+                  if in_commands and line.startswith("╰"):
+                      break
+                  if not in_commands:
+                      continue
+                  stripped = line.strip()
+                  if not stripped.startswith("│"):
+                      continue
+                  inner = stripped.strip("│").strip()
+                  if not inner:
+                      continue
+                  commands.add(inner.split()[0])
+              return commands
+          
+          
+          def referenced_top_level_commands(command_groups_text: str) -> set[str]:
+              refs: set[str] = set()
+              for match in re.finditer(r"`meshagent ([a-z0-9-]+)", command_groups_text):
+                  refs.add(match.group(1))
+              return refs
+          
+          
+          def main() -> int:
+              args = parse_args()
+              meshagent_bin = args.meshagent_bin
+              compat_path = Path(args.compat_json).resolve()
+          
+              if "/" in meshagent_bin:
+                  meshagent_path = Path(meshagent_bin).resolve()
+                  meshagent_bin = str(meshagent_path)
+                  if not meshagent_path.is_file():
+                      print(f"meshagent CLI not found: {meshagent_path}", file=sys.stderr)
+                      return 1
+          
+              compat = json.loads(compat_path.read_text(encoding="utf-8"))
+              expected_version = compat.get("meshagent_cli_version")
+              if not isinstance(expected_version, str) or not expected_version.strip():
+                  print("compat.json is missing meshagent_cli_version", file=sys.stderr)
+                  return 1
+              expected_version = expected_version.strip()
+          
+              version_proc = subprocess.run(
+                  [meshagent_bin, "version"], capture_output=True, text=True
+              )
+              if version_proc.returncode != 0:
+                  print(version_proc.stderr or version_proc.stdout, file=sys.stderr)
+                  return 1
+              actual_version = version_proc.stdout.strip()
+          
+              help_proc = subprocess.run(
+                  [meshagent_bin, "--help"], capture_output=True, text=True
+              )
+              if help_proc.returncode != 0:
+                  print(help_proc.stderr or help_proc.stdout, file=sys.stderr)
+                  return 1
+          
+              top_level = parse_top_level_commands(help_proc.stdout)
+              command_groups_text = load_text(DEFAULT_COMMAND_GROUPS)
+              referenced = referenced_top_level_commands(command_groups_text)
+              missing = sorted(cmd for cmd in referenced if cmd not in top_level)
+          
+              readme_text = load_text(DEFAULT_README)
+              plugin_text = load_text(DEFAULT_PLUGIN)
+              skill_text = load_text(DEFAULT_SKILL)
+              help_text = load_text(DEFAULT_HELP)
+          
+              errors: list[str] = []
+              if actual_version != expected_version:
+                  errors.append(
+                      f"compat.json expects MeshAgent CLI {expected_version}, but installed version is {actual_version}"
+                  )
+              if "compat.json" not in readme_text:
+                  errors.append("README.md does not reference compat.json")
+              if "compat.json" not in skill_text:
+                  errors.append("SKILL.md does not reference compat.json")
+              if "compat.json" not in command_groups_text:
+                  errors.append("command_groups.md does not reference compat.json")
+              if expected_version not in help_text:
+                  errors.append(
+                      f"meshagent_cli_help.md does not mention MeshAgent CLI {expected_version}"
+                  )
+              if "$ meshagent --help" not in help_text:
+                  errors.append("meshagent_cli_help.md should render console examples with `meshagent`")
+              if "/.venv/bin/meshagent" in help_text:
+                  errors.append("meshagent_cli_help.md should not embed repo-local meshagent paths")
+              if "MeshAgent CLI skill pack" not in plugin_text:
+                  errors.append("plugin.json description does not match the expected package label")
+              if missing:
+                  errors.append(
+                      "command_groups.md references commands not present in meshagent --help: "
+                      + ", ".join(missing)
+                  )
+              for skill_name, skill_path in SPECIALIZED_SKILLS.items():
+                  specialized_text = load_text(skill_path)
+                  if SHARED_RUNTIME_LINE not in specialized_text:
+                      errors.append(f"{skill_name} does not use the shared runtime reference")
+                  for duplicate_line in SHARED_RUNTIME_DUPLICATES:
+                      if duplicate_line in specialized_text:
+                          errors.append(
+                              f"{skill_name} duplicates shared runtime detail: {duplicate_line}"
+                          )
+          
+              if errors:
+                  for error in errors:
+                      print(f"- {error}", file=sys.stderr)
+                  return 1
+          
+              print(f"Validated meshagent-skills against MeshAgent CLI {expected_version}")
+              return 0
+          
+          
+          if __name__ == "__main__":
+              raise SystemExit(main())
+
+      - path: /meshagent-skills/skills/meshagent-cli-operator/SKILL.md
+        text: |
+          ---
+          name: meshagent-cli-operator
+          description: Operate the MeshAgent CLI primarily at room scope. Use this skill for inspecting, updating, deploying, and troubleshooting the current room, its storage, its services, and room-scoped MeshAgent runtimes. Do not use this skill for meshagent auth or meshagent setup workflows.
+          ---
+          
+          # MeshAgent CLI Operator
+          
+          Use this skill for any task that should be completed with the MeshAgent CLI.
+          
+          ## Runtime assumptions
+          
+          This skill assumes it is running inside a MeshAgent room container based on `meshagent/shell-codex:default`.
+          
+          - The MeshAgent CLI is expected at `/usr/bin/meshagent`.
+          - `meshagent` on `PATH` is an acceptable fallback.
+          - `MESHAGENT_TOKEN` may be present for room-scoped MeshAgent access and delegated shell execution.
+          - The current room is the value of `MESHAGENT_ROOM`.
+          - The default public MeshAgent domain in this environment is `meshagent.app`.
+          - The user-visible room filesystem is mounted at `/data`.
+          - To create or modify files the user should see, write them under `/data` and report paths relative to `/data`.
+          - Do not assume a repo-local virtualenv or checkout exists inside the container.
+          - Do not install packages into `/data`.
+          
+          ## Quick start
+          
+          1. Resolve the CLI binary.
+          2. Identify the narrowest command path that matches the request.
+          3. If flags are uncertain, consult `references/command_groups.md`, then `references/meshagent_cli_help.md`, or run `meshagent <path> --help`.
+          4. Use `meshagent-mail-operator` for mailbox provisioning, inbox evidence, MailBot toolkits, or contact-form email delivery.
+          5. Use `meshagent-scheduling-operator` for scheduled-task creation, update, verification, pause, resume, or deletion.
+          6. Use `meshagent-webmaster-operator` for websites, `meshagent webserver ...`, routes, or public hostname exposure.
+          7. Prefer read-only inspection before mutation.
+          8. After a change, verify the result with the corresponding read command.
+          
+          ## Resolve the CLI
+          
+          Prefer these paths in order:
+          
+          1. `/usr/bin/meshagent`
+          2. `meshagent`
+          
+          If neither exists, stop and report that the MeshAgent CLI is unavailable.
+          
+          ## Command routing
+          
+          Start with `references/command_groups.md` to choose the right area:
+          
+          - room lifecycle and room APIs
+          - service and deployment workflows
+          - agent runtime orchestration
+          - inspection and diagnostics
+          
+          Use `references/meshagent_cli_help.md` for the exact installed command tree and flags.
+          
+          Follow the explicit top-level command policy in `references/command_groups.md`:
+          
+          - `USE`: normal command family for this skill
+          - `USE WITH CAUTION`: allowed only when clearly needed and tightly scoped
+          - `DON'T USE`: out of scope for this skill
+          
+          ## Operating rules
+          
+          - Scope the target first: room, room service, room storage path, room participant, room queue, room port, or agent runtime.
+          - Prefer the smallest command path that can complete the task.
+          - Use `--help` on the exact subcommand before composing long invocations.
+          - When executing commands in this runtime, prefer `/usr/bin/meshagent ...` so command examples match the container image.
+          - This skill is primarily for room-scoped work in the current room. Prefer `meshagent room ...`, room service commands, service deployment into the current room, room storage access, and runtime commands that operate within the current room.
+          - If a command accepts `--room`, it must target `MESHAGENT_ROOM` only. Omit `--room` when the command already defaults to the current room, or set it explicitly to `MESHAGENT_ROOM`. Do not use a different room value.
+          - For website, route, and public hostname work, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+          - When the user asks to make, update, or deploy a site in room context, create or deploy the site in the current room and return the resulting public URL. Do not stop at local file edits or local build success when the requested outcome is a live room site.
+          - Do not modify unrelated example apps, sample repos, bundled SDK examples, or maintainer reference projects to satisfy a room deployment request. For room-site work, create or update the assets and services that belong to the current room workflow.
+          - When authorization is uncertain, test the actual target read command for the current room before concluding that authentication is missing.
+          - Treat `/data` as the writable user-visible workspace. If a command writes files for the user, keep them under `/data`.
+          - Do not expose secret values unless the user explicitly asks for them.
+          - Treat delete and overwrite operations as destructive. Confirm the target and blast radius before executing them.
+          - After create, update, deploy, or delete, run the appropriate verification command and summarize the resulting state.
+          
+          ## Out Of Scope
+          
+          Do not use these commands as part of this skill:
+          
+          - `meshagent auth ...`
+          - `meshagent setup`
+          - `meshagent api-key ...`
+          - `meshagent project create`
+          - `meshagent project activate -i`
+          - `meshagent token generate`
+          - `meshagent secret ...`
+          
+          Avoid these project-wide or account-wide command families unless the user explicitly asks for them and the task clearly cannot be completed with room-scoped commands:
+          
+          - `meshagent project ...`
+          - `meshagent webhook ...`
+          - `meshagent route ...`
+          - `meshagent scheduled-task ...`
+          - project-wide `meshagent service ...` operations that are not targeting the current room
+          
+          Treat these command families as `USE WITH CAUTION`, not defaults:
+          
+          - `meshagent project list`
+          - `meshagent project activate PROJECT_ID` only when a room task clearly requires switching to a specific existing project first
+          - `meshagent webhook ...`
+          - `meshagent route ...`
+          - `meshagent scheduled-task ...`
+          - `meshagent helper ...`
+          
+          ## Bundled resources
+          
+          - `references/command_groups.md`: fast routing map for the CLI.
+          - `references/meshagent_cli_help.md`: packaged CLI help reference for the MeshAgent CLI version recorded in `compat.json`.
+
+      - path: /meshagent-skills/skills/meshagent-cli-operator/references/command_groups.md
+        text: |
+          # MeshAgent CLI command groups
+          
+          Use this file to choose the narrowest MeshAgent CLI area before reading the full help reference.
+          This reference set is anchored to the MeshAgent CLI version recorded in `compat.json`.
+          
+          Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...` and write user-visible artifacts under `/data`.
+          For this skill, the current room is the value of `MESHAGENT_ROOM`.
+          For website, route, and public hostname work in this environment, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+          
+          ## Top-level command policy
+          
+          Use the following status values exactly:
+          
+          - `USE`: normal command family for this skill.
+          - `USE WITH CAUTION`: allowed only when clearly needed and with tight scope.
+          - `DON'T USE`: out of scope for this skill.
+          
+          ### `USE`
+          
+          - `meshagent call`
+            Use for room-scoped inspection, verification, or targeted invocation when the task is about the current room or a room-local agent/tool.
+          - `meshagent session`
+            Use for diagnostics, active session inspection, and troubleshooting related to the current room workflow.
+          - `meshagent token`
+            Use for token inspection or troubleshooting when it is directly relevant to the current room task. Do not use `meshagent token generate`.
+          - `meshagent service`
+            Use for service validation, rendering, inspection, and deployment when the target is the current room or a room-specific service flow. If a `--room` flag is used, it must match the current room. Do not use project-global service modes.
+          - `meshagent mcp`
+            Use for room-relevant MCP bridge or connector work when it supports the current room workflow.
+          - `meshagent rooms`
+            Use for room listing, inspection, and room creation/update/delete only when the user explicitly wants room lifecycle work in the current project. If a command targets a room by name or ID, do not use it for a room other than the current room unless the user explicitly asks for room lifecycle work.
+          - `meshagent meeting-transcriber`
+            Use for transcriber runtime flows when the task is clearly about deploying or operating that runtime.
+          - `meshagent port`
+            Use for room port inspection and exposure work tied to the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent webserver`
+            Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer `*.meshagent.app` hostnames by default in this environment.
+          - `meshagent codex`
+            Use for Codex-backed runtime operations that stay within room scope.
+          - `meshagent multi`
+            Use for multi-agent runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent voicebot`
+            Use for voicebot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent chatbot`
+            Use for chatbot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent process`
+            Use for process-backed room agents in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent mailbot`
+            Use for mailbot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent task-runner`
+            Use for task-runner deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent worker`
+            Use for worker runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent room`
+            Use first for room-scoped agents, services, storage, messaging, database, memory, containers, sync, and developer operations in the current room.
+          
+          ### `USE WITH CAUTION`
+          
+          - `meshagent version`
+            Use only when the user explicitly asks about the installed CLI version or version-specific behavior.
+          - `meshagent project`
+            Use only for project context needed to complete room work. Subcommand policy:
+            - `meshagent project list`: allowed for read-only discovery of available projects.
+            - `meshagent project activate PROJECT_ID`: allowed only when a room task clearly requires switching to a specific existing project first.
+            - `meshagent project activate -i`: don't use, because the interactive flow can create a new project.
+            - `meshagent project create`: don't use, because creating new projects is broader than this skill's room-focused scope.
+          - `meshagent webhook`
+            Use only when the room task requires project-level webhook configuration tied to the room's workflow.
+          - `meshagent secret`
+            Don't use. Project secret management is broader than this skill's room-focused scope.
+          - `meshagent mailbox`
+            Use for mailbox provisioning or inspection when a room workflow needs it.
+          - `meshagent route`
+            Use only when the room task requires route configuration backing the current room's service exposure. Prefer `*.meshagent.app` hostnames by default in this environment.
+          - `meshagent scheduled-task`
+            Use only when the room task requires scheduled execution tied to the current room's workflow.
+          - `meshagent helper`
+            Use only when the user explicitly needs developer helper HTTP services such as hosted schemas or toolkits.
+          
+          ### `DON'T USE`
+          
+          - `meshagent setup`
+            Do not use. Initial CLI setup is out of scope for this skill.
+          - `meshagent auth`
+            Do not use. Interactive auth and user-session management are out of scope for this skill.
+          - `meshagent api-key`
+            Do not use. API key creation and management are out of scope for this skill.
+          - `meshagent token generate`
+            Do not use. Minting participant tokens is broader than this skill's room-focused scope.
+          - `meshagent project create`
+            Do not use. Creating new projects is broader than this skill's room-focused scope.
+          - `meshagent project activate -i`
+            Do not use. The interactive activation flow can create new projects and is too broad for this skill.
+          - `meshagent secret`
+            Do not use. Project secret management is broader than this skill's room-focused scope.
+          
+          ## Preferred routing
+          
+          - For room-scoped tasks, start with `meshagent room ...`.
+          - For runtime deployment tasks, prefer the specific runtime family such as `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, `meshagent webserver ...`, or `meshagent multi ...`.
+          - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
+          - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
+          - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
+          - For room-site requests, deploy in the current room and return the public URL. Do not treat local example-app edits or local build output as completion of a room deployment request.
+          - Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
+          - Use `meshagent-scheduling-operator` for scheduled-task creation, update, pause, resume, or deletion.
+          - Use `meshagent-webmaster-operator` for websites, `meshagent webserver ...`, routes, or public hostname exposure.
+          - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
+          
+          ## Notes
+          
+          - `meshagent room ...` is the deepest public area. Use it for room-scoped agents, storage, messaging, services, database tables, memories, containers, and sync.
+          - For this skill, prefer room-scoped commands over project-scoped commands whenever both could satisfy the request.
+          - The help reference documents command names and flags. In this runtime, prefer `/usr/bin/meshagent` as the executable path.
+
+      - path: /meshagent-skills/skills/meshagent-cli-operator/references/meshagent_cli_help.md
+        text: |
+          # MeshAgent CLI Help
+          
+          _Packaged CLI help reference for MeshAgent CLI `0.31.3`._
+          
+          _Generated from the installed `meshagent` binary with recursive `--help` capture up to depth 1 and timeout 2s per command._
+          
+          ## `meshagent`
+          
+          ```console
+          $ meshagent --help
+                                                                                          
+           Usage: meshagent [OPTIONS] COMMAND [ARGS]...                                   
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --install-completion          Install completion for the current shell.      │
+          │ --show-completion             Show completion for the current shell, to copy │
+          │                               it or customize the installation.              │
+          │ --help                        Show this message and exit.                    │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ version              Print the version                                       │
+          │ setup                Perform initial login and project/api key activation.   │
+          │ call                 Trigger agent/tool calls via URL                        │
+          │ auth                 Authenticate to meshagent                               │
+          │ project              Manage or activate your meshagent projects              │
+          │ api-key              Manage or activate api-keys for your project            │
+          │ session              Inspect recent sessions and events                      │
+          │ token                Generate participant tokens (JWTs)                      │
+          │ webhook              Manage project webhooks                                 │
+          │ service              Manage services for your project                        │
+          │ mcp                  Bridge MCP servers into MeshAgent rooms                 │
+          │ secret               Manage secrets for your project.                        │
+          │ helper               Developer helper services                               │
+          │ rooms                Create, list, and manage rooms in a project             │
+          │ mailbox              Manage mailboxes for your project                       │
+          │ route                Manage routes for your project                          │
+          │ scheduled-task       Manage scheduled tasks for your project                 │
+          │ meeting-transcriber  Join a meeting transcriber to a room                    │
+          │ port                 Port forwarding into room containers                    │
+          │ webserver            Run an HTTP webserver connected to a MeshAgent room.    │
+          │ codex                Codex-backed agents                                     │
+          │ multi                Connect agents and tools to a room                      │
+          │ voicebot             Join a voicebot to a room                               │
+          │ chatbot              Join a chatbot to a room                                │
+          │ process              Join a process-backed agent to a room                   │
+          │ mailbot              Join a mailbot to a room                                │
+          │ task-runner          Join a taskrunner to a room                             │
+          │ worker               Join a worker agent to a room                           │
+          │ room                 Operate within a room                                   │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent version`
+          
+          ```console
+          $ meshagent version --help
+                                                                                          
+           Usage: meshagent version [OPTIONS]                                             
+                                                                                          
+           Print the version                                                              
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent setup`
+          
+          ```console
+          $ meshagent setup --help
+                                                                                          
+           Usage: meshagent setup [OPTIONS]                                               
+                                                                                          
+           Perform initial login and project/api key activation.                          
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent call`
+          
+          ```console
+          $ meshagent call --help
+                                                                                          
+           Usage: meshagent call [OPTIONS] COMMAND [ARGS]...                              
+                                                                                          
+           Trigger agent/tool calls via URL                                               
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ tool     Send a call request to a tool webhook URL                           │
+          │ agent    Send a call request to an agent webhook URL                         │
+          │ toolkit  Send a call request to a toolkit webhook URL                        │
+          │ schema   Send a call request to a schema webhook URL                         │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent auth`
+          
+          ```console
+          $ meshagent auth --help
+                                                                                          
+           Usage: meshagent auth [OPTIONS] COMMAND [ARGS]...                              
+                                                                                          
+           Authenticate to meshagent                                                      
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ login                                                                        │
+          │ logout                                                                       │
+          │ whoami                                                                       │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent project`
+          
+          ```console
+          $ meshagent project --help
+                                                                                          
+           Usage: meshagent project [OPTIONS] COMMAND [ARGS]...                           
+                                                                                          
+           Manage or activate your meshagent projects                                     
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ create    Create a new MeshAgent project.                                    │
+          │ list      List projects and mark the currently active one.                   │
+          │ activate  Set the active project for subsequent CLI commands.                │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent api-key`
+          
+          ```console
+          $ meshagent api-key --help
+                                                                                          
+           Usage: meshagent api-key [OPTIONS] COMMAND [ARGS]...                           
+                                                                                          
+           Manage or activate api-keys for your project                                   
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ list      List API keys for a project.                                       │
+          │ create    Create a new API key for a project.                                │
+          │ activate  Set the default API key for a project in local CLI settings.       │
+          │ delete    Delete an API key from a project.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent session`
+          
+          ```console
+          $ meshagent session --help
+                                                                                          
+           Usage: meshagent session [OPTIONS] COMMAND [ARGS]...                           
+                                                                                          
+           Inspect recent sessions and events                                             
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ list  List recent sessions                                                   │
+          │ show  Show events for a session                                              │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent token`
+          
+          ```console
+          $ meshagent token --help
+                                                                                          
+           Usage: meshagent token [OPTIONS] COMMAND [ARGS]...                             
+                                                                                          
+           Generate participant tokens (JWTs)                                             
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ generate  Generate a participant token (JWT) from a spec                     │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent webhook`
+          
+          ```console
+          $ meshagent webhook --help
+                                                                                          
+           Usage: meshagent webhook [OPTIONS] COMMAND [ARGS]...                           
+                                                                                          
+           Manage project webhooks                                                        
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ create  Create a webhook                                                     │
+          │ list    List webhooks                                                        │
+          │ delete  Delete a webhook                                                     │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent service`
+          
+          ```console
+          $ meshagent service --help
+                                                                                          
+           Usage: meshagent service [OPTIONS] COMMAND [ARGS]...                           
+                                                                                          
+           Manage services for your project                                               
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ spec               Render a service or template YAML spec without creating a │
+          │                    service.                                                  │
+          │ create             Create a service attached to the project.                 │
+          │ update             Create a service attached to the project.                 │
+          │ validate           Validate a service spec from a YAML file.                 │
+          │ create-template    Create a service from a ServiceTemplate spec.             │
+          │ update-template    Update a service using a ServiceTemplate spec.            │
+          │ validate-template  Validate a service template from a YAML file.             │
+          │ render-template    Render a service template with variables and print the    │
+          │                    rendered YAML.                                            │
+          │ run                Run a local command and register it as a temporary room   │
+          │                    service.                                                  │
+          │ show               Show a services for the project.                          │
+          │ list               List all services for the project.                        │
+          │ delete             Delete a service.                                         │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent mcp`
+          
+          ```console
+          $ meshagent mcp --help
+                                                                                          
+           Usage: meshagent mcp [OPTIONS] COMMAND [ARGS]...                               
+                                                                                          
+           Bridge MCP servers into MeshAgent rooms                                        
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ sse            Connect an MCP server over SSE and register it as a toolkit   │
+          │ http           Connect an MCP server over streamable HTTP and register it as │
+          │                a toolkit                                                     │
+          │ stdio          Run an MCP server over stdio and register it as a toolkit     │
+          │ http-proxy     Expose a stdio MCP server over streamable HTTP                │
+          │ sse-proxy      Expose a stdio MCP server over SSE                            │
+          │ stdio-service  Run a stdio MCP server as an HTTP service                     │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent secret`
+          
+          ```console
+          $ meshagent secret --help
+                                                                                          
+           Usage: meshagent secret [OPTIONS] COMMAND [ARGS]...                            
+                                                                                          
+           Manage secrets for your project.                                               
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ list    List all secrets in the project (typed as Docker/ACR/GAR or Keys     │
+          │         secrets).                                                            │
+          │ delete  Delete a secret.                                                     │
+          │ key     Create or update environment-based key-value secrets.                │
+          │ docker  Create or update a Docker registry pull secret.                      │
+          │ acr     Create or update an Azure Container Registry pull secret.            │
+          │ gar     Create or update a Google Artifact Registry pull secret.             │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent helper`
+          
+          ```console
+          $ meshagent helper --help
+                                                                                          
+           Usage: meshagent helper [OPTIONS] COMMAND [ARGS]...                            
+                                                                                          
+           Developer helper services                                                      
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ service  Run local helper HTTP services                                      │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent rooms`
+          
+          ```console
+          $ meshagent rooms --help
+                                                                                          
+           Usage: meshagent rooms [OPTIONS] COMMAND [ARGS]...                             
+                                                                                          
+           Create, list, and manage rooms in a project                                    
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ create  Create a room in the project.                                        │
+          │ delete  Delete a room by ID (or by name if --name is supplied).              │
+          │ update  Update a room's name (ID is preferred; name will be resolved to ID   │
+          │         if needed).                                                          │
+          │ list    List rooms in the project.                                           │
+          │ get     Get a single room by name (handy for resolving the ID).              │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent mailbox`
+          
+          ```console
+          $ meshagent mailbox --help
+                                                                                          
+           Usage: meshagent mailbox [OPTIONS] COMMAND [ARGS]...                           
+                                                                                          
+           Manage mailboxes for your project                                              
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ create  Create a mailbox attached to the project.                            │
+          │ update  Update a mailbox routing configuration.                              │
+          │ show    Show mailbox details.                                                │
+          │ list    List mailboxes for the project.                                      │
+          │ delete  Delete a mailbox.                                                    │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent route`
+          
+          ```console
+          $ meshagent route --help
+                                                                                          
+           Usage: meshagent route [OPTIONS] COMMAND [ARGS]...                             
+                                                                                          
+           Manage routes for your project                                                 
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ create  Create a route attached to the project.                              │
+          │ update  Update a route configuration.                                        │
+          │ show    Show route details.                                                  │
+          │ list    List routes for the project.                                         │
+          │ delete  Delete a route.                                                      │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent scheduled-task`
+          
+          ```console
+          $ meshagent scheduled-task --help
+                                                                                          
+           Usage: meshagent scheduled-task [OPTIONS] COMMAND [ARGS]...                    
+                                                                                          
+           Manage scheduled tasks for your project                                        
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ add     Add a scheduled task.                                                │
+          │ list    List scheduled tasks.                                                │
+          │ update  Update a scheduled task.                                             │
+          │ delete  Delete a scheduled task.                                             │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent meeting-transcriber`
+          
+          ```console
+          $ meshagent meeting-transcriber --help
+                                                                                          
+           Usage: meshagent meeting-transcriber [OPTIONS] COMMAND [ARGS]...               
+                                                                                          
+           Join a meeting transcriber to a room                                           
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ join     Join a room and run the meeting transcriber agent.                  │
+          │ service                                                                      │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent port`
+          
+          ```console
+          $ meshagent port --help
+                                                                                          
+           Usage: meshagent port [OPTIONS] COMMAND [ARGS]...                              
+                                                                                          
+           Port forwarding into room containers                                           
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ forward  Forward a container port to localhost                               │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent webserver`
+          
+          ```console
+          $ meshagent webserver --help
+                                                                                          
+           Usage: meshagent webserver [OPTIONS] COMMAND [ARGS]...                         
+                                                                                          
+           Run an HTTP webserver connected to a MeshAgent room.                           
+                                                                                          
+           The webserver mounts static files/folders and python handlers from a routes    
+           file.                                                                          
+           Python handlers run with access to the active room and request objects.        
+           This lets you build web applications that take advantage of the MeshAgent      
+           room's full feature set.                                                       
+                                                                                          
+           Default routes file: webserver.yaml                                            
+                                                                                          
+           Add routes with the CLI:                                                       
+             meshagent webserver add --path / --python handlers/home.py                   
+             meshagent webserver add --path /assets --static ./public                     
+                                                                                          
+           Start it locally by joining a room:                                            
+             meshagent webserver join --room my-room --agent-name my-web -f               
+           webserver.yaml --watch                                                         
+                                                                                          
+           View the site from your local machine:                                         
+             http://127.0.0.1:8000                                                        
+                                                                                          
+           Use the host/port from webserver.yaml (or explicit --host/--port or            
+           --web-host/--web-port overrides).                                              
+                                                                                          
+           To make the site available outside your machine:                               
+             meshagent webserver deploy --service-name my-web --agent-name my-web --room  
+           my-room -f webserver.yaml --website-path /website --domain                     
+           my-web.meshagent.app                                                           
+                                                                                          
+           `--domain` automatically creates or updates the route to the deployed room and 
+           webserver port.                                                                
+           If the domain already targets a different room, deploy fails to avoid          
+           accidental repoints.                                                           
+           Without `--domain`, create the route manually:                                 
+             meshagent route create --room my-room --port 8000 --domain                   
+           my-web.meshagent.app                                                           
+                                                                                          
+           Route source path rules:                                                       
+           - `python` and `static` sources that start with `/` resolve to `{cwd}/...`.    
+           - `python` and `static` sources without a leading `/` resolve relative to the  
+           routes file.                                                                   
+           - `static` supports both files and directories.                                
+           - Set `--app-dir` to control Python import root (defaults to routes file       
+           directory).                                                                    
+                                                                                          
+                                                                                          
+           Example routes file:                                                           
+           kind: WebServer                                                                
+           version: v1                                                                    
+           host: 0.0.0.0                                                                  
+           port: 8000                                                                     
+           routes:                                                                        
+             - path: /                                                                    
+               methods:                                                                   
+                 - GET                                                                    
+               python: handlers/home.py                                                   
+             - path: /assets                                                              
+               static: ./public                                                           
+                                                                                          
+           Example python handler (handlers/home.py):                                     
+           from aiohttp import web                                                        
+           from meshagent.api import RoomClient                                           
+                                                                                          
+           async def handler(                                                             
+               *,                                                                         
+               room: RoomClient,                                                          
+               req: web.Request,                                                          
+           ) -> web.StreamResponse:                                                       
+               return web.Response(text="hello")                                          
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ check   Validate a routes file and print the resolved routes.                │
+          │ init    Create a routes file scaffold.                                       │
+          │ add     Add a route entry to the routes file.                                │
+          │ join    Join a room and run the configured webserver routes locally with     │
+          │         optional hot reload.                                                 │
+          │ spec    Generate a service spec for deploying this webserver configuration.  │
+          │ deploy  Deploy this webserver as a service, updating an existing service     │
+          │         with the same name.                                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent codex`
+          
+          ```console
+          $ meshagent codex --help
+                                                                                          
+           Usage: meshagent codex [OPTIONS] COMMAND [ARGS]...                             
+                                                                                          
+           Codex-backed agents                                                            
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ chatbot      Run codex chatbot agents                                        │
+          │ task-runner  Run codex task-runner agents                                    │
+          │ worker       Run codex worker agents                                         │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent multi`
+          
+          ```console
+          $ meshagent multi --help
+                                                                                          
+           Usage: meshagent multi [OPTIONS] COMMAND [ARGS]...                             
+                                                                                          
+           Connect agents and tools to a room                                             
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ spec     Generate a combined service spec from multiple subcommands.         │
+          │ deploy   Deploy a combined service from multiple subcommands.                │
+          │ service                                                                      │
+          │ join     Run multiple join commands together in one process.                 │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent voicebot`
+          
+          ```console
+          $ meshagent voicebot --help
+                                                                                          
+           Usage: meshagent voicebot [OPTIONS] COMMAND [ARGS]...                          
+                                                                                          
+           Join a voicebot to a room                                                      
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ join     Join a room and run a voicebot agent.                               │
+          │ service                                                                      │
+          │ spec     Generate a service spec for deploying a voicebot.                   │
+          │ deploy   Deploy a voicebot service to a project or room.                     │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent chatbot`
+          
+          ```console
+          $ meshagent chatbot --help
+                                                                                          
+           Usage: meshagent chatbot [OPTIONS] COMMAND [ARGS]...                           
+                                                                                          
+           Join a chatbot to a room                                                       
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ join     Join a room and run a chatbot agent.                                │
+          │ service                                                                      │
+          │ spec     Generate a service spec for deploying a chatbot.                    │
+          │ deploy   Deploy a chatbot service to a project or room.                      │
+          │ run      Join a room, run the chatbot, and wait for messages.                │
+          │ use      Send a one-shot or interactive message to a running chatbot.        │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent process`
+          
+          ```console
+          $ meshagent process --help
+                                                                                          
+           Usage: meshagent process [OPTIONS] COMMAND [ARGS]...                           
+                                                                                          
+           Join a process-backed agent to a room                                          
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ join     Join a room and run a process-backed agent.                         │
+          │ service  Add a process-backed agent service to the host.                     │
+          │ spec     Generate a service spec for deploying a process-backed agent.       │
+          │ deploy   Deploy a process-backed agent service.                              │
+          │ run      Join a room, run a process-backed agent, and wait for messages.     │
+          │ use      Send a one-shot or interactive message to a running process-backed  │
+          │          agent.                                                              │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent mailbot`
+          
+          ```console
+          $ meshagent mailbot --help
+                                                                                          
+           Usage: meshagent mailbot [OPTIONS] COMMAND [ARGS]...                           
+                                                                                          
+           Join a mailbot to a room                                                       
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ join     Join a room and run a mailbot agent.                                │
+          │ service                                                                      │
+          │ spec     Generate a service spec for deploying a mailbot.                    │
+          │ deploy   Deploy a mailbot service to a project or room.                      │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent task-runner`
+          
+          ```console
+          $ meshagent task-runner --help
+                                                                                          
+           Usage: meshagent task-runner [OPTIONS] COMMAND [ARGS]...                       
+                                                                                          
+           Join a taskrunner to a room                                                    
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ join     Join a room and run a task-runner agent.                            │
+          │ run      Join a room, run the task-runner, and wait for tasks.               │
+          │ service                                                                      │
+          │ spec     Generate a service spec for deploying a task-runner.                │
+          │ deploy   Deploy a task-runner service to a project or room.                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent worker`
+          
+          ```console
+          $ meshagent worker --help
+                                                                                          
+           Usage: meshagent worker [OPTIONS] COMMAND [ARGS]...                            
+                                                                                          
+           Join a worker agent to a room                                                  
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ join     Join a room and run a worker agent.                                 │
+          │ service                                                                      │
+          │ spec     Generate a service spec for deploying a worker.                     │
+          │ deploy   Deploy a worker service to a project or room.                       │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ## `meshagent room`
+          
+          ```console
+          $ meshagent room --help
+                                                                                          
+           Usage: meshagent room [OPTIONS] COMMAND [ARGS]...                              
+                                                                                          
+           Operate within a room                                                          
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ agent      Interact with agents and toolkits                                 │
+          │ secret     Manage secrets for your project                                   │
+          │ queue      Use queues in a room                                              │
+          │ messaging  Send and receive messages                                         │
+          │ storage    Manage storage for a room                                         │
+          │ service    Manage services in a room                                         │
+          │ developer  Developer utilities for a room                                    │
+          │ database   Manage database tables in a room                                  │
+          │ memory     Manage memories in a room                                         │
+          │ container  Manage containers and images in a room                            │
+          │ sync       Inspect and update mesh documents in a room                       │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+
+      - path: /meshagent-skills/skills/meshagent-mail-operator/SKILL.md
+        text: |
+          ---
+          name: meshagent-mail-operator
+          description: Operate MeshAgent mail workflows in the current room. Use this skill for contact forms, outbound email delivery, mailbox provisioning, MailBot deployment, toolkit wiring, and inbox evidence checks.
+          ---
+          
+          # MeshAgent Mail Operator
+          
+          Use this skill for MeshAgent mail workflows.
+          
+          ## Use this skill when
+          
+          - The user wants a contact form or room site that must send real email.
+          - The task involves `meshagent mailbox ...` provisioning or verification.
+          - The task involves `meshagent mailbot ...` join, spec, service, or deploy flows.
+          - The task needs MailBot toolkit discovery or `new_email_thread`.
+          - The user wants evidence about the room inbox or outbound mail activity.
+          
+          ## Shared runtime
+          
+          Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
+          
+          - Use the companion references in `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
+          
+          ## Default operating model
+          
+          For simple contact-form and room-email workflows, prefer the smallest working room-local design:
+          
+          - one site or backend in the current room
+          - one room mailbox whose email address is derived from the current room name plus the configured MeshAgent mail domain
+          - one room-local MailBot with `toolkit_name` bound to that mailbox
+          - no scheduled workers, subscriber systems, reporting pipelines, or broader multi-agent orchestration unless the user explicitly asks for them
+          
+          ## Operating rules
+          
+          - Treat the requested outcome as a live room workflow plus working outbound email delivery when the prompt says the site should send email.
+          - Create site assets under `/data` and deploy into the current room. Do not stop at local file edits when the requested outcome is a live room site.
+          - Provision the room mailbox explicitly instead of inventing an ad hoc sender identity.
+          - Derive the mailbox email address from `MESHAGENT_ROOM` plus the configured MeshAgent mail domain, and set the mailbox queue name to exactly that same mailbox email address unless the user explicitly asks for a different routing design.
+          - Prefer `meshagent mailbot deploy` or an equivalent room-local MailBot setup with `toolkit_name` enabled and `--email-address` set to the mailbox email address.
+          - Prefer the MailBot `new_email_thread` tool for outbound delivery. Set `to` to the exact requested external recipient.
+          - Do not satisfy "send an email" with `mailto:` unless the user explicitly asks for a client-side-only form or explicitly accepts local email composition instead of backend delivery.
+          - Do not invent custom MailBot URL or token bridges, placeholder HTTP services, or synthetic environment variables such as `MAILBOT_URL` or `MAILBOT_TOKEN` unless the user explicitly asks for that architecture and those values actually exist.
+          - If a Python backend needs to call room tools, use the supported MeshAgent SDK API shape: `room.agents.list_toolkits(...)` and `room.agents.invoke_tool(...)`. Do not invent unsupported properties such as `room.agent` or `room.tool`.
+          - If the room already has database tables or room-database storage for email or submission tracking, prefer that existing room database for durable audit state instead of inventing a parallel mechanism.
+          - For a simple contact-form workflow, do not create custom tables unless the user explicitly asks for application-level tracking. Prefer the built-in MailBot artifacts and `emails` table as the default evidence surface.
+          - Do not expose secret values unless the user explicitly asks for them.
+          - If SMTP or provider credentials are missing, stop and report the exact missing configuration instead of claiming the workflow is operational.
+          
+          ## Contact-form workflow
+          
+          When the user asks for a room site that should send email:
+          
+          1. Treat the requested outcome as a live site plus working outbound email delivery.
+          2. Create the site in `/data` and deploy it in the current room.
+          3. Validate required inputs in the backend. If the prompt requires "valid email and/or phone number", enforce that at least one valid contact method is present and sanitize all user-supplied fields before constructing the outgoing message.
+          4. Provision the room mailbox first.
+          5. Derive the mailbox email address from `MESHAGENT_ROOM` plus the configured MeshAgent mail domain, and configure the mailbox queue name to exactly match that mailbox email address.
+          6. Deploy a room-local MailBot bound to that mailbox address and expose it with `toolkit_name`.
+          7. Expose the MailBot toolkit and send the message through `new_email_thread` with the exact requested external recipient in `to`.
+          8. Keep the architecture minimal for this use case.
+          9. Return the live public URL only after the site is deployed and the outbound email path has been verified as far as MeshAgent can actually assess it.
+          
+          ## Inbox and evidence rules
+          
+          Treat the MeshAgent mailbox and inbox system as the source of truth for what is actually assessable:
+          
+          - verify mailbox state with `meshagent mailbox list`, `show`, or the corresponding room-scoped verification command
+          - verify toolkit exposure with the room toolkit listing
+          - verify persisted mail evidence with room storage checks such as `room://.emails`
+          - if the room already stores application-level audit data, reconcile it with the MailBot result instead of inventing a second parallel status story
+          
+          Use the MeshAgent mail codepath as the source of truth for outbound delivery claims:
+          
+          - `MailBot` and `MailChannel` save outbound mail into `.emails/.../message.eml` and `.emails/.../message.json`, and insert rows into the `emails` table, before SMTP send is attempted
+          - then they call `aiosmtplib.send(...)`
+          - therefore a `.emails/` artifact alone means the outbound message was constructed and persisted, not that SMTP handoff succeeded
+          
+          ## Claiming success
+          
+          - Do not claim success from a form 200 response, queue acceptance, a `new_email_thread` success response, service startup, or a `.emails/` artifact by itself.
+          - Verify the strongest outcome that MeshAgent can actually assess from the current implementation, or state the exact remaining blocker.
+          - If you did not explicitly record whether the MailBot or toolkit call returned success or raised an exception, only claim that the submission was accepted and outbound mail was constructed and persisted.
+          - If there is no matching outbound `.emails/...` path or `emails` table row for a submission, do not claim that MeshAgent made any outbound email attempt for that submission.
+
+      - path: /meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md
+        text: |
+          ---
+          name: meshagent-scheduling-operator
+          description: Operate MeshAgent scheduled-task workflows that support the current room or a clearly scoped project workflow. Use this skill for adding, listing, updating, verifying, and deleting MeshAgent scheduled tasks.
+          ---
+          
+          # MeshAgent Scheduling Operator
+          
+          Use this skill for `meshagent scheduled-task ...` workflows.
+          
+          ## Use this skill when
+          
+          - The user wants to add, inspect, update, pause, resume, or delete a scheduled task.
+          - The task involves a cron schedule, recurring dispatch, or one-time queued execution through `meshagent scheduled-task ...`.
+          - The user wants to connect scheduled execution to a room queue or room workflow.
+          
+          ## Shared runtime
+          
+          Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
+          
+          - Use the companion references in `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
+          
+          ## Primary command group
+          
+          - `meshagent scheduled-task add`
+          - `meshagent scheduled-task list`
+          - `meshagent scheduled-task update`
+          - `meshagent scheduled-task delete`
+          
+          ## Operating rules
+          
+          - Treat scheduling as project-scoped configuration that must remain tightly tied to a specific room workflow, queue, or operational need.
+          - Confirm the target project context before making changes. If a task is meant for the current room workflow, prefer `--room "${MESHAGENT_ROOM}"` when the command supports it.
+          - Identify the exact target queue before adding or updating a task. Do not invent queue names.
+          - Use `meshagent scheduled-task list` first when the task might already exist.
+          - Prefer the smallest change that satisfies the request: update an existing task instead of creating a duplicate when the target task is clearly the same workflow.
+          - If the schedule is ambiguous, stop and resolve the intended cron expression before mutating anything.
+          - For `--payload` or `--payload-file`, ensure the payload is valid JSON before sending it to the CLI.
+          - Use `--once` only when the user clearly wants one-time execution followed by deactivation.
+          - Use `--inactive` for staged setup when the user wants a task created but not yet running.
+          - Treat `update` and `delete` as destructive. Confirm the exact task id and blast radius before executing them.
+          - Do not claim success until you verify with `meshagent scheduled-task list` or another corresponding read command.
+          - Do not broaden a simple scheduling request into a larger worker, reporting, or orchestration system unless the user explicitly asks for that architecture.
+          
+          ## Default workflow
+          
+          1. Resolve the active project and room context.
+          2. Inspect existing tasks with `meshagent scheduled-task list`, usually filtered by `--room`, `--task-id`, or both.
+          3. Confirm the queue, cron schedule, payload, and desired active state.
+          4. Apply the narrowest mutation with `add`, `update`, or `delete`.
+          5. Verify the resulting state with `meshagent scheduled-task list` and summarize the exact task id, room, queue, schedule, and active state.
+          
+          ## Command-specific guidance
+          
+          ### Add
+          
+          - Use `meshagent scheduled-task add` when a new scheduled task is required.
+          - Supply a real queue with `--queue` and a real cron expression with `--schedule`.
+          - Use `--id` only when a stable caller-controlled id is clearly useful.
+          - If the task is for the current room workflow, include `--room "${MESHAGENT_ROOM}"` unless the user explicitly asks for a different room-scoped target.
+          
+          ### List
+          
+          - Use `meshagent scheduled-task list` before and after mutation.
+          - Prefer filtering by `--room`, `--task-id`, `--active`, or `--inactive` to avoid ambiguous results.
+          - Use `--output json` when you need stable parsing or exact field verification.
+          
+          ### Update
+          
+          - Use `meshagent scheduled-task update TASK_ID` when modifying schedule, queue, room, payload, or active state.
+          - Prefer updating the existing task instead of creating a second task for the same workflow.
+          - Restate the exact task id and intended changes before mutating.
+          
+          ### Delete
+          
+          - Use `meshagent scheduled-task delete TASK_ID` only when the user explicitly wants removal.
+          - Verify the task id with a read command first.
+          - Re-run `list` afterward to confirm the task is gone.
+          
+          ## Out of scope
+          
+          - Do not use this skill for general-purpose cron design that is not tied to an actual MeshAgent scheduled task.
+          - Do not use this skill for mailbox, inbox, or MailBot workflows; use `meshagent-mail-operator` for those.
+          - Do not use this skill for generic room runtime deployment; use `meshagent-cli-operator` for that.
+
+      - path: /meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md
+        text: |
+          ---
+          name: meshagent-webmaster-operator
+          description: Operate MeshAgent website, webserver, route, and public-hostname workflows in the current room. Use this skill for webserver routes files, site deployment, route management, and public URL verification.
+          ---
+          
+          # MeshAgent Webmaster Operator
+          
+          Use this skill for `meshagent webserver ...`, `meshagent route ...`, and live room-site deployment.
+          
+          ## Use this skill when
+          
+          - The user wants to make, update, or deploy a site in the current room.
+          - The task involves `meshagent webserver ...` routes files, handlers, static assets, local join, spec generation, or deploy flows.
+          - The task involves `meshagent route ...` creation, inspection, update, or deletion.
+          - The task requires a public URL, hostname, domain, or route-backed exposure for a room website.
+          
+          ## Shared runtime
+          
+          Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
+          
+          - Use the companion references in `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
+          
+          ## Primary command groups
+          
+          - `meshagent webserver check`
+          - `meshagent webserver init`
+          - `meshagent webserver add`
+          - `meshagent webserver join`
+          - `meshagent webserver spec`
+          - `meshagent webserver deploy`
+          - `meshagent route create`
+          - `meshagent route update`
+          - `meshagent route show`
+          - `meshagent route list`
+          - `meshagent route delete`
+          
+          ## Operating rules
+          
+          - Treat a room-site request as complete only when the site is actually deployed in the current room and you can report the resulting public URL or the exact blocker.
+          - For website, route, and public hostname work, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+          - Create and modify site assets under `/data`.
+          - Do not stop at local file edits or a successful local `webserver check` when the requested outcome is a live room website.
+          - Prefer `meshagent webserver deploy` when the goal is a deployed room website. Use `meshagent route ...` directly only when route management is explicitly requested or when you need manual routing without `--domain`.
+          - Use `meshagent webserver check` before deploy when the routes file or asset mapping may be invalid.
+          - Use `meshagent webserver spec` when the user explicitly wants the generated service spec or when inspecting deployment shape before mutating.
+          - Use `meshagent webserver join` only for local runtime validation or debugging, not as the completion state for a room-site deployment request.
+          - When deploying, set `--room "${MESHAGENT_ROOM}"` unless the user explicitly asks for a different room-scoped target.
+          - When deploying, provide a real `--website-path` that matches the room storage subpath where the routes file and referenced assets should live.
+          - Prefer `--domain` on `meshagent webserver deploy` when the site should be publicly reachable and the route should follow the deploy.
+          - If using `meshagent route create` or `update` manually, verify the domain, room, and published port exactly before mutating.
+          - If a route already exists and targets a different room, stop and report that conflict instead of silently repointing it.
+          - Do not modify unrelated example apps, sample repos, bundled SDK examples, or maintainer reference projects to satisfy a room deployment request.
+          - After deploy or route mutation, verify the resulting service and route state with the corresponding read commands and report the live public URL.
+          
+          ## Default workflow
+          
+          1. Resolve the room target, public hostname expectation, and desired site path.
+          2. Build or update the site assets under `/data`.
+          3. Validate the routes file with `meshagent webserver check`.
+          4. Deploy with `meshagent webserver deploy`, usually with `--room "${MESHAGENT_ROOM}"`, `--website-path`, and `--domain`.
+          5. Verify the resulting service and route state.
+          6. Return the exact public URL, or the exact remaining blocker if the site is not actually reachable yet.
+          
+          ## Command-specific guidance
+          
+          ### Webserver routes files
+          
+          - `meshagent webserver init` creates a scaffold when no routes file exists.
+          - `meshagent webserver add` is the fastest way to add a static or python route entry.
+          - Route paths must start with `/`.
+          - `python` and `static` sources without a leading `/` resolve relative to the routes file.
+          - For Python handlers, use the supported handler signature documented by the CLI help: `handler(*, room: RoomClient, req: web.Request) -> web.StreamResponse`.
+          
+          ### Webserver deploy
+          
+          - Prefer `meshagent webserver deploy` for room-site deployment.
+          - Use `--website-path` consistently so the deployed container can resolve the routes file and referenced assets.
+          - Use `--domain` when you want deploy to create or update the route automatically.
+          - If the request is specifically about a public website, do not call the task complete until deploy and route verification are done.
+          
+          ### Route management
+          
+          - Use `meshagent route list` or `show` before `create`, `update`, or `delete`.
+          - Default to hostnames under `meshagent.app` unless the user asks otherwise.
+          - Treat route `update` and `delete` as destructive.
+          - Re-run a read command after any mutation to confirm the final room and port target.
+          
+          ## Out of scope
+          
+          - Do not use this skill for mailbox, inbox, or MailBot workflows; use `meshagent-mail-operator` for those.
+          - Do not use this skill for scheduled-task workflows; use `meshagent-scheduling-operator` for those.
+          - Do not use this skill for generic room runtime work that is not about sites, routes, or public web exposure; use `meshagent-cli-operator` for that.
+
+  environment:
+    - name: MESHAGENT_TOKEN
+      token:
+        identity: meshagent-cli-skill
