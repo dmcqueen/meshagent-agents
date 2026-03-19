@@ -40,13 +40,6 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - The queue name is part of the mailbox configuration. Do not invent it.
 - Creating a mailbox does not by itself create a consumer, service, or agent.
 
-## SMTP model
-
-- Outbound mail delivery uses SMTP. Application code needs a real SMTP client or library.
-- Use the actual configured SMTP host, port, username, password, or other concrete implementation values. Do not invent credentials or environment variables.
-- Message construction and SMTP acceptance are separate steps. A provider can reject delivery after the message is built.
-- If SMTP behavior is unclear, inspect the implementation and actual configuration before claiming that outbound delivery works.
-
 ## Queue inspection
 
 - Use `meshagent room queue size --queue <QUEUE_NAME>` to check whether messages are accumulating.
