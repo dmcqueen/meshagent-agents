@@ -43,14 +43,14 @@ SPECIALIZED_SKILLS = {
     / "meshagent-webmaster-operator"
     / "SKILL.md",
 }
-SHARED_RUNTIME_LINE = (
-    "Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`."
-)
-SHARED_RUNTIME_DUPLICATES = (
-    "The MeshAgent CLI is expected at `/usr/bin/meshagent`",
-    "The current room is `MESHAGENT_ROOM`.",
-    "The writable user-visible workspace is `/data`.",
-    "The default public MeshAgent domain in this environment is `__MESHAGENT_PUBLIC_DOMAIN__`.",
+SKILL_FILES = {
+    "meshagent-cli-operator": DEFAULT_SKILL,
+    **SPECIALIZED_SKILLS,
+}
+SKILL_REFERENCE_PATH_PATTERN = re.compile(r"\.\./meshagent-[^/\s]+/SKILL\.md")
+RUNTIME_REFERENCES = (
+    "references/command_groups.md",
+    "references/meshagent_cli_help.md",
 )
 
 
@@ -179,15 +179,23 @@ def main() -> int:
             "command_groups.md references commands not present in meshagent --help: "
             + ", ".join(missing)
         )
-    for skill_name, skill_path in SPECIALIZED_SKILLS.items():
-        specialized_text = load_text(skill_path)
-        if SHARED_RUNTIME_LINE not in specialized_text:
-            errors.append(f"{skill_name} does not use the shared runtime reference")
-        for duplicate_line in SHARED_RUNTIME_DUPLICATES:
-            if duplicate_line in specialized_text:
+    for skill_name, skill_path in SKILL_FILES.items():
+        current_skill_text = load_text(skill_path)
+        if SKILL_REFERENCE_PATH_PATTERN.search(current_skill_text):
+            errors.append(f"{skill_name} references another skill by relative path")
+        for other_skill_name in SKILL_FILES:
+            if other_skill_name == skill_name:
+                continue
+            if other_skill_name in current_skill_text:
                 errors.append(
-                    f"{skill_name} duplicates shared runtime detail: {duplicate_line}"
+                    f"{skill_name} references sibling skill {other_skill_name}"
                 )
+        if skill_name != "meshagent-cli-operator":
+            for runtime_reference in RUNTIME_REFERENCES:
+                if runtime_reference not in current_skill_text:
+                    errors.append(
+                        f"{skill_name} is missing runtime reference {runtime_reference}"
+                    )
 
     if errors:
         for error in errors:
