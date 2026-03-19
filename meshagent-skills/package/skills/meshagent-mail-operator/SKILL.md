@@ -20,6 +20,7 @@ Use this skill for MeshAgent mail workflows.
 Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
 
 - Use the companion references in `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
+- For public room-site contact forms, also follow the deployment and verification discipline in `../meshagent-webmaster-operator/SKILL.md`.
 
 ## Primary command groups
 
@@ -52,6 +53,7 @@ For simple contact-form and room-email workflows, prefer the smallest working ro
 
 - Treat the requested outcome as a live room workflow plus working outbound email delivery when the prompt says the site should send email.
 - Create site assets under `/data` and deploy into the current room. Do not stop at local file edits when the requested outcome is a live room site.
+- If the site deploy returns a public URL but that URL responds with a timeout, `502`, or another unsuccessful status, treat the task as still in progress. Inspect the room site deployment state, repair the deployment, and retest instead of handing the next repair step back to the user.
 - Provision the room mailbox explicitly instead of inventing an ad hoc sender identity.
 - Derive the mailbox email address from `MESHAGENT_ROOM` plus the configured MeshAgent mail domain, and set the mailbox queue name to exactly that same mailbox email address unless the user explicitly asks for a different routing design.
 - Prefer `meshagent mailbot deploy` or an equivalent room-local MailBot setup with `toolkit_name` enabled and `--email-address` set to the mailbox email address.
@@ -61,6 +63,8 @@ For simple contact-form and room-email workflows, prefer the smallest working ro
 - If a Python backend needs to call room tools, use the supported MeshAgent SDK API shape: `room.agents.list_toolkits(...)` and `room.agents.invoke_tool(...)`. Do not invent unsupported properties such as `room.agent` or `room.tool`.
 - If the room already has database tables or room-database storage for email or submission tracking, prefer that existing room database for durable audit state instead of inventing a parallel mechanism.
 - For a simple contact-form workflow, do not create custom tables unless the user explicitly asks for application-level tracking. Prefer the built-in MailBot artifacts and `emails` table as the default evidence surface.
+- If outbound send fails with an SMTP rejection such as `SMTPDataError` `550 5.7.1 Permission denied`, treat that as a real mail-delivery blocker from the SMTP side, not as evidence that the site deployment itself is broken.
+- Do not expose raw SMTP/provider exception text directly in a public form response unless the user explicitly asks for that behavior. Log the exact failure server-side, return a safe user-facing error, and report the exact blocker to the operator.
 - Do not expose secret values unless the user explicitly asks for them.
 - If SMTP or provider credentials are missing, stop and report the exact missing configuration instead of claiming the workflow is operational.
 
@@ -76,7 +80,9 @@ When the user asks for a room site that should send email:
 6. Deploy a room-local MailBot bound to that mailbox address and expose it with `toolkit_name`.
 7. Expose the MailBot toolkit and send the message through `new_email_thread` with the exact requested external recipient in `to`.
 8. Keep the architecture minimal for this use case.
-9. Return the live public URL only after the site is deployed and the outbound email path has been verified as far as MeshAgent can actually assess it.
+9. Verify that the public URL serves successfully and that the site service is healthy. If the site is unhealthy, inspect the deployed service configuration and room state, repair it, redeploy, and retest before responding.
+10. Exercise the submit path with a controlled test message when the workflow requires real outbound email, and distinguish clearly between site health, MailBot/toolkit success, and SMTP/provider acceptance.
+11. Return the live public URL only after the site is deployed and the outbound email path has been verified as far as MeshAgent can actually assess it.
 
 ## Inbox and evidence rules
 
@@ -92,10 +98,13 @@ Use the MeshAgent mail codepath as the source of truth for outbound delivery cla
 - `MailBot` and `MailChannel` save outbound mail into `.emails/.../message.eml` and `.emails/.../message.json`, and insert rows into the `emails` table, before SMTP send is attempted
 - then they call `aiosmtplib.send(...)`
 - therefore a `.emails/` artifact alone means the outbound message was constructed and persisted, not that SMTP handoff succeeded
+- an `SMTPDataError` such as `550 5.7.1 Permission denied` means the SMTP server rejected delivery after message construction; treat that as a provider authorization or relay-policy blocker unless stronger evidence shows otherwise
 
 ## Claiming success
 
 - Do not claim success from a form 200 response, queue acceptance, a `new_email_thread` success response, service startup, or a `.emails/` artifact by itself.
 - Verify the strongest outcome that MeshAgent can actually assess from the current implementation, or state the exact remaining blocker.
+- If the user asked you to make the room site work, do not stop at "the service is unhealthy" or "the route returns 502" and then ask whether you should continue. Continue debugging and repairing the site unless you hit an external blocker such as missing credentials, missing permissions, or a platform failure outside the room workflow.
 - If you did not explicitly record whether the MailBot or toolkit call returned success or raised an exception, only claim that the submission was accepted and outbound mail was constructed and persisted.
+- If the site loads but the submit action fails with an SMTP rejection, do not describe the website as broken or the email as sent. Report that the site is deployed, the form submission reached the mail workflow, and the SMTP provider rejected delivery with the exact observed error.
 - If there is no matching outbound `.emails/...` path or `emails` table row for a submission, do not claim that MeshAgent made any outbound email attempt for that submission.
