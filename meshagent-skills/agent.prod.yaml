@@ -599,14 +599,14 @@ container:
               / "meshagent-webmaster-operator"
               / "SKILL.md",
           }
-          SHARED_RUNTIME_LINE = (
-              "Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`."
-          )
-          SHARED_RUNTIME_DUPLICATES = (
-              "The MeshAgent CLI is expected at `/usr/bin/meshagent`",
-              "The current room is `MESHAGENT_ROOM`.",
-              "The writable user-visible workspace is `/data`.",
-              "The default public MeshAgent domain in this environment is `meshagent.app`.",
+          SKILL_FILES = {
+              "meshagent-cli-operator": DEFAULT_SKILL,
+              **SPECIALIZED_SKILLS,
+          }
+          SKILL_REFERENCE_PATH_PATTERN = re.compile(r"\.\./meshagent-[^/\s]+/SKILL\.md")
+          RUNTIME_REFERENCES = (
+              "references/command_groups.md",
+              "references/meshagent_cli_help.md",
           )
           
           
@@ -735,15 +735,23 @@ container:
                       "command_groups.md references commands not present in meshagent --help: "
                       + ", ".join(missing)
                   )
-              for skill_name, skill_path in SPECIALIZED_SKILLS.items():
-                  specialized_text = load_text(skill_path)
-                  if SHARED_RUNTIME_LINE not in specialized_text:
-                      errors.append(f"{skill_name} does not use the shared runtime reference")
-                  for duplicate_line in SHARED_RUNTIME_DUPLICATES:
-                      if duplicate_line in specialized_text:
+              for skill_name, skill_path in SKILL_FILES.items():
+                  current_skill_text = load_text(skill_path)
+                  if SKILL_REFERENCE_PATH_PATTERN.search(current_skill_text):
+                      errors.append(f"{skill_name} references another skill by relative path")
+                  for other_skill_name in SKILL_FILES:
+                      if other_skill_name == skill_name:
+                          continue
+                      if other_skill_name in current_skill_text:
                           errors.append(
-                              f"{skill_name} duplicates shared runtime detail: {duplicate_line}"
+                              f"{skill_name} references sibling skill {other_skill_name}"
                           )
+                  if skill_name != "meshagent-cli-operator":
+                      for runtime_reference in RUNTIME_REFERENCES:
+                          if runtime_reference not in current_skill_text:
+                              errors.append(
+                                  f"{skill_name} is missing runtime reference {runtime_reference}"
+                              )
           
               if errors:
                   for error in errors:
@@ -761,109 +769,47 @@ container:
         text: |
           ---
           name: meshagent-cli-operator
-          description: Operate the MeshAgent CLI primarily at room scope. Use this skill for inspecting, updating, deploying, and troubleshooting the current room, its storage, its services, and room-scoped MeshAgent runtimes. Do not use this skill for meshagent auth or meshagent setup workflows.
+          description: Use the MeshAgent CLI. This skill is for choosing command paths, reading help output, composing non-interactive commands, and verifying results.
           ---
           
           # MeshAgent CLI Operator
           
-          Use this skill for any task that should be completed with the MeshAgent CLI.
-          
-          ## Runtime assumptions
-          
-          This skill assumes it is running inside a MeshAgent room container based on `meshagent/shell-codex:default`.
-          
-          - The MeshAgent CLI is expected at `/usr/bin/meshagent`.
-          - `meshagent` on `PATH` is an acceptable fallback.
-          - `MESHAGENT_TOKEN` may be present for room-scoped MeshAgent access and delegated shell execution.
-          - The current room is the value of `MESHAGENT_ROOM`.
-          - The default public MeshAgent domain in this environment is `meshagent.app`.
-          - The user-visible room filesystem is mounted at `/data`.
-          - To create or modify files the user should see, write them under `/data` and report paths relative to `/data`.
-          - Do not assume a repo-local virtualenv or checkout exists inside the container.
-          - Do not install packages into `/data`.
+          Use this skill when the task is primarily about running or explaining MeshAgent CLI commands.
           
           ## Quick start
           
-          1. Resolve the CLI binary.
+          1. Resolve the `meshagent` binary from `PATH` or use the explicit binary path the user provides.
           2. Identify the narrowest command path that matches the request.
           3. If flags are uncertain, consult `references/command_groups.md`, then `references/meshagent_cli_help.md`, or run `meshagent <path> --help`.
-          4. Use `meshagent-mail-operator` for mailbox provisioning, inbox evidence, MailBot toolkits, or contact-form email delivery.
-          5. Use `meshagent-scheduling-operator` for scheduled-task creation, update, verification, pause, resume, or deletion.
-          6. Use `meshagent-webmaster-operator` for websites, `meshagent webserver ...`, routes, or public hostname exposure.
-          7. Prefer read-only inspection before mutation.
-          8. After a change, verify the result with the corresponding read command.
+          4. Prefer read-only inspection before mutation.
+          5. Verify the result with the corresponding read command.
           
           ## Resolve the CLI
           
-          Prefer these paths in order:
-          
-          1. `/usr/bin/meshagent`
-          2. `meshagent`
-          
-          If neither exists, stop and report that the MeshAgent CLI is unavailable.
+          - Prefer `meshagent` on `PATH`.
+          - If the user gives an explicit MeshAgent binary path, use that path.
+          - If no MeshAgent CLI binary is available, stop and report that clearly.
           
           ## Command routing
           
-          Start with `references/command_groups.md` to choose the right area:
-          
-          - room lifecycle and room APIs
-          - service and deployment workflows
-          - agent runtime orchestration
-          - inspection and diagnostics
-          
-          Use `references/meshagent_cli_help.md` for the exact installed command tree and flags.
-          
-          Follow the explicit top-level command policy in `references/command_groups.md`:
-          
-          - `USE`: normal command family for this skill
-          - `USE WITH CAUTION`: allowed only when clearly needed and tightly scoped
-          - `DON'T USE`: out of scope for this skill
+          - Start with `references/command_groups.md` to choose the correct command family.
+          - Use `references/meshagent_cli_help.md` for exact command shapes and flags.
+          - Prefer the smallest command path that can complete the task.
+          - Prefer non-interactive commands over interactive flows.
           
           ## Operating rules
           
-          - Scope the target first: room, room service, room storage path, room participant, room queue, room port, or agent runtime.
-          - Prefer the smallest command path that can complete the task.
+          - Do not assume the active project, active room, hostname, filesystem layout, or environment variables. Inspect them or ask when they matter.
           - Use `--help` on the exact subcommand before composing long invocations.
-          - When executing commands in this runtime, prefer `/usr/bin/meshagent ...` so command examples match the container image.
-          - This skill is primarily for room-scoped work in the current room. Prefer `meshagent room ...`, room service commands, service deployment into the current room, room storage access, and runtime commands that operate within the current room.
-          - If a command accepts `--room`, it must target `MESHAGENT_ROOM` only. Omit `--room` when the command already defaults to the current room, or set it explicitly to `MESHAGENT_ROOM`. Do not use a different room value.
-          - For website, route, and public hostname work, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
-          - When the user asks to make, update, or deploy a site in room context, create or deploy the site in the current room and return the resulting public URL. Do not stop at local file edits or local build success when the requested outcome is a live room site.
-          - Do not modify unrelated example apps, sample repos, bundled SDK examples, or maintainer reference projects to satisfy a room deployment request. For room-site work, create or update the assets and services that belong to the current room workflow.
-          - When authorization is uncertain, test the actual target read command for the current room before concluding that authentication is missing.
-          - Treat `/data` as the writable user-visible workspace. If a command writes files for the user, keep them under `/data`.
-          - Do not expose secret values unless the user explicitly asks for them.
-          - Treat delete and overwrite operations as destructive. Confirm the target and blast radius before executing them.
-          - After create, update, deploy, or delete, run the appropriate verification command and summarize the resulting state.
+          - Prefer read commands before create, update, deploy, or delete.
+          - Restate the exact mutation target before destructive changes.
+          - Verify the resulting state after mutation.
+          - Do not print secret values unless the user explicitly asks for them and the command returns them.
           
-          ## Out Of Scope
+          ## Out of scope
           
-          Do not use these commands as part of this skill:
-          
-          - `meshagent auth ...`
-          - `meshagent setup`
-          - `meshagent api-key ...`
-          - `meshagent project create`
-          - `meshagent project activate -i`
-          - `meshagent token generate`
-          - `meshagent secret ...`
-          
-          Avoid these project-wide or account-wide command families unless the user explicitly asks for them and the task clearly cannot be completed with room-scoped commands:
-          
-          - `meshagent project ...`
-          - `meshagent webhook ...`
-          - `meshagent route ...`
-          - `meshagent scheduled-task ...`
-          - project-wide `meshagent service ...` operations that are not targeting the current room
-          
-          Treat these command families as `USE WITH CAUTION`, not defaults:
-          
-          - `meshagent project list`
-          - `meshagent project activate PROJECT_ID` only when a room task clearly requires switching to a specific existing project first
-          - `meshagent webhook ...`
-          - `meshagent route ...`
-          - `meshagent scheduled-task ...`
-          - `meshagent helper ...`
+          - This skill does not define product workflows for mail, scheduling, domain management, website construction, or agent building.
+          - This skill does not assume any particular container image, mount layout, room runtime, or deployment topology.
           
           ## Bundled resources
           
@@ -1702,27 +1648,23 @@ container:
         text: |
           ---
           name: meshagent-mail-operator
-          description: Operate MeshAgent mail workflows in the current room. Use this skill for contact forms, outbound email delivery, mailbox provisioning, MailBot deployment, toolkit wiring, and inbox evidence checks.
+          description: Manage MeshAgent mailboxes, explain room SMTP behavior, and inspect inbound mail queues with the CLI and room APIs.
           ---
           
           # MeshAgent Mail Operator
           
-          Use this skill for MeshAgent mail workflows.
+          Use this skill for mailbox administration, SMTP behavior, and inbound mail queue inspection.
           
           ## Use this skill when
           
-          - The user wants a contact form or room site that must send real email.
-          - The task involves `meshagent mailbox ...` provisioning or verification.
-          - The task involves `meshagent mailbot ...` join, spec, service, or deploy flows.
-          - The task needs MailBot toolkit discovery or `new_email_thread`.
-          - The user wants evidence about the room inbox or outbound mail activity.
+          - The task involves `meshagent mailbox ...` provisioning, inspection, update, or deletion.
+          - The user needs to understand how inbound email is routed into a room queue.
+          - The user needs enough SMTP detail to write code that sends email from a room workflow.
+          - The user wants to inspect or consume incoming mail messages through the CLI or room API.
           
-          ## Shared runtime
+          ## References
           
-          Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
-          
-          - Use the companion references in `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
-          - For public room-site contact forms, also follow the deployment and verification discipline in `../meshagent-webmaster-operator/SKILL.md`.
+          - Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
           
           ## Primary command groups
           
@@ -1730,270 +1672,195 @@ container:
           - `meshagent mailbox show`
           - `meshagent mailbox list`
           - `meshagent mailbox update`
-          - `meshagent mailbot join`
-          - `meshagent mailbot service`
-          - `meshagent mailbot spec`
-          - `meshagent mailbot deploy`
+          - `meshagent mailbox delete`
+          - `meshagent room queue receive`
+          - `meshagent room queue size`
           
-          ## Primary verification surfaces
+          ## Mailbox model
           
-          - `meshagent room agent ...` for toolkit discovery and MailBot interaction checks
-          - `meshagent room storage ...` for persisted outbound mail artifacts such as `room://.emails`
-          - `meshagent room database ...` for `emails` table checks when the room stores mail evidence there
-          - room storage paths under `room://.emails`
+          - A mailbox maps an email address to a room and a queue.
+          - Inbound email to that mailbox is delivered into the configured queue.
+          - The queue name is part of the mailbox configuration. Do not invent it.
+          - Creating a mailbox does not by itself create a consumer, service, or agent.
           
-          ## Default operating model
+          ## SMTP model
           
-          For simple contact-form and room-email workflows, prefer the smallest working room-local design:
+          - Outbound mail delivery uses SMTP. Application code needs a real SMTP client or library.
+          - Use the actual configured SMTP host, port, username, password, or other concrete implementation values. Do not invent credentials or environment variables.
+          - Message construction and SMTP acceptance are separate steps. A provider can reject delivery after the message is built.
+          - If SMTP behavior is unclear, inspect the implementation and actual configuration before claiming that outbound delivery works.
           
-          - one site or backend in the current room
-          - one room mailbox whose email address is derived from the current room name plus the configured MeshAgent mail domain
-          - one room-local MailBot with `toolkit_name` bound to that mailbox
-          - no scheduled workers, subscriber systems, reporting pipelines, or broader multi-agent orchestration unless the user explicitly asks for them
+          ## Queue inspection
           
-          ## Operating rules
+          - Use `meshagent room queue size --queue <QUEUE_NAME>` to check whether messages are accumulating.
+          - Use `meshagent room queue receive --queue <QUEUE_NAME>` to read the next queued message.
+          - In code, use the room queues client to consume messages, for example `message = await room.queues.receive(name="my-queue")`.
+          - Queue inspection is different from agent design. Reading the queue does not require introducing a MailBot or other runtime.
           
-          - Treat the requested outcome as a live room workflow plus working outbound email delivery when the prompt says the site should send email.
-          - Create site assets under `/data` and deploy into the current room. Do not stop at local file edits when the requested outcome is a live room site.
-          - If the site deploy returns a public URL but that URL responds with a timeout, `502`, or another unsuccessful status, treat the task as still in progress. Inspect the room site deployment state, repair the deployment, and retest instead of handing the next repair step back to the user.
-          - Provision the room mailbox explicitly instead of inventing an ad hoc sender identity.
-          - Derive the mailbox email address from `MESHAGENT_ROOM` plus the configured MeshAgent mail domain, and set the mailbox queue name to exactly that same mailbox email address unless the user explicitly asks for a different routing design.
-          - Prefer `meshagent mailbot deploy` or an equivalent room-local MailBot setup with `toolkit_name` enabled and `--email-address` set to the mailbox email address.
-          - Prefer the MailBot `new_email_thread` tool for outbound delivery. Set `to` to the exact requested external recipient.
-          - Do not satisfy "send an email" with `mailto:` unless the user explicitly asks for a client-side-only form or explicitly accepts local email composition instead of backend delivery.
-          - Do not invent custom MailBot URL or token bridges, placeholder HTTP services, or synthetic environment variables such as `MAILBOT_URL` or `MAILBOT_TOKEN` unless the user explicitly asks for that architecture and those values actually exist.
-          - If a Python backend needs to call room tools, use the supported MeshAgent SDK API shape: `room.agents.list_toolkits(...)` and `room.agents.invoke_tool(...)`. Do not invent unsupported properties such as `room.agent` or `room.tool`.
-          - If the room already has database tables or room-database storage for email or submission tracking, prefer that existing room database for durable audit state instead of inventing a parallel mechanism.
-          - For a simple contact-form workflow, do not create custom tables unless the user explicitly asks for application-level tracking. Prefer the built-in MailBot artifacts and `emails` table as the default evidence surface.
-          - If outbound send fails with an SMTP rejection such as `SMTPDataError` `550 5.7.1 Permission denied`, treat that as a real mail-delivery blocker from the SMTP side, not as evidence that the site deployment itself is broken.
-          - Do not expose raw SMTP/provider exception text directly in a public form response unless the user explicitly asks for that behavior. Log the exact failure server-side, return a safe user-facing error, and report the exact blocker to the operator.
-          - Do not expose secret values unless the user explicitly asks for them.
-          - If SMTP or provider credentials are missing, stop and report the exact missing configuration instead of claiming the workflow is operational.
+          ## Verification rules
           
-          ## Contact-form workflow
+          - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
+          - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
+          - If SMTP rejects delivery, report the exact observed blocker.
           
-          When the user asks for a room site that should send email:
+          ## Out of scope
           
-          1. Treat the requested outcome as a live site plus working outbound email delivery.
-          2. Create the site in `/data` and deploy it in the current room.
-          3. Validate required inputs in the backend. If the prompt requires "valid email and/or phone number", enforce that at least one valid contact method is present and sanitize all user-supplied fields before constructing the outgoing message.
-          4. Provision the room mailbox first.
-          5. Derive the mailbox email address from `MESHAGENT_ROOM` plus the configured MeshAgent mail domain, and configure the mailbox queue name to exactly match that mailbox email address.
-          6. Deploy a room-local MailBot bound to that mailbox address and expose it with `toolkit_name`.
-          7. Expose the MailBot toolkit and send the message through `new_email_thread` with the exact requested external recipient in `to`.
-          8. Keep the architecture minimal for this use case.
-          9. Verify that the public URL serves successfully and that the site service is healthy. If the site is unhealthy, inspect the deployed service configuration and room state, repair it, redeploy, and retest before responding.
-          10. Exercise the submit path with a controlled test message when the workflow requires real outbound email, and distinguish clearly between site health, MailBot/toolkit success, and SMTP/provider acceptance.
-          11. Return the live public URL only after the site is deployed and the outbound email path has been verified as far as MeshAgent can actually assess it.
-          
-          ## Inbox and evidence rules
-          
-          Treat the MeshAgent mailbox and inbox system as the source of truth for what is actually assessable:
-          
-          - verify mailbox state with `meshagent mailbox list`, `show`, or the corresponding room-scoped verification command
-          - verify toolkit exposure with the room toolkit listing
-          - verify persisted mail evidence with room storage checks such as `room://.emails`
-          - if the room already stores application-level audit data, reconcile it with the MailBot result instead of inventing a second parallel status story
-          
-          Use the MeshAgent mail codepath as the source of truth for outbound delivery claims:
-          
-          - `MailBot` and `MailChannel` save outbound mail into `.emails/.../message.eml` and `.emails/.../message.json`, and insert rows into the `emails` table, before SMTP send is attempted
-          - then they call `aiosmtplib.send(...)`
-          - therefore a `.emails/` artifact alone means the outbound message was constructed and persisted, not that SMTP handoff succeeded
-          - an `SMTPDataError` such as `550 5.7.1 Permission denied` means the SMTP server rejected delivery after message construction; treat that as a provider authorization or relay-policy blocker unless stronger evidence shows otherwise
-          
-          ## Claiming success
-          
-          - Do not claim success from a form 200 response, queue acceptance, a `new_email_thread` success response, service startup, or a `.emails/` artifact by itself.
-          - Verify the strongest outcome that MeshAgent can actually assess from the current implementation, or state the exact remaining blocker.
-          - If the user asked you to make the room site work, do not stop at "the service is unhealthy" or "the route returns 502" and then ask whether you should continue. Continue debugging and repairing the site unless you hit an external blocker such as missing credentials, missing permissions, or a platform failure outside the room workflow.
-          - If you did not explicitly record whether the MailBot or toolkit call returned success or raised an exception, only claim that the submission was accepted and outbound mail was constructed and persisted.
-          - If the site loads but the submit action fails with an SMTP rejection, do not describe the website as broken or the email as sent. Report that the site is deployed, the form submission reached the mail workflow, and the SMTP provider rejected delivery with the exact observed error.
-          - If there is no matching outbound `.emails/...` path or `emails` table row for a submission, do not claim that MeshAgent made any outbound email attempt for that submission.
+          - Building or deploying agents that consume mail queues.
+          - Building contact-form websites or other frontend experiences.
+          - General email product design beyond mailbox routing, SMTP behavior, and queue inspection.
 
       - path: /meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md
         text: |
           ---
           name: meshagent-scheduling-operator
-          description: Operate MeshAgent scheduled-task workflows that support the current room or a clearly scoped project workflow. Use this skill for adding, listing, updating, verifying, and deleting MeshAgent scheduled tasks.
+          description: Manage MeshAgent scheduled tasks and explain how they enqueue JSON payloads onto queues for later consumption.
           ---
           
           # MeshAgent Scheduling Operator
           
-          Use this skill for `meshagent scheduled-task ...` workflows.
+          Use this skill for `meshagent scheduled-task ...` workflows and for verifying the queue behavior they trigger.
           
           ## Use this skill when
           
           - The user wants to add, inspect, update, pause, resume, or delete a scheduled task.
-          - The task involves a cron schedule, recurring dispatch, or one-time queued execution through `meshagent scheduled-task ...`.
-          - The user wants to connect scheduled execution to a room queue or room workflow.
+          - The task involves a cron schedule or one-time dispatch through `meshagent scheduled-task ...`.
+          - The user needs to verify that a scheduled task is actually sending work into a queue.
+          - The user needs to connect scheduled dispatch to an existing queue consumer or service without designing that consumer.
           
-          ## Shared runtime
+          ## References
           
-          Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
+          - Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
           
-          - Use the companion references in `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
-          
-          ## Primary command group
+          ## Primary command groups
           
           - `meshagent scheduled-task add`
           - `meshagent scheduled-task list`
           - `meshagent scheduled-task update`
           - `meshagent scheduled-task delete`
+          - `meshagent room queue receive`
+          - `meshagent room queue size`
           
-          ## Operating rules
+          ## Delivery model
           
-          - Treat scheduling as project-scoped configuration that must remain tightly tied to a specific room workflow, queue, or operational need.
-          - Confirm the target project context before making changes. If a task is meant for the current room workflow, prefer `--room "${MESHAGENT_ROOM}"` when the command supports it.
-          - Identify the exact target queue before adding or updating a task. Do not invent queue names.
-          - Use `meshagent scheduled-task list` first when the task might already exist.
-          - Prefer the smallest change that satisfies the request: update an existing task instead of creating a duplicate when the target task is clearly the same workflow.
-          - If the schedule is ambiguous, stop and resolve the intended cron expression before mutating anything.
-          - For `--payload` or `--payload-file`, ensure the payload is valid JSON before sending it to the CLI.
-          - Use `--once` only when the user clearly wants one-time execution followed by deactivation.
-          - Use `--inactive` for staged setup when the user wants a task created but not yet running.
-          - Treat `update` and `delete` as destructive. Confirm the exact task id and blast radius before executing them.
-          - Do not claim success until you verify with `meshagent scheduled-task list` or another corresponding read command.
-          - Do not broaden a simple scheduling request into a larger worker, reporting, or orchestration system unless the user explicitly asks for that architecture.
+          - A scheduled task does not execute business logic directly.
+          - It enqueues a JSON payload onto the configured queue on the requested schedule.
+          - The scheduled workflow is only end-to-end useful when something else consumes that queue.
           
           ## Default workflow
           
-          1. Resolve the active project and room context.
-          2. Inspect existing tasks with `meshagent scheduled-task list`, usually filtered by `--room`, `--task-id`, or both.
-          3. Confirm the queue, cron schedule, payload, and desired active state.
-          4. Apply the narrowest mutation with `add`, `update`, or `delete`.
-          5. Verify the resulting state with `meshagent scheduled-task list` and summarize the exact task id, room, queue, schedule, and active state.
+          1. Resolve the active project, room, queue, and schedule.
+          2. Inspect existing scheduled tasks with `meshagent scheduled-task list`.
+          3. Confirm the exact queue name and JSON payload before mutating anything.
+          4. Create, update, or delete the scheduled task.
+          5. Verify the task state with `meshagent scheduled-task list`.
+          6. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
           
-          ## Command-specific guidance
+          ## Queue consumption
           
-          ### Add
+          - CLI verification: use `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
+          - API verification: use the room queues client, for example `message = await room.queues.receive(name="my-queue")`.
+          - When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message.
           
-          - Use `meshagent scheduled-task add` when a new scheduled task is required.
-          - Supply a real queue with `--queue` and a real cron expression with `--schedule`.
-          - Use `--id` only when a stable caller-controlled id is clearly useful.
-          - If the task is for the current room workflow, include `--room "${MESHAGENT_ROOM}"` unless the user explicitly asks for a different room-scoped target.
+          ## Service integration
           
-          ### List
+          - A service can be connected to a queue by attaching a queue channel such as `--channel queue:QUEUE_NAME` on the service runtime command when that runtime supports channels.
+          - That queue-service wiring is separate from scheduled-task configuration.
+          - Designing or implementing the queue consumer belongs in an agent-building workflow, not this skill.
           
-          - Use `meshagent scheduled-task list` before and after mutation.
-          - Prefer filtering by `--room`, `--task-id`, `--active`, or `--inactive` to avoid ambiguous results.
-          - Use `--output json` when you need stable parsing or exact field verification.
+          ## Operating rules
           
-          ### Update
-          
-          - Use `meshagent scheduled-task update TASK_ID` when modifying schedule, queue, room, payload, or active state.
-          - Prefer updating the existing task instead of creating a second task for the same workflow.
-          - Restate the exact task id and intended changes before mutating.
-          
-          ### Delete
-          
-          - Use `meshagent scheduled-task delete TASK_ID` only when the user explicitly wants removal.
-          - Verify the task id with a read command first.
-          - Re-run `list` afterward to confirm the task is gone.
+          - Do not invent queue names.
+          - Do not claim that a scheduled task "works" just because the task exists; verify that messages reach the queue.
+          - Treat `update` and `delete` as destructive.
+          - Keep this skill focused on scheduling and queue verification, not on the implementation of the consumer.
           
           ## Out of scope
           
-          - Do not use this skill for general-purpose cron design that is not tied to an actual MeshAgent scheduled task.
-          - Do not use this skill for mailbox, inbox, or MailBot workflows; use `meshagent-mail-operator` for those.
-          - Do not use this skill for generic room runtime deployment; use `meshagent-cli-operator` for that.
+          - General cron design that is not tied to an actual MeshAgent scheduled task.
+          - Building the agent or service that consumes the queue.
 
       - path: /meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md
         text: |
           ---
           name: meshagent-webmaster-operator
-          description: Operate MeshAgent website, webserver, route, and public-hostname workflows in the current room. Use this skill for webserver routes files, site deployment, route management, and public URL verification.
+          description: Manage MeshAgent domain mappings and use the standard static webserver template as a reference example.
           ---
           
           # MeshAgent Webmaster Operator
           
-          Use this skill for `meshagent webserver ...`, `meshagent route ...`, and live room-site deployment.
+          Use this skill for domain mappings, route inspection, and a static webserver reference example.
           
           ## Use this skill when
           
-          - The user wants to make, update, or deploy a site in the current room.
-          - The task involves `meshagent webserver ...` routes files, handlers, static assets, local join, spec generation, or deploy flows.
           - The task involves `meshagent route ...` creation, inspection, update, or deletion.
-          - The task requires a public URL, hostname, domain, or route-backed exposure for a room website.
+          - The user needs to understand what a domain mapping does.
+          - The user needs a simple reference for exposing raw HTML and JavaScript through a static webserver service.
+          - The user wants to verify which room and port a public hostname points to.
           
-          ## Shared runtime
+          ## References
           
-          Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
-          
-          - Use the companion references in `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
+          - Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
+          - The standard static webserver example lives at `meshagent-router/meshagent/router/templates/webserver.yaml`.
           
           ## Primary command groups
           
-          - `meshagent webserver check`
-          - `meshagent webserver init`
-          - `meshagent webserver add`
-          - `meshagent webserver join`
-          - `meshagent webserver spec`
-          - `meshagent webserver deploy`
           - `meshagent route create`
           - `meshagent route update`
           - `meshagent route show`
           - `meshagent route list`
           - `meshagent route delete`
           
-          ## Operating rules
+          ## Domain mapping model
           
-          - Treat a room-site request as complete only when the site is actually deployed in the current room and you can report the resulting public URL or the exact blocker.
-          - For website, route, and public hostname work, default to `*.meshagent.app` hostnames unless the user explicitly asks for a different MeshAgent public domain.
-          - Create and modify site assets under `/data`.
-          - Do not stop at local file edits or a successful local `webserver check` when the requested outcome is a live room website.
-          - If the public URL returns a timeout, `502`, or another unsuccessful response after deploy, treat the task as still in progress. Inspect the deployed room service and related room state, repair the deployment, and retest instead of asking the user whether you should continue with normal debugging.
-          - Prefer `meshagent webserver deploy` when the goal is a deployed room website. Use `meshagent route ...` directly only when route management is explicitly requested or when you need manual routing without `--domain`.
-          - Use `meshagent webserver check` before deploy when the routes file or asset mapping may be invalid.
-          - Use `meshagent webserver spec` when the user explicitly wants the generated service spec or when inspecting deployment shape before mutating.
-          - Use `meshagent webserver join` only for local runtime validation or debugging, not as the completion state for a room-site deployment request.
-          - When deploying, set `--room "${MESHAGENT_ROOM}"` unless the user explicitly asks for a different room-scoped target.
-          - When deploying, provide a real `--website-path` that matches the room storage subpath where the routes file and referenced assets should live.
-          - Prefer `--domain` on `meshagent webserver deploy` when the site should be publicly reachable and the route should follow the deploy.
-          - If using `meshagent route create` or `update` manually, verify the domain, room, and published port exactly before mutating.
-          - If a route already exists and targets a different room, stop and report that conflict instead of silently repointing it.
-          - If the deployed site service is restarting, unhealthy, or failing to serve traffic, inspect the exact deployed service configuration, the room-visible site files under `/data`, and the relevant room service or container state before concluding. Repair the mismatch and redeploy when the issue is within the room workflow.
-          - Do not modify unrelated example apps, sample repos, bundled SDK examples, or maintainer reference projects to satisfy a room deployment request.
-          - After deploy or route mutation, verify the resulting service and route state with the corresponding read commands and report the live public URL.
+          - A route maps a public hostname to a published service port.
+          - Creating a route publishes an existing service; it does not build a website.
+          - Updating a route changes where the hostname points.
+          - Deleting a route removes public exposure for that hostname.
+          - Always verify the target room and port before mutating a route.
           
-          ## Default workflow
+          ## Static webserver example
           
-          1. Resolve the room target, public hostname expectation, and desired site path.
-          2. Build or update the site assets under `/data`.
-          3. Validate the routes file with `meshagent webserver check`.
-          4. Deploy with `meshagent webserver deploy`, usually with `--room "${MESHAGENT_ROOM}"`, `--website-path`, and `--domain`.
-          5. Verify the resulting service state, route state, and public URL behavior.
-          6. If the site is not actually reachable or the service is unhealthy, inspect the deployed state, repair it, redeploy, and retest.
-          7. Return the exact public URL, or the exact remaining blocker if the site is not actually reachable yet.
+          The standard static example is a service template that runs a basic HTTP server and exposes raw files from room storage:
           
-          ## Command-specific guidance
+          ```yaml
+          version: v1
+          kind: ServiceTemplate
+          metadata:
+            name: web server
+          variables:
+            - name: url
+              type: route
+              annotations:
+                meshagent.route.port: "5002"
+          container:
+            image: busybox
+            command: sh -c "httpd -f -p 5002 -h /data"
+            storage:
+              room:
+                - path: /data
+                  subpath: /website
+          ports:
+            - num: 5002
+              type: http
+              public: true
+              published: true
+              liveness: /
+          ```
           
-          ### Webserver routes files
+          This example is for serving static HTML, CSS, JavaScript, and similar assets. It is a reference example, not a website-building or deployment guide.
           
-          - `meshagent webserver init` creates a scaffold when no routes file exists.
-          - `meshagent webserver add` is the fastest way to add a static or python route entry.
-          - Route paths must start with `/`.
-          - `python` and `static` sources without a leading `/` resolve relative to the routes file.
-          - For Python handlers, use the supported handler signature documented by the CLI help: `handler(*, room: RoomClient, req: web.Request) -> web.StreamResponse`.
+          ## Route workflow
           
-          ### Webserver deploy
-          
-          - Prefer `meshagent webserver deploy` for room-site deployment.
-          - Use `--website-path` consistently so the deployed container can resolve the routes file and referenced assets.
-          - Use `--domain` when you want deploy to create or update the route automatically.
-          - If the request is specifically about a public website, do not call the task complete until deploy, route verification, and a successful public URL check are done.
-          
-          ### Route management
-          
-          - Use `meshagent route list` or `show` before `create`, `update`, or `delete`.
-          - Default to hostnames under `meshagent.app` unless the user asks otherwise.
-          - Treat route `update` and `delete` as destructive.
-          - Re-run a read command after any mutation to confirm the final room and port target.
+          1. Inspect existing routes with `meshagent route list` or `meshagent route show`.
+          2. Confirm the exact hostname, room, and published port.
+          3. Create, update, or delete the route.
+          4. Verify that the hostname points to the intended room and service port.
           
           ## Out of scope
           
-          - Do not use this skill for mailbox, inbox, or MailBot workflows; use `meshagent-mail-operator` for those.
-          - Do not use this skill for scheduled-task workflows; use `meshagent-scheduling-operator` for those.
-          - Do not use this skill for generic room runtime work that is not about sites, routes, or public web exposure; use `meshagent-cli-operator` for that.
+          - Designing or building websites.
+          - Contact forms, mail delivery, application backends, or agent logic.
+          - General room runtime troubleshooting unrelated to route/domain mapping.
 
   environment:
     - name: MESHAGENT_TOKEN
