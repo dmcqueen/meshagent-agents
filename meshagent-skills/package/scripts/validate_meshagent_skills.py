@@ -30,6 +30,10 @@ DEFAULT_HELP = (
     / "meshagent_cli_help.md"
 )
 SPECIALIZED_SKILLS = {
+    "meshagent-sdk-operator": SKILLS_ROOT
+    / "skills"
+    / "meshagent-sdk-operator"
+    / "SKILL.md",
     "meshagent-mail-operator": SKILLS_ROOT
     / "skills"
     / "meshagent-mail-operator"
@@ -52,6 +56,7 @@ RUNTIME_REFERENCES = (
     "references/command_groups.md",
     "references/meshagent_cli_help.md",
 )
+SKILLS_WITHOUT_CLI_REFERENCES = {"meshagent-sdk-operator"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -190,7 +195,10 @@ def main() -> int:
                 errors.append(
                     f"{skill_name} references sibling skill {other_skill_name}"
                 )
-        if skill_name != "meshagent-cli-operator":
+        if (
+            skill_name != "meshagent-cli-operator"
+            and skill_name not in SKILLS_WITHOUT_CLI_REFERENCES
+        ):
             for runtime_reference in RUNTIME_REFERENCES:
                 if runtime_reference not in current_skill_text:
                     errors.append(
