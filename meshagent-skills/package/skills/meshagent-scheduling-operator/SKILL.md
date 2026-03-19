@@ -1,83 +1,67 @@
 ---
 name: meshagent-scheduling-operator
-description: Operate MeshAgent scheduled-task workflows that support the current room or a clearly scoped project workflow. Use this skill for adding, listing, updating, verifying, and deleting MeshAgent scheduled tasks.
+description: Manage MeshAgent scheduled tasks and explain how they enqueue JSON payloads onto queues for later consumption.
 ---
 
 # MeshAgent Scheduling Operator
 
-Use this skill for `meshagent scheduled-task ...` workflows.
+Use this skill for `meshagent scheduled-task ...` workflows and for verifying the queue behavior they trigger.
 
 ## Use this skill when
 
 - The user wants to add, inspect, update, pause, resume, or delete a scheduled task.
-- The task involves a cron schedule, recurring dispatch, or one-time queued execution through `meshagent scheduled-task ...`.
-- The user wants to connect scheduled execution to a room queue or room workflow.
+- The task involves a cron schedule or one-time dispatch through `meshagent scheduled-task ...`.
+- The user needs to verify that a scheduled task is actually sending work into a queue.
+- The user needs to connect scheduled dispatch to an existing queue consumer or service without designing that consumer.
 
-## Shared runtime
+## References
 
-Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`.
+- Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
 
-- Use the companion references in `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
-
-## Primary command group
+## Primary command groups
 
 - `meshagent scheduled-task add`
 - `meshagent scheduled-task list`
 - `meshagent scheduled-task update`
 - `meshagent scheduled-task delete`
+- `meshagent room queue receive`
+- `meshagent room queue size`
 
-## Operating rules
+## Delivery model
 
-- Treat scheduling as project-scoped configuration that must remain tightly tied to a specific room workflow, queue, or operational need.
-- Confirm the target project context before making changes. If a task is meant for the current room workflow, prefer `--room "${MESHAGENT_ROOM}"` when the command supports it.
-- Identify the exact target queue before adding or updating a task. Do not invent queue names.
-- Use `meshagent scheduled-task list` first when the task might already exist.
-- Prefer the smallest change that satisfies the request: update an existing task instead of creating a duplicate when the target task is clearly the same workflow.
-- If the schedule is ambiguous, stop and resolve the intended cron expression before mutating anything.
-- For `--payload` or `--payload-file`, ensure the payload is valid JSON before sending it to the CLI.
-- Use `--once` only when the user clearly wants one-time execution followed by deactivation.
-- Use `--inactive` for staged setup when the user wants a task created but not yet running.
-- Treat `update` and `delete` as destructive. Confirm the exact task id and blast radius before executing them.
-- Do not claim success until you verify with `meshagent scheduled-task list` or another corresponding read command.
-- Do not broaden a simple scheduling request into a larger worker, reporting, or orchestration system unless the user explicitly asks for that architecture.
+- A scheduled task does not execute business logic directly.
+- It enqueues a JSON payload onto the configured queue on the requested schedule.
+- The scheduled workflow is only end-to-end useful when something else consumes that queue.
 
 ## Default workflow
 
-1. Resolve the active project and room context.
-2. Inspect existing tasks with `meshagent scheduled-task list`, usually filtered by `--room`, `--task-id`, or both.
-3. Confirm the queue, cron schedule, payload, and desired active state.
-4. Apply the narrowest mutation with `add`, `update`, or `delete`.
-5. Verify the resulting state with `meshagent scheduled-task list` and summarize the exact task id, room, queue, schedule, and active state.
+1. Resolve the active project, room, queue, and schedule.
+2. Inspect existing scheduled tasks with `meshagent scheduled-task list`.
+3. Confirm the exact queue name and JSON payload before mutating anything.
+4. Create, update, or delete the scheduled task.
+5. Verify the task state with `meshagent scheduled-task list`.
+6. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
 
-## Command-specific guidance
+## Queue consumption
 
-### Add
+- CLI verification: use `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
+- API verification: use the room queues client, for example `message = await room.queues.receive(name="my-queue")`.
+- When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message.
 
-- Use `meshagent scheduled-task add` when a new scheduled task is required.
-- Supply a real queue with `--queue` and a real cron expression with `--schedule`.
-- Use `--id` only when a stable caller-controlled id is clearly useful.
-- If the task is for the current room workflow, include `--room "${MESHAGENT_ROOM}"` unless the user explicitly asks for a different room-scoped target.
+## Service integration
 
-### List
+- A service can be connected to a queue by attaching a queue channel such as `--channel queue:QUEUE_NAME` on the service runtime command when that runtime supports channels.
+- That queue-service wiring is separate from scheduled-task configuration.
+- Designing or implementing the queue consumer belongs in an agent-building workflow, not this skill.
 
-- Use `meshagent scheduled-task list` before and after mutation.
-- Prefer filtering by `--room`, `--task-id`, `--active`, or `--inactive` to avoid ambiguous results.
-- Use `--output json` when you need stable parsing or exact field verification.
+## Operating rules
 
-### Update
-
-- Use `meshagent scheduled-task update TASK_ID` when modifying schedule, queue, room, payload, or active state.
-- Prefer updating the existing task instead of creating a second task for the same workflow.
-- Restate the exact task id and intended changes before mutating.
-
-### Delete
-
-- Use `meshagent scheduled-task delete TASK_ID` only when the user explicitly wants removal.
-- Verify the task id with a read command first.
-- Re-run `list` afterward to confirm the task is gone.
+- Do not invent queue names.
+- Do not claim that a scheduled task "works" just because the task exists; verify that messages reach the queue.
+- Treat `update` and `delete` as destructive.
+- Keep this skill focused on scheduling and queue verification, not on the implementation of the consumer.
 
 ## Out of scope
 
-- Do not use this skill for general-purpose cron design that is not tied to an actual MeshAgent scheduled task.
-- Do not use this skill for mailbox, inbox, or MailBot workflows; use `meshagent-mail-operator` for those.
-- Do not use this skill for generic room runtime deployment; use `meshagent-cli-operator` for that.
+- General cron design that is not tied to an actual MeshAgent scheduled task.
+- Building the agent or service that consumes the queue.
