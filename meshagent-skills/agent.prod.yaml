@@ -837,11 +837,6 @@ container:
           - Verify the resulting state after mutation.
           - Do not print secret values unless the user explicitly asks for them and the command returns them.
           
-          ## Out of scope
-          
-          - This skill does not define product workflows for mail, scheduling, domain management, website construction, or agent building.
-          - This skill does not require any particular container image, mount layout, room runtime, or deployment topology, but it should use those details when they are actually present.
-          
           ## Bundled resources
           
           - `references/command_groups.md`: fast routing map for the CLI.
@@ -1739,12 +1734,6 @@ container:
           - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
           - If SMTP rejects delivery, report the exact observed blocker.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
-          
-          ## Out of scope
-          
-          - Building or deploying agents that consume mail queues.
-          - Building contact-form websites or other frontend experiences.
-          - General email product design beyond mailbox routing, SMTP behavior, and queue inspection.
 
       - path: /meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md
         text: |
@@ -1814,7 +1803,6 @@ container:
           ## Out of scope
           
           - General cron design that is not tied to an actual MeshAgent scheduled task.
-          - Building the agent or service that consumes the queue.
 
       - path: /meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md
         text: |
@@ -1905,12 +1893,6 @@ container:
           ## Verification rules
           
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
-          
-          ## Out of scope
-          
-          - Designing or building websites.
-          - Contact forms, mail delivery, application backends, or agent logic.
-          - General room runtime troubleshooting unrelated to route/domain mapping.
 
   environment:
     - name: MESHAGENT_TOKEN
