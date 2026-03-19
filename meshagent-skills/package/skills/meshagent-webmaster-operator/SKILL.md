@@ -85,9 +85,3 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 ## Verification rules
 
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
-
-## Out of scope
-
-- Designing or building websites.
-- Contact forms, mail delivery, application backends, or agent logic.
-- General room runtime troubleshooting unrelated to route/domain mapping.
