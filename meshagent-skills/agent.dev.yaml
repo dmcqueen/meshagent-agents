@@ -1783,24 +1783,24 @@ container:
         text: |
           ---
           name: meshagent-webmaster-operator
-          description: Manage MeshAgent domain mappings and use the standard static webserver template as a reference example.
+          description: Manage MeshAgent domain mappings and use the sample MeshAgent static webserver YAML as a reference example.
           ---
           
           # MeshAgent Webmaster Operator
           
-          Use this skill for domain mappings, route inspection, and a static webserver reference example.
+          Use this skill for domain mappings, what they do, and the sample static webserver YAML example.
           
           ## Use this skill when
           
           - The task involves `meshagent route ...` creation, inspection, update, or deletion.
           - The user needs to understand what a domain mapping does.
-          - The user needs a simple reference for exposing raw HTML and JavaScript through a static webserver service.
+          - The user needs the sample MeshAgent webserver YAML as an example of serving raw HTML and JavaScript statically.
           - The user wants to verify which room and port a public hostname points to.
           
           ## References
           
           - Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
-          - The standard static webserver example lives at `meshagent-router/meshagent/router/templates/webserver.yaml`.
+          - The sample static webserver YAML in the MeshAgent server repository lives at `meshagent-router/meshagent/router/templates/webserver.yaml`.
           
           ## Primary command groups
           
@@ -1813,23 +1813,27 @@ container:
           ## Domain mapping model
           
           - A route maps a public hostname to a published service port.
-          - Creating a route publishes an existing service; it does not build a website.
+          - Creating a route publishes an existing service; it does not build a website for you.
           - Updating a route changes where the hostname points.
           - Deleting a route removes public exposure for that hostname.
           - Always verify the target room and port before mutating a route.
           
           ## Static webserver example
           
-          The standard static example is a service template that runs a basic HTTP server and exposes raw files from room storage:
+          This is the sample static webserver YAML from the MeshAgent server repository. It shows a simple static HTTP server that exposes raw files from room storage:
           
           ```yaml
           version: v1
           kind: ServiceTemplate
           metadata:
             name: web server
+            description: Publish a website for this room with the contents of the "website" folder. 
+            annotations:
+              meshagent.service.id: meshagent.webserver
           variables:
             - name: url
               type: route
+              optional: false
               annotations:
                 meshagent.route.port: "5002"
           container:
@@ -1847,7 +1851,7 @@ container:
               liveness: /
           ```
           
-          This example is for serving static HTML, CSS, JavaScript, and similar assets. It is a reference example, not a website-building or deployment guide.
+          This example is for serving static HTML, CSS, JavaScript, and similar assets. It is only a reference example, not a website-building guide.
           
           ## Route workflow
           
