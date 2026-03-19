@@ -60,9 +60,3 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
 - If SMTP rejects delivery, report the exact observed blocker.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
-
-## Out of scope
-
-- Building or deploying agents that consume mail queues.
-- Building contact-form websites or other frontend experiences.
-- General email product design beyond mailbox routing, SMTP behavior, and queue inspection.
