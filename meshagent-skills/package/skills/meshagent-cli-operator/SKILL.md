@@ -44,11 +44,6 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 - Verify the resulting state after mutation.
 - Do not print secret values unless the user explicitly asks for them and the command returns them.
 
-## Out of scope
-
-- This skill does not define product workflows for mail, scheduling, domain management, website construction, or agent building.
-- This skill does not require any particular container image, mount layout, room runtime, or deployment topology, but it should use those details when they are actually present.
-
 ## Bundled resources
 
 - `references/command_groups.md`: fast routing map for the CLI.
