@@ -64,4 +64,3 @@ Use this skill for `meshagent scheduled-task ...` workflows and for verifying th
 ## Out of scope
 
 - General cron design that is not tied to an actual MeshAgent scheduled task.
-- Building the agent or service that consumes the queue.
