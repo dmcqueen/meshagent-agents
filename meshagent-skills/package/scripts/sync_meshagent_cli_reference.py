@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Regenerate the packaged MeshAgent CLI help reference from an installed meshagent binary."""
+
 import argparse
 import json
 import re
@@ -93,7 +95,9 @@ def parse_commands(help_text: str) -> list[str]:
     return commands
 
 
-def run_help(meshagent_bin: str, path: list[str], timeout_seconds: int) -> tuple[int, str, bool]:
+def run_help(
+    meshagent_bin: str, path: list[str], timeout_seconds: int
+) -> tuple[int, str, bool]:
     cmd = [meshagent_bin] + path + ["--help"]
     try:
         completed = subprocess.run(
