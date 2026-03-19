@@ -5,7 +5,7 @@ This reference set is anchored to the MeshAgent CLI version recorded in `compat.
 
 Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...` and write user-visible artifacts under `/data`.
 For this skill, the current room is the value of `MESHAGENT_ROOM`.
-For website, route, and public hostname work in this environment, default to `*.__MESHAGENT_PUBLIC_DOMAIN__` hostnames unless the user explicitly asks for a different MeshAgent public domain.
+For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
 
 ## Top-level command policy
 
@@ -34,7 +34,7 @@ Use the following status values exactly:
 - `meshagent port`
   Use for room port inspection and exposure work tied to the current room. If a `--room` flag is used, it must match the current room.
 - `meshagent webserver`
-  Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer `*.__MESHAGENT_PUBLIC_DOMAIN__` hostnames by default in this environment.
+  Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer the managed hostname suffix derived from `MESHAGENT_API_URL` by default in this environment.
 - `meshagent codex`
   Use for Codex-backed runtime operations that stay within room scope.
 - `meshagent multi`
@@ -71,7 +71,7 @@ Use the following status values exactly:
 - `meshagent mailbox`
   Use for mailbox provisioning or inspection when a room workflow needs it.
 - `meshagent route`
-  Use only when the room task requires route configuration backing the current room's service exposure. Prefer `*.__MESHAGENT_PUBLIC_DOMAIN__` hostnames by default in this environment.
+  Use only when the room task requires route configuration backing the current room's service exposure. Prefer the managed hostname suffix derived from `MESHAGENT_API_URL` by default in this environment.
 - `meshagent scheduled-task`
   Use only when the room task requires scheduled execution tied to the current room's workflow.
 - `meshagent helper`
