@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Validate that the packaged meshagent-skills files stay in sync with the target CLI."""
+
 import argparse
 import json
 import re
@@ -41,7 +43,9 @@ SPECIALIZED_SKILLS = {
     / "meshagent-webmaster-operator"
     / "SKILL.md",
 }
-SHARED_RUNTIME_LINE = "Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`."
+SHARED_RUNTIME_LINE = (
+    "Use the room runtime defined in `../meshagent-cli-operator/SKILL.md`."
+)
 SHARED_RUNTIME_DUPLICATES = (
     "The MeshAgent CLI is expected at `/usr/bin/meshagent`",
     "The current room is `MESHAGENT_ROOM`.",
@@ -51,7 +55,9 @@ SHARED_RUNTIME_DUPLICATES = (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Validate meshagent-skills consistency.")
+    parser = argparse.ArgumentParser(
+        description="Validate meshagent-skills consistency."
+    )
     parser.add_argument(
         "--meshagent-bin",
         default=str(DEFAULT_BIN),
@@ -157,11 +163,17 @@ def main() -> int:
             f"meshagent_cli_help.md does not mention MeshAgent CLI {expected_version}"
         )
     if "$ meshagent --help" not in help_text:
-        errors.append("meshagent_cli_help.md should render console examples with `meshagent`")
+        errors.append(
+            "meshagent_cli_help.md should render console examples with `meshagent`"
+        )
     if "/.venv/bin/meshagent" in help_text:
-        errors.append("meshagent_cli_help.md should not embed repo-local meshagent paths")
+        errors.append(
+            "meshagent_cli_help.md should not embed repo-local meshagent paths"
+        )
     if "MeshAgent CLI skill pack" not in plugin_text:
-        errors.append("plugin.json description does not match the expected package label")
+        errors.append(
+            "plugin.json description does not match the expected package label"
+        )
     if missing:
         errors.append(
             "command_groups.md references commands not present in meshagent --help: "
