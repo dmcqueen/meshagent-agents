@@ -85,6 +85,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - If a contact-form task asks for submissions to be emailed, do not report the site as complete while the live form still returns an outbound mail error.
 - If outbound mail fails with an authorization error and mailbox creation is available, provision or reuse a mailbox and re-test the live form before replying.
 - Only stop and ask the user for help after mailbox-backed sending is blocked by an actual permission or configuration error that you can report concretely.
+- If the live contact form returns 500 before the mail path is reached, diagnose the handler/rendering/runtime failure first instead of treating it as an SMTP problem.
 - If the workflow also creates a public route, do not copy `.meshagent.app` from CLI examples when the current runtime maps to a different managed suffix.
 - If tool calls fail because `meshagent webserver deploy` requires local route sources under the current working directory, move the local website project under that working directory instead of switching the deploy input to `/data`.
 - Do not claim a contact-form website is complete until both the sender identity and the public site exposure path are verified, or until you report the exact blocking command and error.
