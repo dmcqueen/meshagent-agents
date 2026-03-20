@@ -22,6 +22,6 @@ Use this command for agent runtime orchestration.
 ## Operating rules
 
 1. Identify the target room and runtime type first.
-2. Use `--help` on the exact runtime command before composing long join or deploy invocations.
+2. Use the packaged CLI references first when composing join or deploy invocations. Only use live `--help` on the exact runtime command if the packaged help is missing the needed detail or appears stale for the installed CLI.
 3. Reuse existing flags, rules files, skill dirs, and environment wiring when modifying an existing agent command.
 4. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for MailBot-backed contact forms, mailbox-linked delivery flows, or inbox-toolkit work.
