@@ -3,7 +3,9 @@
 Use this file to choose the narrowest MeshAgent CLI area before reading the full help reference.
 This reference set is anchored to the MeshAgent CLI version recorded in `compat.json`.
 
-Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...` and write user-visible artifacts under `/data`.
+Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...`.
+For room-visible runtime data, use `/data`.
+For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
 For this skill, the current room is the value of `MESHAGENT_ROOM`.
 For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
 The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
@@ -103,6 +105,8 @@ Use the following status values exactly:
 - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
 - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
 - For room-site requests, deploy in the current room and return the public URL. Do not treat local example-app edits or local build output as completion of a room deployment request.
+- For room-site requests that use `meshagent webserver deploy`, create the local app under the current working directory, keep route sources relative to the routes file when possible, and upload to room storage with `--website-path`.
+- If `MESHAGENT_ROOM` is already available, do not block on `meshagent rooms list` before attempting the room-scoped deploy.
 - Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
 - Use `meshagent-scheduling-operator` for scheduled-task creation, update, pause, resume, or deletion.
 - Use `meshagent-webmaster-operator` for websites, `meshagent webserver ...`, routes, or public hostname exposure.
