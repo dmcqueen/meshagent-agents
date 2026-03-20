@@ -127,53 +127,150 @@ container:
         text: |
           # MeshAgent Skills
           
-          This package contains MeshAgent CLI commands and skills for room operations, SDK reference lookups, mail workflows, scheduled tasks, and website/domain workflows.
+          This package is a vendorable MeshAgent skill pack.
           
-          ## Package layout
+          It combines:
           
-          - `commands/`
-            Slash-command entrypoints for MeshAgent CLI requests.
+          - slash-command entrypoints under `commands/`
+          - focused `SKILL.md` files under `skills/`
+          - packaged CLI reference material under `skills/meshagent-cli-operator/references/`
+          - maintenance scripts under `scripts/`
+          - a machine-readable compatibility target in `compat.json`
+          - plugin metadata in `.claude-plugin/plugin.json`
+          
+          The package is designed so a live room agent can answer MeshAgent workflow requests with package-local instructions and references instead of relying on ad hoc prompting.
+          
+          ## Current system
+          
+          The package currently has one general CLI skill plus four specialized skills:
+          
           - `skills/meshagent-cli-operator/`
-            General MeshAgent CLI usage and command routing.
+            General MeshAgent CLI routing, command composition, live-room execution rules, and packaged CLI reference material.
           - `skills/meshagent-sdk-operator/`
-            SDK/docs lookup guidance for using the preloaded `/src/meshagent-sdk` checkout, docs, and examples.
+            Guidance for using the preloaded `/src/meshagent-sdk` checkout, docs, examples, and source to answer SDK/API questions.
           - `skills/meshagent-mail-operator/`
-            Mailbox administration, SMTP behavior, and inbound mail queue inspection.
+            Mailbox administration, room SMTP behavior, inbound queue inspection, and mailbox-backed sender guidance for room-hosted mail workflows.
           - `skills/meshagent-scheduling-operator/`
-            `meshagent scheduled-task ...` workflows plus queue verification guidance.
+            `meshagent scheduled-task ...` workflows and queue-delivery verification.
           - `skills/meshagent-webmaster-operator/`
-            Domain mappings and a static webserver reference example.
+            Route/domain mapping behavior and the static webserver YAML reference example.
           
-          ## Review Notes
-          
-          - The machine-readable compatibility source is `compat.json`.
-          - The packaged CLI references are anchored to the MeshAgent CLI version recorded in `compat.json`.
-          - The generated CLI reference lives at `skills/meshagent-cli-operator/references/meshagent_cli_help.md`.
-          - The package-local maintenance entrypoints live under `scripts/` so the CLI reference can be regenerated and validated from any repository that vendors this package.
-          - The SDK reference skill assumes the live room image preloads the SDK checkout at `/src/meshagent-sdk`.
-          
-          ## Update Workflow
-          
-          1. Install the target MeshAgent CLI version.
-          2. Update `compat.json`.
-          3. Run `python3 scripts/sync_meshagent_cli_reference.py --meshagent-bin <meshagent>` to regenerate `skills/meshagent-cli-operator/references/meshagent_cli_help.md` from the installed CLI.
-          4. Review `skills/meshagent-cli-operator/references/command_groups.md` against `meshagent --help`.
-          5. Run `python3 scripts/validate_meshagent_skills.py --meshagent-bin <meshagent>`.
-          
-          ## Command Map
+          The package also exposes command entrypoints for common request classes:
           
           - `commands/meshagent.md`
-            General entrypoint for MeshAgent CLI work.
+            General MeshAgent CLI entrypoint.
           - `commands/meshagent-room.md`
             Room lifecycle and room-scoped operations.
           - `commands/meshagent-service.md`
-            Service specs, deploys, MCP, helpers, and webserver-adjacent work.
+            Services, deploys, MCP, helpers, and webserver-adjacent work.
           - `commands/meshagent-project.md`
             Project-scoped administration such as routes, mailboxes, and scheduled tasks.
           - `commands/meshagent-agent.md`
-            Agent runtime orchestration such as chatbot, worker, mailbot, process, and related runtimes.
+            Agent runtime orchestration such as chatbot, worker, mailbot, and process runtimes.
           - `commands/meshagent-inspect.md`
             Read-only inspection and diagnostics.
+          
+          ## File inventory
+          
+          Current files in this package:
+          
+          - `README.md`
+            Package overview and maintenance notes.
+          - `compat.json`
+            Target MeshAgent CLI version for the packaged references and validation.
+          - `.claude-plugin/plugin.json`
+            Plugin metadata for the packaged skill pack.
+          - `commands/meshagent.md`
+            General MeshAgent CLI entrypoint.
+          - `commands/meshagent-room.md`
+            Room-scoped command entrypoint.
+          - `commands/meshagent-service.md`
+            Service, deploy, MCP, and webserver-adjacent entrypoint.
+          - `commands/meshagent-project.md`
+            Project-scoped administration entrypoint.
+          - `commands/meshagent-agent.md`
+            Agent runtime orchestration entrypoint.
+          - `commands/meshagent-inspect.md`
+            Read-only inspection and diagnostics entrypoint.
+          - `scripts/refresh_meshagent_skills_package.py`
+            One-command updater for `compat.json`, packaged CLI help, and validation.
+          - `scripts/generate_meshagent_cli_help_reference.py`
+            CLI help reference generator.
+          - `scripts/validate_meshagent_skills_package.py`
+            Package validator.
+          - `skills/meshagent-cli-operator/SKILL.md`
+            Core CLI execution and command-routing skill.
+          - `skills/meshagent-cli-operator/references/command_groups.md`
+            Curated command-family routing reference.
+          - `skills/meshagent-cli-operator/references/meshagent_cli_help.md`
+            Generated recursive CLI help reference.
+          - `skills/meshagent-sdk-operator/SKILL.md`
+            SDK/docs/example lookup skill for the preloaded `/src/meshagent-sdk` checkout.
+          - `skills/meshagent-mail-operator/SKILL.md`
+            Mailbox, SMTP, queue, and room-hosted outbound mail workflow skill.
+          - `skills/meshagent-scheduling-operator/SKILL.md`
+            Scheduled-task and queue-delivery skill.
+          - `skills/meshagent-webmaster-operator/SKILL.md`
+            Route/domain mapping and static webserver reference skill.
+          
+          ## Packaged references
+          
+          - `compat.json`
+            The machine-readable target MeshAgent CLI version for this package.
+          - `skills/meshagent-cli-operator/references/meshagent_cli_help.md`
+            Generated recursive `meshagent --help` capture for the CLI version in `compat.json`.
+          - `skills/meshagent-cli-operator/references/command_groups.md`
+            Curated command-family routing guidance layered on top of the raw help reference.
+          
+          These references are part of the package contract. The skills are expected to use them rather than inventing command shapes.
+          
+          ## Live room assumptions
+          
+          The current skills assume the following when they are installed into a live room runtime:
+          
+          - room-scoped work should prefer the existing MeshAgent CLI session before asking for auth again
+          - `MESHAGENT_ROOM` identifies the current room when a command needs `--room`
+          - `MESHAGENT_API_URL` can be used to derive the managed public hostname family for routes and published sites
+          - room-owned, user-visible artifacts should live under `/data`
+          - the MeshAgent SDK checkout is preloaded at `/src/meshagent-sdk` for SDK/docs lookup
+          
+          These are package-level conventions enforced by the current skill text. They are intentionally documented here because the skills depend on them for live-room behavior.
+          
+          ## Skill package rules
+          
+          The current validator enforces these package rules:
+          
+          - the packaged CLI version in `compat.json` must match the installed CLI used for validation
+          - generated help must mention that exact CLI version
+          - command-group references must stay aligned with `meshagent --help`
+          - skills must not reference sibling skills by name
+          - skills must not reference sibling `SKILL.md` files by relative path
+          - specialized skills must include the package-local CLI reference pointers unless they are explicitly exempt
+          
+          ## Scripts
+          
+          - `scripts/refresh_meshagent_skills_package.py`
+            User-facing wrapper. Detects the installed MeshAgent CLI version from `<meshagent-bin> version`, writes that version into `compat.json`, regenerates the packaged CLI help reference, and runs the validator.
+          - `scripts/generate_meshagent_cli_help_reference.py`
+            Regenerates `skills/meshagent-cli-operator/references/meshagent_cli_help.md` by recursively capturing `meshagent --help`. This script reads the version label from `compat.json`; it does not update `compat.json`.
+          - `scripts/validate_meshagent_skills_package.py`
+            Validates package consistency against the installed CLI and the current skill-package rules.
+          
+          ## Update workflow
+          
+          Recommended one-command flow:
+          
+          ```bash
+          python3 scripts/refresh_meshagent_skills_package.py --meshagent-bin <meshagent>
+          ```
+          
+          Manual equivalent:
+          
+          1. Install or locate the target MeshAgent CLI binary.
+          2. Run `<meshagent> version` and write that exact version into `compat.json`.
+          3. Run `python3 scripts/generate_meshagent_cli_help_reference.py --meshagent-bin <meshagent>`.
+          4. Review `skills/meshagent-cli-operator/references/command_groups.md` if command-family routing needs adjustment for the new CLI behavior.
+          5. Run `python3 scripts/validate_meshagent_skills_package.py --meshagent-bin <meshagent>`.
 
       - path: /meshagent-skills/commands/meshagent-agent.md
         text: |
@@ -365,10 +462,10 @@ container:
             "meshagent_cli_version": "0.31.4"
           }
 
-      - path: /meshagent-skills/scripts/sync_meshagent_cli_reference.py
+      - path: /meshagent-skills/scripts/generate_meshagent_cli_help_reference.py
         text: |
           #!/usr/bin/env python3
-          """Regenerate the packaged MeshAgent CLI help reference from an installed meshagent binary."""
+          """Generate the packaged MeshAgent CLI help reference from an installed meshagent binary."""
           
           import argparse
           import json
@@ -577,7 +674,206 @@ container:
           if __name__ == "__main__":
               raise SystemExit(main())
 
-      - path: /meshagent-skills/scripts/validate_meshagent_skills.py
+      - path: /meshagent-skills/scripts/refresh_meshagent_skills_package.py
+        text: |
+          #!/usr/bin/env python3
+          """Update compat.json, regenerate CLI help, and validate the meshagent-skills package."""
+          
+          from __future__ import annotations
+          
+          import argparse
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
+          
+          
+          SKILLS_ROOT = Path(__file__).resolve().parents[1]
+          DEFAULT_BIN = Path("meshagent")
+          DEFAULT_COMPAT = SKILLS_ROOT / "compat.json"
+          DEFAULT_SYNC_SCRIPT = (
+              SKILLS_ROOT / "scripts" / "generate_meshagent_cli_help_reference.py"
+          )
+          DEFAULT_VALIDATE_SCRIPT = (
+              SKILLS_ROOT / "scripts" / "validate_meshagent_skills_package.py"
+          )
+          DEFAULT_OUTPUT = (
+              SKILLS_ROOT
+              / "skills"
+              / "meshagent-cli-operator"
+              / "references"
+              / "meshagent_cli_help.md"
+          )
+          DEFAULT_DISPLAY_BIN = "meshagent"
+          
+          
+          def log(message: str) -> None:
+              print(f"[meshagent-skills] {message}")
+          
+          
+          def parse_args() -> argparse.Namespace:
+              parser = argparse.ArgumentParser(
+                  description="Refresh meshagent-skills for the installed MeshAgent CLI."
+              )
+              parser.add_argument(
+                  "--meshagent-bin",
+                  default=str(DEFAULT_BIN),
+                  help=f"Path to meshagent CLI. Default: {DEFAULT_BIN}",
+              )
+              parser.add_argument(
+                  "--compat-json",
+                  default=str(DEFAULT_COMPAT),
+                  help=f"Path to compat.json. Default: {DEFAULT_COMPAT}",
+              )
+              parser.add_argument(
+                  "--output",
+                  default=str(DEFAULT_OUTPUT),
+                  help=f"Path to meshagent_cli_help.md. Default: {DEFAULT_OUTPUT}",
+              )
+              parser.add_argument(
+                  "--display-bin",
+                  default=DEFAULT_DISPLAY_BIN,
+                  help=f"Command label to render in console examples. Default: {DEFAULT_DISPLAY_BIN}",
+              )
+              parser.add_argument(
+                  "--max-depth",
+                  type=int,
+                  default=1,
+                  help="Maximum command depth to crawl from the root. Default: 1",
+              )
+              parser.add_argument(
+                  "--timeout-seconds",
+                  type=int,
+                  default=2,
+                  help="Per-command help timeout in seconds. Default: 2",
+              )
+              return parser.parse_args()
+          
+          
+          def resolve_meshagent_bin(meshagent_bin: str) -> str:
+              if "/" not in meshagent_bin:
+                  return meshagent_bin
+          
+              meshagent_path = Path(meshagent_bin).resolve()
+              if not meshagent_path.is_file():
+                  raise FileNotFoundError(f"meshagent CLI not found: {meshagent_path}")
+              return str(meshagent_path)
+          
+          
+          def run_checked(cmd: list[str]) -> subprocess.CompletedProcess[str]:
+              log("running: " + " ".join(cmd))
+              completed = subprocess.run(cmd, capture_output=True, text=True)
+              if completed.stdout:
+                  sys.stdout.write(completed.stdout)
+              if completed.returncode != 0:
+                  if completed.stderr:
+                      sys.stderr.write(completed.stderr)
+                  raise subprocess.CalledProcessError(
+                      completed.returncode,
+                      cmd,
+                      output=completed.stdout,
+                      stderr=completed.stderr,
+                  )
+              if completed.stderr:
+                  sys.stderr.write(completed.stderr)
+              return completed
+          
+          
+          def detect_cli_version(meshagent_bin: str) -> str:
+              completed = run_checked([meshagent_bin, "version"])
+              version = completed.stdout.strip()
+              if not version:
+                  raise ValueError("meshagent version returned an empty version string")
+              return version
+          
+          
+          def load_compat_version(path: Path) -> str | None:
+              payload = json.loads(path.read_text(encoding="utf-8"))
+              version = payload.get("meshagent_cli_version")
+              return version.strip() if isinstance(version, str) and version.strip() else None
+          
+          
+          def update_compat_json(path: Path, cli_version: str) -> bool:
+              payload = json.loads(path.read_text(encoding="utf-8"))
+              current_version = payload.get("meshagent_cli_version")
+              if current_version == cli_version:
+                  return False
+              payload["meshagent_cli_version"] = cli_version
+              path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+              return True
+          
+          
+          def main() -> int:
+              args = parse_args()
+              compat_path = Path(args.compat_json).resolve()
+              output_path = Path(args.output).resolve()
+              sync_script = DEFAULT_SYNC_SCRIPT.resolve()
+              validate_script = DEFAULT_VALIDATE_SCRIPT.resolve()
+          
+              try:
+                  log("resolving meshagent binary")
+                  meshagent_bin = resolve_meshagent_bin(args.meshagent_bin)
+                  log(f"using meshagent binary: {meshagent_bin}")
+          
+                  log("detecting installed MeshAgent CLI version")
+                  cli_version = detect_cli_version(meshagent_bin)
+                  log(f"detected MeshAgent CLI version: {cli_version}")
+          
+                  current_compat_version = load_compat_version(compat_path)
+                  if current_compat_version == cli_version:
+                      log(
+                          f"compat.json already matches installed CLI version: {current_compat_version}"
+                      )
+                  else:
+                      log(f"updating compat.json: {compat_path}")
+                      update_compat_json(compat_path, cli_version)
+                      log("compat.json updated")
+          
+                  log(f"regenerating CLI help reference: {output_path}")
+                  run_checked(
+                      [
+                          sys.executable,
+                          str(sync_script),
+                          "--meshagent-bin",
+                          meshagent_bin,
+                          "--compat-json",
+                          str(compat_path),
+                          "--output",
+                          str(output_path),
+                          "--display-bin",
+                          args.display_bin,
+                          "--max-depth",
+                          str(args.max_depth),
+                          "--timeout-seconds",
+                          str(args.timeout_seconds),
+                      ]
+                  )
+                  log("CLI help reference regenerated")
+          
+                  log("running meshagent-skills validator")
+                  run_checked(
+                      [
+                          sys.executable,
+                          str(validate_script),
+                          "--meshagent-bin",
+                          meshagent_bin,
+                          "--compat-json",
+                          str(compat_path),
+                      ]
+                  )
+              except (FileNotFoundError, ValueError, subprocess.CalledProcessError) as exc:
+                  if isinstance(exc, (FileNotFoundError, ValueError)):
+                      print(str(exc), file=sys.stderr)
+                  return 1
+          
+              log(f"updated meshagent-skills for MeshAgent CLI {cli_version}")
+              return 0
+          
+          
+          if __name__ == "__main__":
+              raise SystemExit(main())
+
+      - path: /meshagent-skills/scripts/validate_meshagent_skills_package.py
         text: |
           #!/usr/bin/env python3
           """Validate that the packaged meshagent-skills files stay in sync with the target CLI."""
@@ -829,6 +1125,7 @@ container:
           - If `MESHAGENT_ROOM` is present, prefer room-scoped commands and pass `--room "${MESHAGENT_ROOM}"` when the command requires it.
           - If `MESHAGENT_API_URL` is present and the task needs a default MeshAgent-managed public hostname, derive the suffix from that API URL: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
           - If `MESHAGENT_API_URL` is absent or does not clearly identify the environment, inspect an existing route in the current project or ask before inventing a managed public hostname.
+          - Packaged help examples that show `.meshagent.app` are illustrative only. Do not copy that suffix blindly when `MESHAGENT_API_URL` indicates a different environment.
           - If authentication is uncertain, test a room-scoped read command first. Do not claim that the CLI is unauthenticated until an actual MeshAgent command fails for that reason.
           - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use, not as something to ignore by default.
           - For room-site or room-service work, keep user-visible artifacts under `/data` unless the command explicitly requires a different path.
@@ -866,6 +1163,7 @@ container:
           Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...` and write user-visible artifacts under `/data`.
           For this skill, the current room is the value of `MESHAGENT_ROOM`.
           For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
+          The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
           
           ## Top-level command policy
           
@@ -985,703 +1283,745 @@ container:
           
           ```console
           $ meshagent --help
-                                                                                          
-           Usage: meshagent [OPTIONS] COMMAND [ARGS]...                                   
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --install-completion          Install completion for the current shell.      │
-          │ --show-completion             Show completion for the current shell, to copy │
-          │                               it or customize the installation.              │
-          │ --help                        Show this message and exit.                    │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ version              Print the version                                       │
-          │ setup                Perform initial login and project/api key activation.   │
-          │ call                 Trigger agent/tool calls via URL                        │
-          │ auth                 Authenticate to meshagent                               │
-          │ project              Manage or activate your meshagent projects              │
-          │ api-key              Manage or activate api-keys for your project            │
-          │ session              Inspect recent sessions and events                      │
-          │ token                Generate participant tokens (JWTs)                      │
-          │ webhook              Manage project webhooks                                 │
-          │ service              Manage services for your project                        │
-          │ mcp                  Bridge MCP servers into MeshAgent rooms                 │
-          │ secret               Manage secrets for your project.                        │
-          │ helper               Developer helper services                               │
-          │ rooms                Create, list, and manage rooms in a project             │
-          │ mailbox              Manage mailboxes for your project                       │
-          │ route                Manage routes for your project                          │
-          │ scheduled-task       Manage scheduled tasks for your project                 │
-          │ meeting-transcriber  Join a meeting transcriber to a room                    │
-          │ port                 Port forwarding into room containers                    │
-          │ webserver            Run an HTTP webserver connected to a MeshAgent room.    │
-          │ codex                Codex-backed agents                                     │
-          │ multi                Connect agents and tools to a room                      │
-          │ voicebot             Join a voicebot to a room                               │
-          │ chatbot              Join a chatbot to a room                                │
-          │ process              Join a process-backed agent to a room                   │
-          │ mailbot              Join a mailbot to a room                                │
-          │ task-runner          Join a taskrunner to a room                             │
-          │ worker               Join a worker agent to a room                           │
-          │ room                 Operate within a room                                   │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent [OPTIONS] COMMAND [ARGS]...                       
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --install-completion          Install completion for the current │
+          │                               shell.                             │
+          │ --show-completion             Show completion for the current    │
+          │                               shell, to copy it or customize the │
+          │                               installation.                      │
+          │ --help                        Show this message and exit.        │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ version              Print the version                           │
+          │ setup                Perform initial login and project/api key   │
+          │                      activation.                                 │
+          │ call                 Trigger agent/tool calls via URL            │
+          │ auth                 Authenticate to meshagent                   │
+          │ project              Manage or activate your meshagent projects  │
+          │ api-key              Manage or activate api-keys for your        │
+          │                      project                                     │
+          │ session              Inspect recent sessions and events          │
+          │ token                Generate participant tokens (JWTs)          │
+          │ webhook              Manage project webhooks                     │
+          │ service              Manage services for your project            │
+          │ mcp                  Bridge MCP servers into MeshAgent rooms     │
+          │ secret               Manage secrets for your project.            │
+          │ helper               Developer helper services                   │
+          │ rooms                Create, list, and manage rooms in a project │
+          │ mailbox              Manage mailboxes for your project           │
+          │ route                Manage routes for your project              │
+          │ scheduled-task       Manage scheduled tasks for your project     │
+          │ meeting-transcriber  Join a meeting transcriber to a room        │
+          │ port                 Port forwarding into room containers        │
+          │ webserver            Run an HTTP webserver connected to a        │
+          │                      MeshAgent room.                             │
+          │ codex                Codex-backed agents                         │
+          │ multi                Connect agents and tools to a room          │
+          │ voicebot             Join a voicebot to a room                   │
+          │ chatbot              Join a chatbot to a room                    │
+          │ process              Join a process-backed agent to a room       │
+          │ mailbot              Join a mailbot to a room                    │
+          │ task-runner          Join a taskrunner to a room                 │
+          │ worker               Join a worker agent to a room               │
+          │ room                 Operate within a room                       │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent version`
           
           ```console
           $ meshagent version --help
-                                                                                          
-           Usage: meshagent version [OPTIONS]                                             
-                                                                                          
-           Print the version                                                              
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent version [OPTIONS]                                 
+                                                                              
+           Print the version                                                  
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent setup`
           
           ```console
           $ meshagent setup --help
-                                                                                          
-           Usage: meshagent setup [OPTIONS]                                               
-                                                                                          
-           Perform initial login and project/api key activation.                          
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent setup [OPTIONS]                                   
+                                                                              
+           Perform initial login and project/api key activation.              
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
+          
+          ## `meshagent activation.`
+          
+          ```console
+          $ meshagent activation. --help
+          Usage: meshagent [OPTIONS] COMMAND [ARGS]...
+          Try 'meshagent --help' for help.
+          
+          Error: No such command 'activation.'.
+          ```
+          
+          _Help capture exited with code 2 for this command path._
           
           ## `meshagent call`
           
           ```console
           $ meshagent call --help
-                                                                                          
-           Usage: meshagent call [OPTIONS] COMMAND [ARGS]...                              
-                                                                                          
-           Trigger agent/tool calls via URL                                               
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ tool     Send a call request to a tool webhook URL                           │
-          │ agent    Send a call request to an agent webhook URL                         │
-          │ toolkit  Send a call request to a toolkit webhook URL                        │
-          │ schema   Send a call request to a schema webhook URL                         │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent call [OPTIONS] COMMAND [ARGS]...                  
+                                                                              
+           Trigger agent/tool calls via URL                                   
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ tool     Send a call request to a tool webhook URL               │
+          │ agent    Send a call request to an agent webhook URL             │
+          │ toolkit  Send a call request to a toolkit webhook URL            │
+          │ schema   Send a call request to a schema webhook URL             │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent auth`
           
           ```console
           $ meshagent auth --help
-                                                                                          
-           Usage: meshagent auth [OPTIONS] COMMAND [ARGS]...                              
-                                                                                          
-           Authenticate to meshagent                                                      
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ login                                                                        │
-          │ logout                                                                       │
-          │ whoami                                                                       │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent auth [OPTIONS] COMMAND [ARGS]...                  
+                                                                              
+           Authenticate to meshagent                                          
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ login                                                            │
+          │ logout                                                           │
+          │ whoami                                                           │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent project`
           
           ```console
           $ meshagent project --help
-                                                                                          
-           Usage: meshagent project [OPTIONS] COMMAND [ARGS]...                           
-                                                                                          
-           Manage or activate your meshagent projects                                     
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ create    Create a new MeshAgent project.                                    │
-          │ list      List projects and mark the currently active one.                   │
-          │ activate  Set the active project for subsequent CLI commands.                │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent project [OPTIONS] COMMAND [ARGS]...               
+                                                                              
+           Manage or activate your meshagent projects                         
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ create    Create a new MeshAgent project.                        │
+          │ list      List projects and mark the currently active one.       │
+          │ activate  Set the active project for subsequent CLI commands.    │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent api-key`
           
           ```console
           $ meshagent api-key --help
-                                                                                          
-           Usage: meshagent api-key [OPTIONS] COMMAND [ARGS]...                           
-                                                                                          
-           Manage or activate api-keys for your project                                   
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ list      List API keys for a project.                                       │
-          │ create    Create a new API key for a project.                                │
-          │ activate  Set the default API key for a project in local CLI settings.       │
-          │ delete    Delete an API key from a project.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent api-key [OPTIONS] COMMAND [ARGS]...               
+                                                                              
+           Manage or activate api-keys for your project                       
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ list      List API keys for a project.                           │
+          │ create    Create a new API key for a project.                    │
+          │ activate  Set the default API key for a project in local CLI     │
+          │           settings.                                              │
+          │ delete    Delete an API key from a project.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent session`
           
           ```console
           $ meshagent session --help
-                                                                                          
-           Usage: meshagent session [OPTIONS] COMMAND [ARGS]...                           
-                                                                                          
-           Inspect recent sessions and events                                             
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ list  List recent sessions                                                   │
-          │ show  Show events for a session                                              │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent session [OPTIONS] COMMAND [ARGS]...               
+                                                                              
+           Inspect recent sessions and events                                 
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ list  List recent sessions                                       │
+          │ show  Show events for a session                                  │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent token`
           
           ```console
           $ meshagent token --help
-                                                                                          
-           Usage: meshagent token [OPTIONS] COMMAND [ARGS]...                             
-                                                                                          
-           Generate participant tokens (JWTs)                                             
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ generate  Generate a participant token (JWT) from a spec                     │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent token [OPTIONS] COMMAND [ARGS]...                 
+                                                                              
+           Generate participant tokens (JWTs)                                 
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ generate  Generate a participant token (JWT) from a spec         │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent webhook`
           
           ```console
           $ meshagent webhook --help
-                                                                                          
-           Usage: meshagent webhook [OPTIONS] COMMAND [ARGS]...                           
-                                                                                          
-           Manage project webhooks                                                        
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ create  Create a webhook                                                     │
-          │ list    List webhooks                                                        │
-          │ delete  Delete a webhook                                                     │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent webhook [OPTIONS] COMMAND [ARGS]...               
+                                                                              
+           Manage project webhooks                                            
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ create  Create a webhook                                         │
+          │ list    List webhooks                                            │
+          │ delete  Delete a webhook                                         │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent service`
           
           ```console
           $ meshagent service --help
-                                                                                          
-           Usage: meshagent service [OPTIONS] COMMAND [ARGS]...                           
-                                                                                          
-           Manage services for your project                                               
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ spec               Render a service or template YAML spec without creating a │
-          │                    service.                                                  │
-          │ create             Create a service attached to the project.                 │
-          │ update             Create a service attached to the project.                 │
-          │ validate           Validate a service spec from a YAML file.                 │
-          │ create-template    Create a service from a ServiceTemplate spec.             │
-          │ update-template    Update a service using a ServiceTemplate spec.            │
-          │ validate-template  Validate a service template from a YAML file.             │
-          │ render-template    Render a service template with variables and print the    │
-          │                    rendered YAML.                                            │
-          │ run                Run a local command and register it as a temporary room   │
-          │                    service.                                                  │
-          │ show               Show a services for the project.                          │
-          │ list               List all services for the project.                        │
-          │ delete             Delete a service.                                         │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent service [OPTIONS] COMMAND [ARGS]...               
+                                                                              
+           Manage services for your project                                   
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ spec               Render a service or template YAML spec        │
+          │                    without creating a service.                   │
+          │ create             Create a service attached to the project.     │
+          │ update             Create a service attached to the project.     │
+          │ validate           Validate a service spec from a YAML file.     │
+          │ create-template    Create a service from a ServiceTemplate spec. │
+          │ update-template    Update a service using a ServiceTemplate      │
+          │                    spec.                                         │
+          │ validate-template  Validate a service template from a YAML file. │
+          │ render-template    Render a service template with variables and  │
+          │                    print the rendered YAML.                      │
+          │ run                Run a local command and register it as a      │
+          │                    temporary room service.                       │
+          │ show               Show a services for the project.              │
+          │ list               List all services for the project.            │
+          │ delete             Delete a service.                             │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent mcp`
           
           ```console
           $ meshagent mcp --help
-                                                                                          
-           Usage: meshagent mcp [OPTIONS] COMMAND [ARGS]...                               
-                                                                                          
-           Bridge MCP servers into MeshAgent rooms                                        
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ sse            Connect an MCP server over SSE and register it as a toolkit   │
-          │ http           Connect an MCP server over streamable HTTP and register it as │
-          │                a toolkit                                                     │
-          │ stdio          Run an MCP server over stdio and register it as a toolkit     │
-          │ http-proxy     Expose a stdio MCP server over streamable HTTP                │
-          │ sse-proxy      Expose a stdio MCP server over SSE                            │
-          │ stdio-service  Run a stdio MCP server as an HTTP service                     │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent mcp [OPTIONS] COMMAND [ARGS]...                   
+                                                                              
+           Bridge MCP servers into MeshAgent rooms                            
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ sse            Connect an MCP server over SSE and register it as │
+          │                a toolkit                                         │
+          │ http           Connect an MCP server over streamable HTTP and    │
+          │                register it as a toolkit                          │
+          │ stdio          Run an MCP server over stdio and register it as a │
+          │                toolkit                                           │
+          │ http-proxy     Expose a stdio MCP server over streamable HTTP    │
+          │ sse-proxy      Expose a stdio MCP server over SSE                │
+          │ stdio-service  Run a stdio MCP server as an HTTP service         │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent secret`
           
           ```console
           $ meshagent secret --help
-                                                                                          
-           Usage: meshagent secret [OPTIONS] COMMAND [ARGS]...                            
-                                                                                          
-           Manage secrets for your project.                                               
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ list    List all secrets in the project (typed as Docker/ACR/GAR or Keys     │
-          │         secrets).                                                            │
-          │ delete  Delete a secret.                                                     │
-          │ key     Create or update environment-based key-value secrets.                │
-          │ docker  Create or update a Docker registry pull secret.                      │
-          │ acr     Create or update an Azure Container Registry pull secret.            │
-          │ gar     Create or update a Google Artifact Registry pull secret.             │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent secret [OPTIONS] COMMAND [ARGS]...                
+                                                                              
+           Manage secrets for your project.                                   
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ list    List all secrets in the project (typed as Docker/ACR/GAR │
+          │         or Keys secrets).                                        │
+          │ delete  Delete a secret.                                         │
+          │ key     Create or update environment-based key-value secrets.    │
+          │ docker  Create or update a Docker registry pull secret.          │
+          │ acr     Create or update an Azure Container Registry pull        │
+          │         secret.                                                  │
+          │ gar     Create or update a Google Artifact Registry pull secret. │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent helper`
           
           ```console
           $ meshagent helper --help
-                                                                                          
-           Usage: meshagent helper [OPTIONS] COMMAND [ARGS]...                            
-                                                                                          
-           Developer helper services                                                      
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ service  Run local helper HTTP services                                      │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent helper [OPTIONS] COMMAND [ARGS]...                
+                                                                              
+           Developer helper services                                          
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ service  Run local helper HTTP services                          │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent rooms`
           
           ```console
           $ meshagent rooms --help
-                                                                                          
-           Usage: meshagent rooms [OPTIONS] COMMAND [ARGS]...                             
-                                                                                          
-           Create, list, and manage rooms in a project                                    
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ create  Create a room in the project.                                        │
-          │ delete  Delete a room by ID (or by name if --name is supplied).              │
-          │ update  Update a room's name (ID is preferred; name will be resolved to ID   │
-          │         if needed).                                                          │
-          │ list    List rooms in the project.                                           │
-          │ get     Get a single room by name (handy for resolving the ID).              │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent rooms [OPTIONS] COMMAND [ARGS]...                 
+                                                                              
+           Create, list, and manage rooms in a project                        
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ create  Create a room in the project.                            │
+          │ delete  Delete a room by ID (or by name if --name is supplied).  │
+          │ update  Update a room's name (ID is preferred; name will be      │
+          │         resolved to ID if needed).                               │
+          │ list    List rooms in the project.                               │
+          │ get     Get a single room by name (handy for resolving the ID).  │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent mailbox`
           
           ```console
           $ meshagent mailbox --help
-                                                                                          
-           Usage: meshagent mailbox [OPTIONS] COMMAND [ARGS]...                           
-                                                                                          
-           Manage mailboxes for your project                                              
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ create  Create a mailbox attached to the project.                            │
-          │ update  Update a mailbox routing configuration.                              │
-          │ show    Show mailbox details.                                                │
-          │ list    List mailboxes for the project.                                      │
-          │ delete  Delete a mailbox.                                                    │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent mailbox [OPTIONS] COMMAND [ARGS]...               
+                                                                              
+           Manage mailboxes for your project                                  
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ create  Create a mailbox attached to the project.                │
+          │ update  Update a mailbox routing configuration.                  │
+          │ show    Show mailbox details.                                    │
+          │ list    List mailboxes for the project.                          │
+          │ delete  Delete a mailbox.                                        │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent route`
           
           ```console
           $ meshagent route --help
-                                                                                          
-           Usage: meshagent route [OPTIONS] COMMAND [ARGS]...                             
-                                                                                          
-           Manage routes for your project                                                 
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ create  Create a route attached to the project.                              │
-          │ update  Update a route configuration.                                        │
-          │ show    Show route details.                                                  │
-          │ list    List routes for the project.                                         │
-          │ delete  Delete a route.                                                      │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent route [OPTIONS] COMMAND [ARGS]...                 
+                                                                              
+           Manage routes for your project                                     
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ create  Create a route attached to the project.                  │
+          │ update  Update a route configuration.                            │
+          │ show    Show route details.                                      │
+          │ list    List routes for the project.                             │
+          │ delete  Delete a route.                                          │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent scheduled-task`
           
           ```console
           $ meshagent scheduled-task --help
-                                                                                          
-           Usage: meshagent scheduled-task [OPTIONS] COMMAND [ARGS]...                    
-                                                                                          
-           Manage scheduled tasks for your project                                        
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ add     Add a scheduled task.                                                │
-          │ list    List scheduled tasks.                                                │
-          │ update  Update a scheduled task.                                             │
-          │ delete  Delete a scheduled task.                                             │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent scheduled-task [OPTIONS] COMMAND [ARGS]...        
+                                                                              
+           Manage scheduled tasks for your project                            
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ add     Add a scheduled task.                                    │
+          │ list    List scheduled tasks.                                    │
+          │ update  Update a scheduled task.                                 │
+          │ delete  Delete a scheduled task.                                 │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent meeting-transcriber`
           
           ```console
           $ meshagent meeting-transcriber --help
-                                                                                          
-           Usage: meshagent meeting-transcriber [OPTIONS] COMMAND [ARGS]...               
-                                                                                          
-           Join a meeting transcriber to a room                                           
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ join     Join a room and run the meeting transcriber agent.                  │
-          │ service                                                                      │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent meeting-transcriber [OPTIONS] COMMAND [ARGS]...   
+                                                                              
+           Join a meeting transcriber to a room                               
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ join     Join a room and run the meeting transcriber agent.      │
+          │ service                                                          │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent port`
           
           ```console
           $ meshagent port --help
-                                                                                          
-           Usage: meshagent port [OPTIONS] COMMAND [ARGS]...                              
-                                                                                          
-           Port forwarding into room containers                                           
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ forward  Forward a container port to localhost                               │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent port [OPTIONS] COMMAND [ARGS]...                  
+                                                                              
+           Port forwarding into room containers                               
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ forward  Forward a container port to localhost                   │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent webserver`
           
           ```console
           $ meshagent webserver --help
-                                                                                          
-           Usage: meshagent webserver [OPTIONS] COMMAND [ARGS]...                         
-                                                                                          
-           Run an HTTP webserver connected to a MeshAgent room.                           
-                                                                                          
-           The webserver mounts static files/folders and python handlers from a routes    
-           file.                                                                          
-           Python handlers run with access to the active room and request objects.        
-           This lets you build web applications that take advantage of the MeshAgent      
-           room's full feature set.                                                       
-                                                                                          
-           Default routes file: webserver.yaml                                            
-                                                                                          
-           Add routes with the CLI:                                                       
-             meshagent webserver add --path / --python handlers/home.py                   
-             meshagent webserver add --path /assets --static ./public                     
-                                                                                          
-           Start it locally by joining a room:                                            
-             meshagent webserver join --room my-room --agent-name my-web -f               
-           webserver.yaml --watch                                                         
-                                                                                          
-           View the site from your local machine:                                         
-             http://127.0.0.1:8000                                                        
-                                                                                          
-           Use the host/port from webserver.yaml (or explicit --host/--port or            
-           --web-host/--web-port overrides).                                              
-                                                                                          
-           To make the site available outside your machine:                               
-             meshagent webserver deploy --service-name my-web --agent-name my-web --room  
-           my-room -f webserver.yaml --website-path /website --domain                     
-           my-web.meshagent.app                                                           
-                                                                                          
-           `--domain` automatically creates or updates the route to the deployed room and 
-           webserver port.                                                                
-           If the domain already targets a different room, deploy fails to avoid          
-           accidental repoints.                                                           
-           Without `--domain`, create the route manually:                                 
-             meshagent route create --room my-room --port 8000 --domain                   
-           my-web.meshagent.app                                                           
-                                                                                          
-           Route source path rules:                                                       
-           - `python` and `static` sources that start with `/` resolve to `{cwd}/...`.    
-           - `python` and `static` sources without a leading `/` resolve relative to the  
-           routes file.                                                                   
-           - `static` supports both files and directories.                                
-           - Set `--app-dir` to control Python import root (defaults to routes file       
-           directory).                                                                    
-                                                                                          
-                                                                                          
-           Example routes file:                                                           
-           kind: WebServer                                                                
-           version: v1                                                                    
-           host: 0.0.0.0                                                                  
-           port: 8000                                                                     
-           routes:                                                                        
-             - path: /                                                                    
-               methods:                                                                   
-                 - GET                                                                    
-               python: handlers/home.py                                                   
-             - path: /assets                                                              
-               static: ./public                                                           
-                                                                                          
-           Example python handler (handlers/home.py):                                     
-           from aiohttp import web                                                        
-           from meshagent.api import RoomClient                                           
-                                                                                          
-           async def handler(                                                             
-               *,                                                                         
-               room: RoomClient,                                                          
-               req: web.Request,                                                          
-           ) -> web.StreamResponse:                                                       
-               return web.Response(text="hello")                                          
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ check   Validate a routes file and print the resolved routes.                │
-          │ init    Create a routes file scaffold.                                       │
-          │ add     Add a route entry to the routes file.                                │
-          │ join    Join a room and run the configured webserver routes locally with     │
-          │         optional hot reload.                                                 │
-          │ spec    Generate a service spec for deploying this webserver configuration.  │
-          │ deploy  Deploy this webserver as a service, updating an existing service     │
-          │         with the same name.                                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent webserver [OPTIONS] COMMAND [ARGS]...             
+                                                                              
+           Run an HTTP webserver connected to a MeshAgent room.               
+                                                                              
+           The webserver mounts static files/folders and python handlers from 
+           a routes file.                                                     
+           Python handlers run with access to the active room and request     
+           objects.                                                           
+           This lets you build web applications that take advantage of the    
+           MeshAgent                                                          
+           room's full feature set.                                           
+                                                                              
+           Default routes file: webserver.yaml                                
+                                                                              
+           Add routes with the CLI:                                           
+             meshagent webserver add --path / --python handlers/home.py       
+             meshagent webserver add --path /assets --static ./public         
+                                                                              
+           Start it locally by joining a room:                                
+             meshagent webserver join --room my-room --agent-name my-web -f   
+           webserver.yaml --watch                                             
+                                                                              
+           View the site from your local machine:                             
+             http://127.0.0.1:8000                                            
+                                                                              
+           Use the host/port from webserver.yaml (or explicit --host/--port   
+           or --web-host/--web-port overrides).                               
+                                                                              
+           To make the site available outside your machine:                   
+             meshagent webserver deploy --service-name my-web --agent-name    
+           my-web --room my-room -f webserver.yaml --website-path /website    
+           --domain my-web.meshagent.app                                      
+                                                                              
+           `--domain` automatically creates or updates the route to the       
+           deployed room and webserver port.                                  
+           If the domain already targets a different room, deploy fails to    
+           avoid accidental repoints.                                         
+           Without `--domain`, create the route manually:                     
+             meshagent route create --room my-room --port 8000 --domain       
+           my-web.meshagent.app                                               
+                                                                              
+           Route source path rules:                                           
+           - `python` and `static` sources that start with `/` resolve to     
+           `{cwd}/...`.                                                       
+           - `python` and `static` sources without a leading `/` resolve      
+           relative to the routes file.                                       
+           - `static` supports both files and directories.                    
+           - Set `--app-dir` to control Python import root (defaults to       
+           routes file directory).                                            
+                                                                              
+                                                                              
+           Example routes file:                                               
+           kind: WebServer                                                    
+           version: v1                                                        
+           host: 0.0.0.0                                                      
+           port: 8000                                                         
+           routes:                                                            
+             - path: /                                                        
+               methods:                                                       
+                 - GET                                                        
+               python: handlers/home.py                                       
+             - path: /assets                                                  
+               static: ./public                                               
+                                                                              
+           Example python handler (handlers/home.py):                         
+           from aiohttp import web                                            
+           from meshagent.api import RoomClient                               
+                                                                              
+           async def handler(                                                 
+               *,                                                             
+               room: RoomClient,                                              
+               req: web.Request,                                              
+           ) -> web.StreamResponse:                                           
+               return web.Response(text="hello")                              
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ check   Validate a routes file and print the resolved routes.    │
+          │ init    Create a routes file scaffold.                           │
+          │ add     Add a route entry to the routes file.                    │
+          │ join    Join a room and run the configured webserver routes      │
+          │         locally with optional hot reload.                        │
+          │ spec    Generate a service spec for deploying this webserver     │
+          │         configuration.                                           │
+          │ deploy  Deploy this webserver as a service, updating an existing │
+          │         service with the same name.                              │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
+          
+          ## `meshagent MeshAgent`
+          
+          ```console
+          $ meshagent MeshAgent --help
+          Usage: meshagent [OPTIONS] COMMAND [ARGS]...
+          Try 'meshagent --help' for help.
+          
+          Error: No such command 'MeshAgent'.
+          ```
+          
+          _Help capture exited with code 2 for this command path._
           
           ## `meshagent codex`
           
           ```console
           $ meshagent codex --help
-                                                                                          
-           Usage: meshagent codex [OPTIONS] COMMAND [ARGS]...                             
-                                                                                          
-           Codex-backed agents                                                            
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ chatbot      Run codex chatbot agents                                        │
-          │ task-runner  Run codex task-runner agents                                    │
-          │ worker       Run codex worker agents                                         │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent codex [OPTIONS] COMMAND [ARGS]...                 
+                                                                              
+           Codex-backed agents                                                
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ chatbot      Run codex chatbot agents                            │
+          │ task-runner  Run codex task-runner agents                        │
+          │ worker       Run codex worker agents                             │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent multi`
           
           ```console
           $ meshagent multi --help
-                                                                                          
-           Usage: meshagent multi [OPTIONS] COMMAND [ARGS]...                             
-                                                                                          
-           Connect agents and tools to a room                                             
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ spec     Generate a combined service spec from multiple subcommands.         │
-          │ deploy   Deploy a combined service from multiple subcommands.                │
-          │ service                                                                      │
-          │ join     Run multiple join commands together in one process.                 │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent multi [OPTIONS] COMMAND [ARGS]...                 
+                                                                              
+           Connect agents and tools to a room                                 
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ spec     Generate a combined service spec from multiple          │
+          │          subcommands.                                            │
+          │ deploy   Deploy a combined service from multiple subcommands.    │
+          │ service                                                          │
+          │ join     Run multiple join commands together in one process.     │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent voicebot`
           
           ```console
           $ meshagent voicebot --help
-                                                                                          
-           Usage: meshagent voicebot [OPTIONS] COMMAND [ARGS]...                          
-                                                                                          
-           Join a voicebot to a room                                                      
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ join     Join a room and run a voicebot agent.                               │
-          │ service                                                                      │
-          │ spec     Generate a service spec for deploying a voicebot.                   │
-          │ deploy   Deploy a voicebot service to a project or room.                     │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent voicebot [OPTIONS] COMMAND [ARGS]...              
+                                                                              
+           Join a voicebot to a room                                          
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ join     Join a room and run a voicebot agent.                   │
+          │ service                                                          │
+          │ spec     Generate a service spec for deploying a voicebot.       │
+          │ deploy   Deploy a voicebot service to a project or room.         │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent chatbot`
           
           ```console
           $ meshagent chatbot --help
-                                                                                          
-           Usage: meshagent chatbot [OPTIONS] COMMAND [ARGS]...                           
-                                                                                          
-           Join a chatbot to a room                                                       
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ join     Join a room and run a chatbot agent.                                │
-          │ service                                                                      │
-          │ spec     Generate a service spec for deploying a chatbot.                    │
-          │ deploy   Deploy a chatbot service to a project or room.                      │
-          │ run      Join a room, run the chatbot, and wait for messages.                │
-          │ use      Send a one-shot or interactive message to a running chatbot.        │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent chatbot [OPTIONS] COMMAND [ARGS]...               
+                                                                              
+           Join a chatbot to a room                                           
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ join     Join a room and run a chatbot agent.                    │
+          │ service                                                          │
+          │ spec     Generate a service spec for deploying a chatbot.        │
+          │ deploy   Deploy a chatbot service to a project or room.          │
+          │ run      Join a room, run the chatbot, and wait for messages.    │
+          │ use      Send a one-shot or interactive message to a running     │
+          │          chatbot.                                                │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent process`
           
           ```console
           $ meshagent process --help
-                                                                                          
-           Usage: meshagent process [OPTIONS] COMMAND [ARGS]...                           
-                                                                                          
-           Join a process-backed agent to a room                                          
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ join     Join a room and run a process-backed agent.                         │
-          │ service  Add a process-backed agent service to the host.                     │
-          │ spec     Generate a service spec for deploying a process-backed agent.       │
-          │ deploy   Deploy a process-backed agent service.                              │
-          │ run      Join a room, run a process-backed agent, and wait for messages.     │
-          │ use      Send a one-shot or interactive message to a running process-backed  │
-          │          agent.                                                              │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent process [OPTIONS] COMMAND [ARGS]...               
+                                                                              
+           Join a process-backed agent to a room                              
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ join     Join a room and run a process-backed agent.             │
+          │ service  Add a process-backed agent service to the host.         │
+          │ spec     Generate a service spec for deploying a process-backed  │
+          │          agent.                                                  │
+          │ deploy   Deploy a process-backed agent service.                  │
+          │ run      Join a room, run a process-backed agent, and wait for   │
+          │          messages.                                               │
+          │ use      Send a one-shot or interactive message to a running     │
+          │          process-backed agent.                                   │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent mailbot`
           
           ```console
           $ meshagent mailbot --help
-                                                                                          
-           Usage: meshagent mailbot [OPTIONS] COMMAND [ARGS]...                           
-                                                                                          
-           Join a mailbot to a room                                                       
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ join     Join a room and run a mailbot agent.                                │
-          │ service                                                                      │
-          │ spec     Generate a service spec for deploying a mailbot.                    │
-          │ deploy   Deploy a mailbot service to a project or room.                      │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent mailbot [OPTIONS] COMMAND [ARGS]...               
+                                                                              
+           Join a mailbot to a room                                           
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ join     Join a room and run a mailbot agent.                    │
+          │ service                                                          │
+          │ spec     Generate a service spec for deploying a mailbot.        │
+          │ deploy   Deploy a mailbot service to a project or room.          │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent task-runner`
           
           ```console
           $ meshagent task-runner --help
-                                                                                          
-           Usage: meshagent task-runner [OPTIONS] COMMAND [ARGS]...                       
-                                                                                          
-           Join a taskrunner to a room                                                    
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ join     Join a room and run a task-runner agent.                            │
-          │ run      Join a room, run the task-runner, and wait for tasks.               │
-          │ service                                                                      │
-          │ spec     Generate a service spec for deploying a task-runner.                │
-          │ deploy   Deploy a task-runner service to a project or room.                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent task-runner [OPTIONS] COMMAND [ARGS]...           
+                                                                              
+           Join a taskrunner to a room                                        
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ join     Join a room and run a task-runner agent.                │
+          │ run      Join a room, run the task-runner, and wait for tasks.   │
+          │ service                                                          │
+          │ spec     Generate a service spec for deploying a task-runner.    │
+          │ deploy   Deploy a task-runner service to a project or room.      │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent worker`
           
           ```console
           $ meshagent worker --help
-                                                                                          
-           Usage: meshagent worker [OPTIONS] COMMAND [ARGS]...                            
-                                                                                          
-           Join a worker agent to a room                                                  
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ join     Join a room and run a worker agent.                                 │
-          │ service                                                                      │
-          │ spec     Generate a service spec for deploying a worker.                     │
-          │ deploy   Deploy a worker service to a project or room.                       │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent worker [OPTIONS] COMMAND [ARGS]...                
+                                                                              
+           Join a worker agent to a room                                      
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ join     Join a room and run a worker agent.                     │
+          │ service                                                          │
+          │ spec     Generate a service spec for deploying a worker.         │
+          │ deploy   Deploy a worker service to a project or room.           │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
           
           ## `meshagent room`
           
           ```console
           $ meshagent room --help
-                                                                                          
-           Usage: meshagent room [OPTIONS] COMMAND [ARGS]...                              
-                                                                                          
-           Operate within a room                                                          
-                                                                                          
-          ╭─ Options ────────────────────────────────────────────────────────────────────╮
-          │ --help          Show this message and exit.                                  │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
-          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ agent      Interact with agents and toolkits                                 │
-          │ secret     Manage secrets in a room                                          │
-          │ queue      Use queues in a room                                              │
-          │ messaging  Send and receive messages                                         │
-          │ storage    Manage storage for a room                                         │
-          │ service    Manage services in a room                                         │
-          │ developer  Developer utilities for a room                                    │
-          │ database   Manage database tables in a room                                  │
-          │ memory     Manage memories in a room                                         │
-          │ container  Manage containers and images in a room                            │
-          │ sync       Inspect and update mesh documents in a room                       │
-          ╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                              
+           Usage: meshagent room [OPTIONS] COMMAND [ARGS]...                  
+                                                                              
+           Operate within a room                                              
+                                                                              
+          ╭─ Options ────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                      │
+          ╰──────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────╮
+          │ agent      Interact with agents and toolkits                     │
+          │ secret     Manage secrets in a room                              │
+          │ queue      Use queues in a room                                  │
+          │ messaging  Send and receive messages                             │
+          │ storage    Manage storage for a room                             │
+          │ service    Manage services in a room                             │
+          │ developer  Developer utilities for a room                        │
+          │ database   Manage database tables in a room                      │
+          │ memory     Manage memories in a room                             │
+          │ container  Manage containers and images in a room                │
+          │ sync       Inspect and update mesh documents in a room           │
+          ╰──────────────────────────────────────────────────────────────────╯
           ```
 
       - path: /meshagent-skills/skills/meshagent-mail-operator/SKILL.md
@@ -1712,6 +2052,7 @@ container:
           
           - If this skill is running inside a live MeshAgent room runtime, first use the existing MeshAgent CLI session and room context before asking for login or manual re-authentication.
           - If mailbox or queue access is uncertain, try the corresponding room-scoped or mailbox read command first and use the observed result.
+          - If the workflow also publishes a public contact-form site, derive the managed hostname suffix from `MESHAGENT_API_URL` and keep that suffix consistent with the current environment.
           
           ## Primary command groups
           
@@ -1767,6 +2108,7 @@ container:
           - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
           - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
           - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
+          - If the workflow also creates a public route, do not copy `.meshagent.app` from CLI examples when the current runtime maps to a different managed suffix.
           - If tool calls fail on `.` `/` `/tmp` or `/src`, switch to room-visible paths under `/data` instead of retrying the same workflow against non-room file paths.
           - If SMTP rejects delivery, report the exact observed blocker.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
@@ -1907,6 +2249,7 @@ container:
           - If this skill is running inside a live MeshAgent room runtime, first use the existing MeshAgent CLI session and room context before asking the user to log in again.
           - If `MESHAGENT_API_URL` is present and the user wants a default MeshAgent-managed hostname, derive it from the API environment: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
           - If `MESHAGENT_API_URL` is absent or ambiguous, inspect existing routes or ask before choosing a managed public hostname.
+          - Do not copy `.meshagent.app` from generic CLI examples when `MESHAGENT_API_URL` indicates a `.life` environment. The route hostname suffix must follow the current API environment, not the example text.
           - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
           
           ## Primary command groups
@@ -1969,6 +2312,7 @@ container:
           
           ## Verification rules
           
+          - If a derived managed hostname collides with an existing route, keep the same environment-specific suffix and choose a different subdomain. Do not switch to the wrong suffix family to avoid the collision.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
 
   environment:
