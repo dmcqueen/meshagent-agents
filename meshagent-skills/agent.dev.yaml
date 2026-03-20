@@ -152,9 +152,9 @@ container:
             Build and verify deployable room-hosted web applications, including contact forms, public handlers, and mailbox-backed outbound email workflows.
           - `skills/meshagent-mail-operator/`
             Mailbox administration, room SMTP behavior, inbound queue inspection, and mailbox-backed sender guidance for room-hosted mail workflows.
-          - `skills/meshagent-scheduling-operator/`
+          - `skills/meshagent-scheduler/`
             `meshagent scheduled-task ...` workflows and queue-delivery verification.
-          - `skills/meshagent-webmaster-operator/`
+          - `skills/meshagent-webmaster/`
             Route/domain mapping behavior and the static webserver YAML reference example.
           
           The package also exposes command entrypoints for common request classes:
@@ -210,11 +210,19 @@ container:
             SDK/docs/example lookup skill for the preloaded `/src/meshagent-sdk` checkout.
           - `skills/meshagent-webapp-builder/SKILL.md`
             Deployable room webapp build, verification, and contact-form workflow skill.
+          - `skills/meshagent-webapp-builder/references/contact_form_example.py`
+            Known-good contact-form handler reference using real room SMTP defaults and a mailbox-backed sender placeholder.
+          - `skills/meshagent-webapp-builder/references/mailbox_backed_sender.md`
+            Mailbox provisioning and sender-identity reference for room-hosted contact forms.
+          - `skills/meshagent-webapp-builder/references/minimal_webserver.yaml`
+            Minimal deployable public webserver YAML example.
+          - `skills/meshagent-webapp-builder/references/verification_checklist.md`
+            Short completion checklist for deployed contact-form sites.
           - `skills/meshagent-mail-operator/SKILL.md`
             Mailbox, SMTP, queue, and room-hosted outbound mail workflow skill.
-          - `skills/meshagent-scheduling-operator/SKILL.md`
+          - `skills/meshagent-scheduler/SKILL.md`
             Scheduled-task and queue-delivery skill.
-          - `skills/meshagent-webmaster-operator/SKILL.md`
+          - `skills/meshagent-webmaster/SKILL.md`
             Route/domain mapping and static webserver reference skill.
           
           ## Packaged references
@@ -371,8 +379,8 @@ container:
           3. For create or update operations, restate the exact target resource first.
           4. Verify changes with a read command immediately afterward.
           5. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for mailbox provisioning tied to room inbox or MailBot workflows.
-          6. Use [SKILL.md](../skills/meshagent-scheduling-operator/SKILL.md) for scheduled-task operations.
-          7. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for route management or public hostname work backing room websites.
+          6. Use [SKILL.md](../skills/meshagent-scheduler/SKILL.md) for scheduled-task operations.
+          7. Use [SKILL.md](../skills/meshagent-webmaster/SKILL.md) for route management or public hostname work backing room websites.
 
       - path: /meshagent-skills/commands/meshagent-room.md
         text: |
@@ -433,7 +441,7 @@ container:
           2. Prefer `validate`, `render-template`, `show`, or `list` before destructive or state-changing commands.
           3. After deploy or update, verify the resulting service state and surface any follow-up steps.
           4. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for websites, contact forms, `meshagent webserver ...`, and room-hosted webapp deployment.
-          5. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for explicit route/domain administration or public hostname diagnostics.
+          5. Use [SKILL.md](../skills/meshagent-webmaster/SKILL.md) for explicit route/domain administration or public hostname diagnostics.
 
       - path: /meshagent-skills/commands/meshagent.md
         text: |
@@ -451,8 +459,8 @@ container:
           1. Start with [SKILL.md](../skills/meshagent-cli-operator/SKILL.md).
           2. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for websites, contact forms, web handlers, and room-hosted webapp deployment.
           3. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for email delivery, mailboxes, inbox evidence, or MailBot toolkits.
-          4. Use [SKILL.md](../skills/meshagent-scheduling-operator/SKILL.md) for scheduled tasks, cron-based dispatch, or queue scheduling.
-          5. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for explicit route or domain administration and public hostname diagnostics.
+          4. Use [SKILL.md](../skills/meshagent-scheduler/SKILL.md) for scheduled tasks, cron-based dispatch, or queue scheduling.
+          5. Use [SKILL.md](../skills/meshagent-webmaster/SKILL.md) for explicit route or domain administration and public hostname diagnostics.
           6. Pick the narrowest MeshAgent command path that fits the request.
           7. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) first. Only run live `meshagent <path> --help` when the packaged reference is missing the needed detail or appears stale for the installed CLI.
           8. Prefer inspection before mutation.
@@ -932,14 +940,8 @@ container:
               / "skills"
               / "meshagent-mail-operator"
               / "SKILL.md",
-              "meshagent-scheduling-operator": SKILLS_ROOT
-              / "skills"
-              / "meshagent-scheduling-operator"
-              / "SKILL.md",
-              "meshagent-webmaster-operator": SKILLS_ROOT
-              / "skills"
-              / "meshagent-webmaster-operator"
-              / "SKILL.md",
+              "meshagent-scheduler": SKILLS_ROOT / "skills" / "meshagent-scheduler" / "SKILL.md",
+              "meshagent-webmaster": SKILLS_ROOT / "skills" / "meshagent-webmaster" / "SKILL.md",
           }
           SKILL_FILES = {
               "meshagent-cli-operator": DEFAULT_SKILL,
@@ -1077,6 +1079,20 @@ container:
                   errors.append(
                       "command_groups.md references commands not present in meshagent --help: "
                       + ", ".join(missing)
+                  )
+              if (
+                  "Use `meshagent-webapp-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers."
+                  not in command_groups_text
+              ):
+                  errors.append(
+                      "command_groups.md is missing the required webapp-builder routing rule for websites and meshagent webserver work"
+                  )
+              if (
+                  "Use `meshagent-webmaster` for explicit route management or public hostname exposure."
+                  not in command_groups_text
+              ):
+                  errors.append(
+                      "command_groups.md is missing the required webmaster routing rule for explicit route management"
                   )
               for skill_name, skill_path in SKILL_FILES.items():
                   current_skill_text = load_text(skill_path)
@@ -1302,8 +1318,9 @@ container:
           - Never return `.meshagent.app` from a `.life` environment or `.meshagent.dev` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
           - If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
           - Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
-          - Use `meshagent-scheduling-operator` for scheduled-task creation, update, pause, resume, or deletion.
-          - Use `meshagent-webmaster-operator` for websites, `meshagent webserver ...`, routes, or public hostname exposure.
+          - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
+          - Use `meshagent-webapp-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers.
+          - Use `meshagent-webmaster` for explicit route management or public hostname exposure.
           - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
           
           ## Notes
@@ -2118,7 +2135,10 @@ container:
           - For a room-hosted email workflow, first inspect or provision the mailbox that will own the sender address.
           - If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
           - If no mailbox exists and the task requires sending mail from the room, create one before claiming the workflow is complete.
+          - When creating a mailbox for a room-hosted workflow, use collision-resistant address candidates derived from the room and workflow purpose instead of generic names like `contact-form@...`.
+          - If mailbox creation returns `409` and mailbox inspection returns `403`, treat that address as unavailable and try another candidate before asking the user for mailbox help.
           - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
+          - Do not treat a hardcoded mailbox-looking string as provisioned unless it came from a successful mailbox CLI result in the current project.
           - If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
           - Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
           
@@ -2148,18 +2168,19 @@ container:
           - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
           - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
           - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
+          - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
           - If the workflow also creates a public route, do not copy `.meshagent.app` from CLI examples when the current runtime maps to a different managed suffix.
           - If SMTP rejects delivery, report the exact observed blocker.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
 
-      - path: /meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md
+      - path: /meshagent-skills/skills/meshagent-scheduler/SKILL.md
         text: |
           ---
-          name: meshagent-scheduling-operator
+          name: meshagent-scheduler
           description: Manage MeshAgent scheduled tasks and explain how they enqueue JSON payloads onto queues for later consumption.
           ---
           
-          # MeshAgent Scheduling Operator
+          # MeshAgent Scheduler
           
           Use this skill for `meshagent scheduled-task ...` workflows and for verifying the queue behavior they trigger.
           
@@ -2281,7 +2302,12 @@ container:
           
           ## References
           
-          - Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
+          - Start with `references/command_groups.md` and `references/meshagent_cli_help.md` in this skill. They are local wrappers that point to the shared packaged CLI references in this package.
+          - Reuse the packaged implementation assets in this skill before inventing a fresh pattern:
+            - `references/contact_form_example.py`
+            - `references/mailbox_backed_sender.md`
+            - `references/minimal_webserver.yaml`
+            - `references/verification_checklist.md`
           - For actual webserver runtime behavior, inspect `/src/meshagent-sdk/meshagent-cli/meshagent/cli/webserver.py`.
           - For room mail behavior and SMTP defaults, inspect `/src/meshagent-sdk/meshagent-agents/meshagent/agents/mail.py` and `/src/meshagent-sdk/meshagent-agents/meshagent/agents/mail_common.py`.
           
@@ -2302,6 +2328,9 @@ container:
           - For public webserver configs, set `host: 0.0.0.0` unless there is a concrete reason not to.
           - Keep handler modules simple at import time. A module that raises during import can surface to the public site as a generic `500`.
           - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
+          - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
+          - Do not synthesize sender identities from the participant name or mail domain. In particular, do not invent `FROM_ADDRESS`, `MAIL_FROM`, `SMTP_FROM`, or `MESHAGENT_PARTICIPANT_NAME`.
+          - If the handler uses direct SMTP, use only the real room SMTP defaults documented in `mail_common.py`: `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_HOSTNAME`, and `SMTP_PORT`.
           - For Python handlers that render inline HTML, avoid `str.format()` across raw HTML, CSS, or regex-heavy strings unless every literal brace is escaped. CSS blocks and patterns like `{1,80}` otherwise break rendering at runtime.
           - Prefer safer rendering approaches for generated handlers: placeholder replacement, `string.Template`, or another approach that does not reinterpret every `{...}` in the whole document.
           - Validate on both client and server when the task includes user input, but treat server-side validation as authoritative.
@@ -2313,10 +2342,15 @@ container:
           2. Add a GET route that renders the form and a POST route that validates and handles submission.
           3. Restrict email and phone fields with browser-side input types and patterns when helpful.
           4. Re-validate all submitted fields on the server.
-          5. If the form sends outbound email from the room, inspect or provision a mailbox-backed sender identity as part of the default happy path unless an existing verified sender is already in place.
-          6. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
-          7. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-          8. Verify the live site with actual GET and POST requests after deploy.
+          5. If the form sends outbound email from the room, inspect existing room mailboxes first.
+          6. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
+          7. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking the user for help.
+          8. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
+          9. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+          10. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+          11. When using direct SMTP, use the real room SMTP defaults from `mail_common.py` and the mailbox-backed sender address from the CLI result.
+          12. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+          13. Verify the live site with actual GET and POST requests after deploy.
           
           ## Managed hostname selection
           
@@ -2331,20 +2365,324 @@ container:
           - Do not treat `meshagent webserver check`, local file generation, or deploy success alone as completion.
           - For every website task, perform at least one live HTTP GET against the public URL before reporting success.
           - For form-backed sites, also exercise representative POST paths after deploy.
+          - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
           - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
           - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
           - If a contact-form task asks for emailed submissions, do not report success while live submission still fails to send mail.
+          - Distinguish SMTP transport from sender authorization. A form that renders but fails with `SMTPDataError`, `550`, `553`, or similar on valid submission is not complete.
           - If outbound mail fails with an authorization error such as `550 5.7.1 Permission denied`, switch to mailbox-backed sender provisioning if permissions allow, then re-test.
+          - If code still references a synthesized sender address after mailbox provisioning fails, treat that as an implementation bug and replace it with a real mailbox-backed address or report the exact mailbox blocker.
           - Only stop and ask the user for help after mailbox provisioning, route creation, or deploy verification is blocked by a concrete error you can report exactly.
 
-      - path: /meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md
+      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/command_groups.md
+        text: |
+          # MeshAgent Webapp Builder CLI references
+          
+          The primary packaged CLI routing reference lives at:
+          
+          - `skills/meshagent-cli-operator/references/command_groups.md`
+          
+          Open that shared file for the actual command-family routing details. This local wrapper
+          exists so `meshagent-webapp-builder` can point to package-local references without
+          sending the model to live `meshagent --help` by default.
+
+      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/contact_form_example.py
+        text: |
+          from __future__ import annotations
+          
+          import html
+          import os
+          import re
+          import smtplib
+          from email.message import EmailMessage
+          
+          from aiohttp import web
+          from meshagent.api import RoomClient
+          
+          RECIPIENT = "__DESTINATION_EMAIL_ADDRESS__"
+          MAILBOX_SENDER = "__MAILBOX_ADDRESS_FROM_MESHAGENT_MAILBOX_COMMAND__"
+          
+          EMAIL_RE = re.compile(r"^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,63}$", re.IGNORECASE)
+          PHONE_RE = re.compile(r"^\+?[0-9()\-\s]{7,20}$")
+          
+          PAGE = """<!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Contact Me</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px auto; max-width: 720px; padding: 0 16px; }
+              form { display: grid; gap: 12px; }
+              input, textarea, button { font: inherit; padding: 10px; }
+              textarea { min-height: 140px; }
+              .error { color: #991b1b; }
+              .success { color: #166534; }
+            </style>
+          </head>
+          <body>
+            <h1>Contact Me</h1>
+            __FLASH__
+            <form method="post" action="/">
+              <label>Name <input name="name" maxlength="80" required value="__NAME__"></label>
+              <label>Email <input name="email" type="email" maxlength="120" value="__EMAIL__"></label>
+              <label>Phone <input name="phone" type="tel" maxlength="20" pattern="\\+?[0-9()\\-\\s]{7,20}" value="__PHONE__"></label>
+              <label>Message <textarea name="message" maxlength="4000" required>__MESSAGE__</textarea></label>
+              <button type="submit">Send</button>
+            </form>
+          </body>
+          </html>"""
+          
+          
+          def sanitize_single_line(value: str, *, max_len: int) -> str:
+              value = (value or "").strip().replace("\r", " ").replace("\n", " ")
+              value = re.sub(r"\s+", " ", value)
+              value = re.sub(r"[<>]", "", value)
+              return value[:max_len]
+          
+          
+          def sanitize_multiline(value: str, *, max_len: int) -> str:
+              value = (value or "").strip().replace("\r\n", "\n").replace("\r", "\n")
+              value = value.replace("\x00", "")
+              value = re.sub(r"\n{3,}", "\n\n", value)
+              return value[:max_len]
+          
+          
+          def is_valid_email(value: str) -> bool:
+              return bool(EMAIL_RE.fullmatch(value or ""))
+          
+          
+          def is_valid_phone(value: str) -> bool:
+              if not PHONE_RE.fullmatch(value or ""):
+                  return False
+              digits = re.sub(r"\D", "", value)
+              return 7 <= len(digits) <= 15
+          
+          
+          def render_page(*, flash: str = "", values: dict[str, str] | None = None) -> str:
+              values = values or {}
+              return (
+                  PAGE.replace("__FLASH__", flash)
+                  .replace("__NAME__", html.escape(values.get("name", ""), quote=True))
+                  .replace("__EMAIL__", html.escape(values.get("email", ""), quote=True))
+                  .replace("__PHONE__", html.escape(values.get("phone", ""), quote=True))
+                  .replace("__MESSAGE__", html.escape(values.get("message", "")))
+              )
+          
+          
+          def _room_smtp_config(*, room: RoomClient) -> tuple[str | None, str | None, int, str]:
+              username = os.getenv("SMTP_USERNAME")
+              if username is None:
+                  participant_name = room.local_participant.get_attribute("name")
+                  username = participant_name if isinstance(participant_name, str) else None
+          
+              password = os.getenv("SMTP_PASSWORD")
+              if password is None:
+                  password = room.protocol.token
+          
+              hostname = os.getenv("SMTP_HOSTNAME")
+              if hostname is None:
+                  raise RuntimeError(
+                      "SMTP_HOSTNAME is not configured for this runtime; inspect the room mail configuration before using direct SMTP."
+                  )
+          
+              port = int(os.getenv("SMTP_PORT", "587"))
+              return username, password, port, hostname
+          
+          
+          async def handler(*, room: RoomClient, req: web.Request) -> web.StreamResponse:
+              if req.method == "GET":
+                  return web.Response(text=render_page(), content_type="text/html")
+          
+              data = await req.post()
+              values = {
+                  "name": sanitize_single_line(data.get("name", ""), max_len=80),
+                  "email": sanitize_single_line(data.get("email", ""), max_len=120),
+                  "phone": sanitize_single_line(data.get("phone", ""), max_len=20),
+                  "message": sanitize_multiline(data.get("message", ""), max_len=4000),
+              }
+          
+              if not values["name"]:
+                  return web.Response(
+                      text=render_page(
+                          flash='<p class="error">Name is required.</p>',
+                          values=values,
+                      ),
+                      content_type="text/html",
+                      status=400,
+                  )
+              if not values["message"]:
+                  return web.Response(
+                      text=render_page(
+                          flash='<p class="error">Message is required.</p>',
+                          values=values,
+                      ),
+                      content_type="text/html",
+                      status=400,
+                  )
+              if not values["email"] and not values["phone"]:
+                  return web.Response(
+                      text=render_page(
+                          flash='<p class="error">Provide a valid email and/or phone number.</p>',
+                          values=values,
+                      ),
+                      content_type="text/html",
+                      status=400,
+                  )
+              if values["email"] and not is_valid_email(values["email"]):
+                  return web.Response(
+                      text=render_page(
+                          flash='<p class="error">Please enter a valid email address.</p>',
+                          values=values,
+                      ),
+                      content_type="text/html",
+                      status=400,
+                  )
+              if values["phone"] and not is_valid_phone(values["phone"]):
+                  return web.Response(
+                      text=render_page(
+                          flash='<p class="error">Please enter a valid phone number.</p>',
+                          values=values,
+                      ),
+                      content_type="text/html",
+                      status=400,
+                  )
+          
+              msg = EmailMessage()
+              msg["Subject"] = f"Contact form submission from {values['name']}"
+              msg["From"] = MAILBOX_SENDER
+              msg["To"] = RECIPIENT
+              if values["email"]:
+                  msg["Reply-To"] = values["email"]
+              msg.set_content(
+                  "New contact form submission\n\n"
+                  f"Name: {values['name']}\n"
+                  f"Email: {values['email'] or '(not provided)'}\n"
+                  f"Phone: {values['phone'] or '(not provided)'}\n\n"
+                  f"Message:\n{values['message']}\n"
+              )
+          
+              try:
+                  username, password, port, hostname = _room_smtp_config(room=room)
+                  with smtplib.SMTP(hostname, port, timeout=20) as smtp:
+                      smtp.starttls()
+                      if username and password:
+                          smtp.login(username, password)
+                      smtp.send_message(msg)
+              except Exception as exc:
+                  return web.Response(
+                      text=render_page(
+                          flash=f'<p class="error">Unable to send mail: {html.escape(type(exc).__name__)}</p>',
+                          values=values,
+                      ),
+                      content_type="text/html",
+                      status=500,
+                  )
+          
+              return web.Response(
+                  text=render_page(
+                      flash='<p class="success">Thanks - your message has been sent.</p>'
+                  ),
+                  content_type="text/html",
+              )
+
+      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/mailbox_backed_sender.md
+        text: |
+          # Mailbox-backed sender pattern
+          
+          Use this flow for room-hosted contact forms that send outbound mail.
+          
+          ## Rules
+          
+          - Reuse an existing mailbox for the room when it already fits the workflow.
+          - If no suitable mailbox exists, create a collision-resistant address derived from the room and workflow purpose.
+          - Treat `409` on mailbox creation as a candidate collision, not proof that the exact address is available to use.
+          - If mailbox inspection returns `403`, try another candidate before asking the user for mailbox access help.
+          - Use the exact mailbox address returned by the CLI as the `From` address.
+          - Use the visitor email only as `Reply-To` when present.
+          - Do not synthesize sender addresses such as `contact-form@<mail-domain>`.
+          - Do not invent sender env vars such as `FROM_ADDRESS`, `MAIL_FROM`, `SMTP_FROM`, or `MESHAGENT_PARTICIPANT_NAME`.
+          
+          ## Minimal CLI flow
+          
+          1. `meshagent mailbox list --room "$MESHAGENT_ROOM"`
+          2. If needed, try one or more collision-resistant `meshagent mailbox create` candidates.
+          3. Write the successful mailbox address into the handler configuration.
+          4. Re-test a valid form submission after deploy.
+          
+          ## SMTP configuration
+          
+          When the handler uses direct SMTP, use only the runtime defaults that exist in `meshagent.agents.mail_common`:
+          
+          - `SMTP_USERNAME`
+          - `SMTP_PASSWORD`
+          - `SMTP_HOSTNAME`
+          - `SMTP_PORT`
+          
+          The mailbox address is still the sender identity. SMTP username and password do not define the `From` address.
+          
+          ## Failure interpretation
+          
+          - `SMTPDataError`, `550`, `553`, or similar after the form renders successfully usually means sender authorization is still wrong.
+          - A live site with this failure is not complete.
+
+      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/meshagent_cli_help.md
+        text: |
+          # MeshAgent Webapp Builder CLI help reference
+          
+          The primary generated CLI help reference lives at:
+          
+          - `skills/meshagent-cli-operator/references/meshagent_cli_help.md`
+          
+          Open that shared file for the actual command syntax and flags. This local wrapper exists
+          so `meshagent-webapp-builder` can cite package-local references directly.
+
+      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/minimal_webserver.yaml
+        text: |
+          kind: WebServer
+          version: v1
+          host: 0.0.0.0
+          port: 8000
+          routes:
+            - path: /
+              methods:
+                - GET
+                - POST
+              python: handlers/contact.py
+
+      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/verification_checklist.md
+        text: |
+          # Verification checklist
+          
+          Use this before claiming a room-hosted contact form is done.
+          
+          ## Website
+          
+          - `webserver.yaml` uses `host: 0.0.0.0`
+          - route source paths are relative and live under the current working directory
+          - public URL uses the correct managed suffix for the active API environment
+          - live `GET /` returns `200`
+          
+          ## Form behavior
+          
+          - invalid `POST` returns `400` and renders a validation message
+          - valid `POST` does not raise `500`
+          - if the task requires outbound email, valid `POST` reaches provider acceptance rather than stopping at `SMTPDataError`, `550`, or `553`
+          
+          ## Diagnosis
+          
+          - `500` first: inspect handler import, template rendering, and runtime exceptions
+          - `502` first: inspect `host`, bind port, and route-to-service wiring
+          - mailbox `409` plus mailbox read `403`: treat that candidate as unavailable and try another one
+
+      - path: /meshagent-skills/skills/meshagent-webmaster/SKILL.md
         text: |
           ---
-          name: meshagent-webmaster-operator
+          name: meshagent-webmaster
           description: Manage MeshAgent domain mappings and use the sample MeshAgent static webserver YAML as a reference example.
           ---
           
-          # MeshAgent Webmaster Operator
+          # MeshAgent Webmaster
           
           Use this skill for domain mappings, what they do, and the sample static webserver YAML example.
           
