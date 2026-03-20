@@ -25,6 +25,7 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 - If `MESHAGENT_API_URL` is present and the user wants a default MeshAgent-managed hostname, derive it from the API environment: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
 - If `MESHAGENT_API_URL` is absent or ambiguous, inspect existing routes or ask before choosing a managed public hostname.
 - Do not copy `.meshagent.app` from generic CLI examples when `MESHAGENT_API_URL` indicates a `.life` environment. The route hostname suffix must follow the current API environment, not the example text.
+- Before deploy or reply, validate the final managed hostname against `MESHAGENT_API_URL`. For `https://api.meshagent.life`, a reported `.meshagent.app` hostname is invalid and must be corrected or redeployed as `.meshagent.dev`.
 - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
 - If `MESHAGENT_ROOM` is already present, do not block on room-listing commands before attempting a room-scoped webserver deploy.
 
@@ -41,6 +42,7 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 - Prefer hostname candidates derived from the room name plus the site purpose, keeping the environment-specific suffix from `MESHAGENT_API_URL`.
 - If the user did not request a specific hostname, automatically try a small set of collision-resistant candidates before asking for naming input.
 - Keep retries within the same suffix family. Never switch from `.meshagent.dev` to `.meshagent.app`, or the reverse, just to avoid a collision.
+- If a candidate was generated from a packaged `.meshagent.app` example in a `.life` environment, discard it and generate a same-name `.meshagent.dev` candidate instead of presenting the wrong URL.
 
 ## Primary command groups
 
@@ -113,5 +115,6 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 
 - If a derived managed hostname collides with an existing route, keep the same environment-specific suffix and choose a different subdomain. Do not switch to the wrong suffix family to avoid the collision.
 - If `meshagent webserver deploy --domain ...` fails with a collision and a follow-up route read returns 403, treat that hostname as unavailable and try a different candidate before concluding that public route permissions are blocked.
+- Do not report success with a live URL unless the hostname suffix is valid for the active API environment.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
 - Do not treat `meshagent webserver check` or local file generation as completion when the user asked for a public website or URL.
