@@ -30,9 +30,13 @@ DEFAULT_HELP = (
     / "meshagent_cli_help.md"
 )
 SPECIALIZED_SKILLS = {
-    "meshagent-sdk-operator": SKILLS_ROOT
+    "meshagent-sdk-researcher": SKILLS_ROOT
     / "skills"
-    / "meshagent-sdk-operator"
+    / "meshagent-sdk-researcher"
+    / "SKILL.md",
+    "meshagent-webapp-builder": SKILLS_ROOT
+    / "skills"
+    / "meshagent-webapp-builder"
     / "SKILL.md",
     "meshagent-mail-operator": SKILLS_ROOT
     / "skills"
@@ -56,7 +60,7 @@ RUNTIME_REFERENCES = (
     "references/command_groups.md",
     "references/meshagent_cli_help.md",
 )
-SKILLS_WITHOUT_CLI_REFERENCES = {"meshagent-sdk-operator"}
+SKILLS_WITHOUT_CLI_REFERENCES = {"meshagent-sdk-researcher"}
 
 
 def parse_args() -> argparse.Namespace:
