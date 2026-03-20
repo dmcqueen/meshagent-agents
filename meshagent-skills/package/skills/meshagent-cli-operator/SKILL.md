@@ -51,10 +51,14 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 - Restate the exact mutation target before destructive changes.
 - Verify the resulting state after mutation.
 - For room website requests that ask for a live URL, do not stop at local file creation or `meshagent webserver check`. Either complete the deploy and return the public URL, or report the exact blocking command and error.
+- For room website requests, verify the live behavior of the deployed site itself, not just the deploy command result. At minimum, check that the public URL returns the expected status and content for the primary route.
+- For contact-form websites, test both a GET of the form page and representative POST submissions after deploy. Treat any live 500 as an application/runtime failure to diagnose before blaming room infrastructure.
 - If `MESHAGENT_ROOM` is already present, do not use `meshagent rooms list` as a prerequisite for room-scoped deploy work.
 - If a room website deploy hits a managed-hostname collision, do not stop after the first candidate. Automatically retry with additional same-environment hostname candidates before asking the user to choose one.
 - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and follow-up route inspection is forbidden, treat that as a collision on that candidate and try a different hostname. Do not present it as a generic permissions blocker unless repeated candidate creation attempts also fail.
 - Do not report a managed URL whose suffix contradicts the active API environment. If the composed or observed URL ends with the wrong MeshAgent-managed suffix, treat that as an invalid candidate and correct it before replying.
+- When a deployed MeshAgent webserver returns 500, first suspect route-handler import/render/runtime errors before concluding that the room route or platform is broken.
+- For Python handlers that render inline HTML templates, do not use `str.format()` on raw HTML/CSS/regex-heavy strings unless every literal brace is escaped. Prefer a safer templating approach or pre-escaped placeholders.
 - Do not print secret values unless the user explicitly asks for them and the command returns them.
 - For live room workflows, do not treat `/tmp` as the durable room workspace. Room-owned runtime files belong under `/data`, but deployable webserver source trees may need to live under the current working directory so `meshagent webserver deploy` can upload them.
 
