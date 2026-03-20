@@ -30,8 +30,9 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 - Packaged help examples that show `.meshagent.app` are illustrative only. Do not copy that suffix blindly when `MESHAGENT_API_URL` indicates a different environment.
 - If authentication is uncertain, test a room-scoped read command first. Do not claim that the CLI is unauthenticated until an actual MeshAgent command fails for that reason.
 - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use, not as something to ignore by default.
-- For room-site or room-service work, keep user-visible artifacts under `/data` unless the command explicitly requires a different path.
-- Do not use room file tools such as listing or writing files against filesystem root paths like `.` or `/`, or temporary/build paths such as `/tmp` or `/src`. Use concrete room-visible paths under `/data`, or use shell commands when the task truly needs a non-room-local temporary path.
+- For room-site or room-service work, distinguish between local authoring files and room-visible runtime files. User-visible runtime data belongs under `/data`, but `meshagent webserver deploy` copies local sources from the current working directory, so deployable website source trees must live under a subdirectory of that working directory in the live room runtime.
+- For `meshagent webserver deploy`, use `--website-path` as the room storage destination. Do not treat `/data/...` as the local source root for deployable route files unless the current working directory is already under `/data`.
+- Do not use room file tools such as listing or writing files against filesystem root paths like `.` or `/`, or temporary/build paths such as `/tmp`. Use concrete room-visible paths under `/data`, or use shell commands when the task truly needs a non-room-local path. When the task is a deployable webserver project, a shell-managed source tree under the current working directory is valid.
 
 ## Command routing
 
@@ -47,8 +48,10 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 - Prefer read commands before create, update, deploy, or delete.
 - Restate the exact mutation target before destructive changes.
 - Verify the resulting state after mutation.
+- For room website requests that ask for a live URL, do not stop at local file creation or `meshagent webserver check`. Either complete the deploy and return the public URL, or report the exact blocking command and error.
+- If `MESHAGENT_ROOM` is already present, do not use `meshagent rooms list` as a prerequisite for room-scoped deploy work.
 - Do not print secret values unless the user explicitly asks for them and the command returns them.
-- For live room workflows, do not treat `/tmp` or `/src` as the durable room workspace. Put room-owned site and service files under `/data`.
+- For live room workflows, do not treat `/tmp` as the durable room workspace. Room-owned runtime files belong under `/data`, but deployable webserver source trees may need to live under the current working directory so `meshagent webserver deploy` can upload them.
 
 ## Bundled resources
 
