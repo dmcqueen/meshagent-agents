@@ -17,6 +17,7 @@ Use this command for any request that involves the MeshAgent CLI.
 6. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) first. Only run live `meshagent <path> --help` when the packaged reference is missing the needed detail or appears stale for the installed CLI.
 7. Prefer inspection before mutation.
 8. After any change, verify with the corresponding `show`, `list`, or read command.
+9. For contact-form website requests, do not treat a live site with failing outbound email as complete. Follow the mailbox-backed sender workflow before replying unless an actual permission blocker stops it.
 
 ## Coverage
 
