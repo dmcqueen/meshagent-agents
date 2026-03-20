@@ -14,7 +14,7 @@ Use this command for any request that involves the MeshAgent CLI.
 3. Use [SKILL.md](../skills/meshagent-scheduling-operator/SKILL.md) for scheduled tasks, cron-based dispatch, or queue scheduling.
 4. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for websites, webservers, routes, domains, or public URL exposure.
 5. Pick the narrowest MeshAgent command path that fits the request.
-6. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) or run `meshagent <path> --help`.
+6. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) first. Only run live `meshagent <path> --help` when the packaged reference is missing the needed detail or appears stale for the installed CLI.
 7. Prefer inspection before mutation.
 8. After any change, verify with the corresponding `show`, `list`, or read command.
 
