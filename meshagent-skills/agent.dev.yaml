@@ -4,7 +4,7 @@ variables: []
 
 metadata:
   name: meshagent-cli-skill
-  description: "A MeshAgent room agent for operating the MeshAgent CLI end to end. It loads the meshagent-cli-operator skill for general CLI work, the meshagent-mail-operator skill for mail workflows, the meshagent-scheduling-operator skill for scheduled-task workflows, and the meshagent-webmaster-operator skill for websites and routes."
+  description: "A MeshAgent room agent that automatically discovers and coordinates multipler specialized skills including CLI operations, email workflows, task scheduling, and web deployment."
   annotations:
     meshagent.service.id: "meshagent.meshagent-cli-skill"
 
@@ -48,27 +48,41 @@ container:
           fi
 
           echo "[startup] Verifying required skills..."
-          if [ ! -f /data/skills/meshagent-skills/skills/meshagent-cli-operator/SKILL.md ]; then
-            echo "[startup] ERROR: Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-cli-operator/SKILL.md" >&2
-            echo "[startup] Directory contents of /data/skills/meshagent-skills:"
-            find /data/skills/meshagent-skills -type f | head -20 || true
+          
+          SKILLS_DIR="/data/skills/meshagent-skills/skills"
+          if [ ! -d "${SKILLS_DIR}" ]; then
+            echo "[startup] ERROR: Skills directory not found at ${SKILLS_DIR}" >&2
             exit 1
           fi
-
-          if [ ! -f /data/skills/meshagent-skills/skills/meshagent-mail-operator/SKILL.md ]; then
-            echo "[startup] ERROR: Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-mail-operator/SKILL.md" >&2
+          
+          # Discover available skills dynamically
+          echo "[startup] Discovering installed skills..."
+          SKILL_COUNT=0
+          AVAILABLE_SKILLS=""
+          for skill_dir in "${SKILLS_DIR}"/*; do
+            if [ -d "${skill_dir}" ]; then
+              skill_name=$(basename "${skill_dir}")
+              if [ -f "${skill_dir}/SKILL.md" ]; then
+                SKILL_COUNT=$((SKILL_COUNT + 1))
+                echo "[startup]   ✓ ${skill_name}"
+                if [ -z "${AVAILABLE_SKILLS}" ]; then
+                  AVAILABLE_SKILLS="${skill_name}"
+                else
+                  AVAILABLE_SKILLS="${AVAILABLE_SKILLS}, ${skill_name}"
+                fi
+              else
+                echo "[startup]   ⚠ ${skill_name} (no SKILL.md, skipping)"
+              fi
+            fi
+          done
+          
+          if [ ${SKILL_COUNT} -eq 0 ]; then
+            echo "[startup] ERROR: No skills with SKILL.md found in ${SKILLS_DIR}" >&2
+            find "${SKILLS_DIR}" -type f | head -20 || true
             exit 1
           fi
-
-          if [ ! -f /data/skills/meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md ]; then
-            echo "[startup] ERROR: Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-scheduling-operator/SKILL.md" >&2
-            exit 1
-          fi
-
-          if [ ! -f /data/skills/meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md ]; then
-            echo "[startup] ERROR: Installed skill not found at /data/skills/meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md" >&2
-            exit 1
-          fi
+          
+          echo "[startup] Found ${SKILL_COUNT} skills: ${AVAILABLE_SKILLS}"
 
           echo "[startup] All skills verified! Starting meshagent process..."
           echo "[startup] Room: ${MESHAGENT_ROOM:-unset}"
@@ -92,7 +106,7 @@ container:
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
               --skill-dir /data/skills/meshagent-skills/skills \
-              --rule='For MeshAgent CLI tasks, use the installed skills from the configured skill dir. Default to meshagent-cli-operator for general CLI work, use meshagent-mail-operator for mailbox, inbox, MailBot, or contact-form email workflows, use meshagent-scheduling-operator for scheduled-task workflows, and use meshagent-webmaster-operator for websites, webservers, routes, or public hostname workflows.'
+              --rule='Use the installed skills from the configured skill directory to solve the user request. Each skill is specialized for a different domain (CLI operations, email, scheduling, web deployment, etc.). Read the skill documentation and choose the best-fit skill for the task. Coordinate between skills when a task requires multiple domains.'
           else
             exec /usr/bin/meshagent process join \
               --room="${MESHAGENT_ROOM}" \
@@ -109,7 +123,7 @@ container:
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
               --skill-dir /data/skills/meshagent-skills/skills \
-              --rule='For MeshAgent CLI tasks, use the installed skills from the configured skill dir. Default to meshagent-cli-operator for general CLI work, use meshagent-mail-operator for mailbox, inbox, MailBot, or contact-form email workflows, use meshagent-scheduling-operator for scheduled-task workflows, and use meshagent-webmaster-operator for websites, webservers, routes, or public hostname workflows.'
+              --rule='Use the installed skills from the configured skill directory to solve the user request. Each skill is specialized for a different domain (CLI operations, email, scheduling, web deployment, etc.). Read the skill documentation and choose the best-fit skill for the task. Coordinate between skills when a task requires multiple domains (e.g., website creation with email integration uses both web and mail skills).'
           fi
 
       - path: /meshagent-skills/.claude-plugin/plugin.json
