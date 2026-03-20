@@ -6,6 +6,7 @@ This reference set is anchored to the MeshAgent CLI version recorded in `compat.
 Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...` and write user-visible artifacts under `/data`.
 For this skill, the current room is the value of `MESHAGENT_ROOM`.
 For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
+The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
 
 ## Top-level command policy
 
