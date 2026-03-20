@@ -35,6 +35,13 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 - Use `--website-path` to place the deployed website files into room storage. That room storage is the durable runtime location, not the required local authoring root.
 - Prefer relative route sources like `handlers/home.py` and `public` so the deploy stays portable.
 
+## Managed hostname selection
+
+- For a generated public site, do not default to generic hostnames that are likely to collide, such as `contact-site`.
+- Prefer hostname candidates derived from the room name plus the site purpose, keeping the environment-specific suffix from `MESHAGENT_API_URL`.
+- If the user did not request a specific hostname, automatically try a small set of collision-resistant candidates before asking for naming input.
+- Keep retries within the same suffix family. Never switch from `.meshagent.dev` to `.meshagent.app`, or the reverse, just to avoid a collision.
+
 ## Primary command groups
 
 - `meshagent route create`
@@ -97,11 +104,14 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 
 1. Create the local webserver project under the current working directory.
 2. Keep route source paths relative to the routes file when possible.
-3. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-4. If `--domain` is used, verify the resulting hostname and return the live URL only after the deploy succeeds.
+3. Choose a collision-resistant managed hostname candidate when the user did not provide one.
+4. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+5. If the hostname candidate collides, retry additional candidates automatically.
+6. If `--domain` is used, verify the resulting hostname and return the live URL only after the deploy succeeds.
 
 ## Verification rules
 
 - If a derived managed hostname collides with an existing route, keep the same environment-specific suffix and choose a different subdomain. Do not switch to the wrong suffix family to avoid the collision.
+- If `meshagent webserver deploy --domain ...` fails with a collision and a follow-up route read returns 403, treat that hostname as unavailable and try a different candidate before concluding that public route permissions are blocked.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
 - Do not treat `meshagent webserver check` or local file generation as completion when the user asked for a public website or URL.
