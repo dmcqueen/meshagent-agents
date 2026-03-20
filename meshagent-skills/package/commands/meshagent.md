@@ -18,6 +18,7 @@ Use this command for any request that involves the MeshAgent CLI.
 7. Prefer inspection before mutation.
 8. After any change, verify with the corresponding `show`, `list`, or read command.
 9. For contact-form website requests, do not treat a live site with failing outbound email as complete. Follow the mailbox-backed sender workflow before replying unless an actual permission blocker stops it.
+10. For website requests, require at least one live HTTP smoke test after deploy before replying with success.
 
 ## Coverage
 
