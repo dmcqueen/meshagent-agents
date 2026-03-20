@@ -233,6 +233,7 @@ container:
           - `MESHAGENT_API_URL` can be used to derive the managed public hostname family for routes and published sites
           - room-owned runtime artifacts should live under `/data`
           - deployable `meshagent webserver` source trees should live under the current working directory for that runtime, with `--website-path` used as the room-storage destination
+          - website tasks are only complete after a live HTTP smoke test, not merely after file generation or deploy success
           - the MeshAgent SDK checkout is preloaded at `/src/meshagent-sdk` for SDK/docs lookup
           
           These are package-level conventions enforced by the current skill text. They are intentionally documented here because the skills depend on them for live-room behavior.
@@ -303,6 +304,7 @@ container:
           3. Reuse existing flags, rules files, skill dirs, and environment wiring when modifying an existing agent command.
           4. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for MailBot-backed contact forms, mailbox-linked delivery flows, or inbox-toolkit work.
           5. For contact-form deployments, do not stop after the site is reachable if live submission still fails to send mail.
+          6. For webserver-backed deployments, do not stop after deploy until the live route has been smoke-tested.
 
       - path: /meshagent-skills/commands/meshagent-inspect.md
         text: |
@@ -449,6 +451,7 @@ container:
           7. Prefer inspection before mutation.
           8. After any change, verify with the corresponding `show`, `list`, or read command.
           9. For contact-form website requests, do not treat a live site with failing outbound email as complete. Follow the mailbox-backed sender workflow before replying unless an actual permission blocker stops it.
+          10. For website requests, require at least one live HTTP smoke test after deploy before replying with success.
           
           ## Coverage
           
@@ -1152,10 +1155,14 @@ container:
           - Restate the exact mutation target before destructive changes.
           - Verify the resulting state after mutation.
           - For room website requests that ask for a live URL, do not stop at local file creation or `meshagent webserver check`. Either complete the deploy and return the public URL, or report the exact blocking command and error.
+          - For room website requests, verify the live behavior of the deployed site itself, not just the deploy command result. At minimum, check that the public URL returns the expected status and content for the primary route.
+          - For contact-form websites, test both a GET of the form page and representative POST submissions after deploy. Treat any live 500 as an application/runtime failure to diagnose before blaming room infrastructure.
           - If `MESHAGENT_ROOM` is already present, do not use `meshagent rooms list` as a prerequisite for room-scoped deploy work.
           - If a room website deploy hits a managed-hostname collision, do not stop after the first candidate. Automatically retry with additional same-environment hostname candidates before asking the user to choose one.
           - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and follow-up route inspection is forbidden, treat that as a collision on that candidate and try a different hostname. Do not present it as a generic permissions blocker unless repeated candidate creation attempts also fail.
           - Do not report a managed URL whose suffix contradicts the active API environment. If the composed or observed URL ends with the wrong MeshAgent-managed suffix, treat that as an invalid candidate and correct it before replying.
+          - When a deployed MeshAgent webserver returns 500, first suspect route-handler import/render/runtime errors before concluding that the room route or platform is broken.
+          - For Python handlers that render inline HTML templates, do not use `str.format()` on raw HTML/CSS/regex-heavy strings unless every literal brace is escaped. Prefer a safer templating approach or pre-escaped placeholders.
           - Do not print secret values unless the user explicitly asks for them and the command returns them.
           - For live room workflows, do not treat `/tmp` as the durable room workspace. Room-owned runtime files belong under `/data`, but deployable webserver source trees may need to live under the current working directory so `meshagent webserver deploy` can upload them.
           
@@ -1276,10 +1283,13 @@ container:
           - For room-site requests, deploy in the current room and return the public URL. Do not treat local example-app edits or local build output as completion of a room deployment request.
           - For room-site requests that use `meshagent webserver deploy`, create the local app under the current working directory, keep route sources relative to the routes file when possible, and upload to room storage with `--website-path`.
           - If `MESHAGENT_ROOM` is already available, do not block on `meshagent rooms list` before attempting the room-scoped deploy.
+          - For deployed websites, verify the live URL with at least one real HTTP request before replying with success.
+          - For contact forms, verify both the GET render path and at least one POST path after deploy. A live 500 is not an acceptable final state.
           - For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
           - If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
           - If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
           - Never return `.meshagent.app` from a `.life` environment or `.meshagent.dev` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
+          - If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
           - Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
           - Use `meshagent-scheduling-operator` for scheduled-task creation, update, pause, resume, or deletion.
           - Use `meshagent-webmaster-operator` for websites, `meshagent webserver ...`, routes, or public hostname exposure.
@@ -2133,6 +2143,7 @@ container:
           - If a contact-form task asks for submissions to be emailed, do not report the site as complete while the live form still returns an outbound mail error.
           - If outbound mail fails with an authorization error and mailbox creation is available, provision or reuse a mailbox and re-test the live form before replying.
           - Only stop and ask the user for help after mailbox-backed sending is blocked by an actual permission or configuration error that you can report concretely.
+          - If the live contact form returns 500 before the mail path is reached, diagnose the handler/rendering/runtime failure first instead of treating it as an SMTP problem.
           - If the workflow also creates a public route, do not copy `.meshagent.app` from CLI examples when the current runtime maps to a different managed suffix.
           - If tool calls fail because `meshagent webserver deploy` requires local route sources under the current working directory, move the local website project under that working directory instead of switching the deploy input to `/data`.
           - Do not claim a contact-form website is complete until both the sender identity and the public site exposure path are verified, or until you report the exact blocking command and error.
@@ -2288,6 +2299,12 @@ container:
           - Use `--website-path` to place the deployed website files into room storage. That room storage is the durable runtime location, not the required local authoring root.
           - Prefer relative route sources like `handlers/home.py` and `public` so the deploy stays portable.
           
+          ## Handler implementation safety
+          
+          - For Python web handlers that render inline HTML, avoid `str.format()` across raw HTML/CSS/attribute patterns unless all literal braces are escaped. CSS blocks and regex quantifiers such as `{1,80}` will otherwise break rendering at runtime.
+          - Prefer simpler rendering approaches for generated handlers: pre-escaped placeholder replacement, `string.Template`, or another approach that does not reinterpret every `{...}` in the document.
+          - Keep import-time side effects minimal. A handler module that raises during import can surface to the public site as a generic 500.
+          
           ## Managed hostname selection
           
           - For a generated public site, do not default to generic hostnames that are likely to collide, such as `contact-site`.
@@ -2361,13 +2378,16 @@ container:
           3. Choose a collision-resistant managed hostname candidate when the user did not provide one.
           4. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
           5. If the hostname candidate collides, retry additional candidates automatically.
-          6. If `--domain` is used, verify the resulting hostname and return the live URL only after the deploy succeeds.
+          6. Verify the live site with an actual request after deploy.
+          7. If the task includes a form or API handler, verify representative GET and POST paths after deploy.
+          8. If `--domain` is used, verify the resulting hostname and return the live URL only after the deploy succeeds.
           
           ## Verification rules
           
           - If a derived managed hostname collides with an existing route, keep the same environment-specific suffix and choose a different subdomain. Do not switch to the wrong suffix family to avoid the collision.
           - If `meshagent webserver deploy --domain ...` fails with a collision and a follow-up route read returns 403, treat that hostname as unavailable and try a different candidate before concluding that public route permissions are blocked.
           - Do not report success with a live URL unless the hostname suffix is valid for the active API environment.
+          - If a public webserver returns 500, inspect the deployed route handler module first. MeshAgent webserver runtime failures can present as generic 500 responses even when the route and domain are configured correctly.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
           - Do not treat `meshagent webserver check` or local file generation as completion when the user asked for a public website or URL.
 
