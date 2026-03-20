@@ -28,4 +28,4 @@ Use this command when the request targets a room or something running inside a r
 1. Resolve the room name first.
 2. Inspect current room state before changing it.
 3. Use the room-scoped command instead of the project-scoped equivalent when the request is clearly about a single room.
-4. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for room websites, webserver deploys, or public site exposure tied to this room.
+4. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for room websites, contact forms, webserver deploys, or public site exposure tied to this room.
