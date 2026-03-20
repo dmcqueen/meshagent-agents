@@ -29,27 +29,6 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
 - If `MESHAGENT_ROOM` is already present, do not block on room-listing commands before attempting a room-scoped webserver deploy.
 
-## Local authoring versus room storage
-
-- For `meshagent webserver deploy`, the local routes file and every referenced `python` or `static` source that will be uploaded with `--website-path` must resolve under the current working directory.
-- In a live room shell where `cwd` is `/src`, author deployable website projects under a subdirectory of `/src`, not directly under `/data`.
-- Use `--website-path` to place the deployed website files into room storage. That room storage is the durable runtime location, not the required local authoring root.
-- Prefer relative route sources like `handlers/home.py` and `public` so the deploy stays portable.
-
-## Handler implementation safety
-
-- For Python web handlers that render inline HTML, avoid `str.format()` across raw HTML/CSS/attribute patterns unless all literal braces are escaped. CSS blocks and regex quantifiers such as `{1,80}` will otherwise break rendering at runtime.
-- Prefer simpler rendering approaches for generated handlers: pre-escaped placeholder replacement, `string.Template`, or another approach that does not reinterpret every `{...}` in the document.
-- Keep import-time side effects minimal. A handler module that raises during import can surface to the public site as a generic 500.
-
-## Managed hostname selection
-
-- For a generated public site, do not default to generic hostnames that are likely to collide, such as `contact-site`.
-- Prefer hostname candidates derived from the room name plus the site purpose, keeping the environment-specific suffix from `MESHAGENT_API_URL`.
-- If the user did not request a specific hostname, automatically try a small set of collision-resistant candidates before asking for naming input.
-- Keep retries within the same suffix family. Never switch from `.meshagent.dev` to `.meshagent.app`, or the reverse, just to avoid a collision.
-- If a candidate was generated from a packaged `.meshagent.app` example in a `.life` environment, discard it and generate a same-name `.meshagent.dev` candidate instead of presenting the wrong URL.
-
 ## Primary command groups
 
 - `meshagent route create`
@@ -108,22 +87,9 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 3. Create, update, or delete the route.
 4. Verify that the hostname points to the intended room and service port.
 
-## Website deploy workflow
-
-1. Create the local webserver project under the current working directory.
-2. Keep route source paths relative to the routes file when possible.
-3. Choose a collision-resistant managed hostname candidate when the user did not provide one.
-4. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-5. If the hostname candidate collides, retry additional candidates automatically.
-6. Verify the live site with an actual request after deploy.
-7. If the task includes a form or API handler, verify representative GET and POST paths after deploy.
-8. If `--domain` is used, verify the resulting hostname and return the live URL only after the deploy succeeds.
-
 ## Verification rules
 
 - If a derived managed hostname collides with an existing route, keep the same environment-specific suffix and choose a different subdomain. Do not switch to the wrong suffix family to avoid the collision.
 - If `meshagent webserver deploy --domain ...` fails with a collision and a follow-up route read returns 403, treat that hostname as unavailable and try a different candidate before concluding that public route permissions are blocked.
 - Do not report success with a live URL unless the hostname suffix is valid for the active API environment.
-- If a public webserver returns 500, inspect the deployed route handler module first. MeshAgent webserver runtime failures can present as generic 500 responses even when the route and domain are configured correctly.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
-- Do not treat `meshagent webserver check` or local file generation as completion when the user asked for a public website or URL.
