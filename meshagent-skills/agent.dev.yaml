@@ -231,7 +231,8 @@ container:
           - room-scoped work should prefer the existing MeshAgent CLI session before asking for auth again
           - `MESHAGENT_ROOM` identifies the current room when a command needs `--room`
           - `MESHAGENT_API_URL` can be used to derive the managed public hostname family for routes and published sites
-          - room-owned, user-visible artifacts should live under `/data`
+          - room-owned runtime artifacts should live under `/data`
+          - deployable `meshagent webserver` source trees should live under the current working directory for that runtime, with `--website-path` used as the room-storage destination
           - the MeshAgent SDK checkout is preloaded at `/src/meshagent-sdk` for SDK/docs lookup
           
           These are package-level conventions enforced by the current skill text. They are intentionally documented here because the skills depend on them for live-room behavior.
@@ -1128,8 +1129,9 @@ container:
           - Packaged help examples that show `.meshagent.app` are illustrative only. Do not copy that suffix blindly when `MESHAGENT_API_URL` indicates a different environment.
           - If authentication is uncertain, test a room-scoped read command first. Do not claim that the CLI is unauthenticated until an actual MeshAgent command fails for that reason.
           - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use, not as something to ignore by default.
-          - For room-site or room-service work, keep user-visible artifacts under `/data` unless the command explicitly requires a different path.
-          - Do not use room file tools such as listing or writing files against filesystem root paths like `.` or `/`, or temporary/build paths such as `/tmp` or `/src`. Use concrete room-visible paths under `/data`, or use shell commands when the task truly needs a non-room-local temporary path.
+          - For room-site or room-service work, distinguish between local authoring files and room-visible runtime files. User-visible runtime data belongs under `/data`, but `meshagent webserver deploy` copies local sources from the current working directory, so deployable website source trees must live under a subdirectory of that working directory in the live room runtime.
+          - For `meshagent webserver deploy`, use `--website-path` as the room storage destination. Do not treat `/data/...` as the local source root for deployable route files unless the current working directory is already under `/data`.
+          - Do not use room file tools such as listing or writing files against filesystem root paths like `.` or `/`, or temporary/build paths such as `/tmp`. Use concrete room-visible paths under `/data`, or use shell commands when the task truly needs a non-room-local path. When the task is a deployable webserver project, a shell-managed source tree under the current working directory is valid.
           
           ## Command routing
           
@@ -1145,8 +1147,10 @@ container:
           - Prefer read commands before create, update, deploy, or delete.
           - Restate the exact mutation target before destructive changes.
           - Verify the resulting state after mutation.
+          - For room website requests that ask for a live URL, do not stop at local file creation or `meshagent webserver check`. Either complete the deploy and return the public URL, or report the exact blocking command and error.
+          - If `MESHAGENT_ROOM` is already present, do not use `meshagent rooms list` as a prerequisite for room-scoped deploy work.
           - Do not print secret values unless the user explicitly asks for them and the command returns them.
-          - For live room workflows, do not treat `/tmp` or `/src` as the durable room workspace. Put room-owned site and service files under `/data`.
+          - For live room workflows, do not treat `/tmp` as the durable room workspace. Room-owned runtime files belong under `/data`, but deployable webserver source trees may need to live under the current working directory so `meshagent webserver deploy` can upload them.
           
           ## Bundled resources
           
@@ -1160,7 +1164,9 @@ container:
           Use this file to choose the narrowest MeshAgent CLI area before reading the full help reference.
           This reference set is anchored to the MeshAgent CLI version recorded in `compat.json`.
           
-          Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...` and write user-visible artifacts under `/data`.
+          Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...`.
+          For room-visible runtime data, use `/data`.
+          For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
           For this skill, the current room is the value of `MESHAGENT_ROOM`.
           For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
           The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
@@ -1260,6 +1266,8 @@ container:
           - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
           - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
           - For room-site requests, deploy in the current room and return the public URL. Do not treat local example-app edits or local build output as completion of a room deployment request.
+          - For room-site requests that use `meshagent webserver deploy`, create the local app under the current working directory, keep route sources relative to the routes file when possible, and upload to room storage with `--website-path`.
+          - If `MESHAGENT_ROOM` is already available, do not block on `meshagent rooms list` before attempting the room-scoped deploy.
           - Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
           - Use `meshagent-scheduling-operator` for scheduled-task creation, update, pause, resume, or deletion.
           - Use `meshagent-webmaster-operator` for websites, `meshagent webserver ...`, routes, or public hostname exposure.
@@ -2080,7 +2088,7 @@ container:
           - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
           - If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
           - Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
-          - If a room website or service needs to send email, keep its durable assets under `/data` rather than `/tmp` or `/src`.
+          - If a room website or service needs to send email, keep its durable runtime assets under `/data`. When the workflow uses `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` to upload the deployable files into room storage.
           
           ## Queue inspection
           
@@ -2109,7 +2117,8 @@ container:
           - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
           - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
           - If the workflow also creates a public route, do not copy `.meshagent.app` from CLI examples when the current runtime maps to a different managed suffix.
-          - If tool calls fail on `.` `/` `/tmp` or `/src`, switch to room-visible paths under `/data` instead of retrying the same workflow against non-room file paths.
+          - If tool calls fail because `meshagent webserver deploy` requires local route sources under the current working directory, move the local website project under that working directory instead of switching the deploy input to `/data`.
+          - Do not claim a contact-form website is complete until both the sender identity and the public site exposure path are verified, or until you report the exact blocking command and error.
           - If SMTP rejects delivery, report the exact observed blocker.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
 
@@ -2251,6 +2260,14 @@ container:
           - If `MESHAGENT_API_URL` is absent or ambiguous, inspect existing routes or ask before choosing a managed public hostname.
           - Do not copy `.meshagent.app` from generic CLI examples when `MESHAGENT_API_URL` indicates a `.life` environment. The route hostname suffix must follow the current API environment, not the example text.
           - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
+          - If `MESHAGENT_ROOM` is already present, do not block on room-listing commands before attempting a room-scoped webserver deploy.
+          
+          ## Local authoring versus room storage
+          
+          - For `meshagent webserver deploy`, the local routes file and every referenced `python` or `static` source that will be uploaded with `--website-path` must resolve under the current working directory.
+          - In a live room shell where `cwd` is `/src`, author deployable website projects under a subdirectory of `/src`, not directly under `/data`.
+          - Use `--website-path` to place the deployed website files into room storage. That room storage is the durable runtime location, not the required local authoring root.
+          - Prefer relative route sources like `handlers/home.py` and `public` so the deploy stays portable.
           
           ## Primary command groups
           
@@ -2310,10 +2327,18 @@ container:
           3. Create, update, or delete the route.
           4. Verify that the hostname points to the intended room and service port.
           
+          ## Website deploy workflow
+          
+          1. Create the local webserver project under the current working directory.
+          2. Keep route source paths relative to the routes file when possible.
+          3. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+          4. If `--domain` is used, verify the resulting hostname and return the live URL only after the deploy succeeds.
+          
           ## Verification rules
           
           - If a derived managed hostname collides with an existing route, keep the same environment-specific suffix and choose a different subdomain. Do not switch to the wrong suffix family to avoid the collision.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
+          - Do not treat `meshagent webserver check` or local file generation as completion when the user asked for a public website or URL.
 
   environment:
     - name: MESHAGENT_TOKEN
