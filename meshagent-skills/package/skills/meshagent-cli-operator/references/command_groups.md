@@ -107,6 +107,9 @@ Use the following status values exactly:
 - For room-site requests, deploy in the current room and return the public URL. Do not treat local example-app edits or local build output as completion of a room deployment request.
 - For room-site requests that use `meshagent webserver deploy`, create the local app under the current working directory, keep route sources relative to the routes file when possible, and upload to room storage with `--website-path`.
 - If `MESHAGENT_ROOM` is already available, do not block on `meshagent rooms list` before attempting the room-scoped deploy.
+- For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
+- If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
+- If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
 - Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
 - Use `meshagent-scheduling-operator` for scheduled-task creation, update, pause, resume, or deletion.
 - Use `meshagent-webmaster-operator` for websites, `meshagent webserver ...`, routes, or public hostname exposure.
