@@ -26,6 +26,14 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 - If `MESHAGENT_API_URL` is absent or ambiguous, inspect existing routes or ask before choosing a managed public hostname.
 - Do not copy `.meshagent.app` from generic CLI examples when `MESHAGENT_API_URL` indicates a `.life` environment. The route hostname suffix must follow the current API environment, not the example text.
 - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
+- If `MESHAGENT_ROOM` is already present, do not block on room-listing commands before attempting a room-scoped webserver deploy.
+
+## Local authoring versus room storage
+
+- For `meshagent webserver deploy`, the local routes file and every referenced `python` or `static` source that will be uploaded with `--website-path` must resolve under the current working directory.
+- In a live room shell where `cwd` is `/src`, author deployable website projects under a subdirectory of `/src`, not directly under `/data`.
+- Use `--website-path` to place the deployed website files into room storage. That room storage is the durable runtime location, not the required local authoring root.
+- Prefer relative route sources like `handlers/home.py` and `public` so the deploy stays portable.
 
 ## Primary command groups
 
@@ -85,7 +93,15 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 3. Create, update, or delete the route.
 4. Verify that the hostname points to the intended room and service port.
 
+## Website deploy workflow
+
+1. Create the local webserver project under the current working directory.
+2. Keep route source paths relative to the routes file when possible.
+3. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+4. If `--domain` is used, verify the resulting hostname and return the live URL only after the deploy succeeds.
+
 ## Verification rules
 
 - If a derived managed hostname collides with an existing route, keep the same environment-specific suffix and choose a different subdomain. Do not switch to the wrong suffix family to avoid the collision.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
+- Do not treat `meshagent webserver check` or local file generation as completion when the user asked for a public website or URL.
