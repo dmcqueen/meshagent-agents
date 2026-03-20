@@ -26,3 +26,4 @@ Use this command for agent runtime orchestration.
 3. Reuse existing flags, rules files, skill dirs, and environment wiring when modifying an existing agent command.
 4. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for MailBot-backed contact forms, mailbox-linked delivery flows, or inbox-toolkit work.
 5. For contact-form deployments, do not stop after the site is reachable if live submission still fails to send mail.
+6. For webserver-backed deployments, do not stop after deploy until the live route has been smoke-tested.
