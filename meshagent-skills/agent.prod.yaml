@@ -142,12 +142,14 @@ container:
           
           ## Current system
           
-          The package currently has one general CLI skill plus four specialized skills:
+          The package currently has one general CLI skill plus five specialized skills:
           
           - `skills/meshagent-cli-operator/`
             General MeshAgent CLI routing, command composition, live-room execution rules, and packaged CLI reference material.
-          - `skills/meshagent-sdk-operator/`
+          - `skills/meshagent-sdk-researcher/`
             Guidance for using the preloaded `/src/meshagent-sdk` checkout, docs, examples, and source to answer SDK/API questions.
+          - `skills/meshagent-webapp-builder/`
+            Build and verify deployable room-hosted web applications, including contact forms, public handlers, and mailbox-backed outbound email workflows.
           - `skills/meshagent-mail-operator/`
             Mailbox administration, room SMTP behavior, inbound queue inspection, and mailbox-backed sender guidance for room-hosted mail workflows.
           - `skills/meshagent-scheduling-operator/`
@@ -204,8 +206,10 @@ container:
             Curated command-family routing reference.
           - `skills/meshagent-cli-operator/references/meshagent_cli_help.md`
             Generated recursive CLI help reference.
-          - `skills/meshagent-sdk-operator/SKILL.md`
+          - `skills/meshagent-sdk-researcher/SKILL.md`
             SDK/docs/example lookup skill for the preloaded `/src/meshagent-sdk` checkout.
+          - `skills/meshagent-webapp-builder/SKILL.md`
+            Deployable room webapp build, verification, and contact-form workflow skill.
           - `skills/meshagent-mail-operator/SKILL.md`
             Mailbox, SMTP, queue, and room-hosted outbound mail workflow skill.
           - `skills/meshagent-scheduling-operator/SKILL.md`
@@ -302,9 +306,10 @@ container:
           1. Identify the target room and runtime type first.
           2. Use the packaged CLI references first when composing join or deploy invocations. Only use live `--help` on the exact runtime command if the packaged help is missing the needed detail or appears stale for the installed CLI.
           3. Reuse existing flags, rules files, skill dirs, and environment wiring when modifying an existing agent command.
-          4. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for MailBot-backed contact forms, mailbox-linked delivery flows, or inbox-toolkit work.
-          5. For contact-form deployments, do not stop after the site is reachable if live submission still fails to send mail.
-          6. For webserver-backed deployments, do not stop after deploy until the live route has been smoke-tested.
+          4. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for contact forms, room-hosted web apps, and web handler implementation.
+          5. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for mailbox-linked delivery flows or inbox-toolkit work.
+          6. For contact-form deployments, do not stop after the site is reachable if live submission still fails to send mail.
+          7. For webserver-backed deployments, do not stop after deploy until the live route has been smoke-tested.
 
       - path: /meshagent-skills/commands/meshagent-inspect.md
         text: |
@@ -401,7 +406,7 @@ container:
           1. Resolve the room name first.
           2. Inspect current room state before changing it.
           3. Use the room-scoped command instead of the project-scoped equivalent when the request is clearly about a single room.
-          4. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for room websites, webserver deploys, or public site exposure tied to this room.
+          4. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for room websites, contact forms, webserver deploys, or public site exposure tied to this room.
 
       - path: /meshagent-skills/commands/meshagent-service.md
         text: |
@@ -427,7 +432,8 @@ container:
           1. Inspect or validate specs before create or update when possible.
           2. Prefer `validate`, `render-template`, `show`, or `list` before destructive or state-changing commands.
           3. After deploy or update, verify the resulting service state and surface any follow-up steps.
-          4. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for websites, `meshagent webserver ...`, public URL delivery, or route-backed site exposure.
+          4. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for websites, contact forms, `meshagent webserver ...`, and room-hosted webapp deployment.
+          5. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for explicit route/domain administration or public hostname diagnostics.
 
       - path: /meshagent-skills/commands/meshagent.md
         text: |
@@ -443,15 +449,16 @@ container:
           ## Workflow
           
           1. Start with [SKILL.md](../skills/meshagent-cli-operator/SKILL.md).
-          2. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for contact forms, email delivery, mailboxes, inbox evidence, or MailBot toolkits.
-          3. Use [SKILL.md](../skills/meshagent-scheduling-operator/SKILL.md) for scheduled tasks, cron-based dispatch, or queue scheduling.
-          4. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for websites, webservers, routes, domains, or public URL exposure.
-          5. Pick the narrowest MeshAgent command path that fits the request.
-          6. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) first. Only run live `meshagent <path> --help` when the packaged reference is missing the needed detail or appears stale for the installed CLI.
-          7. Prefer inspection before mutation.
-          8. After any change, verify with the corresponding `show`, `list`, or read command.
-          9. For contact-form website requests, do not treat a live site with failing outbound email as complete. Follow the mailbox-backed sender workflow before replying unless an actual permission blocker stops it.
-          10. For website requests, require at least one live HTTP smoke test after deploy before replying with success.
+          2. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for websites, contact forms, web handlers, and room-hosted webapp deployment.
+          3. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for email delivery, mailboxes, inbox evidence, or MailBot toolkits.
+          4. Use [SKILL.md](../skills/meshagent-scheduling-operator/SKILL.md) for scheduled tasks, cron-based dispatch, or queue scheduling.
+          5. Use [SKILL.md](../skills/meshagent-webmaster-operator/SKILL.md) for explicit route or domain administration and public hostname diagnostics.
+          6. Pick the narrowest MeshAgent command path that fits the request.
+          7. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) first. Only run live `meshagent <path> --help` when the packaged reference is missing the needed detail or appears stale for the installed CLI.
+          8. Prefer inspection before mutation.
+          9. After any change, verify with the corresponding `show`, `list`, or read command.
+          10. For contact-form website requests, do not treat a live site with failing outbound email as complete. Follow the mailbox-backed sender workflow before replying unless an actual permission blocker stops it.
+          11. For website requests, require at least one live HTTP smoke test after deploy before replying with success.
           
           ## Coverage
           
@@ -913,9 +920,13 @@ container:
               / "meshagent_cli_help.md"
           )
           SPECIALIZED_SKILLS = {
-              "meshagent-sdk-operator": SKILLS_ROOT
+              "meshagent-sdk-researcher": SKILLS_ROOT
               / "skills"
-              / "meshagent-sdk-operator"
+              / "meshagent-sdk-researcher"
+              / "SKILL.md",
+              "meshagent-webapp-builder": SKILLS_ROOT
+              / "skills"
+              / "meshagent-webapp-builder"
               / "SKILL.md",
               "meshagent-mail-operator": SKILLS_ROOT
               / "skills"
@@ -939,7 +950,7 @@ container:
               "references/command_groups.md",
               "references/meshagent_cli_help.md",
           )
-          SKILLS_WITHOUT_CLI_REFERENCES = {"meshagent-sdk-operator"}
+          SKILLS_WITHOUT_CLI_REFERENCES = {"meshagent-sdk-researcher"}
           
           
           def parse_args() -> argparse.Namespace:
@@ -2107,11 +2118,9 @@ container:
           - For a room-hosted email workflow, first inspect or provision the mailbox that will own the sender address.
           - If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
           - If no mailbox exists and the task requires sending mail from the room, create one before claiming the workflow is complete.
-          - For a room-hosted contact form whose purpose is to send outbound email, treat mailbox provisioning as part of the default happy path, not an optional follow-up, unless an existing verified mailbox-backed sender is already in place.
           - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
           - If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
           - Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
-          - If a room website or service needs to send email, keep its durable runtime assets under `/data`. When the workflow uses `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` to upload the deployable files into room storage.
           
           ## Queue inspection
           
@@ -2130,7 +2139,6 @@ container:
           - The current implementation reads those values when sending in `start_thread` and `send_reply_message`. Do not invent a different SMTP retrieval path.
           - Do not hardcode or assume a production-only or development-only mail hostname. Use the domain configured for the current runtime.
           - In a live room workflow, first check whether the default room SMTP values already work before asking the user for manual `SMTP_*` settings.
-          - If the first outbound send attempt returns an authorization error such as `550 5.7.1 Permission denied`, do not stop at the default SMTP path. Switch to mailbox-backed sender provisioning if permissions allow.
           - Only ask for explicit SMTP overrides when the room's default username, token, domain, or port is known to be insufficient for the target provider.
           - SMTP transport defaults do not define the sender email address. The sender address should come from the mailbox-backed workflow, not from the participant name.
           
@@ -2140,14 +2148,7 @@ container:
           - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
           - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
           - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
-          - If a contact-form task asks for submissions to be emailed, do not report the site as complete while the live form still returns an outbound mail error.
-          - If outbound mail fails with an authorization error and mailbox creation is available, provision or reuse a mailbox and re-test the live form before replying.
-          - Only stop and ask the user for help after mailbox-backed sending is blocked by an actual permission or configuration error that you can report concretely.
-          - If the live contact form returns 500 before the mail path is reached, diagnose the handler/rendering/runtime failure first instead of treating it as an SMTP problem.
           - If the workflow also creates a public route, do not copy `.meshagent.app` from CLI examples when the current runtime maps to a different managed suffix.
-          - If tool calls fail because `meshagent webserver deploy` requires local route sources under the current working directory, move the local website project under that working directory instead of switching the deploy input to `/data`.
-          - Do not claim a contact-form website is complete until both the sender identity and the public site exposure path are verified, or until you report the exact blocking command and error.
-          - For public contact-form sites, do not ask the user to choose among fallback hostnames unless they explicitly care about naming. Generate and try a few collision-resistant hostname candidates automatically, then return the first live URL that succeeds.
           - If SMTP rejects delivery, report the exact observed blocker.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
 
@@ -2220,14 +2221,14 @@ container:
           
           - General cron design that is not tied to an actual MeshAgent scheduled task.
 
-      - path: /meshagent-skills/skills/meshagent-sdk-operator/SKILL.md
+      - path: /meshagent-skills/skills/meshagent-sdk-researcher/SKILL.md
         text: |
           ---
-          name: meshagent-sdk-operator
-          description: Use the preloaded MeshAgent SDK checkout and bundled docs/examples to look up APIs and implementation patterns before writing code.
+          name: meshagent-sdk-researcher
+          description: Use the preloaded MeshAgent SDK checkout and bundled docs/examples to research APIs and implementation patterns before writing code.
           ---
           
-          # MeshAgent SDK Operator
+          # MeshAgent SDK Researcher
           
           Use this skill when the task is mainly about how to use the MeshAgent SDK in code.
           
@@ -2258,6 +2259,83 @@ container:
           
           - This skill does not replace CLI help for command flags.
           - This skill does not define deployment workflow by itself.
+
+      - path: /meshagent-skills/skills/meshagent-webapp-builder/SKILL.md
+        text: |
+          ---
+          name: meshagent-webapp-builder
+          description: Build and verify deployable MeshAgent room web applications, including contact forms, public web handlers, and mailbox-backed outbound email flows.
+          ---
+          
+          # MeshAgent Webapp Builder
+          
+          Use this skill when the task is to build, deploy, or debug a room-hosted website or web handler.
+          
+          ## Use this skill when
+          
+          - The user wants a website, contact form, landing page, or HTTP handler deployed from a room.
+          - The task involves `meshagent webserver ...` plus actual application code, not just route administration.
+          - The task includes form validation, sanitization, public URL delivery, or post-deploy smoke testing.
+          - The task includes outbound email from a room-hosted website such as a contact form.
+          - The task is to diagnose a live `500`, `502`, or other public-site failure from a deployed room webserver.
+          
+          ## References
+          
+          - Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
+          - For actual webserver runtime behavior, inspect `/src/meshagent-sdk/meshagent-cli/meshagent/cli/webserver.py`.
+          - For room mail behavior and SMTP defaults, inspect `/src/meshagent-sdk/meshagent-agents/meshagent/agents/mail.py` and `/src/meshagent-sdk/meshagent-agents/meshagent/agents/mail_common.py`.
+          
+          ## Live room execution
+          
+          - First use the existing MeshAgent CLI session and room context before asking the user to log in again.
+          - If `MESHAGENT_ROOM` is present, prefer room-scoped commands and pass `--room "${MESHAGENT_ROOM}"` when required.
+          - If `MESHAGENT_API_URL` is present, derive the managed hostname suffix from that API environment: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
+          - If `MESHAGENT_API_URL` is absent or ambiguous, inspect existing routes or ask before inventing a managed public hostname.
+          - Packaged `.meshagent.app` examples are illustrative only. Do not copy that suffix when the runtime indicates `.meshagent.dev`.
+          - For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
+          - In a live room shell where `cwd` is `/src`, author deployable webapp files under a subdirectory of `/src`, not directly under `/data`.
+          - If `MESHAGENT_ROOM` is already present, do not block on room-listing commands before deploy.
+          
+          ## Implementation rules
+          
+          - Use relative route sources like `handlers/contact.py` and `public` so the deploy stays portable.
+          - For public webserver configs, set `host: 0.0.0.0` unless there is a concrete reason not to.
+          - Keep handler modules simple at import time. A module that raises during import can surface to the public site as a generic `500`.
+          - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
+          - For Python handlers that render inline HTML, avoid `str.format()` across raw HTML, CSS, or regex-heavy strings unless every literal brace is escaped. CSS blocks and patterns like `{1,80}` otherwise break rendering at runtime.
+          - Prefer safer rendering approaches for generated handlers: placeholder replacement, `string.Template`, or another approach that does not reinterpret every `{...}` in the whole document.
+          - Validate on both client and server when the task includes user input, but treat server-side validation as authoritative.
+          - Sanitize submitted values before including them in responses, logs, or email bodies.
+          
+          ## Contact form workflow
+          
+          1. Create the local webapp project under the current working directory.
+          2. Add a GET route that renders the form and a POST route that validates and handles submission.
+          3. Restrict email and phone fields with browser-side input types and patterns when helpful.
+          4. Re-validate all submitted fields on the server.
+          5. If the form sends outbound email from the room, inspect or provision a mailbox-backed sender identity as part of the default happy path unless an existing verified sender is already in place.
+          6. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+          7. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+          8. Verify the live site with actual GET and POST requests after deploy.
+          
+          ## Managed hostname selection
+          
+          - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
+          - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
+          - Keep retries within the same environment-specific suffix family.
+          - If a candidate collides and follow-up route inspection is forbidden, treat that hostname as unavailable and try another candidate before reporting a permissions blocker.
+          - Do not report a managed URL whose suffix contradicts the active API environment.
+          
+          ## Verification rules
+          
+          - Do not treat `meshagent webserver check`, local file generation, or deploy success alone as completion.
+          - For every website task, perform at least one live HTTP GET against the public URL before reporting success.
+          - For form-backed sites, also exercise representative POST paths after deploy.
+          - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
+          - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
+          - If a contact-form task asks for emailed submissions, do not report success while live submission still fails to send mail.
+          - If outbound mail fails with an authorization error such as `550 5.7.1 Permission denied`, switch to mailbox-backed sender provisioning if permissions allow, then re-test.
+          - Only stop and ask the user for help after mailbox provisioning, route creation, or deploy verification is blocked by a concrete error you can report exactly.
 
       - path: /meshagent-skills/skills/meshagent-webmaster-operator/SKILL.md
         text: |
@@ -2291,27 +2369,6 @@ container:
           - Before deploy or reply, validate the final managed hostname against `MESHAGENT_API_URL`. For `https://api.meshagent.life`, a reported `.meshagent.app` hostname is invalid and must be corrected or redeployed as `.meshagent.dev`.
           - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
           - If `MESHAGENT_ROOM` is already present, do not block on room-listing commands before attempting a room-scoped webserver deploy.
-          
-          ## Local authoring versus room storage
-          
-          - For `meshagent webserver deploy`, the local routes file and every referenced `python` or `static` source that will be uploaded with `--website-path` must resolve under the current working directory.
-          - In a live room shell where `cwd` is `/src`, author deployable website projects under a subdirectory of `/src`, not directly under `/data`.
-          - Use `--website-path` to place the deployed website files into room storage. That room storage is the durable runtime location, not the required local authoring root.
-          - Prefer relative route sources like `handlers/home.py` and `public` so the deploy stays portable.
-          
-          ## Handler implementation safety
-          
-          - For Python web handlers that render inline HTML, avoid `str.format()` across raw HTML/CSS/attribute patterns unless all literal braces are escaped. CSS blocks and regex quantifiers such as `{1,80}` will otherwise break rendering at runtime.
-          - Prefer simpler rendering approaches for generated handlers: pre-escaped placeholder replacement, `string.Template`, or another approach that does not reinterpret every `{...}` in the document.
-          - Keep import-time side effects minimal. A handler module that raises during import can surface to the public site as a generic 500.
-          
-          ## Managed hostname selection
-          
-          - For a generated public site, do not default to generic hostnames that are likely to collide, such as `contact-site`.
-          - Prefer hostname candidates derived from the room name plus the site purpose, keeping the environment-specific suffix from `MESHAGENT_API_URL`.
-          - If the user did not request a specific hostname, automatically try a small set of collision-resistant candidates before asking for naming input.
-          - Keep retries within the same suffix family. Never switch from `.meshagent.dev` to `.meshagent.app`, or the reverse, just to avoid a collision.
-          - If a candidate was generated from a packaged `.meshagent.app` example in a `.life` environment, discard it and generate a same-name `.meshagent.dev` candidate instead of presenting the wrong URL.
           
           ## Primary command groups
           
@@ -2371,25 +2428,12 @@ container:
           3. Create, update, or delete the route.
           4. Verify that the hostname points to the intended room and service port.
           
-          ## Website deploy workflow
-          
-          1. Create the local webserver project under the current working directory.
-          2. Keep route source paths relative to the routes file when possible.
-          3. Choose a collision-resistant managed hostname candidate when the user did not provide one.
-          4. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-          5. If the hostname candidate collides, retry additional candidates automatically.
-          6. Verify the live site with an actual request after deploy.
-          7. If the task includes a form or API handler, verify representative GET and POST paths after deploy.
-          8. If `--domain` is used, verify the resulting hostname and return the live URL only after the deploy succeeds.
-          
           ## Verification rules
           
           - If a derived managed hostname collides with an existing route, keep the same environment-specific suffix and choose a different subdomain. Do not switch to the wrong suffix family to avoid the collision.
           - If `meshagent webserver deploy --domain ...` fails with a collision and a follow-up route read returns 403, treat that hostname as unavailable and try a different candidate before concluding that public route permissions are blocked.
           - Do not report success with a live URL unless the hostname suffix is valid for the active API environment.
-          - If a public webserver returns 500, inspect the deployed route handler module first. MeshAgent webserver runtime failures can present as generic 500 responses even when the route and domain are configured correctly.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
-          - Do not treat `meshagent webserver check` or local file generation as completion when the user asked for a public website or URL.
 
   environment:
     - name: MESHAGENT_TOKEN
