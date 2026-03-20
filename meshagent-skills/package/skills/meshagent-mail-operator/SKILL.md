@@ -83,5 +83,6 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - If the workflow also creates a public route, do not copy `.meshagent.app` from CLI examples when the current runtime maps to a different managed suffix.
 - If tool calls fail because `meshagent webserver deploy` requires local route sources under the current working directory, move the local website project under that working directory instead of switching the deploy input to `/data`.
 - Do not claim a contact-form website is complete until both the sender identity and the public site exposure path are verified, or until you report the exact blocking command and error.
+- For public contact-form sites, do not ask the user to choose among fallback hostnames unless they explicitly care about naming. Generate and try a few collision-resistant hostname candidates automatically, then return the first live URL that succeeds.
 - If SMTP rejects delivery, report the exact observed blocker.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
