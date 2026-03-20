@@ -11,7 +11,7 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 
 1. Resolve the `meshagent` binary from `PATH` or use the explicit binary path the user provides.
 2. Identify the narrowest command path that matches the request.
-3. If flags are uncertain, consult `references/command_groups.md`, then `references/meshagent_cli_help.md`, or run `meshagent <path> --help`.
+3. If flags are uncertain, consult `references/command_groups.md`, then `references/meshagent_cli_help.md`. Only run live `meshagent <path> --help` when the packaged references are missing the needed subcommand detail or appear inconsistent with the observed CLI version.
 4. Prefer read-only inspection before mutation.
 5. Verify the result with the corresponding read command.
 
@@ -28,6 +28,7 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 - If `MESHAGENT_API_URL` is present and the task needs a default MeshAgent-managed public hostname, derive the suffix from that API URL: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
 - If `MESHAGENT_API_URL` is absent or does not clearly identify the environment, inspect an existing route in the current project or ask before inventing a managed public hostname.
 - Packaged help examples that show `.meshagent.app` are illustrative only. Do not copy that suffix blindly when `MESHAGENT_API_URL` indicates a different environment.
+- Before running a deploy with `--domain` or reporting a managed public URL, validate that the chosen hostname suffix matches `MESHAGENT_API_URL`. In a `.life` environment, `.meshagent.app` is wrong and must be corrected to `.meshagent.dev`.
 - If authentication is uncertain, test a room-scoped read command first. Do not claim that the CLI is unauthenticated until an actual MeshAgent command fails for that reason.
 - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use, not as something to ignore by default.
 - For room-site or room-service work, distinguish between local authoring files and room-visible runtime files. User-visible runtime data belongs under `/data`, but `meshagent webserver deploy` copies local sources from the current working directory, so deployable website source trees must live under a subdirectory of that working directory in the live room runtime.
@@ -38,13 +39,14 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 
 - Start with `references/command_groups.md` to choose the correct command family.
 - Use `references/meshagent_cli_help.md` for exact command shapes and flags.
+- Prefer the packaged references over live `--help` in a live room to avoid noisy recursive help probing.
 - Prefer the smallest command path that can complete the task.
 - Prefer non-interactive commands over interactive flows.
 
 ## Operating rules
 
 - Do not invent the active project, active room, hostname, filesystem layout, or environment variables. Inspect them or ask when they matter.
-- Use `--help` on the exact subcommand before composing long invocations.
+- Do not use live `meshagent ... --help` as a default discovery step in a live room when the packaged references already cover the command. Use live `--help` only as a fallback for missing or version-mismatched details.
 - Prefer read commands before create, update, deploy, or delete.
 - Restate the exact mutation target before destructive changes.
 - Verify the resulting state after mutation.
@@ -52,6 +54,7 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 - If `MESHAGENT_ROOM` is already present, do not use `meshagent rooms list` as a prerequisite for room-scoped deploy work.
 - If a room website deploy hits a managed-hostname collision, do not stop after the first candidate. Automatically retry with additional same-environment hostname candidates before asking the user to choose one.
 - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and follow-up route inspection is forbidden, treat that as a collision on that candidate and try a different hostname. Do not present it as a generic permissions blocker unless repeated candidate creation attempts also fail.
+- Do not report a managed URL whose suffix contradicts the active API environment. If the composed or observed URL ends with the wrong MeshAgent-managed suffix, treat that as an invalid candidate and correct it before replying.
 - Do not print secret values unless the user explicitly asks for them and the command returns them.
 - For live room workflows, do not treat `/tmp` as the durable room workspace. Room-owned runtime files belong under `/data`, but deployable webserver source trees may need to live under the current working directory so `meshagent webserver deploy` can upload them.
 
