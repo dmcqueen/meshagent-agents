@@ -9,6 +9,7 @@ For `meshagent webserver deploy`, keep the local website source tree under the c
 For this skill, the current room is the value of `MESHAGENT_ROOM`.
 For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
 The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
+Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL`. For `https://api.meshagent.life`, managed public hostnames must end in `.meshagent.dev`.
 
 ## Top-level command policy
 
@@ -110,6 +111,7 @@ Use the following status values exactly:
 - For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
 - If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
 - If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
+- Never return `.meshagent.app` from a `.life` environment or `.meshagent.dev` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
 - Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
 - Use `meshagent-scheduling-operator` for scheduled-task creation, update, pause, resume, or deletion.
 - Use `meshagent-webmaster-operator` for websites, `meshagent webserver ...`, routes, or public hostname exposure.
