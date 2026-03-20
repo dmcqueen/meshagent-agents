@@ -106,6 +106,7 @@ The current skills assume the following when they are installed into a live room
 - `MESHAGENT_API_URL` can be used to derive the managed public hostname family for routes and published sites
 - room-owned runtime artifacts should live under `/data`
 - deployable `meshagent webserver` source trees should live under the current working directory for that runtime, with `--website-path` used as the room-storage destination
+- website tasks are only complete after a live HTTP smoke test, not merely after file generation or deploy success
 - the MeshAgent SDK checkout is preloaded at `/src/meshagent-sdk` for SDK/docs lookup
 
 These are package-level conventions enforced by the current skill text. They are intentionally documented here because the skills depend on them for live-room behavior.
