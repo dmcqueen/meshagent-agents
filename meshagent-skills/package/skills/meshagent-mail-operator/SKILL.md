@@ -49,6 +49,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - For a room-hosted email workflow, first inspect or provision the mailbox that will own the sender address.
 - If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
 - If no mailbox exists and the task requires sending mail from the room, create one before claiming the workflow is complete.
+- For a room-hosted contact form whose purpose is to send outbound email, treat mailbox provisioning as part of the default happy path, not an optional follow-up, unless an existing verified mailbox-backed sender is already in place.
 - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
 - If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
 - Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
@@ -71,6 +72,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - The current implementation reads those values when sending in `start_thread` and `send_reply_message`. Do not invent a different SMTP retrieval path.
 - Do not hardcode or assume a production-only or development-only mail hostname. Use the domain configured for the current runtime.
 - In a live room workflow, first check whether the default room SMTP values already work before asking the user for manual `SMTP_*` settings.
+- If the first outbound send attempt returns an authorization error such as `550 5.7.1 Permission denied`, do not stop at the default SMTP path. Switch to mailbox-backed sender provisioning if permissions allow.
 - Only ask for explicit SMTP overrides when the room's default username, token, domain, or port is known to be insufficient for the target provider.
 - SMTP transport defaults do not define the sender email address. The sender address should come from the mailbox-backed workflow, not from the participant name.
 
@@ -80,6 +82,9 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
 - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
 - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
+- If a contact-form task asks for submissions to be emailed, do not report the site as complete while the live form still returns an outbound mail error.
+- If outbound mail fails with an authorization error and mailbox creation is available, provision or reuse a mailbox and re-test the live form before replying.
+- Only stop and ask the user for help after mailbox-backed sending is blocked by an actual permission or configuration error that you can report concretely.
 - If the workflow also creates a public route, do not copy `.meshagent.app` from CLI examples when the current runtime maps to a different managed suffix.
 - If tool calls fail because `meshagent webserver deploy` requires local route sources under the current working directory, move the local website project under that working directory instead of switching the deploy input to `/data`.
 - Do not claim a contact-form website is complete until both the sender identity and the public site exposure path are verified, or until you report the exact blocking command and error.
