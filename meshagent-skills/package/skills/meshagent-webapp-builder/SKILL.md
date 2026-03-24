@@ -21,6 +21,8 @@ metadata:
       - webserver CLI source
       - room mail implementation
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: The web app is one piece of a larger end-to-end workflow.
     - skill: meshagent-cli-operator
       when: General room-context, managed-hostname, and deploy-command rules matter.
     - skill: meshagent-mail-operator
@@ -78,6 +80,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when the web app is only one piece of a larger end-to-end workflow.
 - `meshagent-cli-operator`: Reuse its general room-context, managed-hostname, and deploy-command rules instead of inventing environment behavior locally.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references outside this skill bundle.
 - `meshagent-mail-operator`: Use it when the blocker is mailbox provisioning, queue-backed mail intake, or SMTP behavior.
