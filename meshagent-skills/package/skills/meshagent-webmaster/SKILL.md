@@ -19,6 +19,8 @@ metadata:
       - route CLI help
       - static webserver YAML example
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: Route work is only one part of a larger end-to-end workflow.
     - skill: meshagent-cli-operator
       when: General room-context and managed-hostname rules matter.
     - skill: meshagent-sdk-researcher
@@ -69,6 +71,7 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when route work is only one part of a larger end-to-end workflow.
 - `meshagent-cli-operator`: Reuse its general room-context and managed-hostname rules instead of inventing environment behavior locally.
 - `meshagent-sdk-researcher`: Resolve checkout roots and the sample static webserver YAML path before using codebase references.
 - `meshagent-webapp-builder`: Use it when the task is building or debugging the website rather than operating the route.
