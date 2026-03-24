@@ -18,16 +18,20 @@ meshagent room agent invoke-tool \
   --room <ROOM_NAME> \
   --toolkit queues \
   --tool list \
+  --timeout 0 \
   --arguments '{}'
 ```
 
 4. Return the queue names and sizes from that tool output.
+5. If the first command output is noisy, truncated, or mixed with progress lines, rerun the narrow `invoke-tool` command and extract the exact queue names before replying.
+6. If the result contains no queues, say that the room currently has no visible queues rather than leaving the answer ambiguous.
 
 ## Interpretation rules
 
 - Do not say queue listing is impossible just because `meshagent room queue` lacks a dedicated `list` subcommand.
 - `meshagent room queue send`, `receive`, and `size` are specialized queue commands. `meshagent room agent invoke-tool` is the generic fallback when the CLI does not expose a dedicated queue-list command.
 - If the `queues` toolkit is not visible from `list-toolkits`, explain that the room did not expose the toolkit to this caller instead of claiming queue listing is unsupported by MeshAgent.
+- Do not stop at “the output was truncated” when the user asked for queue names. Rerun the narrow command, parse the result, and report the exact names or an explicit empty list.
 
 ## Only use SDK code as a fallback
 
