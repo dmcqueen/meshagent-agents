@@ -1687,6 +1687,13 @@ container:
           - A supporting skill should return evidence, not a success claim for the whole workflow.
           - If the current owner cannot complete the workflow without another skill, it should call that handoff and then continue evaluating the remaining gates.
           
+          ## Missing-input rules
+          
+          - If the workflow is blocked on specific user input, identify the exact missing input instead of asking a generic permission-to-continue question.
+          - Ask for all clearly blocking user inputs together when possible rather than discovering them one at a time across multiple turns.
+          - After the user confirms they want the workflow completed, continue the workflow unless a new concrete blocker appears.
+          - Do not make the user restate the original goal just because a sub-step was incomplete or partially verified.
+          
           ## Forbidden shortcuts
           
           - Do not treat object creation alone as end-to-end success.
@@ -1696,6 +1703,7 @@ container:
           - Do not use the room, server, or runtime timezone as a substitute for the requesting user's timezone when the workflow is about scheduling in the user's local time.
           - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
           - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
+          - Do not leave an obviously required user input such as the recipient email unasked in a workflow whose purpose is to send a real email.
 
       - path: /meshagent-skills/skills/meshagent-cli-operator/SKILL.md
         text: |
@@ -3436,19 +3444,22 @@ container:
           
           ## Required sequence
           
-          1. Inspect or provision the mailbox first.
-          2. Reuse the mailbox email address as the sender identity.
-          3. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
-          4. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-          5. Validate the YAML or rendered service before deployment.
-          6. Create or update the service.
-          7. Verify the live room service appears in `meshagent room service list`.
-          8. Verify the runtime is actually alive with room developer output, container state, or container logs.
-          9. Enqueue an immediate test message now, before creating the scheduled task.
-          10. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-          11. Only after the immediate smoke test passes should you create the one-time scheduled task.
-          12. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-          13. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+          1. Determine whether the user wants a real delivered test email now or only a generic payload-driven worker template.
+          2. If the workflow is supposed to send a real email, collect the recipient email address before treating the workflow as ready for smoke testing or scheduling.
+          3. If subject or body were not provided, either ask for them together with the recipient or use clearly stated defaults when the user has not asked for custom content.
+          4. Inspect or provision the mailbox first.
+          5. Reuse the mailbox email address as the sender identity.
+          6. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
+          7. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
+          8. Validate the YAML or rendered service before deployment.
+          9. Create or update the service.
+          10. Verify the live room service appears in `meshagent room service list`.
+          11. Verify the runtime is actually alive with room developer output, container state, or container logs.
+          12. Enqueue an immediate test message now, before creating the scheduled task.
+          13. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+          14. Only after the immediate smoke test passes should you create the one-time scheduled task.
+          15. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+          16. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
           
           ## Success criteria
           
@@ -3456,6 +3467,7 @@ container:
           
           - the mailbox exists and its address is the sender identity used by the workflow
           - toolkit `email` is visibly published in the room by a MailBot or equivalent service
+          - the recipient email address for the real smoke test and scheduled message is known, unless the user explicitly asked for a payload-only template
           - the Worker service exists in the room
           - a live runtime or container is visibly running
           - an immediate test message is consumed from the queue
@@ -3468,10 +3480,19 @@ container:
           - A created mailbox does not prove outbound mail works.
           - A created mailbox does not create toolkit `email`. If the Worker depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
           - A created service record does not prove a Worker runtime is running.
+          - If the user asked for a real scheduled email and no recipient address has been collected yet, the workflow is still blocked on required user input. Do not pretend the remaining setup is complete.
           - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
           - If the scheduled time is too close and setup is still incomplete, push the one-time run farther into the future instead of pretending the near-term run is still valid.
           - If the user asked for a relative run time and setup consumed part of that window, recompute the relative schedule from the current moment before creating the scheduled task.
           - If the requesting user's timezone is unknown, do not schedule yet. First determine it from reliable user-specific context or ask the user directly.
+          
+          ## Input collection rules
+          
+          - When the user asked for a worker that actually sends an email, treat the recipient address as required input unless it is already present in the request or in a clearly reusable existing workflow.
+          - Ask for all obviously blocking user-provided mail inputs in one message when possible: recipient first, then optional subject/body if needed.
+          - Do not ask a generic "should I continue?" question when the real blocker is a specific missing input such as the recipient address.
+          - If the user says "yes" or otherwise confirms they want the workflow completed, continue the build and verification flow without making them repeat the high-level request.
+          - If the user did not provide subject or body, you may continue with explicit defaults once the recipient is known, but say what defaults you are using.
 
       - path: /meshagent-skills/skills/meshagent-runtime-operator/SKILL.md
         text: |
