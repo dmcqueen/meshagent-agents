@@ -47,7 +47,9 @@ The workflow owner must collect concrete evidence for each gate, such as:
 ## Preflight rules
 
 - If the workflow depends on a specific backend surface such as scheduled tasks, room services, mail delivery, or toolkit publication, preflight the required capability before presenting the workflow as end-to-end ready.
+- For room-scoped workflows, preflight with the narrowest room-scoped command that matches the actual task before trying broader project-scoped discovery or admin-style checks.
 - Treat `403` responses as permission blockers, not as a cue to keep promising the blocked step later.
+- If a broad project-scoped probe returns `403`, do not declare the room-scoped workflow blocked until the narrower room-scoped probe also fails.
 - Treat unexpected `5xx` responses on required workflow surfaces as backend health blockers until a retry or narrower probe proves otherwise.
 - When a required backend surface is blocked, either stop before creating a half-complete workflow or clearly mark any continued setup as partial preparation only.
 
@@ -62,3 +64,5 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
 - Do not leave an obviously required user input such as the recipient email unasked in a workflow whose purpose is to send a real email.
 - Do not wait until the final step to discover that a required backend surface such as scheduled-task create is blocked when a cheap preflight could have shown that earlier.
+- Do not use broad auth or project-listing failures as proof that a room-scoped workflow cannot proceed when a narrower room-scoped probe was available.
+- Do not treat queue drain, service creation, or scheduled-task creation as proof that a requested email was actually delivered.
