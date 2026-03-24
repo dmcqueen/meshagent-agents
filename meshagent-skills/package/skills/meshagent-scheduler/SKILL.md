@@ -93,12 +93,14 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 ## Queue consumption
 
 - CLI verification: use `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
-- API verification: use the room queues client, for example `message = await room.queues.receive(name="my-queue")`.
+- API verification: use the room queues client, for example `queues = await room.queues.list()` or `message = await room.queues.receive(name="my-queue")`.
+- The current CLI does not expose a dedicated `meshagent room queue list` subcommand. If the queue name is unknown, use the room queue API or inspect room configuration rather than claiming queue discovery is impossible.
 - When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message.
 
 ## Current agent queue discovery
 
 - If this skill is running inside a live MeshAgent room runtime, first inspect the current room and current agent before inventing a queue or assuming a separate worker exists.
+- If the queue name is not already known from the scheduled task, service config, mailbox config, or Worker config, use the room queue API to enumerate visible queues before concluding that discovery is blocked.
 - First look for an explicit queue-consuming runtime such as `meshagent worker join --queue=<QUEUE_NAME>` in the current startup command or service template.
 - If the runtime is not a Worker, a queue channel such as `--channel=queue:<QUEUE_NAME>` is only supporting evidence. Treat it as sufficient only when the runtime and surrounding implementation clearly consume that queue.
 - Also inspect agent annotations or nearby service YAML when the current runtime was created from a template. The schedule queue and the actual consumer path must match.
@@ -123,6 +125,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 ## Operating rules
 
 - Do not invent queue names.
+- Do not say queue names cannot be listed just because the CLI lacks a dedicated `meshagent room queue list` subcommand.
 - Do not invent timezones.
 - Do not schedule a task until the timezone has been confirmed or reliably detected.
 - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
