@@ -7,6 +7,7 @@ metadata:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
       - ../_shared/references/live_room_cli_context.md
+      - ../_shared/references/runtime_image_environment_rules.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
@@ -14,6 +15,7 @@ metadata:
       - server_root
     resolved_targets:
       - shared live-room CLI context rules
+      - shared runtime image environment rules
       - services CLI source
       - room-services CLI source
       - service examples and packaging docs
@@ -65,6 +67,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
 - Use `../_shared/references/live_room_cli_context.md` when the service workflow runs in or targets a known live room.
+- Use `../_shared/references/runtime_image_environment_rules.md` when choosing or reviewing a service container image.
 - Inspect the resolved services CLI source for project/global/room service behavior, template rendering, and upsert rules.
 - Inspect the resolved room-services CLI source for live room service listing and restart behavior.
 
@@ -96,6 +99,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 
 - Distinguish project/global services from room-scoped services before acting.
 - Distinguish declarative service CRUD (`meshagent service ...`) from runtime room-service state (`meshagent room service ...`).
+- Match the container image family to the actual MeshAgent environment. Do not copy a production docs image into a `.life` room unless the environment already proves that image family is correct there.
 - Prefer `validate` or `validate-template` before deployment when the source YAML is being authored or changed.
 - Prefer `render-template` when the user needs to inspect the concrete resolved template output.
 - Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
