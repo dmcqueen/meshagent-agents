@@ -1,6 +1,39 @@
 ---
 name: meshagent-webmaster
 description: Manage MeshAgent domain mappings and use the sample MeshAgent static webserver YAML as a reference example.
+metadata:
+  short-description: Operate routes and managed hostnames for published room services.
+  references:
+    bundled:
+      - ../meshagent-cli-operator/references/command_groups.md
+      - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - references/static_webserver_example.yaml
+      - ../_shared/references/live_room_cli_context.md
+      - ../_shared/references/managed_hostname_rules.md
+    requires_roots:
+      - router_root
+      - server_root
+      - cli_root
+    resolved_targets:
+      - route CLI help
+      - static webserver YAML example
+  related_skills:
+    - skill: meshagent-cli-operator
+      when: General room-context and managed-hostname rules matter.
+    - skill: meshagent-sdk-researcher
+      when: Checkout roots or the sample static webserver YAML path must be resolved.
+    - skill: meshagent-webapp-builder
+      when: The task is building or debugging the website, not just the route.
+    - skill: meshagent-service-operator
+      when: The target service itself must be created or repaired before routing it.
+  scope:
+    owns:
+      - route creation and mutation
+      - managed hostname verification
+      - static webserver example lookup
+    excludes:
+      - website implementation
+      - service lifecycle by itself
 ---
 
 # MeshAgent Webmaster
@@ -16,18 +49,24 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 
 ## References
 
-- Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
-- The sample static webserver YAML in the MeshAgent server repository lives at `meshagent-router/meshagent/router/templates/webserver.yaml`.
+- Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact CLI command shapes and flags.
+- Use `references/static_webserver_example.yaml` for the bundled static webserver example.
+- Use `../_shared/references/live_room_cli_context.md` for shared room-context rules.
+- Use `../_shared/references/managed_hostname_rules.md` for shared managed-hostname selection and validation rules.
+- The sample static webserver YAML should be located by resolving the router/server tree through `meshagent-sdk-researcher`, not by assuming a fixed repo-relative path.
+
+## Related skills
+
+- `meshagent-cli-operator`: Reuse its general room-context and managed-hostname rules instead of inventing environment behavior locally.
+- `meshagent-sdk-researcher`: Resolve checkout roots and the sample static webserver YAML path before using codebase references.
+- `meshagent-webapp-builder`: Use it when the task is building or debugging the website rather than operating the route.
+- `meshagent-service-operator`: Use it when the target service must be created, validated, or repaired before routing it.
 
 ## Live room execution
 
-- If this skill is running inside a live MeshAgent room runtime, first use the existing MeshAgent CLI session and room context before asking the user to log in again.
-- If `MESHAGENT_API_URL` is present and the user wants a default MeshAgent-managed hostname, derive it from the API environment: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
-- If `MESHAGENT_API_URL` is absent or ambiguous, inspect existing routes or ask before choosing a managed public hostname.
-- Do not copy `.meshagent.app` from generic CLI examples when `MESHAGENT_API_URL` indicates a `.life` environment. The route hostname suffix must follow the current API environment, not the example text.
-- Before deploy or reply, validate the final managed hostname against `MESHAGENT_API_URL`. For `https://api.meshagent.life`, a reported `.meshagent.app` hostname is invalid and must be corrected or redeployed as `.meshagent.dev`.
+- Apply `../_shared/references/live_room_cli_context.md` before asking for login or room discovery.
+- Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
 - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
-- If `MESHAGENT_ROOM` is already present, do not block on room-listing commands before attempting a room-scoped webserver deploy.
 
 ## Primary command groups
 
@@ -47,36 +86,7 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 
 ## Static webserver example
 
-This is the sample static webserver YAML from the MeshAgent server repository. It shows a simple static HTTP server that exposes raw files from room storage:
-
-```yaml
-version: v1
-kind: ServiceTemplate
-metadata:
-  name: web server
-  description: Publish a website for this room with the contents of the "website" folder. 
-  annotations:
-    meshagent.service.id: meshagent.webserver
-variables:
-  - name: url
-    type: route
-    optional: false
-    annotations:
-      meshagent.route.port: "5002"
-container:
-  image: busybox
-  command: sh -c "httpd -f -p 5002 -h /data"
-  storage:
-    room:
-      - path: /data
-        subpath: /website
-ports:
-  - num: 5002
-    type: http
-    public: true
-    published: true
-    liveness: /
-```
+See `references/static_webserver_example.yaml` for the bundled static webserver YAML example.
 
 This example is for serving static HTML, CSS, JavaScript, and similar assets. It is only a reference example, not a website-building guide.
 
@@ -89,7 +99,5 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 
 ## Verification rules
 
-- If a derived managed hostname collides with an existing route, keep the same environment-specific suffix and choose a different subdomain. Do not switch to the wrong suffix family to avoid the collision.
-- If `meshagent webserver deploy --domain ...` fails with a collision and a follow-up route read returns 403, treat that hostname as unavailable and try a different candidate before concluding that public route permissions are blocked.
-- Do not report success with a live URL unless the hostname suffix is valid for the active API environment.
+- Follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL or retrying a colliding hostname.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
