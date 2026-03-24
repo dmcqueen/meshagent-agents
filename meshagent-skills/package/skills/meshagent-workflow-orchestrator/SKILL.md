@@ -108,6 +108,8 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - Prefer one owner and several supporting skills over bouncing ownership implicitly between specialists.
 - Choose the narrowest specialist skill for execution, but keep orchestration here when the job spans multiple surfaces.
 - Preflight cheap blockers early: room access, scheduler visibility, toolkit publication, service visibility, queue discovery, mailbox identity, or route readiness.
+- For room-scoped work, start from the known room context and the narrowest room-scoped probe. Do not let broader project-listing or auth-style commands become unnecessary blockers.
+- If a broad probe fails but a narrower room-scoped probe succeeds, continue the workflow and report the broad-scope limitation accurately instead of giving up.
 - If the workflow includes a relative schedule such as "one minute from now," make scheduling the final creation step after the worker/runtime path has already been proven.
 - If the workflow includes a real outgoing email, require a real recipient address unless the user explicitly asked for a payload-only template.
 - If one branch of the workflow is healthy and another is blocked, report partial preparation clearly and keep the blocked surface attached to the overall outcome.
@@ -118,6 +120,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - Prefer evidence such as queue names, service ids, mailbox addresses, toolkit visibility, runtime logs, scheduled-task ids, or live URLs.
 - When a supporting skill reports success, translate that into concrete workflow-gate evidence before moving on.
 - If a blocker appears, name the blocked surface directly, for example scheduler permissions, missing toolkit publication, or unhealthy runtime.
+- For delivered-email workflows, do not let queue drain or object creation stand in for mail-delivery evidence. Require runtime send evidence or clearly report that delivery is still unproven.
 
 ## Ownership transfer rules
 
