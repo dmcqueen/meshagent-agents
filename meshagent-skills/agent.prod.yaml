@@ -1630,7 +1630,11 @@ container:
           - Reuse the existing MeshAgent CLI session and room context before asking the user to log in again.
           - If `MESHAGENT_ROOM` is present, prefer room-scoped commands and pass `--room "${MESHAGENT_ROOM}"` when the command requires it.
           - If `MESHAGENT_ROOM` is already present, do not use room-listing commands as a prerequisite for room-scoped work.
+          - If the user already named the room or the current runtime clearly implies the room, do not use broad project or room listing commands as a prerequisite for room-scoped work.
           - If authentication is uncertain, test a room-scoped read command first. Do not claim the CLI is unauthenticated until an actual MeshAgent command fails for that reason.
+          - For room-scoped workflows, do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as the primary readiness test.
+          - A `403` from a broad project-scoped or room-listing command does not by itself prove that a narrower room-scoped workflow is blocked. Retry with the narrowest relevant room-scoped read path first.
+          - Good first probes are commands such as `meshagent room service list --room <ROOM_NAME>`, `meshagent room queue size --room <ROOM_NAME> --queue <QUEUE_NAME>`, or `meshagent room agent list-toolkits --room <ROOM_NAME>` depending on the workflow.
           - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use.
           - Distinguish local authoring files from room-visible runtime files. Room-owned runtime data belongs under `/data`.
           - For `meshagent webserver deploy`, local source files are uploaded from the current working directory, while `--website-path` is the room-storage destination.
@@ -1703,7 +1707,9 @@ container:
           ## Preflight rules
           
           - If the workflow depends on a specific backend surface such as scheduled tasks, room services, mail delivery, or toolkit publication, preflight the required capability before presenting the workflow as end-to-end ready.
+          - For room-scoped workflows, preflight with the narrowest room-scoped command that matches the actual task before trying broader project-scoped discovery or admin-style checks.
           - Treat `403` responses as permission blockers, not as a cue to keep promising the blocked step later.
+          - If a broad project-scoped probe returns `403`, do not declare the room-scoped workflow blocked until the narrower room-scoped probe also fails.
           - Treat unexpected `5xx` responses on required workflow surfaces as backend health blockers until a retry or narrower probe proves otherwise.
           - When a required backend surface is blocked, either stop before creating a half-complete workflow or clearly mark any continued setup as partial preparation only.
           
@@ -1718,6 +1724,8 @@ container:
           - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
           - Do not leave an obviously required user input such as the recipient email unasked in a workflow whose purpose is to send a real email.
           - Do not wait until the final step to discover that a required backend surface such as scheduled-task create is blocked when a cheap preflight could have shown that earlier.
+          - Do not use broad auth or project-listing failures as proof that a room-scoped workflow cannot proceed when a narrower room-scoped probe was available.
+          - Do not treat queue drain, service creation, or scheduled-task creation as proof that a requested email was actually delivered.
 
       - path: /meshagent-skills/skills/meshagent-cli-operator/SKILL.md
         text: |
@@ -1809,6 +1817,9 @@ container:
           
           - Do not invent the active project, active room, hostname, filesystem layout, or environment variables. Inspect them or ask when they matter.
           - Do not use live `meshagent ... --help` as a default discovery step in a live room when the packaged references already cover the command. Use live `--help` only as a fallback for missing or version-mismatched details.
+          - For room-scoped workflows, do not make `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` the gatekeeper commands that decide whether work is possible.
+          - If the user already named the room or the runtime already implies the room, probe the narrowest room-scoped read command first and only escalate to broader project-scoped checks when the workflow really needs them.
+          - If a broad project-scoped or room-listing command returns `403`, do not conclude that the narrower room-scoped workflow is blocked until the matching room-scoped read path also fails.
           - Before writing ad hoc SDK code for a room operation, check whether the CLI already exposes a generic toolkit path such as `meshagent room agent list-toolkits` or `meshagent room agent invoke-tool`.
           - When a first command returns noisy or truncated output for a simple inspection task, rerun the narrowest command and summarize the exact result instead of handing the truncation problem back to the user.
           - Prefer read commands before create, update, deploy, or delete.
@@ -3473,21 +3484,22 @@ container:
           1. Determine whether the user wants a real delivered test email now or only a generic payload-driven worker template.
           2. If the workflow is supposed to send a real email, collect the recipient email address before treating the workflow as ready for smoke testing or scheduling.
           3. If subject or body were not provided, either ask for them together with the recipient or use clearly stated defaults when the user has not asked for custom content.
-          4. Inspect or provision the mailbox first.
-          5. Reuse the mailbox email address as the sender identity.
-          6. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
-          7. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-          8. Validate the YAML or rendered service before deployment.
-          9. Create or update the service.
-          10. Verify the live room service appears in `meshagent room service list`.
-          11. Verify the runtime is actually alive with room developer output, container state, or container logs.
-          12. Enqueue an immediate test message now, before creating the scheduled task.
-          13. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-          14. Only after the immediate smoke test passes should you create the one-time scheduled task.
-          15. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-          16. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-          17. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-          18. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+          4. If the room is already known from runtime context or from the user's request, start with room-scoped probes. Do not use broad auth or room-listing commands as the gatekeeper for whether the workflow can proceed.
+          5. Inspect or provision the mailbox first.
+          6. Reuse the mailbox email address as the sender identity.
+          7. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
+          8. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
+          9. Validate the YAML or rendered service before deployment.
+          10. Create or update the service.
+          11. Verify the live room service appears in `meshagent room service list`.
+          12. Verify the runtime is actually alive with room developer output, container state, or container logs.
+          13. Enqueue an immediate test message now, before creating the scheduled task.
+          14. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+          15. Only after the immediate smoke test passes should you create the one-time scheduled task.
+          16. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+          17. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+          18. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+          19. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
           
           ## Success criteria
           
@@ -3511,9 +3523,11 @@ container:
           - A created service record does not prove a Worker runtime is running.
           - If the user asked for a real scheduled email and no recipient address has been collected yet, the workflow is still blocked on required user input. Do not pretend the remaining setup is complete.
           - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
+          - A consumed smoke-test queue message does not prove email delivery by itself. Delivery still needs runtime send evidence or an exact mail blocker.
           - If the scheduled time is too close and setup is still incomplete, push the one-time run farther into the future instead of pretending the near-term run is still valid.
           - If the user asked for a relative run time and setup consumed part of that window, recompute the relative schedule from the current moment before creating the scheduled task.
           - If the requesting user's timezone is unknown, do not schedule yet. First determine it from reliable user-specific context or ask the user directly.
+          - If broad auth or room-listing commands fail but a narrower room-scoped workflow is still possible, continue with the room-scoped path instead of stopping early.
           - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
           - If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
           - If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
@@ -5110,6 +5124,8 @@ container:
           - Prefer one owner and several supporting skills over bouncing ownership implicitly between specialists.
           - Choose the narrowest specialist skill for execution, but keep orchestration here when the job spans multiple surfaces.
           - Preflight cheap blockers early: room access, scheduler visibility, toolkit publication, service visibility, queue discovery, mailbox identity, or route readiness.
+          - For room-scoped work, start from the known room context and the narrowest room-scoped probe. Do not let broader project-listing or auth-style commands become unnecessary blockers.
+          - If a broad probe fails but a narrower room-scoped probe succeeds, continue the workflow and report the broad-scope limitation accurately instead of giving up.
           - If the workflow includes a relative schedule such as "one minute from now," make scheduling the final creation step after the worker/runtime path has already been proven.
           - If the workflow includes a real outgoing email, require a real recipient address unless the user explicitly asked for a payload-only template.
           - If one branch of the workflow is healthy and another is blocked, report partial preparation clearly and keep the blocked surface attached to the overall outcome.
@@ -5120,6 +5136,7 @@ container:
           - Prefer evidence such as queue names, service ids, mailbox addresses, toolkit visibility, runtime logs, scheduled-task ids, or live URLs.
           - When a supporting skill reports success, translate that into concrete workflow-gate evidence before moving on.
           - If a blocker appears, name the blocked surface directly, for example scheduler permissions, missing toolkit publication, or unhealthy runtime.
+          - For delivered-email workflows, do not let queue drain or object creation stand in for mail-delivery evidence. Require runtime send evidence or clearly report that delivery is still unproven.
           
           ## Ownership transfer rules
           
