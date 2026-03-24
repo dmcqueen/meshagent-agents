@@ -93,6 +93,8 @@ Key files and directories in this package:
   CLI help reference generator.
 - `scripts/validate_meshagent_skills_package.py`
   Package validator.
+- `scripts/audit_meshagent_skill_commands.py`
+  Command-reference audit against the live CLI tree.
 - `skills/meshagent-cli-operator/SKILL.md`
   Core CLI execution and command-routing skill.
 - `skills/meshagent-cli-operator/agents/openai.yaml`
@@ -213,6 +215,8 @@ The current validator enforces these package rules:
   Regenerates `skills/meshagent-cli-operator/references/meshagent_cli_help.md` by recursively capturing `meshagent --help`. This script reads the version label from `compat.json`; it does not update `compat.json`.
 - `scripts/validate_meshagent_skills_package.py`
   Validates package consistency against the installed CLI and the current skill-package rules.
+- `scripts/audit_meshagent_skill_commands.py`
+  Crawls the live `meshagent --help` tree and checks whether packaged command references resolve to real command nouns.
 
 ## Update workflow
 
