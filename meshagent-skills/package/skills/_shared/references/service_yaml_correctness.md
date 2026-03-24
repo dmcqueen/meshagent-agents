@@ -29,6 +29,10 @@ Use these rules whenever a skill authors or rewrites `Service` or `ServiceTempla
 - Do not reuse the scheduled Worker queue as the MailBot inbox queue for new scheduled email workflows unless you have explicit evidence that the mailbox routing was designed that way. Keep the mailbox/MailBot inbox path separate from the scheduled job queue by default.
 - Prefer separate MailBot and Worker services for new scheduled email workflows. Only preserve a combined process when you are repairing an already-existing deployment that truly depends on it.
 - Do not use invented sender identities such as `something@meshagent.local` for room email workflows. Use a real mailbox-backed address from the current project and room.
+- For managed MeshAgent mailbox-backed senders, prefer the environment-appropriate mailbox domain family:
+  - `.life` environments: `@mail.meshagent.life`
+  - production `.com` environments: `@mail.meshagent.com`
+- Treat `@meshagent.local` sender identities as invalid by default for outbound managed-mail workflows unless the current environment explicitly proves otherwise.
 - If the YAML embeds room rules files or startup scripts, make sure the files are actually mounted or written into the container before the command references them.
 - Match the scheduled payload shape to the Worker design:
   - if the Worker is prompt-driven, schedule a prompt that clearly instructs the Worker to run the email workflow
