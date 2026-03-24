@@ -6,6 +6,7 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/workflow_accountability.md
     requires_roots:
       - cli_root
       - docs_root
@@ -27,6 +28,17 @@ metadata:
     excludes:
       - large SPA or bundler-heavy frontend architecture
       - generic non-React room webapps
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent Webapp React Builder
@@ -106,6 +118,13 @@ Use this skill when the task is to build or debug a small MeshAgent room website
 - Do not assume a user-reported bug is purely technical when the UI model may be the real problem.
 - Do not test the room-hosted website only via container-local `localhost`.
 - Do not deploy frontend changes without accounting for browser caching.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return frontend, deploy, and live-URL evidence to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
 ## Out of scope
 
