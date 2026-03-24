@@ -8,22 +8,23 @@ Use this reference when the user asks for a Worker that receives a queue message
 2. If the workflow is supposed to send a real email, collect the recipient email address before treating the workflow as ready for smoke testing or scheduling.
 3. If subject or body were not provided, either ask for them together with the recipient or use clearly stated defaults when the user has not asked for custom content.
 4. If the room is already known from runtime context or from the user's request, start with room-scoped probes. Do not use broad auth or room-listing commands as the gatekeeper for whether the workflow can proceed.
-5. Inspect or provision the mailbox first.
-6. Reuse the mailbox email address as the sender identity.
-7. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
-8. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-9. Validate the YAML or rendered service before deployment.
-10. Create or update the service.
-11. Verify the live room service appears in `meshagent room service list`.
-12. Verify the runtime is actually alive with room developer output, container state, or container logs.
-13. Enqueue an immediate test message now, before creating the scheduled task.
-14. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-15. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
-16. Only after the immediate smoke test passes should you create the one-time scheduled task.
-17. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-18. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-19. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-20. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+5. In a known live room, do not run `meshagent auth whoami` as a prerequisite check for this workflow.
+6. Inspect or provision the mailbox first.
+7. Reuse the mailbox email address as the sender identity.
+8. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
+9. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
+10. Validate the YAML or rendered service before deployment.
+11. Create or update the service.
+12. Verify the live room service appears in `meshagent room service list`.
+13. Verify the runtime is actually alive with room developer output, container state, or container logs.
+14. Enqueue an immediate test message now, before creating the scheduled task.
+15. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+16. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
+17. Only after the immediate smoke test passes should you create the one-time scheduled task.
+18. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+19. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+20. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+21. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 
 ## Success criteria
 
@@ -54,6 +55,7 @@ Do not call the workflow complete until all of the following are true:
 - If the user asked for a relative run time and setup consumed part of that window, recompute the relative schedule from the current moment before creating the scheduled task.
 - If the requesting user's timezone is unknown, do not schedule yet. First determine it from reliable user-specific context or ask the user directly.
 - If broad auth or room-listing commands fail but a narrower room-scoped workflow is still possible, continue with the room-scoped path instead of stopping early.
+- In a known live room, `meshagent auth whoami` failing or reporting "Not logged in" does not by itself block this workflow. Use a room-scoped probe instead.
 - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
 - If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
 - If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
