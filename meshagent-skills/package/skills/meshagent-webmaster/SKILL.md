@@ -80,6 +80,7 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 ## Live room execution
 
 - Apply `../_shared/references/live_room_cli_context.md` before asking for login or room discovery.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped route or hostname work.
 - Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
 - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
 
