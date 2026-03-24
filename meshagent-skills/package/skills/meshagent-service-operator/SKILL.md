@@ -6,6 +6,7 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
       - cli_root
@@ -31,6 +32,17 @@ metadata:
     excludes:
       - detailed runtime debugging
       - queue, database, memory, or storage operations by themselves
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent Service Operator
@@ -66,6 +78,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 3. Validate or render the spec/template before create or update when a file is involved.
 4. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
 5. After mutation, verify the service record and, when relevant, the live room service state.
+6. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
 
 ## Service scope rules
 
@@ -79,8 +92,16 @@ Use this skill when the task is primarily about MeshAgent services or service te
 
 - Do not claim a service is deployed correctly based only on YAML generation.
 - After create or update, verify with `meshagent service show`, `meshagent service list`, or `meshagent room service list` as appropriate.
+- For queue-backed Workers, a visible service record is not enough. Confirm that the room service is present and then use runtime inspection to prove that a live runtime or container is actually running.
 - If a room service is unhealthy, use room-service state and runtime inspection before rewriting the spec.
 - If restart is requested, confirm the target by `--id` or `--name` before issuing it.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return service and live-room evidence to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
 ## Out of scope
 
