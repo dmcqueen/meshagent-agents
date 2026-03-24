@@ -14,6 +14,7 @@ Use this reference when the user asks for a Worker that receives a queue message
 8. Enqueue an immediate test message now, before creating the scheduled task.
 9. Confirm the queue item was consumed and inspect logs for email-send success or failure.
 10. Only after the immediate smoke test passes should you create the one-time scheduled task.
+11. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
 
 ## Success criteria
 
@@ -32,3 +33,4 @@ Do not call the workflow complete until all of the following are true:
 - A created service record does not prove a Worker runtime is running.
 - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
 - If the scheduled time is too close and setup is still incomplete, push the one-time run farther into the future instead of pretending the near-term run is still valid.
+- If the user asked for a relative run time and setup consumed part of that window, recompute the relative schedule from the current moment before creating the scheduled task.
