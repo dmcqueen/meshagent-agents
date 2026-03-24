@@ -7,6 +7,7 @@ metadata:
     bundled:
       - ../meshagent-cli-operator/references/command_groups.md
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
       - cli_root
@@ -29,6 +30,17 @@ metadata:
     excludes:
       - queue consumer implementation
       - general cron guidance outside MeshAgent scheduled tasks
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent Scheduler
@@ -75,10 +87,11 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 2. Resolve the user's timezone before setting or changing a schedule.
 3. Inspect the current room and current agent context to determine whether the running agent already has an explicit queue-consuming path.
 4. Inspect existing scheduled tasks with `meshagent scheduled-task list`.
-5. Confirm the exact queue name, JSON payload, timezone, and UTC cron expression before mutating anything.
-6. Create, update, or delete the scheduled task.
-7. Verify the task state with `meshagent scheduled-task list`.
-8. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
+6. Confirm the exact queue name, JSON payload, local execution time, timezone, and UTC cron expression before mutating anything.
+7. Create, update, or delete the scheduled task.
+8. Verify the task state with `meshagent scheduled-task list`.
+9. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
 
 ## Timezone resolution
 
@@ -90,13 +103,21 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Convert the requested local time into the exact UTC cron expression that will be stored.
 - When the request is tied to a named local timezone that observes DST, explain that the current scheduler stores UTC cron only, so the UTC schedule may need seasonal adjustment.
 
+## One-time scheduling guard
+
+- Restate the exact local scheduled time and the exact UTC time before creating a one-time task.
+- Use absolute times in the explanation, not just "one minute from now" or similar relative phrasing.
+- If setup, deployment, or smoke testing has consumed most of the time window, move the one-time run farther into the future instead of leaving it effectively in the past.
+- Do not create a near-future one-time task until the queue consumer path is already proven with an immediate smoke test.
+- If the user asked for "a minute from now" but the workflow is not yet ready, explain that you are moving the one-time run to the next safe minute window rather than pretending the original time still makes sense.
+
 ## Queue consumption
 
 - CLI verification: use `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
 - For queue-name discovery, prefer `meshagent room agent list-toolkits` and `meshagent room agent invoke-tool --toolkit queues --tool list --arguments '{}'` before writing SDK code.
 - API verification: use the room queues client, for example `queues = await room.queues.list()` or `message = await room.queues.receive(name="my-queue")`.
 - The current CLI does not expose a dedicated `meshagent room queue list` subcommand. If the queue name is unknown, use the room queue API or inspect room configuration rather than claiming queue discovery is impossible.
-- When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message.
+- When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message. For mail-sending workers, this is still not enough by itself; runtime mail-send evidence must also be checked.
 
 ## Current agent queue discovery
 
@@ -130,12 +151,21 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - For “what queues are available?” questions, prefer generic CLI toolkit invocation over ad hoc SDK code.
 - Do not invent timezones.
 - Do not schedule a task until the timezone has been confirmed or reliably detected.
+- Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
 - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
 - Do not treat a bare `queue:` channel as proof of consumption unless the runtime clearly shows how it dequeues that queue.
 - Always state the timezone assumption and the resulting UTC schedule when adding or updating a task.
 - Do not claim that a scheduled task "works" just because the task exists; verify that messages reach the queue.
+- Do not treat queue delivery alone as end-to-end success when the queued workflow must send email or perform another externally visible action.
 - Treat `update` and `delete` as destructive.
 - Keep this skill focused on scheduling and queue verification, not on the implementation of the consumer.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return schedule, queue, and timing evidence to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
 ## Out of scope
 
