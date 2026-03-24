@@ -1,0 +1,26 @@
+version: v1
+kind: ServiceTemplate
+metadata:
+  name: web server
+  description: Publish a website for this room with the contents of the "website" folder.
+  annotations:
+    meshagent.service.id: meshagent.webserver
+variables:
+  - name: url
+    type: route
+    optional: false
+    annotations:
+      meshagent.route.port: "5002"
+container:
+  image: busybox
+  command: sh -c "httpd -f -p 5002 -h /data"
+  storage:
+    room:
+      - path: /data
+        subpath: /website
+ports:
+  - num: 5002
+    type: http
+    public: true
+    published: true
+    liveness: /
