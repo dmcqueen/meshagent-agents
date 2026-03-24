@@ -6,12 +6,14 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
       - cli_root
       - server_root
     resolved_targets:
+      - shared live-room CLI context rules
       - services CLI source
       - room-services CLI source
       - service examples and packaging docs
@@ -62,6 +64,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 ## References
 
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
+- Use `../_shared/references/live_room_cli_context.md` when the service workflow runs in or targets a known live room.
 - Inspect the resolved services CLI source for project/global/room service behavior, template rendering, and upsert rules.
 - Inspect the resolved room-services CLI source for live room service listing and restart behavior.
 
@@ -82,6 +85,12 @@ Use this skill when the task is primarily about MeshAgent services or service te
 4. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
 5. After mutation, verify the service record and, when relevant, the live room service state.
 6. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
+
+## Live room execution
+
+- Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped service work.
+- If permissions are uncertain, start with `meshagent room service list --room <ROOM_NAME>` or another narrow room-scoped read before claiming service access is blocked.
 
 ## Service scope rules
 
