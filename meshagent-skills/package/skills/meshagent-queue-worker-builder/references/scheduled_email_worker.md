@@ -12,20 +12,21 @@ Use this reference when the user asks for a Worker that receives a queue message
 6. Inspect or provision the mailbox first.
 7. Reuse the mailbox email address as the sender identity.
 8. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
-9. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-10. Validate the YAML or rendered service before deployment.
-11. Create or update the service.
-12. Verify the live room service appears in `meshagent room service list`.
-13. Verify the runtime is actually alive with room developer output, container state, or container logs.
-14. Enqueue an immediate test message now, before creating the scheduled task.
-15. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-16. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
-17. Only after the immediate smoke test passes should you create the one-time scheduled task.
-18. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-19. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
-20. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-21. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-22. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+9. Choose the Worker and MailBot runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
+10. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
+11. Validate the YAML or rendered service before deployment.
+12. Create or update the service.
+13. Verify the live room service appears in `meshagent room service list`.
+14. Verify the runtime is actually alive with room developer output, container state, or container logs.
+15. Enqueue an immediate test message now, before creating the scheduled task.
+16. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+17. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
+18. Only after the immediate smoke test passes should you create the one-time scheduled task.
+19. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+20. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+21. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+22. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+23. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 
 ## Success criteria
 
@@ -48,6 +49,7 @@ Do not call the workflow complete until all of the following are true:
 - A created mailbox does not prove outbound mail works.
 - A created mailbox does not create toolkit `email`. If the Worker depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
 - A created service record does not prove a Worker runtime is running.
+- A copied docs image does not prove the runtime image matches the current MeshAgent environment. A `.life` room may need a different runtime image family than the production docs examples.
 - A scheduled task payload that does not explicitly request email sending may enqueue successfully while never causing an email to be sent.
 - If the user asked for a real scheduled email and no recipient address has been collected yet, the workflow is still blocked on required user input. Do not pretend the remaining setup is complete.
 - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
