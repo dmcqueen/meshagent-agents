@@ -43,4 +43,5 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not treat YAML generation alone as deployment success.
 - Do not treat queue size changes alone as business workflow success.
 - Do not treat a scheduled task record alone as proof that the future workflow will work.
+- Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
 - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
