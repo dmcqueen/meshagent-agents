@@ -166,6 +166,8 @@ container:
             Room database schema, CRUD, search, SQL, namespace, index, and `RequiredTable` workflows.
           - `skills/meshagent-memory-operator/`
             Room memory creation, ingestion, recall, and query workflows.
+          - `skills/meshagent-workflow-orchestrator/`
+            End-to-end multi-skill workflow ownership, preflight, sequencing, and completion-gate tracking.
           - `skills/meshagent-queue-operator/`
             Queue send, receive, backlog inspection, and queue-delivery verification.
           - `skills/meshagent-queue-worker-builder/`
@@ -256,6 +258,10 @@ container:
             Room memory ingestion, recall, and query skill.
           - `skills/meshagent-memory-operator/agents/openai.yaml`
             OpenAI agent metadata for the memory operator.
+          - `skills/meshagent-workflow-orchestrator/SKILL.md`
+            End-to-end multi-skill workflow orchestration and accountability skill.
+          - `skills/meshagent-workflow-orchestrator/agents/openai.yaml`
+            OpenAI agent metadata for the workflow orchestrator.
           - `skills/meshagent-queue-operator/SKILL.md`
             Queue send, receive, backlog, and delivery-verification skill.
           - `skills/meshagent-queue-operator/agents/openai.yaml`
@@ -569,7 +575,7 @@ container:
       - path: /meshagent-skills/compat.json
         text: |
           {
-            "meshagent_cli_version": "0.33.0"
+            "meshagent_cli_version": "0.33.1"
           }
 
       - path: /meshagent-skills/scripts/audit_meshagent_skill_commands.py
@@ -1694,6 +1700,13 @@ container:
           - After the user confirms they want the workflow completed, continue the workflow unless a new concrete blocker appears.
           - Do not make the user restate the original goal just because a sub-step was incomplete or partially verified.
           
+          ## Preflight rules
+          
+          - If the workflow depends on a specific backend surface such as scheduled tasks, room services, mail delivery, or toolkit publication, preflight the required capability before presenting the workflow as end-to-end ready.
+          - Treat `403` responses as permission blockers, not as a cue to keep promising the blocked step later.
+          - Treat unexpected `5xx` responses on required workflow surfaces as backend health blockers until a retry or narrower probe proves otherwise.
+          - When a required backend surface is blocked, either stop before creating a half-complete workflow or clearly mark any continued setup as partial preparation only.
+          
           ## Forbidden shortcuts
           
           - Do not treat object creation alone as end-to-end success.
@@ -1704,6 +1717,7 @@ container:
           - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
           - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
           - Do not leave an obviously required user input such as the recipient email unasked in a workflow whose purpose is to send a real email.
+          - Do not wait until the final step to discover that a required backend surface such as scheduled-task create is blocked when a cheap preflight could have shown that earlier.
 
       - path: /meshagent-skills/skills/meshagent-cli-operator/SKILL.md
         text: |
@@ -1722,6 +1736,8 @@ container:
               resolved_targets:
                 - live meshagent help output when bundled help is missing or stale
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: The user's goal is an end-to-end workflow that spans multiple specialized skills.
               - skill: meshagent-sdk-researcher
                 when: The task depends on SDK or server source, not just CLI behavior.
               - skill: meshagent-webapp-builder
@@ -1779,6 +1795,7 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when the user's goal spans multiple specialized skills and one owner should keep accountability.
           - `meshagent-sdk-researcher`: Use it when the answer depends on source-level behavior or examples rather than command shape.
           - `meshagent-webapp-builder`: Use it when a CLI deploy command is only one part of building or fixing a room website.
           - `meshagent-service-operator`: Use it when the task is primarily about service semantics, templates, or room service lifecycle.
@@ -1960,7 +1977,7 @@ container:
         text: |
           # MeshAgent CLI Help
           
-          _Packaged CLI help reference for MeshAgent CLI `0.33.0`._
+          _Packaged CLI help reference for MeshAgent CLI `0.33.1`._
           
           _Generated from the installed `meshagent` binary with recursive `--help` capture up to depth 1 and timeout 2s per command._
           
@@ -2341,9 +2358,9 @@ container:
           │ --help          Show this message and exit.                                  │
           ╰──────────────────────────────────────────────────────────────────────────────╯
           ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-          │ add     Add a scheduled task using a UTC/GMT cron schedule.                  │
+          │ add     Add a scheduled task.                                                │
           │ list    List scheduled tasks.                                                │
-          │ update  Update a scheduled task using a UTC/GMT cron schedule.               │
+          │ update  Update a scheduled task.                                             │
           │ delete  Delete a scheduled task.                                             │
           ╰──────────────────────────────────────────────────────────────────────────────╯
           ```
@@ -2848,6 +2865,8 @@ container:
                 - room mail implementation
                 - mailbox CLI help
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: Mail behavior is one piece of a larger end-to-end room workflow.
               - skill: meshagent-sdk-researcher
                 when: Resolve checkout roots before using server or CLI source references.
               - skill: meshagent-queue-operator
@@ -2901,6 +2920,7 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when mail behavior is only one piece of a larger end-to-end workflow.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references for mail implementation details.
           - `meshagent-queue-operator`: Use it when the queue work is independent of mailbox provisioning or SMTP behavior.
           - `meshagent-queue-worker-builder`: Use it when the mailbox-backed sender must be wired into a queue-consuming Worker or scheduled queue workflow.
@@ -3128,6 +3148,8 @@ container:
                 - queue CLI source
                 - room queue API examples
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: Queue work is only one part of a larger end-to-end workflow.
               - skill: meshagent-sdk-researcher
                 when: Resolve checkout roots before using docs or source references.
               - skill: meshagent-scheduler
@@ -3177,6 +3199,7 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when queue work is only one part of a larger end-to-end workflow.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
           - `meshagent-scheduler`: Use it when the queue messages come from scheduled tasks.
           - `meshagent-mail-operator`: Use it when the queue is part of a mailbox flow.
@@ -3292,6 +3315,8 @@ container:
                 - packaging docs
                 - Worker CLI source
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: The request spans Worker build, mail, runtime proof, and scheduling as one end-to-end workflow.
               - skill: meshagent-sdk-researcher
                 when: Resolve checkout roots before following example or source references.
               - skill: meshagent-scheduler
@@ -3348,6 +3373,7 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when the request spans Worker build, mail, runtime proof, and scheduling as one end-to-end workflow.
           - `meshagent-sdk-researcher`: Resolve the MeshAgent checkout roots and the exact example/source paths before using codebase references.
           - `meshagent-scheduler`: Use it after the Worker exists and the task becomes scheduled-task creation, timezone resolution, or queue verification.
           - `meshagent-mail-operator`: Use it when the queued job sends mail and must reuse a real mailbox-backed sender identity.
@@ -3458,8 +3484,10 @@ container:
           12. Enqueue an immediate test message now, before creating the scheduled task.
           13. Confirm the queue item was consumed and inspect logs for email-send success or failure.
           14. Only after the immediate smoke test passes should you create the one-time scheduled task.
-          15. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-          16. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+          15. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list` so you know whether scheduler permissions and visibility are actually available in the room or project.
+          16. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+          17. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+          18. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
           
           ## Success criteria
           
@@ -3473,6 +3501,7 @@ container:
           - an immediate test message is consumed from the queue
           - runtime evidence shows the mail send succeeded or shows the exact blocker
           - the scheduled time was computed from the requesting user's known timezone, not just the room or server timezone
+          - scheduler preflight showed that scheduled-task create and verification were actually available in this environment
           - the scheduled task is set for a future absolute time with enough safety margin to avoid already being in the past
           
           ## Failure interpretation
@@ -3485,6 +3514,8 @@ container:
           - If the scheduled time is too close and setup is still incomplete, push the one-time run farther into the future instead of pretending the near-term run is still valid.
           - If the user asked for a relative run time and setup consumed part of that window, recompute the relative schedule from the current moment before creating the scheduled task.
           - If the requesting user's timezone is unknown, do not schedule yet. First determine it from reliable user-specific context or ask the user directly.
+          - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
+          - If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
           
           ## Input collection rules
           
@@ -3513,6 +3544,8 @@ container:
                 - containers CLI source
                 - port-forward CLI source
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: Runtime debugging is one part of a larger end-to-end workflow that still needs one owner.
               - skill: meshagent-sdk-researcher
                 when: Resolve checkout roots before using CLI or server source references.
               - skill: meshagent-queue-worker-builder
@@ -3562,23 +3595,29 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when runtime debugging is only one part of a larger end-to-end workflow.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using CLI or server source references.
           - `meshagent-queue-worker-builder`: Use it when the runtime belongs to a queue-backed Worker and the remaining job is to prove or debug actual dequeue behavior.
+          - `meshagent-mail-operator`: Use it when the runtime issue depends on mailbox identity, MailBot publication, or proving outbound mail behavior.
+          - `meshagent-scheduler`: Use it when a required scheduled-task create, list, or timing step may be blocked by permissions or backend scheduler health.
           - `meshagent-service-operator`: Use it when the main task is changing a service definition or room service record rather than debugging the live runtime.
           - `meshagent-webapp-builder`: Use it when runtime checks pass but the remaining issue is public site behavior.
           
           ## Default workflow
           
           1. Resolve the room and identify the runtime target: service, container, port, or log stream.
-          2. Start with read-only inspection: developer logs, container list, container logs, or port-forward target discovery.
-          3. Use `exec`, `run`, or image operations only after you understand the live state.
-          4. If local inspection is needed, use port forwarding with an explicit target container and port mapping.
-          5. Verify that the runtime symptom changed after any intervention.
+          2. Start with read-only inspection: room service state, toolkit visibility, developer logs, container list, container logs, or port-forward target discovery.
+          3. For queue-backed workflows, check the dependency chain in order: service state, required toolkit publication, worker logs, immediate queue smoke test, and only then scheduler or external-action verification.
+          4. Use `exec`, `run`, or image operations only after you understand the live state.
+          5. If local inspection is needed, use port forwarding with an explicit target container and port mapping.
+          6. Verify that the runtime symptom changed after any intervention.
           
           ## Runtime rules
           
           - Prefer `meshagent room developer watch` for room-wide developer telemetry and `meshagent room container log` for one container’s logs.
           - Prefer `container list` before `log`, `exec`, `stop`, or `port forward` so you target the right container.
+          - Prefer `meshagent room service list` before container actions when the symptom is about a deployed service, Worker, or MailBot rather than an ad hoc container.
+          - Prefer `meshagent room agent list-toolkits` before concluding that a runtime dependency such as toolkit `email` is unavailable or unpublished.
           - Treat `container stop` as disruptive.
           - Treat `container exec` as a live-room debugging operation, not a substitute for fixing the service definition.
           - Use image build/pull/push/load/save only when the runtime problem or deployment workflow actually requires image operations.
@@ -3586,15 +3625,33 @@ container:
           ## Queue worker verification
           
           - For queue-backed Workers, verify the room service is visible, then inspect the live runtime with developer output, container list, and container logs.
+          - Verify that every required toolkit the Worker depends on is visibly published in the room before assuming the Worker is truly ready to process jobs.
+          - Distinguish "service exists" from "worker is ready." A Worker may appear running while still waiting for a required toolkit or another runtime dependency.
           - Prefer an immediate smoke-test message over waiting only for a future scheduled task when you need to prove dequeue behavior.
           - For mail-sending Workers, inspect logs for dequeue evidence and mail-send success or failure before calling the workflow complete.
           - A queue size of `0` after a test or scheduled run is not enough by itself. Confirm whether the message was consumed successfully, failed during handling, or never arrived.
+          - If a smoke-test message remains in the queue, check toolkit publication, Worker startup logs, and service/container restart state before changing the queue or payload.
+          
+          ## Toolkit dependency diagnosis
+          
+          - When a Worker uses `--require-toolkit=<NAME>`, verify that toolkit is actually published in the room with `meshagent room agent list-toolkits`.
+          - Do not assume that creating a mailbox, service, or queue also publishes a toolkit. Prove the toolkit exists as a live room participant capability.
+          - For email workflows, separate mailbox existence from toolkit `email` publication. A mailbox alone does not satisfy a Worker waiting on toolkit `email`.
+          - If the required toolkit is missing, treat that as a readiness blocker first rather than debugging queue payload shape or scheduler timing.
+          
+          ## Cross-surface diagnosis
+          
+          - For queue-backed mail workflows, use this order: `meshagent room service list`, `meshagent room agent list-toolkits`, `meshagent room developer watch`, `meshagent room container list/log`, immediate queue smoke test, then mail-send evidence.
+          - If the queue path works but the future scheduled run does not, hand off to `meshagent-scheduler` to preflight scheduler permissions or backend health rather than treating it as a pure runtime failure.
+          - If scheduler create or list is failing with `403` or `5xx`, report that as a scheduler blocker even if the runtime path is healthy.
+          - If the runtime path is unhealthy, do not let scheduler troubleshooting distract from fixing service state, required toolkits, or Worker readiness first.
           
           ## Verification rules
           
           - Do not conclude that the runtime is healthy based only on service metadata.
-          - Use logs, running container state, and port-forwarded behavior to confirm what is actually happening.
+          - Use logs, running container state, toolkit visibility, and port-forwarded behavior to confirm what is actually happening.
           - For queue-backed Workers, do not conclude success until you have runtime evidence that a test message was actually processed.
+          - For Workers with required toolkits, do not conclude readiness until the required toolkits are visibly present in the room.
           - If a container-local check passes but the public behavior is still broken, hand off to the appropriate website or route skill rather than stopping at the runtime layer.
           - If a runtime issue persists after restart or stop/start behavior, inspect the declarative service definition before repeating the same action.
           
@@ -3637,6 +3694,8 @@ container:
                 - scheduled task CLI help
                 - scheduled task examples
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: Scheduling is one step inside a larger queue, mail, service, or worker workflow.
               - skill: meshagent-sdk-researcher
                 when: Resolve checkout roots before using examples or source references.
               - skill: meshagent-queue-operator
@@ -3683,6 +3742,7 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when scheduling is only one step inside a larger end-to-end workflow.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using examples or implementation references.
           - `meshagent-queue-operator`: Use it when the task is queue inspection or queue injection outside scheduled-task management.
           - `meshagent-queue-worker-builder`: Use it when a queue-consuming Worker or other explicit queue consumer must be built before scheduling can be claimed to work.
@@ -3707,7 +3767,7 @@ container:
           1. Resolve the active project, room, queue, and intended local execution time.
           2. Resolve the requesting user's timezone before setting or changing a schedule.
           3. Inspect the current room and current agent context to determine whether the running agent already has an explicit queue-consuming path.
-          4. Inspect existing scheduled tasks with `meshagent scheduled-task list`.
+          4. Preflight scheduled-task capability before presenting the workflow as end-to-end ready: inspect existing scheduled tasks with `meshagent scheduled-task list` and treat a permissions failure, `403`, or unexpected `5xx` as a real blocker for scheduler completion.
           5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
           6. If the user expressed the schedule relatively, such as "one minute from now," anchor that relative time to the moment you are actually ready to create the scheduled task, not to the beginning of the broader setup workflow.
           7. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
@@ -3734,8 +3794,18 @@ container:
           - Interpret relative requests such as "one minute from now" relative to the actual `meshagent scheduled-task add` moment after setup is complete, not relative to the original user message timestamp.
           - If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
           - If setup, deployment, or smoke testing has consumed most of the time window, move the one-time run farther into the future instead of leaving it effectively in the past.
+          - Before sending `meshagent scheduled-task add`, make sure the computed UTC minute is still in the future with a real safety margin rather than merely equal to the next displayed minute.
+          - If the scheduler endpoint is already showing `403`, `500`, or another backend failure during preflight, do not treat a near-future one-time request as ready for completion. Explain that scheduler creation is blocked before claiming end-to-end success.
           - Do not create a near-future one-time task until the queue consumer path is already proven with an immediate smoke test.
           - If the user asked for "a minute from now" but the workflow is not yet ready, explain that you are moving the one-time run to the next safe minute window rather than pretending the original time still makes sense.
+          
+          ## Scheduler API preflight
+          
+          - `meshagent scheduled-task list` is the fastest packaged preflight for scheduler availability. Run it before treating scheduled completion as available in the current environment.
+          - If `list` fails with `403`, treat scheduled-task visibility as blocked by permissions and do not promise that create/list verification will work later in the workflow.
+          - If `list` or `add` fails with an unexpected `5xx`, treat the scheduler backend as unhealthy for this room or project until proven otherwise.
+          - The current CLI and API do not locally validate that a one-time cron expression is still safely in the future. The backend create path is thin and backend cron failures can surface as generic server errors.
+          - When preflight shows scheduler failure, either stop before provisioning a half-complete scheduled workflow or clearly label any continued Worker or MailBot setup as partial preparation only.
           
           ## Queue consumption
           
@@ -3779,6 +3849,8 @@ container:
           - Do not schedule a task until the requesting user's timezone has been confirmed or reliably detected.
           - Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
           - If the requesting user's timezone cannot be acquired from reliable user-specific context, ask the user directly before creating the scheduled task.
+          - Do not treat scheduler create as reliable just because the CLI command exists. Preflight actual scheduler access and health first.
+          - If scheduler preflight already failed, do not present the workflow as fully completable without clearly labeling the scheduler step as blocked.
           - Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
           - Do not anchor a relative scheduling request to the beginning of a longer setup workflow when the user's intent is relative to the actual task-creation moment.
           - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
@@ -3937,6 +4009,8 @@ container:
                 - room-services CLI source
                 - service examples and packaging docs
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: The service work is only one part of a larger end-to-end workflow.
               - skill: meshagent-sdk-researcher
                 when: Resolve checkout roots before using docs or source references.
               - skill: meshagent-queue-worker-builder
@@ -3986,6 +4060,7 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when the service work is only one part of a larger end-to-end workflow.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
           - `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-backed Worker YAML.
           - `meshagent-webapp-builder`: Use it when the main task is a website or public web application rather than service lifecycle.
@@ -4056,6 +4131,8 @@ container:
                 - storage CLI source
                 - room storage API examples
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: Storage work is only one part of a larger end-to-end workflow.
               - skill: meshagent-sdk-researcher
                 when: Resolve checkout roots before using docs or source references.
               - skill: meshagent-webapp-builder
@@ -4102,6 +4179,7 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when storage work is only one part of a larger end-to-end workflow.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
           - `meshagent-webapp-builder`: Use it when storage is only one part of deploying a website.
           - `meshagent-runtime-operator`: Use it when the real issue is a live container mount or runtime visibility problem rather than storage commands themselves.
@@ -4172,6 +4250,8 @@ container:
                 - webserver CLI source
                 - room mail implementation
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: The web app is one piece of a larger end-to-end workflow.
               - skill: meshagent-cli-operator
                 when: General room-context, managed-hostname, and deploy-command rules matter.
               - skill: meshagent-mail-operator
@@ -4229,6 +4309,7 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when the web app is only one piece of a larger end-to-end workflow.
           - `meshagent-cli-operator`: Reuse its general room-context, managed-hostname, and deploy-command rules instead of inventing environment behavior locally.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references outside this skill bundle.
           - `meshagent-mail-operator`: Use it when the blocker is mailbox provisioning, queue-backed mail intake, or SMTP behavior.
@@ -4772,6 +4853,8 @@ container:
                 - route CLI help
                 - static webserver YAML example
             related_skills:
+              - skill: meshagent-workflow-orchestrator
+                when: Route work is only one part of a larger end-to-end workflow.
               - skill: meshagent-cli-operator
                 when: General room-context and managed-hostname rules matter.
               - skill: meshagent-sdk-researcher
@@ -4822,6 +4905,7 @@ container:
           
           ## Related skills
           
+          - `meshagent-workflow-orchestrator`: Use it when route work is only one part of a larger end-to-end workflow.
           - `meshagent-cli-operator`: Reuse its general room-context and managed-hostname rules instead of inventing environment behavior locally.
           - `meshagent-sdk-researcher`: Resolve checkout roots and the sample static webserver YAML path before using codebase references.
           - `meshagent-webapp-builder`: Use it when the task is building or debugging the website rather than operating the route.
@@ -4909,6 +4993,155 @@ container:
               public: true
               published: true
               liveness: /
+
+      - path: /meshagent-skills/skills/meshagent-workflow-orchestrator/SKILL.md
+        text: |
+          ---
+          name: meshagent-workflow-orchestrator
+          description: Orchestrate end-to-end MeshAgent workflows that span multiple specialized skills. Use this skill when the user's goal crosses queues, workers, mail, services, runtime, scheduling, storage, or room web workflows and one skill must keep accountability for the final outcome.
+          metadata:
+            short-description: Own multi-skill MeshAgent workflows from preflight through verified outcome.
+            references:
+              bundled:
+                - ../_shared/references/workflow_accountability.md
+                - ../meshagent-cli-operator/references/command_groups.md
+                - ../meshagent-cli-operator/references/meshagent_cli_help.md
+              requires_roots:
+                - cli_root
+                - docs_root
+                - server_root
+              resolved_targets:
+                - shared workflow accountability contract
+                - command-group routing reference
+                - packaged CLI help
+            related_skills:
+              - skill: meshagent-cli-operator
+                when: Exact command routing or command syntax is the remaining question.
+              - skill: meshagent-sdk-researcher
+                when: The workflow depends on examples, docs, or code-path inspection from the MeshAgent checkout.
+              - skill: meshagent-queue-operator
+                when: Queue inspection, send, receive, or backlog verification is needed.
+              - skill: meshagent-queue-worker-builder
+                when: The workflow needs a queue-backed Worker or MailBot service.
+              - skill: meshagent-mail-operator
+                when: Mailbox identity, room SMTP behavior, or outbound email verification is required.
+              - skill: meshagent-service-operator
+                when: Declarative service lifecycle or room service operations are required.
+              - skill: meshagent-runtime-operator
+                when: Live runtime, toolkit publication, logs, or container behavior must be proven.
+              - skill: meshagent-scheduler
+                when: Scheduled-task creation, timing, timezone resolution, or queue-schedule verification is required.
+              - skill: meshagent-storage-operator
+                when: Room storage copy, inspection, or path verification is required.
+              - skill: meshagent-webapp-builder
+                when: The workflow includes a room-hosted website, web handler, or public web verification.
+              - skill: meshagent-webmaster
+                when: Route or managed-hostname administration is required.
+            scope:
+              owns:
+                - workflow ownership selection
+                - preflight of required backend surfaces
+                - cross-skill sequencing and completion gating
+                - end-to-end evidence collection
+              excludes:
+                - deep domain execution when a narrower specialist skill is the right executor
+                - low-level command syntax authoring without the CLI operator
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
+          ---
+          
+          # MeshAgent Workflow Orchestrator
+          
+          Use this skill when the user's goal spans multiple MeshAgent domains and one skill needs to keep accountability for the whole outcome.
+          
+          ## Use this skill when
+          
+          - The user asked for an end-to-end workflow rather than one isolated command or resource.
+          - The workflow crosses two or more of these surfaces: queues, workers, mail, services, runtime, scheduling, storage, or room-hosted web behavior.
+          - The task requires sequencing setup, verification, and handoffs across multiple specialized skills.
+          - The user wants a result like "make this work" or "set this up end to end" and the outcome depends on several components being correct together.
+          
+          ## References
+          
+          - Use `../_shared/references/workflow_accountability.md` as the contract for ownership, handoffs, evidence, and forbidden shortcuts.
+          - Use `../meshagent-cli-operator/references/command_groups.md` when you need to route sub-steps to the right CLI family quickly.
+          - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` when a sub-step depends on exact command shapes.
+          
+          ## Related skills
+          
+          - `meshagent-cli-operator`: Use it for exact command routing and execution details.
+          - `meshagent-sdk-researcher`: Use it when the workflow depends on examples, docs, or source inspection.
+          - `meshagent-queue-operator`: Use it for queue discovery, send, receive, and backlog verification.
+          - `meshagent-queue-worker-builder`: Use it when the workflow needs a queue-backed Worker or MailBot.
+          - `meshagent-mail-operator`: Use it for mailbox provisioning, sender identity, and outbound mail behavior.
+          - `meshagent-service-operator`: Use it for declarative service lifecycle and room service operations.
+          - `meshagent-runtime-operator`: Use it to prove runtime state, toolkit publication, logs, or live container behavior.
+          - `meshagent-scheduler`: Use it for scheduled-task timing, timezone handling, and queue-schedule alignment.
+          - `meshagent-storage-operator`: Use it for room storage copy, inspection, and path verification.
+          - `meshagent-webapp-builder`: Use it for room-hosted websites, handlers, and public web verification.
+          - `meshagent-webmaster`: Use it for route and managed-hostname administration.
+          
+          ## Default workflow
+          
+          1. Restate the user-visible goal in one sentence and identify the current likely workflow owner.
+          2. Identify the required surfaces for success, such as queue, mailbox, service, runtime, scheduler, or public web endpoint.
+          3. Preflight the required backend surfaces before building deep workflow state. If a required surface is blocked by `403`, `5xx`, or missing room capability, treat that as an early blocker.
+          4. Identify the concrete missing inputs, ask for them together only when they are truly blocking, and do not ask the user to restate the overall goal.
+          5. Choose the specialist skill that should execute the next sub-step, but keep workflow ownership unless you intentionally transfer it.
+          6. After each handoff, collect evidence rather than accepting a generic success claim.
+          7. Re-evaluate the remaining completion gates after every mutation or verification step.
+          8. Do not call the workflow complete until the final user-visible outcome is verified or the exact blocker is isolated.
+          
+          ## Orchestration rules
+          
+          - Prefer one owner and several supporting skills over bouncing ownership implicitly between specialists.
+          - Choose the narrowest specialist skill for execution, but keep orchestration here when the job spans multiple surfaces.
+          - Preflight cheap blockers early: room access, scheduler visibility, toolkit publication, service visibility, queue discovery, mailbox identity, or route readiness.
+          - If the workflow includes a relative schedule such as "one minute from now," make scheduling the final creation step after the worker/runtime path has already been proven.
+          - If the workflow includes a real outgoing email, require a real recipient address unless the user explicitly asked for a payload-only template.
+          - If one branch of the workflow is healthy and another is blocked, report partial preparation clearly and keep the blocked surface attached to the overall outcome.
+          
+          ## Evidence rules
+          
+          - Collect evidence per surface, not just per command.
+          - Prefer evidence such as queue names, service ids, mailbox addresses, toolkit visibility, runtime logs, scheduled-task ids, or live URLs.
+          - When a supporting skill reports success, translate that into concrete workflow-gate evidence before moving on.
+          - If a blocker appears, name the blocked surface directly, for example scheduler permissions, missing toolkit publication, or unhealthy runtime.
+          
+          ## Ownership transfer rules
+          
+          - Keep ownership here when the user asked for a cross-surface end-to-end result.
+          - Transfer ownership only when the remainder of the job is now clearly inside one specialist skill's scope.
+          - If ownership transfers, say so in reasoning and make sure the new owner continues tracking completion gates and evidence.
+          - If ownership does not transfer, supporting skills should return evidence to this skill rather than declaring the whole workflow complete.
+          
+          ## Workflow accountability
+          
+          - This skill should own the workflow outcome when the user's goal spans multiple specialized skills.
+          - If another skill already owns the workflow and the remaining task is now fully within that narrower scope, transfer ownership explicitly rather than keeping two implicit owners.
+          - If this skill hands off to another skill without ownership transfer, keep accountability for the original goal until the handoff returns evidence or an exact blocker.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+          
+          ## Out of scope
+          
+          - Acting as the only specialist for queue, mail, scheduler, runtime, or service details when a narrower skill already covers that work.
+          - Replacing the CLI operator for exact command syntax.
+
+      - path: /meshagent-skills/skills/meshagent-workflow-orchestrator/agents/openai.yaml
+        text: |
+          interface:
+            display_name: "MeshAgent Workflow Orchestrator"
+            short_description: "Coordinate end-to-end MeshAgent workflows across multiple skills"
+            default_prompt: "Use $meshagent-workflow-orchestrator to own a multi-skill MeshAgent workflow from preflight through verified outcome."
 
   environment:
     - name: MESHAGENT_TOKEN
