@@ -6,6 +6,7 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
@@ -15,6 +16,7 @@ metadata:
       - server_root
     resolved_targets:
       - room database docs
+      - shared live-room CLI context rules
       - database CLI source
       - Room API database client source
       - server database toolkit
@@ -65,6 +67,7 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 
 - After root resolution, use the resolved room database docs for the API model and examples.
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room database ...` command shapes.
+- Use `../_shared/references/live_room_cli_context.md` when the database workflow runs in or targets a known live room.
 - Inspect the resolved database CLI source for the real CLI behavior, including schema parsing, JSON formats, and SQL/search options.
 - Inspect the resolved Room API client source for `RequiredTable`, `SqlTableReference`, namespaces, and `DatabaseClient`.
 - Inspect the resolved server database toolkit when you need the server-side toolkit operations or permission model.
@@ -79,8 +82,10 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 
 ## Live room execution
 
+- Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
 - If this skill is running inside a live MeshAgent room workflow, first use the current room context instead of asking the user to reconnect.
 - Resolve the active room and inspect the existing tables before creating or mutating anything.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped database work.
 - If permissions are uncertain, start with a read path such as table listing or schema inspection before claiming the database is unavailable.
 
 ## Default workflow
