@@ -18,11 +18,12 @@ Use this reference when the user asks for a Worker that receives a queue message
 12. Verify the runtime is actually alive with room developer output, container state, or container logs.
 13. Enqueue an immediate test message now, before creating the scheduled task.
 14. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-15. Only after the immediate smoke test passes should you create the one-time scheduled task.
-16. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-17. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-18. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-19. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+15. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
+16. Only after the immediate smoke test passes should you create the one-time scheduled task.
+17. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+18. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+19. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+20. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 
 ## Success criteria
 
@@ -35,6 +36,7 @@ Do not call the workflow complete until all of the following are true:
 - a live runtime or container is visibly running
 - an immediate test message is consumed from the queue
 - runtime evidence shows the mail send succeeded or shows the exact blocker
+- the scheduled payload explicitly maps to the Worker's email-sending behavior rather than relying on an implied side effect
 - the scheduled time was computed from the requesting user's known timezone, not just the room or server timezone
 - scheduler preflight showed that scheduled-task create and verification were actually available in this environment
 - the scheduled task is set for a future absolute time with enough safety margin to avoid already being in the past
@@ -44,6 +46,7 @@ Do not call the workflow complete until all of the following are true:
 - A created mailbox does not prove outbound mail works.
 - A created mailbox does not create toolkit `email`. If the Worker depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
 - A created service record does not prove a Worker runtime is running.
+- A scheduled task payload that does not explicitly request email sending may enqueue successfully while never causing an email to be sent.
 - If the user asked for a real scheduled email and no recipient address has been collected yet, the workflow is still blocked on required user input. Do not pretend the remaining setup is complete.
 - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
 - A consumed smoke-test queue message does not prove email delivery by itself. Delivery still needs runtime send evidence or an exact mail blocker.
@@ -62,3 +65,11 @@ Do not call the workflow complete until all of the following are true:
 - Do not ask a generic "should I continue?" question when the real blocker is a specific missing input such as the recipient address.
 - If the user says "yes" or otherwise confirms they want the workflow completed, continue the build and verification flow without making them repeat the high-level request.
 - If the user did not provide subject or body, you may continue with explicit defaults once the recipient is known, but say what defaults you are using.
+
+## Payload examples
+
+- Prompt-style payload example:
+  - `{"prompt":"Send an email to david.mcqueen@timu.com using the email toolkit. Subject: Scheduled test. Body: This is a scheduled test email."}`
+- Structured payload example:
+  - `{"to":"david.mcqueen@timu.com","subject":"Scheduled test","body":"This is a scheduled test email.","action":"send_email"}`
+- Match the payload style to the Worker's rules. If the Worker was built around prompt-driven instructions, keep using a prompt. If it was built around structured fields, use those exact fields.
