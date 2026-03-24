@@ -89,7 +89,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 1. Resolve the active project, room, queue, and intended local execution time.
 2. Resolve the requesting user's timezone before setting or changing a schedule.
 3. Inspect the current room and current agent context to determine whether the running agent already has an explicit queue-consuming path.
-4. Preflight scheduled-task capability before presenting the workflow as end-to-end ready: inspect existing scheduled tasks with `meshagent scheduled-task list` and treat a permissions failure, `403`, or unexpected `5xx` as a real blocker for scheduler completion.
+4. Preflight scheduled-task capability before presenting the workflow as end-to-end ready: for a room-scoped workflow, inspect existing scheduled tasks with `meshagent scheduled-task list --room <ROOM_NAME>` first. Treat a permissions failure, `403`, or unexpected `5xx` as a real blocker only after using the narrowest room-scoped read path that matches the workflow.
 5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
 6. If the user expressed the schedule relatively, such as "one minute from now," anchor that relative time to the moment you are actually ready to create the scheduled task, not to the beginning of the broader setup workflow.
 7. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
@@ -123,8 +123,11 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 
 ## Scheduler API preflight
 
-- `meshagent scheduled-task list` is the fastest packaged preflight for scheduler availability. Run it before treating scheduled completion as available in the current environment.
-- If `list` fails with `403`, treat scheduled-task visibility as blocked by permissions and do not promise that create/list verification will work later in the workflow.
+- For room-scoped scheduling work, prefer `meshagent scheduled-task list --room <ROOM_NAME>` before an unfiltered project-wide `list`.
+- An unfiltered `meshagent scheduled-task list` can require broader project-level permissions than a room-scoped create or room-scoped list. Do not use the broader query as your first preflight when the actual workflow targets one room.
+- `meshagent scheduled-task list --room <ROOM_NAME>` is the fastest packaged preflight for a room-scoped scheduler workflow. Run it before treating scheduled completion as available in the current environment.
+- If room-scoped `list --room` fails with `403`, treat scheduled-task visibility for that room as blocked by permissions and do not promise that create/list verification will work later in the workflow.
+- If only the unfiltered project-wide `list` fails with `403`, explain that project-wide scheduled-task visibility is blocked, but do not assume the room-scoped create path is blocked too.
 - If `list` or `add` fails with an unexpected `5xx`, treat the scheduler backend as unhealthy for this room or project until proven otherwise.
 - The current CLI and API do not locally validate that a one-time cron expression is still safely in the future. The backend create path is thin and backend cron failures can surface as generic server errors.
 - When preflight shows scheduler failure, either stop before provisioning a half-complete scheduled workflow or clearly label any continued Worker or MailBot setup as partial preparation only.
