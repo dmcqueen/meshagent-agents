@@ -89,9 +89,10 @@ Use this skill when the task is primarily about MeshAgent services or service te
 2. Read the existing YAML or list the current services before mutating anything.
 3. When the asset is being authored, prefer a generated starting point such as `meshagent worker spec`, `meshagent mailbot spec`, `meshagent multi spec`, or `meshagent service spec` instead of building the YAML from scratch.
 4. Validate or render the spec/template before create or update when a file is involved.
-5. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
-6. After mutation, verify the service record and, when relevant, the live room service state.
-7. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
+5. If validation fails, inspect the exact error, repair the asset, and rerun validation. Keep that fix-and-revalidate loop local to the service YAML until it passes or the remaining blocker is no longer a YAML problem.
+6. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
+7. After mutation, verify the service record and, when relevant, the live room service state.
+8. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
 
 ## Live room execution
 
@@ -106,6 +107,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - Match the container image family to the actual MeshAgent environment. Do not copy a production docs image into a `.life` room unless the environment already proves that image family is correct there.
 - Validate service YAML for workflow correctness, not just schema shape. Check command flags, mailbox identity, queue wiring, and whether the declared roles actually match the intended behavior.
 - Prefer `validate` or `validate-template` before deployment when the source YAML is being authored or changed.
+- If `validate` or `validate-template` fails, repair the YAML and rerun validation before moving on. Do not treat validation as a one-time gate or blindly retry without making a fix.
 - Prefer `render-template` when the user needs to inspect the concrete resolved template output.
 - Prefer generated specs or rendered templates over handwritten YAML when the runtime shape already has a CLI spec command.
 - Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
