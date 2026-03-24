@@ -1,6 +1,6 @@
 # MeshAgent CLI Help
 
-_Packaged CLI help reference for MeshAgent CLI `0.33.0`._
+_Packaged CLI help reference for MeshAgent CLI `0.33.1`._
 
 _Generated from the installed `meshagent` binary with recursive `--help` capture up to depth 1 and timeout 2s per command._
 
@@ -381,9 +381,9 @@ $ meshagent scheduled-task --help
 │ --help          Show this message and exit.                                  │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ───────────────────────────────────────────────────────────────────╮
-│ add     Add a scheduled task using a UTC/GMT cron schedule.                  │
+│ add     Add a scheduled task.                                                │
 │ list    List scheduled tasks.                                                │
-│ update  Update a scheduled task using a UTC/GMT cron schedule.               │
+│ update  Update a scheduled task.                                             │
 │ delete  Delete a scheduled task.                                             │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
