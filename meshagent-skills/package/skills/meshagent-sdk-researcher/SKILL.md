@@ -4,6 +4,8 @@ description: Use the preloaded MeshAgent SDK checkout and bundled docs/examples 
 metadata:
   short-description: Resolve the MeshAgent checkout and research docs, examples, and source paths.
   references:
+    bundled:
+      - ../_shared/references/workflow_accountability.md
     resolved_targets:
       - sdk_root
       - docs_root
@@ -30,6 +32,17 @@ metadata:
     excludes:
       - CLI flag discovery by itself
       - deployment workflow ownership
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent SDK Researcher
@@ -73,6 +86,13 @@ Use this skill when the task is mainly about how to use the MeshAgent SDK in cod
 - When an example exists, follow its structure before inventing a new integration pattern.
 - Use the SDK source to confirm exact method names, argument shapes, and return types when the docs are ambiguous.
 - If the expected checkout is not present, say that clearly and fall back to the best available docs or source tree instead of inventing paths.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return resolved roots, examples, and source evidence to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
 ## Out of scope
 
