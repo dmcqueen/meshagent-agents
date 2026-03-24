@@ -21,6 +21,12 @@ Use these rules whenever a skill authors or rewrites `Service` or `ServiceTempla
   - a Worker with no explicit rule telling it to send the email
   - a MailBot with an invented mailbox-looking sender identity
 - Keep mailbox and job queues distinct unless the implementation clearly requires them to be the same. A MailBot queue should match the mailbox or inbound mail path; a Worker queue should match the scheduled job queue.
+- For mailbox-backed MailBot setups, the safest default is:
+  - mailbox address = MailBot `--email-address`
+  - mailbox queue = that same email address
+  - MailBot queue = that same email address, either explicitly or by relying on the MailBot default
+- This is a working default, not a hard platform requirement. If you intentionally override the mailbox queue or MailBot queue, verify the routing explicitly instead of assuming the default alignment still holds.
+- Do not reuse the scheduled Worker queue as the MailBot inbox queue for new scheduled email workflows unless you have explicit evidence that the mailbox routing was designed that way. Keep the mailbox/MailBot inbox path separate from the scheduled job queue by default.
 - Prefer separate MailBot and Worker services for new scheduled email workflows. Only preserve a combined process when you are repairing an already-existing deployment that truly depends on it.
 - Do not use invented sender identities such as `something@meshagent.local` for room email workflows. Use a real mailbox-backed address from the current project and room.
 - If the YAML embeds room rules files or startup scripts, make sure the files are actually mounted or written into the container before the command references them.
