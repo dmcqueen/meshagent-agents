@@ -101,7 +101,7 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 7. Prefer a generated asset shape over freehand YAML:
    - use `meshagent worker spec` for a dedicated Worker
    - use `meshagent mailbot spec` for a dedicated MailBot
-   - use `meshagent multi spec` when one service must run both roles explicitly
+   - use `meshagent service spec` only when a narrower agent-specific spec is not the right fit
 8. Choose the nearest example and adapt it only after the generated or example shape is in hand.
 9. Choose the container image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
 10. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
@@ -122,6 +122,9 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 - Room storage mounts, toolkits, and rules should support the queued task behavior, not distract from it.
 - If the Worker requires toolkit `email`, that toolkit must be published by some running room participant. A mailbox alone does not publish toolkit `email`.
 - The normal email-toolkit pattern is a MailBot in the same room publishing `--toolkit-name=email`, then the Worker can use `--require-toolkit=email`.
+- For non-trivial scheduled email workflows, prefer a durable setup that writes or mounts Worker rule files, then points the Worker at those rules with `--room-rules`.
+- Prefer separate MailBot and Worker services for new scheduled email workflows instead of combining both roles into one new process definition.
+- If the Worker behavior lives in room-rules or startup-generated rule files, keep the scheduled payload thin and let it trigger that established workflow instead of restating the entire mail job ad hoc.
 
 ## Queue and scheduling rules
 
@@ -131,6 +134,7 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 - If there is no queue yet, define one explicitly and keep the name consistent across scheduler, sender, and Worker YAML.
 - A queue channel or queue annotation alone is not enough. The runtime must show an actual queue-consuming path, normally `meshagent worker join --queue=...`, and the surrounding service/container setup must point at the same workflow.
 - For one-time scheduled jobs, do not schedule first and hope the Worker path works later. Prove the Worker path with an immediate queue message before creating the scheduled task.
+- The smoke-test payload should use the same payload style as the final scheduled task. If the scheduled run will enqueue a prompt-style instruction, smoke-test with a prompt-style instruction. If the scheduled run will enqueue structured fields, smoke-test with those same structured fields.
 
 ## What to build
 
@@ -161,8 +165,9 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 - If the queued job sends email, use a real mailbox-backed sender identity from the current room instead of synthesizing a sender address.
 - Do not assume mailbox creation is enough to satisfy `--require-toolkit=email`. Mailbox provisioning and email-toolkit publication are separate concerns.
 - For scheduled email workflows, do not point a standalone MailBot at the scheduled job queue and call that complete. The MailBot publishes toolkit `email`; the Worker consumes the scheduled job queue.
-- For scheduled email workflows, do not declare both `MailBot` and `Worker` roles in YAML unless the container command actually starts both roles, usually through `meshagent multi join`.
+- For scheduled email workflows, do not declare both `MailBot` and `Worker` roles in one YAML asset unless you are intentionally repairing an existing combined deployment and the container command really starts both roles.
 - When adapting a pattern like the news reporter example, keep the MailBot or equivalent toolkit publisher that makes `email` visible to the Worker. Do not copy only the Worker half of the pattern.
+- For scheduled email workflows, make the scheduled payload match how the Worker was authored. A prompt-driven Worker should usually receive a prompt-driven scheduled payload. A structured-field Worker should receive those exact structured fields plus any required action field.
 - If the user only asked to schedule an already running agent and the current room lacks a queue-consuming Worker, stop the scheduler workflow and switch to this skill before claiming scheduling is possible.
 - If the user actually needs a multi-channel process agent rather than a dedicated Worker, say so and use the more appropriate example instead of forcing a Worker pattern.
 
