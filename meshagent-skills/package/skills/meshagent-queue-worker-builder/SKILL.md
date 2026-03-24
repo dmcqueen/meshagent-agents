@@ -108,10 +108,11 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 11. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
 12. Validate the resulting YAML against `../_shared/references/service_yaml_correctness.md`, including real CLI flag support, mailbox identity, queue wiring, mounted files, and whether the workflow needs both MailBot and Worker roles.
 13. Validate the resulting YAML with `meshagent service validate` or `validate-template` and `render-template` when available.
-14. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
-15. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
-16. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
-17. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
+14. If validation fails, inspect the exact error, repair the YAML, and rerun validation before attempting deployment.
+15. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
+16. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
+17. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
+18. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
 
 ## Worker service model
 
