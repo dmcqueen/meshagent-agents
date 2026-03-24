@@ -16,6 +16,8 @@ metadata:
       - storage CLI source
       - room storage API examples
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: Storage work is only one part of a larger end-to-end workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using docs or source references.
     - skill: meshagent-webapp-builder
@@ -62,6 +64,7 @@ Use this skill when the task is about room storage paths or copying data into or
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when storage work is only one part of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
 - `meshagent-webapp-builder`: Use it when storage is only one part of deploying a website.
 - `meshagent-runtime-operator`: Use it when the real issue is a live container mount or runtime visibility problem rather than storage commands themselves.
