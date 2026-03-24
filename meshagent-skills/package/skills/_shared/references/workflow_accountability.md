@@ -37,6 +37,13 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - A supporting skill should return evidence, not a success claim for the whole workflow.
 - If the current owner cannot complete the workflow without another skill, it should call that handoff and then continue evaluating the remaining gates.
 
+## Missing-input rules
+
+- If the workflow is blocked on specific user input, identify the exact missing input instead of asking a generic permission-to-continue question.
+- Ask for all clearly blocking user inputs together when possible rather than discovering them one at a time across multiple turns.
+- After the user confirms they want the workflow completed, continue the workflow unless a new concrete blocker appears.
+- Do not make the user restate the original goal just because a sub-step was incomplete or partially verified.
+
 ## Forbidden shortcuts
 
 - Do not treat object creation alone as end-to-end success.
@@ -46,3 +53,4 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not use the room, server, or runtime timezone as a substitute for the requesting user's timezone when the workflow is about scheduling in the user's local time.
 - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
 - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
+- Do not leave an obviously required user input such as the recipient email unasked in a workflow whose purpose is to send a real email.
