@@ -17,6 +17,8 @@ metadata:
       - room mail implementation
       - mailbox CLI help
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: Mail behavior is one piece of a larger end-to-end room workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using server or CLI source references.
     - skill: meshagent-queue-operator
@@ -70,6 +72,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when mail behavior is only one piece of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references for mail implementation details.
 - `meshagent-queue-operator`: Use it when the queue work is independent of mailbox provisioning or SMTP behavior.
 - `meshagent-queue-worker-builder`: Use it when the mailbox-backed sender must be wired into a queue-consuming Worker or scheduled queue workflow.
