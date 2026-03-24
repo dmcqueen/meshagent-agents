@@ -6,6 +6,7 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
@@ -13,6 +14,7 @@ metadata:
       - api_root
     resolved_targets:
       - room storage docs
+      - shared live-room CLI context rules
       - storage CLI source
       - room storage API examples
   related_skills:
@@ -59,6 +61,7 @@ Use this skill when the task is about room storage paths or copying data into or
 ## References
 
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room storage ...` command shapes.
+- Use `../_shared/references/live_room_cli_context.md` when the storage workflow runs in or targets a known live room.
 - Use the resolved room storage docs for the storage model.
 - Inspect the resolved storage CLI source for the actual path parsing and copy behavior.
 
@@ -76,6 +79,12 @@ Use this skill when the task is about room storage paths or copying data into or
 3. Use `cp` for transfers between local disk and room storage.
 4. Use `show` for content inspection and `ls` for structure inspection.
 5. Treat `rm` as destructive and verify the exact target path first.
+
+## Live room execution
+
+- Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped storage work.
+- If permissions are uncertain, start with `exists`, `ls`, or `show` against the concrete room path before claiming the storage surface is unavailable.
 
 ## Path rules
 
