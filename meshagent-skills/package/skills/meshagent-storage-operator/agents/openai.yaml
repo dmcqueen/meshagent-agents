@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Storage Operator"
+  short_description: "Operate room storage safely"
+  default_prompt: "Use $meshagent-storage-operator to inspect room storage paths or copy files safely."
