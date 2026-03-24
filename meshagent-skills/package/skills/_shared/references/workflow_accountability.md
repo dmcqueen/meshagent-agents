@@ -44,6 +44,13 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - After the user confirms they want the workflow completed, continue the workflow unless a new concrete blocker appears.
 - Do not make the user restate the original goal just because a sub-step was incomplete or partially verified.
 
+## Preflight rules
+
+- If the workflow depends on a specific backend surface such as scheduled tasks, room services, mail delivery, or toolkit publication, preflight the required capability before presenting the workflow as end-to-end ready.
+- Treat `403` responses as permission blockers, not as a cue to keep promising the blocked step later.
+- Treat unexpected `5xx` responses on required workflow surfaces as backend health blockers until a retry or narrower probe proves otherwise.
+- When a required backend surface is blocked, either stop before creating a half-complete workflow or clearly mark any continued setup as partial preparation only.
+
 ## Forbidden shortcuts
 
 - Do not treat object creation alone as end-to-end success.
@@ -54,3 +61,4 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
 - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
 - Do not leave an obviously required user input such as the recipient email unasked in a workflow whose purpose is to send a real email.
+- Do not wait until the final step to discover that a required backend surface such as scheduled-task create is blocked when a cheap preflight could have shown that earlier.
