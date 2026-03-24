@@ -37,11 +37,14 @@ RELATIVE_RESOURCE_PATTERN = re.compile(
     r"(?P<path>(?:\.\./|references/)[A-Za-z0-9_./-]+\.(?:md|yaml|py))"
 )
 QUOTED_STRING_PATTERN = re.compile(r'^(?P<quote>["\'])(?P<value>.*)(?P=quote)$')
+WORKFLOW_METADATA_PATTERN = re.compile(r"^  workflow:\s*$", re.MULTILINE)
+WORKFLOW_SECTION_PATTERN = re.compile(r"^## Workflow accountability\s*$", re.MULTILINE)
 EXPECTED_PLUGIN_DESCRIPTION = (
     "MeshAgent operator skill pack for CLI routing, room operations, runtime "
     "debugging, queues, services, storage, databases, memory, scheduling, and "
     "room-hosted web workflows."
 )
+WORKFLOW_REFERENCE_PATH = "../_shared/references/workflow_accountability.md"
 
 
 def parse_args() -> argparse.Namespace:
@@ -199,6 +202,36 @@ def validate_relative_resources(
             )
 
 
+def validate_workflow_contract(
+    skill_name: str, skill_text: str, errors: list[str]
+) -> None:
+    frontmatter_match = FRONTMATTER_PATTERN.match(skill_text)
+    if frontmatter_match is None:
+        errors.append(f"{skill_name} is missing YAML frontmatter")
+        return
+
+    frontmatter_text = frontmatter_match.group(1)
+    required_frontmatter_fields = (
+        "  workflow:",
+        "    can_be_owner:",
+        "    handoff_policy:",
+        "    completion_gates:",
+        "    evidence:",
+    )
+    if WORKFLOW_METADATA_PATTERN.search(frontmatter_text) is None:
+        errors.append(f"{skill_name} is missing metadata.workflow")
+    for field in required_frontmatter_fields[1:]:
+        if field not in frontmatter_text:
+            errors.append(f"{skill_name} metadata.workflow is missing {field.strip()}")
+
+    if WORKFLOW_SECTION_PATTERN.search(skill_text) is None:
+        errors.append(f"{skill_name} is missing a '## Workflow accountability' section")
+    if WORKFLOW_REFERENCE_PATH not in skill_text:
+        errors.append(
+            f"{skill_name} does not reference the shared workflow accountability contract"
+        )
+
+
 def main() -> int:
     args = parse_args()
     meshagent_bin = args.meshagent_bin
@@ -298,6 +331,7 @@ def main() -> int:
             errors.append(f"{skill_name} references another skill by relative path")
         validate_openai_yaml(skill_name, skill_path.parent, errors)
         validate_relative_resources(skill_name, skill_path, current_skill_text, errors)
+        validate_workflow_contract(skill_name, current_skill_text, errors)
 
     if errors:
         for error in errors:
