@@ -6,11 +6,13 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - cli_root
       - server_root
     resolved_targets:
+      - shared live-room CLI context rules
       - developer CLI source
       - containers CLI source
       - port-forward CLI source
@@ -60,6 +62,7 @@ Use this skill when the task is about the live runtime state inside a room rathe
 ## References
 
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
+- Use `../_shared/references/live_room_cli_context.md` when the runtime workflow runs in or targets a known live room.
 - Inspect the resolved developer CLI source for log-streaming behavior.
 - Inspect the resolved containers CLI source for container and image operations.
 - Inspect the resolved port CLI source for local-to-container port forwarding.
@@ -82,6 +85,12 @@ Use this skill when the task is about the live runtime state inside a room rathe
 4. Use `exec`, `run`, or image operations only after you understand the live state.
 5. If local inspection is needed, use port forwarding with an explicit target container and port mapping.
 6. Verify that the runtime symptom changed after any intervention.
+
+## Live room execution
+
+- Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped runtime debugging.
+- If permissions are uncertain, start with a narrow room-scoped read such as `meshagent room service list`, `meshagent room developer watch`, or `meshagent room container list` before claiming runtime access is blocked.
 
 ## Runtime rules
 
