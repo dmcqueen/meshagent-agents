@@ -7,6 +7,7 @@ metadata:
     bundled:
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/runtime_image_environment_rules.md
+      - ../_shared/references/service_yaml_correctness.md
       - ../_shared/references/workflow_accountability.md
       - ../meshagent-cli-operator/references/command_groups.md
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
@@ -17,6 +18,7 @@ metadata:
     resolved_targets:
       - shared live-room CLI context rules
       - shared runtime image environment rules
+      - shared service YAML correctness rules
       - shared workflow accountability contract
       - command-group routing reference
       - packaged CLI help
@@ -80,6 +82,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 
 - Use `../_shared/references/live_room_cli_context.md` when the workflow runs inside or targets a known live room.
 - Use `../_shared/references/runtime_image_environment_rules.md` when the workflow includes service or worker image selection.
+- Use `../_shared/references/service_yaml_correctness.md` when the workflow depends on authored `Service` or `ServiceTemplate` YAML.
 - Use `../_shared/references/workflow_accountability.md` as the contract for ownership, handoffs, evidence, and forbidden shortcuts.
 - Use `../meshagent-cli-operator/references/command_groups.md` when you need to route sub-steps to the right CLI family quickly.
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` when a sub-step depends on exact command shapes.
@@ -117,6 +120,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - For room-scoped work, apply `../_shared/references/live_room_cli_context.md`, start from the known room context, and use the narrowest room-scoped probe first.
 - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite gatekeeper commands for a known-room workflow.
 - If the workflow must choose a service or worker image, derive the image family from the actual MeshAgent environment before copying a docs example.
+- If the workflow depends on authored service YAML, prefer a generated spec first and require command-flag correctness, role correctness, and wiring correctness before treating the asset as deployable.
 - If a broad probe fails but a narrower room-scoped probe succeeds, continue the workflow and report the broad-scope limitation accurately instead of giving up.
 - If the workflow includes a relative schedule such as "one minute from now," make scheduling the final creation step after the worker/runtime path has already been proven.
 - If the workflow includes a real outgoing email, require a real recipient address unless the user explicitly asked for a payload-only template.
