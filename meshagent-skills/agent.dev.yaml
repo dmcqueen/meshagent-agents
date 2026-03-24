@@ -2684,6 +2684,7 @@ container:
           
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room queue ...` command shapes.
           - Inspect the resolved queue CLI source for the real queue behavior and payload handling.
+          - Inspect the resolved room queue API source when queue-name discovery matters. The current CLI does not expose a dedicated `meshagent room queue list` subcommand, but the room queue API does support listing visible queues.
           
           ## Related skills
           
@@ -2695,14 +2696,16 @@ container:
           ## Default workflow
           
           1. Resolve the active room and the exact queue name.
-          2. Inspect the queue state with `meshagent room queue size` before mutating or consuming it.
-          3. If the task is to inject work, choose `send` for JSON payloads or `send-mail` for email-shaped messages.
-          4. If the task is to verify end-to-end behavior, confirm both the sender path and the queue contents.
-          5. After sending or receiving, re-check queue state when backlog or delivery matters.
+          2. If the queue name is unknown, discover it from the current room configuration or by using the room queue API. Do not say queue listing is impossible just because the CLI lacks a dedicated `list` subcommand.
+          3. Inspect the queue state with `meshagent room queue size` before mutating or consuming it.
+          4. If the task is to inject work, choose `send` for JSON payloads or `send-mail` for email-shaped messages.
+          5. If the task is to verify end-to-end behavior, confirm both the sender path and the queue contents.
+          6. After sending or receiving, re-check queue state when backlog or delivery matters.
           
           ## Queue operation rules
           
           - Do not invent queue names. Reuse the queue already configured by the scheduler, mailbox, webhook, or Worker.
+          - Do not claim that queues cannot be listed in a room. The current CLI lacks a dedicated `meshagent room queue list` command, but the room queue API can enumerate visible queues.
           - Prefer `send` for JSON payloads and `send-mail` only when the receiving workflow expects an email message shape.
           - Use `receive` to inspect the next queued message, but treat it as consumption of a live queue entry.
           - Use `size` when you need backlog verification without consuming a message.
@@ -2792,7 +2795,7 @@ container:
           
           1. Determine whether the target is a new Worker service, a modification to an existing Worker template, or a repair to a broken queue/schedule setup.
           2. Use `meshagent-sdk-researcher` to find the closest working example before drafting YAML.
-          3. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities.
+          3. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities. If the CLI does not expose a dedicated queue-list command, use the room queue API or the current room configuration rather than assuming queue discovery is impossible.
           4. Choose the nearest Worker example and adapt it instead of inventing a new template structure.
           5. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
           6. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
@@ -3032,12 +3035,14 @@ container:
           ## Queue consumption
           
           - CLI verification: use `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
-          - API verification: use the room queues client, for example `message = await room.queues.receive(name="my-queue")`.
+          - API verification: use the room queues client, for example `queues = await room.queues.list()` or `message = await room.queues.receive(name="my-queue")`.
+          - The current CLI does not expose a dedicated `meshagent room queue list` subcommand. If the queue name is unknown, use the room queue API or inspect room configuration rather than claiming queue discovery is impossible.
           - When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message.
           
           ## Current agent queue discovery
           
           - If this skill is running inside a live MeshAgent room runtime, first inspect the current room and current agent before inventing a queue or assuming a separate worker exists.
+          - If the queue name is not already known from the scheduled task, service config, mailbox config, or Worker config, use the room queue API to enumerate visible queues before concluding that discovery is blocked.
           - First look for an explicit queue-consuming runtime such as `meshagent worker join --queue=<QUEUE_NAME>` in the current startup command or service template.
           - If the runtime is not a Worker, a queue channel such as `--channel=queue:<QUEUE_NAME>` is only supporting evidence. Treat it as sufficient only when the runtime and surrounding implementation clearly consume that queue.
           - Also inspect agent annotations or nearby service YAML when the current runtime was created from a template. The schedule queue and the actual consumer path must match.
@@ -3062,6 +3067,7 @@ container:
           ## Operating rules
           
           - Do not invent queue names.
+          - Do not say queue names cannot be listed just because the CLI lacks a dedicated `meshagent room queue list` subcommand.
           - Do not invent timezones.
           - Do not schedule a task until the timezone has been confirmed or reliably detected.
           - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
