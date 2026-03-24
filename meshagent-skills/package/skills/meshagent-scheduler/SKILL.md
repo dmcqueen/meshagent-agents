@@ -96,10 +96,11 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 4. Preflight scheduled-task capability before presenting the workflow as end-to-end ready: for a room-scoped workflow, inspect existing scheduled tasks with `meshagent scheduled-task list --room <ROOM_NAME>` first. Treat a permissions failure, `403`, or unexpected `5xx` as a real blocker only after using the narrowest room-scoped read path that matches the workflow.
 5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
 6. If the user expressed the schedule relatively, such as "one minute from now," anchor that relative time to the moment you are actually ready to create the scheduled task, not to the beginning of the broader setup workflow.
-7. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
-8. Create, update, or delete the scheduled task.
-9. Verify the task state with `meshagent scheduled-task list`.
-10. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+7. If you plan to pass `--id`, make sure it is a real UUID. Otherwise omit `--id` and let the server generate the task id.
+8. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
+9. Create, update, or delete the scheduled task.
+10. Verify the task state with `meshagent scheduled-task list`.
+11. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
 
 ## Live room execution
 
@@ -196,6 +197,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
 - If the requesting user's timezone cannot be acquired from reliable user-specific context, ask the user directly before creating the scheduled task.
 - Do not treat scheduler create as reliable just because the CLI command exists. Preflight actual scheduler access and health first.
+- Do not pass a human-readable custom scheduled-task id such as `scheduled-email-once-2min`. The backend scheduled-task id is a UUID. Omit `--id` unless you already have a real UUID to use.
 - If scheduler preflight already failed, do not present the workflow as fully completable without clearly labeling the scheduler step as blocked.
 - Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
 - Do not anchor a relative scheduling request to the beginning of a longer setup workflow when the user's intent is relative to the actual task-creation moment.
