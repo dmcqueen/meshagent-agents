@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent SDK Researcher"
+  short_description: "Research MeshAgent SDK usage"
+  default_prompt: "Use $meshagent-sdk-researcher to resolve the MeshAgent checkout and find the right docs or example."
