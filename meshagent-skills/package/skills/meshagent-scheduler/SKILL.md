@@ -84,29 +84,31 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 ## Default workflow
 
 1. Resolve the active project, room, queue, and intended local execution time.
-2. Resolve the user's timezone before setting or changing a schedule.
+2. Resolve the requesting user's timezone before setting or changing a schedule.
 3. Inspect the current room and current agent context to determine whether the running agent already has an explicit queue-consuming path.
 4. Inspect existing scheduled tasks with `meshagent scheduled-task list`.
 5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
 6. If the user expressed the schedule relatively, such as "one minute from now," anchor that relative time to the moment you are actually ready to create the scheduled task, not to the beginning of the broader setup workflow.
-7. Confirm the exact queue name, JSON payload, local execution time, timezone, and UTC cron expression before mutating anything.
+7. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
 8. Create, update, or delete the scheduled task.
 9. Verify the task state with `meshagent scheduled-task list`.
 10. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
 
 ## Timezone resolution
 
-- Do not assume the user's local timezone from the cron expression alone.
+- Do not assume the requesting user's local timezone from the cron expression alone.
 - Prefer an explicit IANA timezone such as `America/Los_Angeles` or `Asia/Bangkok`.
 - If the user already gave a timezone, use it and restate the UTC conversion you will schedule.
-- If no timezone was provided, first look up the current local timezone from the environment or system clock.
-- If the current timezone is still ambiguous, if the task is for a different region, or if DST boundaries matter, ask the user to confirm the intended timezone before scheduling.
+- If no timezone was provided, first try to determine the requesting user's timezone from user-specific context such as an explicit location, profile data, client-local timezone, or another reliable signal tied to that user.
+- Do not use the room host timezone, server timezone, or agent runtime timezone as a proxy for the requesting user unless you have evidence that they are the same person in the same locale.
+- If the requesting user's timezone still cannot be determined reliably without asking, ask the user directly before scheduling.
 - Convert the requested local time into the exact UTC cron expression that will be stored.
 - When the request is tied to a named local timezone that observes DST, explain that the current scheduler stores UTC cron only, so the UTC schedule may need seasonal adjustment.
+- Before agreeing to create the task, make sure the requesting user's timezone is known and restated explicitly.
 
 ## One-time scheduling guard
 
-- Restate the exact local scheduled time and the exact UTC time before creating a one-time task.
+- Restate the exact requesting-user local scheduled time and the exact UTC time before creating a one-time task.
 - Use absolute times in the explanation, not just "one minute from now" or similar relative phrasing.
 - Interpret relative requests such as "one minute from now" relative to the actual `meshagent scheduled-task add` moment after setup is complete, not relative to the original user message timestamp.
 - If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
@@ -119,7 +121,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - CLI verification: use `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
 - For queue-name discovery, prefer `meshagent room agent list-toolkits` and `meshagent room agent invoke-tool --toolkit queues --tool list --arguments '{}'` before writing SDK code.
 - API verification: use the room queues client, for example `queues = await room.queues.list()` or `message = await room.queues.receive(name="my-queue")`.
-- The current CLI does not expose a dedicated `meshagent room queue list` subcommand. If the queue name is unknown, use the room queue API or inspect room configuration rather than claiming queue discovery is impossible.
+- The current CLI does not expose a dedicated room-queue list subcommand. If the queue name is unknown, use the room queue API or inspect room configuration rather than claiming queue discovery is impossible.
 - When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message. For mail-sending workers, this is still not enough by itself; runtime mail-send evidence must also be checked.
 
 ## Current agent queue discovery
@@ -150,10 +152,12 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 ## Operating rules
 
 - Do not invent queue names.
-- Do not say queue names cannot be listed just because the CLI lacks a dedicated `meshagent room queue list` subcommand.
+- Do not say queue names cannot be listed just because the CLI lacks a dedicated room-queue list subcommand.
 - For “what queues are available?” questions, prefer generic CLI toolkit invocation over ad hoc SDK code.
 - Do not invent timezones.
-- Do not schedule a task until the timezone has been confirmed or reliably detected.
+- Do not schedule a task until the requesting user's timezone has been confirmed or reliably detected.
+- Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
+- If the requesting user's timezone cannot be acquired from reliable user-specific context, ask the user directly before creating the scheduled task.
 - Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
 - Do not anchor a relative scheduling request to the beginning of a longer setup workflow when the user's intent is relative to the actual task-creation moment.
 - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
