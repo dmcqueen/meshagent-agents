@@ -115,6 +115,8 @@ Key files and directories in this package:
   Queue send, receive, backlog, and delivery-verification skill.
 - `skills/meshagent-queue-operator/agents/openai.yaml`
   OpenAI agent metadata for the queue operator.
+- `skills/meshagent-queue-operator/references/queue_discovery.md`
+  Preferred room queue-discovery workflow using CLI toolkit inspection and invocation before any SDK fallback.
 - `skills/meshagent-queue-worker-builder/SKILL.md`
   Queue-backed Worker `meshagent.yaml` authoring skill.
 - `skills/meshagent-queue-worker-builder/agents/openai.yaml`
