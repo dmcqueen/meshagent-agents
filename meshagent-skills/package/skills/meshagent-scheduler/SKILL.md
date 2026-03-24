@@ -88,10 +88,11 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 3. Inspect the current room and current agent context to determine whether the running agent already has an explicit queue-consuming path.
 4. Inspect existing scheduled tasks with `meshagent scheduled-task list`.
 5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
-6. Confirm the exact queue name, JSON payload, local execution time, timezone, and UTC cron expression before mutating anything.
-7. Create, update, or delete the scheduled task.
-8. Verify the task state with `meshagent scheduled-task list`.
-9. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+6. If the user expressed the schedule relatively, such as "one minute from now," anchor that relative time to the moment you are actually ready to create the scheduled task, not to the beginning of the broader setup workflow.
+7. Confirm the exact queue name, JSON payload, local execution time, timezone, and UTC cron expression before mutating anything.
+8. Create, update, or delete the scheduled task.
+9. Verify the task state with `meshagent scheduled-task list`.
+10. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
 
 ## Timezone resolution
 
@@ -107,6 +108,8 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 
 - Restate the exact local scheduled time and the exact UTC time before creating a one-time task.
 - Use absolute times in the explanation, not just "one minute from now" or similar relative phrasing.
+- Interpret relative requests such as "one minute from now" relative to the actual `meshagent scheduled-task add` moment after setup is complete, not relative to the original user message timestamp.
+- If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
 - If setup, deployment, or smoke testing has consumed most of the time window, move the one-time run farther into the future instead of leaving it effectively in the past.
 - Do not create a near-future one-time task until the queue consumer path is already proven with an immediate smoke test.
 - If the user asked for "a minute from now" but the workflow is not yet ready, explain that you are moving the one-time run to the next safe minute window rather than pretending the original time still makes sense.
@@ -152,6 +155,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Do not invent timezones.
 - Do not schedule a task until the timezone has been confirmed or reliably detected.
 - Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
+- Do not anchor a relative scheduling request to the beginning of a longer setup workflow when the user's intent is relative to the actual task-creation moment.
 - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
 - Do not treat a bare `queue:` channel as proof of consumption unless the runtime clearly shows how it dequeues that queue.
 - Always state the timezone assumption and the resulting UTC schedule when adding or updating a task.
