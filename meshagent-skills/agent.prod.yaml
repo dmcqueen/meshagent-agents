@@ -214,6 +214,8 @@ container:
             Plugin metadata for the packaged skill pack.
           - `skills/_shared/references/`
             Shared package-level references for live-room CLI context and managed hostname rules.
+          - `skills/_shared/references/workflow_accountability.md`
+            Shared workflow-owner, completion-gate, evidence, and handoff contract for multi-skill outcomes.
           - `commands/meshagent.md`
             General MeshAgent CLI entrypoint.
           - `commands/meshagent-room.md`
@@ -262,6 +264,8 @@ container:
             Queue-backed Worker `meshagent.yaml` authoring skill.
           - `skills/meshagent-queue-worker-builder/agents/openai.yaml`
             OpenAI agent metadata for the queue worker builder.
+          - `skills/meshagent-queue-worker-builder/references/scheduled_email_worker.md`
+            End-to-end reference for mailbox-backed queue Workers that must pass an immediate smoke test before one-time scheduling.
           - `skills/meshagent-runtime-operator/SKILL.md`
             Live room runtime inspection and debugging skill.
           - `skills/meshagent-runtime-operator/agents/openai.yaml`
@@ -340,6 +344,7 @@ container:
           - skills must not reference sibling `SKILL.md` files by relative path
           - any packaged relative resource path mentioned by a skill must resolve to a real bundled file
           - every skill must provide `agents/openai.yaml` with an `interface` mapping that contains `display_name`, `short_description`, and a `default_prompt` that names the skill as `$skill-name`
+          - every skill must carry workflow-accountability metadata and a `## Workflow accountability` section
           
           ## Scripts
           
@@ -1015,11 +1020,14 @@ container:
               r"(?P<path>(?:\.\./|references/)[A-Za-z0-9_./-]+\.(?:md|yaml|py))"
           )
           QUOTED_STRING_PATTERN = re.compile(r'^(?P<quote>["\'])(?P<value>.*)(?P=quote)$')
+          WORKFLOW_METADATA_PATTERN = re.compile(r"^  workflow:\s*$", re.MULTILINE)
+          WORKFLOW_SECTION_PATTERN = re.compile(r"^## Workflow accountability\s*$", re.MULTILINE)
           EXPECTED_PLUGIN_DESCRIPTION = (
               "MeshAgent operator skill pack for CLI routing, room operations, runtime "
               "debugging, queues, services, storage, databases, memory, scheduling, and "
               "room-hosted web workflows."
           )
+          WORKFLOW_REFERENCE_PATH = "../_shared/references/workflow_accountability.md"
           
           
           def parse_args() -> argparse.Namespace:
@@ -1177,6 +1185,36 @@ container:
                       )
           
           
+          def validate_workflow_contract(
+              skill_name: str, skill_text: str, errors: list[str]
+          ) -> None:
+              frontmatter_match = FRONTMATTER_PATTERN.match(skill_text)
+              if frontmatter_match is None:
+                  errors.append(f"{skill_name} is missing YAML frontmatter")
+                  return
+          
+              frontmatter_text = frontmatter_match.group(1)
+              required_frontmatter_fields = (
+                  "  workflow:",
+                  "    can_be_owner:",
+                  "    handoff_policy:",
+                  "    completion_gates:",
+                  "    evidence:",
+              )
+              if WORKFLOW_METADATA_PATTERN.search(frontmatter_text) is None:
+                  errors.append(f"{skill_name} is missing metadata.workflow")
+              for field in required_frontmatter_fields[1:]:
+                  if field not in frontmatter_text:
+                      errors.append(f"{skill_name} metadata.workflow is missing {field.strip()}")
+          
+              if WORKFLOW_SECTION_PATTERN.search(skill_text) is None:
+                  errors.append(f"{skill_name} is missing a '## Workflow accountability' section")
+              if WORKFLOW_REFERENCE_PATH not in skill_text:
+                  errors.append(
+                      f"{skill_name} does not reference the shared workflow accountability contract"
+                  )
+          
+          
           def main() -> int:
               args = parse_args()
               meshagent_bin = args.meshagent_bin
@@ -1276,6 +1314,7 @@ container:
                       errors.append(f"{skill_name} references another skill by relative path")
                   validate_openai_yaml(skill_name, skill_path.parent, errors)
                   validate_relative_resources(skill_name, skill_path, current_skill_text, errors)
+                  validate_workflow_contract(skill_name, current_skill_text, errors)
           
               if errors:
                   for error in errors:
@@ -1320,6 +1359,55 @@ container:
           - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and a follow-up route read is forbidden, treat that hostname as unavailable and try a different candidate before reporting a generic permissions blocker.
           - Do not report a managed URL whose suffix contradicts the active API environment.
 
+      - path: /meshagent-skills/skills/_shared/references/workflow_accountability.md
+        text: |
+          # Workflow Accountability
+          
+          Use this reference when the user asked for an end-to-end outcome that may require multiple skills.
+          
+          ## Core model
+          
+          Every workflow must have exactly one current workflow owner.
+          
+          - The workflow owner is the skill currently responsible for the user-visible outcome.
+          - Supporting skills may execute part of the work, but they do not get to declare the overall workflow complete unless ownership is explicitly transferred.
+          - Ownership may transfer to a narrower or more appropriate skill, but the transfer must be explicit in the reasoning and the new owner must continue tracking completion gates and evidence.
+          
+          ## Completion gates
+          
+          Do not say "done" until all relevant gates have passed.
+          
+          Minimum gates for any workflow:
+          
+          1. The mutation target or inspection target was identified correctly.
+          2. The claimed state change or observed result was verified against real room/runtime state.
+          3. The user-visible outcome was verified, or the exact blocker was identified.
+          
+          Skill-specific gates may add stricter requirements such as live runtime proof, queue dequeue proof, mailbox identity proof, HTTP smoke tests, or log evidence.
+          
+          ## Evidence rules
+          
+          The workflow owner must collect concrete evidence for each gate, such as:
+          
+          - exact commands or packaged references used
+          - observed room state, service state, queue state, log lines, or runtime signals
+          - user-visible outputs such as a live URL, delivered queue message, or confirmed mail-send result
+          - if the workflow failed, the exact blocker instead of a generic "not working"
+          
+          ## Handoff rules
+          
+          - Handoffs transfer execution work, not accountability, unless ownership is explicitly transferred.
+          - A supporting skill should return evidence, not a success claim for the whole workflow.
+          - If the current owner cannot complete the workflow without another skill, it should call that handoff and then continue evaluating the remaining gates.
+          
+          ## Forbidden shortcuts
+          
+          - Do not treat object creation alone as end-to-end success.
+          - Do not treat YAML generation alone as deployment success.
+          - Do not treat queue size changes alone as business workflow success.
+          - Do not treat a scheduled task record alone as proof that the future workflow will work.
+          - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
+
       - path: /meshagent-skills/skills/meshagent-cli-operator/SKILL.md
         text: |
           ---
@@ -1333,6 +1421,7 @@ container:
                 - references/meshagent_cli_help.md
                 - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/managed_hostname_rules.md
+                - ../_shared/references/workflow_accountability.md
               resolved_targets:
                 - live meshagent help output when bundled help is missing or stale
             related_skills:
@@ -1350,6 +1439,17 @@ container:
               excludes:
                 - SDK API design
                 - app-specific implementation work
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent CLI Operator
@@ -1406,6 +1506,13 @@ container:
           - When a deployed MeshAgent webserver returns 500, first suspect route-handler import/render/runtime errors before concluding that the room route or platform is broken.
           - For Python handlers that render inline HTML templates, do not use `str.format()` on raw HTML/CSS/regex-heavy strings unless every literal brace is escaped. Prefer a safer templating approach or pre-escaped placeholders.
           - Do not print secret values unless the user explicitly asks for them and the command returns them.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return command evidence and observed state to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
           
           ## Bundled resources
           
@@ -2273,6 +2380,7 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
                 - room_api_root
@@ -2302,6 +2410,17 @@ container:
               excludes:
                 - memory-store workflows
                 - full agent or service template authoring
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Database Operator
@@ -2392,6 +2511,13 @@ container:
           - Do not invent namespace paths, index names, or schema annotations.
           - Verify destructive operations like `drop`, `drop-columns`, `restore`, and bulk `delete` carefully before executing them.
           
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return database evidence and observed state to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+          
           ## Out of scope
           
           - This skill does not design a complete agent or service template by itself.
@@ -2417,6 +2543,7 @@ container:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
                 - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/managed_hostname_rules.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - cli_root
                 - server_root
@@ -2428,6 +2555,8 @@ container:
                 when: Resolve checkout roots before using server or CLI source references.
               - skill: meshagent-queue-operator
                 when: The main task is generic queue inspection or queue injection rather than mailbox behavior.
+              - skill: meshagent-queue-worker-builder
+                when: Mail sending is part of a queue-backed Worker or scheduled queue workflow.
               - skill: meshagent-webapp-builder
                 when: Mail is one part of a room-hosted contact form or website workflow.
               - skill: meshagent-cli-operator
@@ -2441,6 +2570,17 @@ container:
               excludes:
                 - generic queue workflows without mailbox context
                 - full website authoring
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Mail Operator
@@ -2466,6 +2606,7 @@ container:
           
           - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references for mail implementation details.
           - `meshagent-queue-operator`: Use it when the queue work is independent of mailbox provisioning or SMTP behavior.
+          - `meshagent-queue-worker-builder`: Use it when the mailbox-backed sender must be wired into a queue-consuming Worker or scheduled queue workflow.
           - `meshagent-webapp-builder`: Use it when mailbox-backed mail is part of a room website or contact form workflow.
           - `meshagent-cli-operator`: Reuse its managed-hostname and room-context rules when a mail workflow also creates or verifies a public site.
           
@@ -2504,6 +2645,7 @@ container:
           - Do not treat a hardcoded mailbox-looking string as provisioned unless it came from a successful mailbox CLI result in the current project.
           - If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
           - Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
+          - If the mail sender lives inside a queue-backed Worker, verify that the Worker runtime actually uses the provisioned mailbox address before treating mailbox creation as sufficient.
           
           ## Queue inspection
           
@@ -2529,12 +2671,20 @@ container:
           
           - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
           - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
+          - For queue-backed mail workers, do not claim success until the Worker has consumed a real test message and runtime evidence shows the send succeeded or shows the exact SMTP/provider blocker.
           - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
           - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
           - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
           - If the workflow also creates a public route, follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL.
           - If SMTP rejects delivery, report the exact observed blocker.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return mailbox, queue, and SMTP evidence to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
       - path: /meshagent-skills/skills/meshagent-mail-operator/agents/openai.yaml
         text: |
@@ -2553,6 +2703,7 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
                 - cli_root
@@ -2576,6 +2727,17 @@ container:
               excludes:
                 - database table design
                 - general SDK research outside memory workflows
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Memory Operator
@@ -2624,6 +2786,13 @@ container:
           - If recall results are poor, inspect the ingested memory shape before changing prompts or retrieval logic.
           - Treat `drop`, entity deletion, and relationship deletion as destructive.
           
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return memory-store evidence and observed state to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+          
           ## Out of scope
           
           - Designing database tables or database indexes.
@@ -2647,6 +2816,7 @@ container:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
                 - references/queue_discovery.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
                 - cli_root
@@ -2672,6 +2842,17 @@ container:
               excludes:
                 - Worker or service YAML authoring
                 - mailbox administration
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Queue Operator
@@ -2727,6 +2908,13 @@ container:
           - Verify the queue depth or queued payload after the upstream action.
           - If a queue-backed Worker is supposed to consume the message, verify both enqueue and downstream dequeue behavior.
           - If a queue is empty when it should contain messages, inspect the sender configuration before redesigning the consumer.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return queue evidence and observed state to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
           
           ## Out of scope
           
@@ -2790,6 +2978,9 @@ container:
           metadata:
             short-description: Build queue-backed Worker agent and service YAML for room jobs.
             references:
+              bundled:
+                - references/scheduled_email_worker.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
                 - examples_root
@@ -2803,8 +2994,12 @@ container:
                 when: Resolve checkout roots before following example or source references.
               - skill: meshagent-scheduler
                 when: The remaining task is to create or verify a scheduled task after the Worker exists.
+              - skill: meshagent-mail-operator
+                when: The queued job sends email or depends on mailbox-backed sender identity.
               - skill: meshagent-service-operator
                 when: The main task is service lifecycle rather than Worker YAML authoring.
+              - skill: meshagent-runtime-operator
+                when: The YAML exists but the remaining work is proving that the live Worker runtime actually dequeues and completes jobs.
             scope:
               owns:
                 - queue-backed Worker YAML authoring
@@ -2814,6 +3009,17 @@ container:
                 - scheduled-task CRUD
                 - generic multi-channel agent design
                 - low-level CLI command discovery
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Queue Worker Builder
@@ -2834,6 +3040,7 @@ container:
             - `examples/cli/worker/meshagent.yaml` for the simplest queue-backed Worker service pattern
             - `examples/cli/multi-agent-news-reporter/meshagent.yaml` when a dedicated Worker cooperates with other agents in the same room
             - `examples/cli/meshagent-writer/meshagent.yaml` and `examples/cli/meshagent-codex-writer/meshagent.yaml` for scheduled writer workflows that rely on a Worker queue consumer
+          - Use `references/scheduled_email_worker.md` for workflows that must dequeue a message and send an email before a one-time schedule is considered complete.
           - Use the resolved packaging docs for service-template structure and annotation semantics.
           - Inspect the resolved Worker CLI source for the actual Worker flags and runtime shape.
           
@@ -2841,17 +3048,24 @@ container:
           
           - `meshagent-sdk-researcher`: Resolve the MeshAgent checkout roots and the exact example/source paths before using codebase references.
           - `meshagent-scheduler`: Use it after the Worker exists and the task becomes scheduled-task creation, timezone resolution, or queue verification.
+          - `meshagent-mail-operator`: Use it when the queued job sends mail and must reuse a real mailbox-backed sender identity.
           - `meshagent-service-operator`: Use it when the main job is validating, rendering, creating, or updating a service rather than authoring the Worker spec itself.
+          - `meshagent-runtime-operator`: Use it when the YAML exists but the remaining work is proving that the live Worker runtime is actually running, dequeuing, and completing the job.
           
           ## Default workflow
           
           1. Determine whether the target is a new Worker service, a modification to an existing Worker template, or a repair to a broken queue/schedule setup.
           2. Use `meshagent-sdk-researcher` to find the closest working example before drafting YAML.
           3. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities. If the CLI does not expose a dedicated queue-list command, use the room queue API or the current room configuration rather than assuming queue discovery is impossible.
-          4. Choose the nearest Worker example and adapt it instead of inventing a new template structure.
-          5. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
-          6. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
-          7. Validate the resulting YAML with the CLI when available.
+          4. If the queued job sends email, inspect or provision the mailbox first and reuse its address as the sender identity instead of inventing one.
+          5. Choose the nearest Worker example and adapt it instead of inventing a new template structure.
+          6. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
+          7. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
+          8. Validate the resulting YAML with the CLI when available.
+          9. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
+          10. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
+          11. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
+          12. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
           
           ## Worker service model
           
@@ -2867,6 +3081,7 @@ container:
           - Prefer reusing an existing queue in the current room when it already represents the intended workflow.
           - If there is no queue yet, define one explicitly and keep the name consistent across scheduler, sender, and Worker YAML.
           - A queue channel or queue annotation alone is not enough. The runtime must show an actual queue-consuming path, normally `meshagent worker join --queue=...`, and the surrounding service/container setup must point at the same workflow.
+          - For one-time scheduled jobs, do not schedule first and hope the Worker path works later. Prove the Worker path with an immediate queue message before creating the scheduled task.
           
           ## What to build
           
@@ -2875,14 +3090,30 @@ container:
           - If the Worker needs storage, mail, web search, memory, or database access, add only the capabilities the actual task requires.
           - Keep the Worker focused on consuming queue messages and completing the queued job.
           
+          ## Verification and handoff rules
+          
+          - Do not call the Worker complete based only on YAML generation or service creation.
+          - For a queue-backed Worker, success requires live room service evidence, live runtime evidence, and a successful immediate dequeue smoke test.
+          - If the Worker sends email, do not call the workflow complete until logs or other runtime evidence show that the message send succeeded or show the exact blocker.
+          - If the Worker runtime is missing, unhealthy, or not visibly dequeuing, switch to `meshagent-service-operator` and `meshagent-runtime-operator` before touching the schedule.
+          - If the immediate queue smoke test fails, do not create the scheduled task yet.
+          
           ## Operating rules
           
           - Do not invent undocumented annotation keys, runtime flags, or environment variables.
           - Do not guess YAML structure when a nearby Worker example already covers the pattern.
           - Prefer the simplest Worker example that satisfies the requested queued-job behavior.
           - Preserve the parts that make dequeueing work: `meshagent.agent.type: "Worker"`, `meshagent worker join --queue=...`, and any required room/container setup.
+          - If the queued job sends email, use a real mailbox-backed sender identity from the current room instead of synthesizing a sender address.
           - If the user only asked to schedule an already running agent and the current room lacks a queue-consuming Worker, stop the scheduler workflow and switch to this skill before claiming scheduling is possible.
           - If the user actually needs a multi-channel process agent rather than a dedicated Worker, say so and use the more appropriate example instead of forcing a Worker pattern.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return worker, service, runtime, and smoke-test evidence to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
           
           ## Out of scope
           
@@ -2897,6 +3128,43 @@ container:
             short_description: "Build queue-backed Worker agents"
             default_prompt: "Use $meshagent-queue-worker-builder to create or update a queue-backed Worker meshagent.yaml."
 
+      - path: /meshagent-skills/skills/meshagent-queue-worker-builder/references/scheduled_email_worker.md
+        text: |
+          # Scheduled Email Worker
+          
+          Use this reference when the user asks for a Worker that receives a queue message and sends an email, especially when that Worker will later be triggered by a one-time scheduled task.
+          
+          ## Required sequence
+          
+          1. Inspect or provision the mailbox first.
+          2. Reuse the mailbox email address as the sender identity.
+          3. Build or update a queue-backed Worker service that consumes the intended queue.
+          4. Validate the YAML or rendered service before deployment.
+          5. Create or update the service.
+          6. Verify the live room service appears in `meshagent room service list`.
+          7. Verify the runtime is actually alive with room developer output, container state, or container logs.
+          8. Enqueue an immediate test message now, before creating the scheduled task.
+          9. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+          10. Only after the immediate smoke test passes should you create the one-time scheduled task.
+          
+          ## Success criteria
+          
+          Do not call the workflow complete until all of the following are true:
+          
+          - the mailbox exists and its address is the sender identity used by the workflow
+          - the Worker service exists in the room
+          - a live runtime or container is visibly running
+          - an immediate test message is consumed from the queue
+          - runtime evidence shows the mail send succeeded or shows the exact blocker
+          - the scheduled task is set for a future absolute time with enough safety margin to avoid already being in the past
+          
+          ## Failure interpretation
+          
+          - A created mailbox does not prove outbound mail works.
+          - A created service record does not prove a Worker runtime is running.
+          - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
+          - If the scheduled time is too close and setup is still incomplete, push the one-time run farther into the future instead of pretending the near-term run is still valid.
+
       - path: /meshagent-skills/skills/meshagent-runtime-operator/SKILL.md
         text: |
           ---
@@ -2907,6 +3175,7 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - cli_root
                 - server_root
@@ -2917,6 +3186,8 @@ container:
             related_skills:
               - skill: meshagent-sdk-researcher
                 when: Resolve checkout roots before using CLI or server source references.
+              - skill: meshagent-queue-worker-builder
+                when: The runtime to inspect is a queue-backed Worker and the question is whether it actually dequeues or completes jobs.
               - skill: meshagent-service-operator
                 when: The fix belongs in service definition or room service lifecycle rather than runtime debugging.
               - skill: meshagent-webapp-builder
@@ -2929,6 +3200,17 @@ container:
               excludes:
                 - full service-template authoring
                 - non-runtime queue, memory, database, or storage workflows
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Runtime Operator
@@ -2952,6 +3234,7 @@ container:
           ## Related skills
           
           - `meshagent-sdk-researcher`: Resolve checkout roots before using CLI or server source references.
+          - `meshagent-queue-worker-builder`: Use it when the runtime belongs to a queue-backed Worker and the remaining job is to prove or debug actual dequeue behavior.
           - `meshagent-service-operator`: Use it when the main task is changing a service definition or room service record rather than debugging the live runtime.
           - `meshagent-webapp-builder`: Use it when runtime checks pass but the remaining issue is public site behavior.
           
@@ -2971,12 +3254,27 @@ container:
           - Treat `container exec` as a live-room debugging operation, not a substitute for fixing the service definition.
           - Use image build/pull/push/load/save only when the runtime problem or deployment workflow actually requires image operations.
           
+          ## Queue worker verification
+          
+          - For queue-backed Workers, verify the room service is visible, then inspect the live runtime with developer output, container list, and container logs.
+          - Prefer an immediate smoke-test message over waiting only for a future scheduled task when you need to prove dequeue behavior.
+          - For mail-sending Workers, inspect logs for dequeue evidence and mail-send success or failure before calling the workflow complete.
+          - A queue size of `0` after a test or scheduled run is not enough by itself. Confirm whether the message was consumed successfully, failed during handling, or never arrived.
+          
           ## Verification rules
           
           - Do not conclude that the runtime is healthy based only on service metadata.
           - Use logs, running container state, and port-forwarded behavior to confirm what is actually happening.
+          - For queue-backed Workers, do not conclude success until you have runtime evidence that a test message was actually processed.
           - If a container-local check passes but the public behavior is still broken, hand off to the appropriate website or route skill rather than stopping at the runtime layer.
           - If a runtime issue persists after restart or stop/start behavior, inspect the declarative service definition before repeating the same action.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return runtime evidence and observed state to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
           
           ## Out of scope
           
@@ -3001,6 +3299,7 @@ container:
               bundled:
                 - ../meshagent-cli-operator/references/command_groups.md
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
                 - cli_root
@@ -3023,6 +3322,17 @@ container:
               excludes:
                 - queue consumer implementation
                 - general cron guidance outside MeshAgent scheduled tasks
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Scheduler
@@ -3069,10 +3379,11 @@ container:
           2. Resolve the user's timezone before setting or changing a schedule.
           3. Inspect the current room and current agent context to determine whether the running agent already has an explicit queue-consuming path.
           4. Inspect existing scheduled tasks with `meshagent scheduled-task list`.
-          5. Confirm the exact queue name, JSON payload, timezone, and UTC cron expression before mutating anything.
-          6. Create, update, or delete the scheduled task.
-          7. Verify the task state with `meshagent scheduled-task list`.
-          8. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+          5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
+          6. Confirm the exact queue name, JSON payload, local execution time, timezone, and UTC cron expression before mutating anything.
+          7. Create, update, or delete the scheduled task.
+          8. Verify the task state with `meshagent scheduled-task list`.
+          9. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
           
           ## Timezone resolution
           
@@ -3084,13 +3395,21 @@ container:
           - Convert the requested local time into the exact UTC cron expression that will be stored.
           - When the request is tied to a named local timezone that observes DST, explain that the current scheduler stores UTC cron only, so the UTC schedule may need seasonal adjustment.
           
+          ## One-time scheduling guard
+          
+          - Restate the exact local scheduled time and the exact UTC time before creating a one-time task.
+          - Use absolute times in the explanation, not just "one minute from now" or similar relative phrasing.
+          - If setup, deployment, or smoke testing has consumed most of the time window, move the one-time run farther into the future instead of leaving it effectively in the past.
+          - Do not create a near-future one-time task until the queue consumer path is already proven with an immediate smoke test.
+          - If the user asked for "a minute from now" but the workflow is not yet ready, explain that you are moving the one-time run to the next safe minute window rather than pretending the original time still makes sense.
+          
           ## Queue consumption
           
           - CLI verification: use `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
           - For queue-name discovery, prefer `meshagent room agent list-toolkits` and `meshagent room agent invoke-tool --toolkit queues --tool list --arguments '{}'` before writing SDK code.
           - API verification: use the room queues client, for example `queues = await room.queues.list()` or `message = await room.queues.receive(name="my-queue")`.
           - The current CLI does not expose a dedicated `meshagent room queue list` subcommand. If the queue name is unknown, use the room queue API or inspect room configuration rather than claiming queue discovery is impossible.
-          - When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message.
+          - When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message. For mail-sending workers, this is still not enough by itself; runtime mail-send evidence must also be checked.
           
           ## Current agent queue discovery
           
@@ -3124,12 +3443,21 @@ container:
           - For “what queues are available?” questions, prefer generic CLI toolkit invocation over ad hoc SDK code.
           - Do not invent timezones.
           - Do not schedule a task until the timezone has been confirmed or reliably detected.
+          - Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
           - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
           - Do not treat a bare `queue:` channel as proof of consumption unless the runtime clearly shows how it dequeues that queue.
           - Always state the timezone assumption and the resulting UTC schedule when adding or updating a task.
           - Do not claim that a scheduled task "works" just because the task exists; verify that messages reach the queue.
+          - Do not treat queue delivery alone as end-to-end success when the queued workflow must send email or perform another externally visible action.
           - Treat `update` and `delete` as destructive.
           - Keep this skill focused on scheduling and queue verification, not on the implementation of the consumer.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return schedule, queue, and timing evidence to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
           
           ## Out of scope
           
@@ -3150,6 +3478,8 @@ container:
           metadata:
             short-description: Resolve the MeshAgent checkout and research docs, examples, and source paths.
             references:
+              bundled:
+                - ../_shared/references/workflow_accountability.md
               resolved_targets:
                 - sdk_root
                 - docs_root
@@ -3176,6 +3506,17 @@ container:
               excludes:
                 - CLI flag discovery by itself
                 - deployment workflow ownership
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent SDK Researcher
@@ -3220,6 +3561,13 @@ container:
           - Use the SDK source to confirm exact method names, argument shapes, and return types when the docs are ambiguous.
           - If the expected checkout is not present, say that clearly and fall back to the best available docs or source tree instead of inventing paths.
           
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return resolved roots, examples, and source evidence to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+          
           ## Out of scope
           
           - This skill does not replace CLI help for command flags.
@@ -3242,6 +3590,7 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
                 - cli_root
@@ -3267,6 +3616,17 @@ container:
               excludes:
                 - detailed runtime debugging
                 - queue, database, memory, or storage operations by themselves
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Service Operator
@@ -3302,6 +3662,7 @@ container:
           3. Validate or render the spec/template before create or update when a file is involved.
           4. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
           5. After mutation, verify the service record and, when relevant, the live room service state.
+          6. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
           
           ## Service scope rules
           
@@ -3315,8 +3676,16 @@ container:
           
           - Do not claim a service is deployed correctly based only on YAML generation.
           - After create or update, verify with `meshagent service show`, `meshagent service list`, or `meshagent room service list` as appropriate.
+          - For queue-backed Workers, a visible service record is not enough. Confirm that the room service is present and then use runtime inspection to prove that a live runtime or container is actually running.
           - If a room service is unhealthy, use room-service state and runtime inspection before rewriting the spec.
           - If restart is requested, confirm the target by `--id` or `--name` before issuing it.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return service and live-room evidence to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
           
           ## Out of scope
           
@@ -3340,6 +3709,7 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
                 - cli_root
@@ -3363,6 +3733,17 @@ container:
               excludes:
                 - website deployment by itself
                 - general runtime debugging
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Storage Operator
@@ -3410,6 +3791,13 @@ container:
           - After `rm`, verify that the path is actually gone.
           - If a file is present in room storage but not visible in a running container, treat that as a runtime or mount issue and hand off appropriately.
           
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return storage-path evidence and observed state to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+          
           ## Out of scope
           
           - Website deployment flow by itself.
@@ -3439,6 +3827,7 @@ container:
                 - references/verification_checklist.md
                 - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/managed_hostname_rules.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - cli_root
                 - server_root
@@ -3463,6 +3852,17 @@ container:
               excludes:
                 - generic route administration
                 - deep frontend platform design beyond room webapps
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Webapp Builder
@@ -3554,6 +3954,13 @@ container:
           - If outbound mail fails with an authorization error such as `550 5.7.1 Permission denied`, switch to mailbox-backed sender provisioning if permissions allow, then re-test.
           - If code still references a synthesized sender address after mailbox provisioning fails, treat that as an implementation bug and replace it with a real mailbox-backed address or report the exact mailbox blocker.
           - Only stop and ask the user for help after mailbox provisioning, route creation, or deploy verification is blocked by a concrete error you can report exactly.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return deploy, HTTP, and mail evidence to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
       - path: /meshagent-skills/skills/meshagent-webapp-builder/agents/openai.yaml
         text: |
@@ -3873,6 +4280,7 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - cli_root
                 - docs_root
@@ -3894,6 +4302,17 @@ container:
               excludes:
                 - large SPA or bundler-heavy frontend architecture
                 - generic non-React room webapps
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Webapp React Builder
@@ -3974,6 +4393,13 @@ container:
           - Do not test the room-hosted website only via container-local `localhost`.
           - Do not deploy frontend changes without accounting for browser caching.
           
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return frontend, deploy, and live-URL evidence to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+          
           ## Out of scope
           
           - Large SPA architecture, complex build pipelines, or frontend platform design beyond what a room mini site needs.
@@ -4000,6 +4426,7 @@ container:
                 - references/static_webserver_example.yaml
                 - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/managed_hostname_rules.md
+                - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - router_root
                 - server_root
@@ -4024,6 +4451,17 @@ container:
               excludes:
                 - website implementation
                 - service lifecycle by itself
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
           # MeshAgent Webmaster
@@ -4091,6 +4529,13 @@ container:
           
           - Follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL or retrying a colliding hostname.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+          - If another skill already owns the workflow, return route and hostname evidence to that owner instead of declaring the overall job complete.
+          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
       - path: /meshagent-skills/skills/meshagent-webmaster/agents/openai.yaml
         text: |
