@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Runtime Operator"
+  short_description: "Debug live room runtime state"
+  default_prompt: "Use $meshagent-runtime-operator to inspect live room containers, logs, or port forwards."
