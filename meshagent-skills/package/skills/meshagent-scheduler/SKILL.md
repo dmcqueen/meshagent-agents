@@ -7,6 +7,7 @@ metadata:
     bundled:
       - ../meshagent-cli-operator/references/command_groups.md
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
@@ -14,6 +15,7 @@ metadata:
       - examples_root
     resolved_targets:
       - scheduled task CLI help
+      - shared live-room CLI context rules
       - scheduled task examples
   related_skills:
     - skill: meshagent-workflow-orchestrator
@@ -61,6 +63,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 ## References
 
 - Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
+- Use `../_shared/references/live_room_cli_context.md` when the scheduling workflow runs in or targets a known live room.
 
 ## Related skills
 
@@ -97,6 +100,12 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 8. Create, update, or delete the scheduled task.
 9. Verify the task state with `meshagent scheduled-task list`.
 10. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+
+## Live room execution
+
+- Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped scheduling work.
+- If permissions are uncertain, start with `meshagent scheduled-task list --room <ROOM_NAME>` or another narrow room-scoped scheduler probe before claiming scheduling is blocked.
 
 ## Payload design for scheduled email workflows
 
