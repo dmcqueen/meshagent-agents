@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Service Operator"
+  short_description: "Operate services and templates"
+  default_prompt: "Use $meshagent-service-operator to validate, render, or update a MeshAgent service."
