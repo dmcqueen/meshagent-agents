@@ -20,6 +20,7 @@ Use these rules whenever a skill authors or rewrites `Service` or `ServiceTempla
 - Before deployment, run the narrowest validation path that matches the asset:
   - `meshagent service validate` for a concrete `Service`
   - `meshagent service validate-template` and `meshagent service render-template` for a `ServiceTemplate`
+- If validation fails, do not deploy and do not just rerun the same command blindly. Read the exact validation error, repair the YAML or template, and rerun validation. Repeat that fix-and-revalidate loop until validation passes or the remaining blocker is clearly external to the asset itself.
 - Before treating YAML as correct, verify all of these:
   - structural correctness: valid service or template shape
   - command correctness: every runtime flag is actually supported
