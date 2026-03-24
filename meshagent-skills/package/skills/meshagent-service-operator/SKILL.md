@@ -8,6 +8,7 @@ metadata:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/runtime_image_environment_rules.md
+      - ../_shared/references/service_yaml_correctness.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
@@ -16,6 +17,7 @@ metadata:
     resolved_targets:
       - shared live-room CLI context rules
       - shared runtime image environment rules
+      - shared service YAML correctness rules
       - services CLI source
       - room-services CLI source
       - service examples and packaging docs
@@ -68,6 +70,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
 - Use `../_shared/references/live_room_cli_context.md` when the service workflow runs in or targets a known live room.
 - Use `../_shared/references/runtime_image_environment_rules.md` when choosing or reviewing a service container image.
+- Use `../_shared/references/service_yaml_correctness.md` when validating authored service YAML beyond basic shape.
 - Inspect the resolved services CLI source for project/global/room service behavior, template rendering, and upsert rules.
 - Inspect the resolved room-services CLI source for live room service listing and restart behavior.
 
@@ -84,10 +87,11 @@ Use this skill when the task is primarily about MeshAgent services or service te
 
 1. Determine whether the task is about a raw `Service`, a `ServiceTemplate`, or a live room service already running in a room.
 2. Read the existing YAML or list the current services before mutating anything.
-3. Validate or render the spec/template before create or update when a file is involved.
-4. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
-5. After mutation, verify the service record and, when relevant, the live room service state.
-6. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
+3. When the asset is being authored, prefer a generated starting point such as `meshagent worker spec`, `meshagent mailbot spec`, `meshagent multi spec`, or `meshagent service spec` instead of building the YAML from scratch.
+4. Validate or render the spec/template before create or update when a file is involved.
+5. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
+6. After mutation, verify the service record and, when relevant, the live room service state.
+7. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
 
 ## Live room execution
 
@@ -100,8 +104,10 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - Distinguish project/global services from room-scoped services before acting.
 - Distinguish declarative service CRUD (`meshagent service ...`) from runtime room-service state (`meshagent room service ...`).
 - Match the container image family to the actual MeshAgent environment. Do not copy a production docs image into a `.life` room unless the environment already proves that image family is correct there.
+- Validate service YAML for workflow correctness, not just schema shape. Check command flags, mailbox identity, queue wiring, and whether the declared roles actually match the intended behavior.
 - Prefer `validate` or `validate-template` before deployment when the source YAML is being authored or changed.
 - Prefer `render-template` when the user needs to inspect the concrete resolved template output.
+- Prefer generated specs or rendered templates over handwritten YAML when the runtime shape already has a CLI spec command.
 - Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
 
 ## Verification rules
