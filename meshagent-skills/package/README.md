@@ -25,6 +25,8 @@ The package now has one general CLI skill plus a larger specialized operator bun
   Room database schema, CRUD, search, SQL, namespace, index, and `RequiredTable` workflows.
 - `skills/meshagent-memory-operator/`
   Room memory creation, ingestion, recall, and query workflows.
+- `skills/meshagent-workflow-orchestrator/`
+  End-to-end multi-skill workflow ownership, preflight, sequencing, and completion-gate tracking.
 - `skills/meshagent-queue-operator/`
   Queue send, receive, backlog inspection, and queue-delivery verification.
 - `skills/meshagent-queue-worker-builder/`
@@ -115,6 +117,10 @@ Key files and directories in this package:
   Room memory ingestion, recall, and query skill.
 - `skills/meshagent-memory-operator/agents/openai.yaml`
   OpenAI agent metadata for the memory operator.
+- `skills/meshagent-workflow-orchestrator/SKILL.md`
+  End-to-end multi-skill workflow orchestration and accountability skill.
+- `skills/meshagent-workflow-orchestrator/agents/openai.yaml`
+  OpenAI agent metadata for the workflow orchestrator.
 - `skills/meshagent-queue-operator/SKILL.md`
   Queue send, receive, backlog, and delivery-verification skill.
 - `skills/meshagent-queue-operator/agents/openai.yaml`
