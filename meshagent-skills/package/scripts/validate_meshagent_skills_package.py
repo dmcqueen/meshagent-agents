@@ -29,32 +29,19 @@ DEFAULT_HELP = (
     / "references"
     / "meshagent_cli_help.md"
 )
-SPECIALIZED_SKILLS = {
-    "meshagent-sdk-researcher": SKILLS_ROOT
-    / "skills"
-    / "meshagent-sdk-researcher"
-    / "SKILL.md",
-    "meshagent-webapp-builder": SKILLS_ROOT
-    / "skills"
-    / "meshagent-webapp-builder"
-    / "SKILL.md",
-    "meshagent-mail-operator": SKILLS_ROOT
-    / "skills"
-    / "meshagent-mail-operator"
-    / "SKILL.md",
-    "meshagent-scheduler": SKILLS_ROOT / "skills" / "meshagent-scheduler" / "SKILL.md",
-    "meshagent-webmaster": SKILLS_ROOT / "skills" / "meshagent-webmaster" / "SKILL.md",
-}
-SKILL_FILES = {
-    "meshagent-cli-operator": DEFAULT_SKILL,
-    **SPECIALIZED_SKILLS,
-}
+SKILLS_DIR = SKILLS_ROOT / "skills"
 SKILL_REFERENCE_PATH_PATTERN = re.compile(r"\.\./meshagent-[^/\s]+/SKILL\.md")
-RUNTIME_REFERENCES = (
-    "references/command_groups.md",
-    "references/meshagent_cli_help.md",
+FRONTMATTER_PATTERN = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
+NAME_PATTERN = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
+RELATIVE_RESOURCE_PATTERN = re.compile(
+    r"(?P<path>(?:\.\./|references/)[A-Za-z0-9_./-]+\.(?:md|yaml|py))"
 )
-SKILLS_WITHOUT_CLI_REFERENCES = {"meshagent-sdk-researcher"}
+QUOTED_STRING_PATTERN = re.compile(r'^(?P<quote>["\'])(?P<value>.*)(?P=quote)$')
+EXPECTED_PLUGIN_DESCRIPTION = (
+    "MeshAgent operator skill pack for CLI routing, room operations, runtime "
+    "debugging, queues, services, storage, databases, memory, scheduling, and "
+    "room-hosted web workflows."
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -76,6 +63,25 @@ def parse_args() -> argparse.Namespace:
 
 def load_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def discover_skill_files() -> dict[str, Path]:
+    discovered: dict[str, Path] = {}
+    for skill_md in sorted(SKILLS_DIR.glob("*/SKILL.md")):
+        if skill_md.parent.name == "_shared":
+            continue
+        text = load_text(skill_md)
+        frontmatter_match = FRONTMATTER_PATTERN.match(text)
+        if frontmatter_match is None:
+            raise ValueError(f"{skill_md} is missing YAML frontmatter")
+        name_match = NAME_PATTERN.search(frontmatter_match.group(1))
+        if name_match is None:
+            raise ValueError(f"{skill_md} is missing frontmatter name")
+        skill_name = name_match.group(1).strip().strip('"').strip("'")
+        if not skill_name:
+            raise ValueError(f"{skill_md} has an empty frontmatter name")
+        discovered[skill_name] = skill_md
+    return discovered
 
 
 def parse_top_level_commands(help_text: str) -> set[str]:
@@ -104,6 +110,93 @@ def referenced_top_level_commands(command_groups_text: str) -> set[str]:
     for match in re.finditer(r"`meshagent ([a-z0-9-]+)", command_groups_text):
         refs.add(match.group(1))
     return refs
+
+
+def parse_scalar_string(raw_value: str, field_name: str, source_path: Path) -> str:
+    value = raw_value.strip()
+    match = QUOTED_STRING_PATTERN.match(value)
+    if match is not None:
+        return match.group("value")
+    if value and not value.startswith(("[", "{")):
+        return value
+    raise ValueError(f"{source_path} has an invalid string value for {field_name}")
+
+
+def parse_openai_interface(openai_path: Path) -> dict[str, str]:
+    lines = openai_path.read_text(encoding="utf-8").splitlines()
+    interface_started = False
+    interface_fields: dict[str, str] = {}
+
+    for line_number, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if not interface_started:
+            if line != "interface:":
+                raise ValueError(
+                    f"{openai_path}:{line_number} must start with a top-level interface: mapping"
+                )
+            interface_started = True
+            continue
+        if not line.startswith("  "):
+            raise ValueError(
+                f"{openai_path}:{line_number} has unexpected top-level content outside interface"
+            )
+        if ":" not in stripped:
+            raise ValueError(
+                f"{openai_path}:{line_number} must define a key/value pair under interface"
+            )
+        key, raw_value = stripped.split(":", 1)
+        key = key.strip()
+        if key in interface_fields:
+            raise ValueError(
+                f"{openai_path}:{line_number} duplicates interface key {key}"
+            )
+        interface_fields[key] = parse_scalar_string(raw_value, key, openai_path)
+
+    if not interface_started:
+        raise ValueError(f"{openai_path} is missing top-level interface:")
+    return interface_fields
+
+
+def validate_openai_yaml(skill_name: str, skill_dir: Path, errors: list[str]) -> None:
+    openai_path = skill_dir / "agents" / "openai.yaml"
+    if not openai_path.is_file():
+        errors.append(f"{skill_name} is missing agents/openai.yaml")
+        return
+
+    try:
+        interface_fields = parse_openai_interface(openai_path)
+    except ValueError as exc:
+        errors.append(str(exc))
+        return
+
+    required_fields = ("display_name", "short_description", "default_prompt")
+    for field in required_fields:
+        value = interface_fields.get(field)
+        if not value:
+            errors.append(
+                f"{skill_name} agents/openai.yaml is missing interface.{field}"
+            )
+
+    expected_prompt_token = f"${skill_name}"
+    default_prompt = interface_fields.get("default_prompt", "")
+    if expected_prompt_token not in default_prompt:
+        errors.append(
+            f"{skill_name} agents/openai.yaml default_prompt must mention {expected_prompt_token}"
+        )
+
+
+def validate_relative_resources(
+    skill_name: str, skill_path: Path, skill_text: str, errors: list[str]
+) -> None:
+    for match in RELATIVE_RESOURCE_PATTERN.finditer(skill_text):
+        relative_path = match.group("path")
+        target_path = (skill_path.parent / relative_path).resolve()
+        if not target_path.is_file():
+            errors.append(
+                f"{skill_name} references missing packaged resource {relative_path}"
+            )
 
 
 def main() -> int:
@@ -149,6 +242,7 @@ def main() -> int:
     plugin_text = load_text(DEFAULT_PLUGIN)
     skill_text = load_text(DEFAULT_SKILL)
     help_text = load_text(DEFAULT_HELP)
+    skill_files = discover_skill_files()
 
     errors: list[str] = []
     if actual_version != expected_version:
@@ -173,9 +267,11 @@ def main() -> int:
         errors.append(
             "meshagent_cli_help.md should not embed repo-local meshagent paths"
         )
-    if "MeshAgent CLI skill pack" not in plugin_text:
+    plugin = json.loads(plugin_text)
+    plugin_description = plugin.get("description")
+    if plugin_description != EXPECTED_PLUGIN_DESCRIPTION:
         errors.append(
-            "plugin.json description does not match the expected package label"
+            "plugin.json description does not match the expected package description"
         )
     if missing:
         errors.append(
@@ -196,26 +292,12 @@ def main() -> int:
         errors.append(
             "command_groups.md is missing the required webmaster routing rule for explicit route management"
         )
-    for skill_name, skill_path in SKILL_FILES.items():
+    for skill_name, skill_path in skill_files.items():
         current_skill_text = load_text(skill_path)
         if SKILL_REFERENCE_PATH_PATTERN.search(current_skill_text):
             errors.append(f"{skill_name} references another skill by relative path")
-        for other_skill_name in SKILL_FILES:
-            if other_skill_name == skill_name:
-                continue
-            if other_skill_name in current_skill_text:
-                errors.append(
-                    f"{skill_name} references sibling skill {other_skill_name}"
-                )
-        if (
-            skill_name != "meshagent-cli-operator"
-            and skill_name not in SKILLS_WITHOUT_CLI_REFERENCES
-        ):
-            for runtime_reference in RUNTIME_REFERENCES:
-                if runtime_reference not in current_skill_text:
-                    errors.append(
-                        f"{skill_name} is missing runtime reference {runtime_reference}"
-                    )
+        validate_openai_yaml(skill_name, skill_path.parent, errors)
+        validate_relative_resources(skill_name, skill_path, current_skill_text, errors)
 
     if errors:
         for error in errors:
