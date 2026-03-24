@@ -16,23 +16,31 @@ Use this reference when the user asks for a Worker that receives a queue message
 10. Generate the initial service asset from the real CLI when possible:
    - `meshagent worker spec` for a dedicated Worker
    - `meshagent mailbot spec` for a dedicated MailBot
-   - `meshagent multi spec` when one service must run both roles
+   - `meshagent service spec` only when the narrower agent-specific spec commands are not the right fit
 11. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-12. For the service YAML, validate the actual command flags and role composition. A Worker must use real worker flags such as `--rule` or `--room-rules`; a MailBot must not be treated as the scheduled job consumer.
-13. Validate the YAML or rendered service before deployment.
-14. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
-15. Create or update the service.
-16. Verify the live room service appears in `meshagent room service list`.
-17. Verify the runtime is actually alive with room developer output, container state, or container logs.
-18. Enqueue an immediate test message now, before creating the scheduled task.
-19. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-20. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
-21. Only after the immediate smoke test passes should you create the one-time scheduled task.
-22. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-23. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
-24. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-25. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-26. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+12. For non-trivial scheduled email behavior, prefer mounted or startup-generated Worker rule files and pass them with `--room-rules` instead of relying only on a long inline rule string.
+13. Prefer separate MailBot and Worker services for new scheduled email workflows. Only preserve a combined process when you are repairing an existing deployment that already depends on it.
+14. For non-trivial scheduled email workflows, follow the same behavioral pattern as the `industry-report` nightly-report Worker:
+   - the Worker queue owns a named workflow through durable rule files
+   - the scheduled task prompt tells the Worker to run that workflow
+   - the MailBot exists only to publish toolkit `email`
+15. For the service YAML, validate the actual command flags and role composition. A Worker must use real worker flags such as `--rule` or `--room-rules`; a MailBot must not be treated as the scheduled job consumer.
+16. Validate the YAML or rendered service before deployment.
+17. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
+18. Create or update the service.
+19. Verify the live room service appears in `meshagent room service list`.
+20. Verify the runtime is actually alive with room developer output, container state, or container logs.
+21. Enqueue an immediate test message now, before creating the scheduled task.
+22. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+23. Design the scheduled payload so it explicitly requests email sending in the same style the Worker already expects:
+   - prompt-style when the Worker rules define a named workflow to run
+   - structured fields when the Worker rules already key off `to`, `subject`, `body`, and any required action field
+24. Only after the immediate smoke test passes should you create the one-time scheduled task.
+25. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+26. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+27. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+28. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+29. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 
 ## Success criteria
 
@@ -58,9 +66,12 @@ Do not call the workflow complete until all of the following are true:
 - A copied docs image does not prove the runtime image matches the current MeshAgent environment. A `.life` room may need a different runtime image family than the production docs examples.
 - A MailBot service by itself does not satisfy a scheduled email worker workflow. The MailBot publishes toolkit `email`; the Worker must consume the scheduled job queue.
 - A manifest that declares both `MailBot` and `Worker` roles but starts only one runtime path is incorrect even if the YAML shape validates.
+- A new scheduled email workflow should not default to a combined MailBot+Worker process when separate services would express the design more clearly.
 - A worker command that uses unsupported flags such as `--prompt` is invalid YAML content even if the surrounding service shape looks correct.
 - A mailbox-looking sender such as `something@meshagent.local` is not a proven mailbox-backed sender identity.
 - A scheduled task payload that does not explicitly request email sending may enqueue successfully while never causing an email to be sent.
+- A scheduled task payload that uses structured fields can still fail if the Worker was only taught to react to prompt-style instructions from its rules file or room-rules. Match the payload to the Worker design.
+- For non-trivial scheduled email workflows, a prompt that triggers the durable Worker workflow is often more reliable than ad hoc `to`/`subject`/`body` JSON fields.
 - If the user asked for a real scheduled email and no recipient address has been collected yet, the workflow is still blocked on required user input. Do not pretend the remaining setup is complete.
 - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
 - A consumed smoke-test queue message does not prove email delivery by itself. Delivery still needs runtime send evidence or an exact mail blocker.
@@ -86,6 +97,10 @@ Do not call the workflow complete until all of the following are true:
 
 - Prompt-style payload example:
   - `{"prompt":"Send an email to david.mcqueen@timu.com using the email toolkit. Subject: Scheduled test. Body: This is a scheduled test email."}`
+- Prompt-style workflow-trigger example:
+  - `{"prompt":"Run the scheduled email workflow and send the email using the email toolkit to david.mcqueen@timu.com. Subject: Scheduled test. Body: This is a scheduled test email."}`
+- Rule-file workflow-trigger example:
+  - `{"prompt":"Run the nightly report workflow from /data/agents/<AGENT_NAME>/rules-worker-report.txt and send the email using the email toolkit."}`
 - Structured payload example:
   - `{"to":"david.mcqueen@timu.com","subject":"Scheduled test","body":"This is a scheduled test email.","action":"send_email"}`
-- Match the payload style to the Worker's rules. If the Worker was built around prompt-driven instructions, keep using a prompt. If it was built around structured fields, use those exact fields.
+- Match the payload style to the Worker's rules. If the Worker was built around prompt-driven instructions or a named room-rules workflow, keep using a prompt. If it was built around structured fields, use those exact fields.
