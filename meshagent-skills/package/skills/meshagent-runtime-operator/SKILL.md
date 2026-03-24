@@ -15,6 +15,8 @@ metadata:
       - containers CLI source
       - port-forward CLI source
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: Runtime debugging is one part of a larger end-to-end workflow that still needs one owner.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using CLI or server source references.
     - skill: meshagent-queue-worker-builder
@@ -64,23 +66,29 @@ Use this skill when the task is about the live runtime state inside a room rathe
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when runtime debugging is only one part of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using CLI or server source references.
 - `meshagent-queue-worker-builder`: Use it when the runtime belongs to a queue-backed Worker and the remaining job is to prove or debug actual dequeue behavior.
+- `meshagent-mail-operator`: Use it when the runtime issue depends on mailbox identity, MailBot publication, or proving outbound mail behavior.
+- `meshagent-scheduler`: Use it when a required scheduled-task create, list, or timing step may be blocked by permissions or backend scheduler health.
 - `meshagent-service-operator`: Use it when the main task is changing a service definition or room service record rather than debugging the live runtime.
 - `meshagent-webapp-builder`: Use it when runtime checks pass but the remaining issue is public site behavior.
 
 ## Default workflow
 
 1. Resolve the room and identify the runtime target: service, container, port, or log stream.
-2. Start with read-only inspection: developer logs, container list, container logs, or port-forward target discovery.
-3. Use `exec`, `run`, or image operations only after you understand the live state.
-4. If local inspection is needed, use port forwarding with an explicit target container and port mapping.
-5. Verify that the runtime symptom changed after any intervention.
+2. Start with read-only inspection: room service state, toolkit visibility, developer logs, container list, container logs, or port-forward target discovery.
+3. For queue-backed workflows, check the dependency chain in order: service state, required toolkit publication, worker logs, immediate queue smoke test, and only then scheduler or external-action verification.
+4. Use `exec`, `run`, or image operations only after you understand the live state.
+5. If local inspection is needed, use port forwarding with an explicit target container and port mapping.
+6. Verify that the runtime symptom changed after any intervention.
 
 ## Runtime rules
 
 - Prefer `meshagent room developer watch` for room-wide developer telemetry and `meshagent room container log` for one container’s logs.
 - Prefer `container list` before `log`, `exec`, `stop`, or `port forward` so you target the right container.
+- Prefer `meshagent room service list` before container actions when the symptom is about a deployed service, Worker, or MailBot rather than an ad hoc container.
+- Prefer `meshagent room agent list-toolkits` before concluding that a runtime dependency such as toolkit `email` is unavailable or unpublished.
 - Treat `container stop` as disruptive.
 - Treat `container exec` as a live-room debugging operation, not a substitute for fixing the service definition.
 - Use image build/pull/push/load/save only when the runtime problem or deployment workflow actually requires image operations.
@@ -88,15 +96,33 @@ Use this skill when the task is about the live runtime state inside a room rathe
 ## Queue worker verification
 
 - For queue-backed Workers, verify the room service is visible, then inspect the live runtime with developer output, container list, and container logs.
+- Verify that every required toolkit the Worker depends on is visibly published in the room before assuming the Worker is truly ready to process jobs.
+- Distinguish "service exists" from "worker is ready." A Worker may appear running while still waiting for a required toolkit or another runtime dependency.
 - Prefer an immediate smoke-test message over waiting only for a future scheduled task when you need to prove dequeue behavior.
 - For mail-sending Workers, inspect logs for dequeue evidence and mail-send success or failure before calling the workflow complete.
 - A queue size of `0` after a test or scheduled run is not enough by itself. Confirm whether the message was consumed successfully, failed during handling, or never arrived.
+- If a smoke-test message remains in the queue, check toolkit publication, Worker startup logs, and service/container restart state before changing the queue or payload.
+
+## Toolkit dependency diagnosis
+
+- When a Worker uses `--require-toolkit=<NAME>`, verify that toolkit is actually published in the room with `meshagent room agent list-toolkits`.
+- Do not assume that creating a mailbox, service, or queue also publishes a toolkit. Prove the toolkit exists as a live room participant capability.
+- For email workflows, separate mailbox existence from toolkit `email` publication. A mailbox alone does not satisfy a Worker waiting on toolkit `email`.
+- If the required toolkit is missing, treat that as a readiness blocker first rather than debugging queue payload shape or scheduler timing.
+
+## Cross-surface diagnosis
+
+- For queue-backed mail workflows, use this order: `meshagent room service list`, `meshagent room agent list-toolkits`, `meshagent room developer watch`, `meshagent room container list/log`, immediate queue smoke test, then mail-send evidence.
+- If the queue path works but the future scheduled run does not, hand off to `meshagent-scheduler` to preflight scheduler permissions or backend health rather than treating it as a pure runtime failure.
+- If scheduler create or list is failing with `403` or `5xx`, report that as a scheduler blocker even if the runtime path is healthy.
+- If the runtime path is unhealthy, do not let scheduler troubleshooting distract from fixing service state, required toolkits, or Worker readiness first.
 
 ## Verification rules
 
 - Do not conclude that the runtime is healthy based only on service metadata.
-- Use logs, running container state, and port-forwarded behavior to confirm what is actually happening.
+- Use logs, running container state, toolkit visibility, and port-forwarded behavior to confirm what is actually happening.
 - For queue-backed Workers, do not conclude success until you have runtime evidence that a test message was actually processed.
+- For Workers with required toolkits, do not conclude readiness until the required toolkits are visibly present in the room.
 - If a container-local check passes but the public behavior is still broken, hand off to the appropriate website or route skill rather than stopping at the runtime layer.
 - If a runtime issue persists after restart or stop/start behavior, inspect the declarative service definition before repeating the same action.
 
