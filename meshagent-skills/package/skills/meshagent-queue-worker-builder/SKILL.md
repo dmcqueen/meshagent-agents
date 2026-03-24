@@ -8,6 +8,7 @@ metadata:
       - references/scheduled_email_worker.md
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/runtime_image_environment_rules.md
+      - ../_shared/references/service_yaml_correctness.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
@@ -17,6 +18,7 @@ metadata:
       - Worker examples
       - shared live-room CLI context rules
       - shared runtime image environment rules
+      - shared service YAML correctness rules
       - packaging docs
       - Worker CLI source
   related_skills:
@@ -75,6 +77,7 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 - Use `references/scheduled_email_worker.md` for workflows that must dequeue a message and send an email before a one-time schedule is considered complete.
 - Use `../_shared/references/live_room_cli_context.md` when the workflow runs in or targets a known live room.
 - Use `../_shared/references/runtime_image_environment_rules.md` when the workflow must choose a container image for a room worker or MailBot.
+- Use `../_shared/references/service_yaml_correctness.md` when writing or repairing service YAML so command flags, mailbox wiring, and role composition stay valid.
 - Use the resolved packaging docs for service-template structure and annotation semantics.
 - Inspect the resolved Worker CLI source for the actual Worker flags and runtime shape.
 
@@ -95,15 +98,20 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 4. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities. If the CLI does not expose a dedicated queue-list command, use the room queue API or the current room configuration rather than assuming queue discovery is impossible.
 5. If the queued job sends email, inspect or provision the mailbox first and reuse its address as the sender identity instead of inventing one.
 6. If the Worker will call the `email` toolkit, prove that a live publisher for toolkit `email` already exists in the room or build one first. The normal pattern is a MailBot publishing `--toolkit-name=email`.
-7. Choose the nearest Worker example and adapt it instead of inventing a new template structure.
-8. Choose the container image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
-9. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
-10. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
-11. Validate the resulting YAML with the CLI when available.
-12. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
-13. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
-14. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
-15. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
+7. Prefer a generated asset shape over freehand YAML:
+   - use `meshagent worker spec` for a dedicated Worker
+   - use `meshagent mailbot spec` for a dedicated MailBot
+   - use `meshagent multi spec` when one service must run both roles explicitly
+8. Choose the nearest example and adapt it only after the generated or example shape is in hand.
+9. Choose the container image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
+10. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
+11. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
+12. Validate the resulting YAML against `../_shared/references/service_yaml_correctness.md`, including real CLI flag support, mailbox identity, queue wiring, mounted files, and whether the workflow needs both MailBot and Worker roles.
+13. Validate the resulting YAML with `meshagent service validate` or `validate-template` and `render-template` when available.
+14. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
+15. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
+16. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
+17. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
 
 ## Worker service model
 
@@ -129,6 +137,7 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 - Include the minimum container command, token identity, storage mounts, and Worker rule set required for the job.
 - If the Worker needs storage, mail, web search, memory, or database access, add only the capabilities the actual task requires.
 - Keep the Worker focused on consuming queue messages and completing the queued job.
+- Prefer YAML that is generated or minimally edited from the real CLI spec commands over hand-written manifests assembled from scratch.
 
 ## Verification and handoff rules
 
@@ -146,9 +155,12 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 - Prefer the simplest Worker example that satisfies the requested queued-job behavior.
 - In a known live room, do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks before room-scoped worker setup.
 - Do not copy a docs example runtime image blindly. Match the worker or MailBot image family to the actual MeshAgent environment first.
+- Do not emit a worker command with flags that `meshagent worker join` does not support. For worker instructions, use `--rule` or `--room-rules`, not invented flags like `--prompt`.
 - Preserve the parts that make dequeueing work: `meshagent.agent.type: "Worker"`, `meshagent worker join --queue=...`, and any required room/container setup.
 - If the queued job sends email, use a real mailbox-backed sender identity from the current room instead of synthesizing a sender address.
 - Do not assume mailbox creation is enough to satisfy `--require-toolkit=email`. Mailbox provisioning and email-toolkit publication are separate concerns.
+- For scheduled email workflows, do not point a standalone MailBot at the scheduled job queue and call that complete. The MailBot publishes toolkit `email`; the Worker consumes the scheduled job queue.
+- For scheduled email workflows, do not declare both `MailBot` and `Worker` roles in YAML unless the container command actually starts both roles, usually through `meshagent multi join`.
 - When adapting a pattern like the news reporter example, keep the MailBot or equivalent toolkit publisher that makes `email` visible to the Worker. Do not copy only the Worker half of the pattern.
 - If the user only asked to schedule an already running agent and the current room lacks a queue-consuming Worker, stop the scheduler workflow and switch to this skill before claiming scheduling is possible.
 - If the user actually needs a multi-channel process agent rather than a dedicated Worker, say so and use the more appropriate example instead of forcing a Worker pattern.
