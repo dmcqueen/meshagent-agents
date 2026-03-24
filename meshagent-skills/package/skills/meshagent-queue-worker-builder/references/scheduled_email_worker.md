@@ -22,9 +22,10 @@ Use this reference when the user asks for a Worker that receives a queue message
 16. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
 17. Only after the immediate smoke test passes should you create the one-time scheduled task.
 18. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-19. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-20. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-21. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+19. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+20. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+21. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+22. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 
 ## Success criteria
 
@@ -57,6 +58,7 @@ Do not call the workflow complete until all of the following are true:
 - If broad auth or room-listing commands fail but a narrower room-scoped workflow is still possible, continue with the room-scoped path instead of stopping early.
 - In a known live room, `meshagent auth whoami` failing or reporting "Not logged in" does not by itself block this workflow. Use a room-scoped probe instead.
 - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
+- If `meshagent scheduled-task add` fails after passing a human-readable `--id`, suspect invalid task-id format first. Scheduled-task ids are UUID-backed; omit `--id` or pass a real UUID.
 - If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
 - If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
 
