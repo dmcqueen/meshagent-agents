@@ -83,6 +83,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - A scheduled task does not execute business logic directly.
 - It enqueues a JSON payload onto the configured queue on the requested schedule.
 - The scheduled workflow is only end-to-end useful when something else consumes that queue.
+- For scheduled email workflows, the payload itself should explicitly tell the Worker to send the email or should carry the fields the Worker's rules require for email sending. Do not assume the schedule "knows" to send mail just because the queue consumer has access to toolkit `email`.
 
 ## Default workflow
 
@@ -96,6 +97,17 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 8. Create, update, or delete the scheduled task.
 9. Verify the task state with `meshagent scheduled-task list`.
 10. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+
+## Payload design for scheduled email workflows
+
+- A scheduled task only enqueues payload. It does not implicitly request email sending.
+- If the target workflow is "send an email later," design the payload so the Worker can clearly infer that it must use toolkit `email`.
+- Good scheduled email payloads either:
+  - include an explicit prompt such as "Send an email to <RECIPIENT> using the email toolkit", or
+  - include the exact structured fields the Worker rules already require, such as `to`, `subject`, `body`, and any other required action field.
+- Do not rely on a generic payload like `{"message":"hello"}` unless the Worker rules clearly define that such a payload means "send an email."
+- Before creating the task, restate how the payload maps to the Worker's email-sending logic.
+- If that mapping is ambiguous, fix the Worker rules or the payload before scheduling.
 
 ## Timezone resolution
 
