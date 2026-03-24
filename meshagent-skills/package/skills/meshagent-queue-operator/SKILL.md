@@ -48,6 +48,7 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room queue ...` command shapes.
 - Inspect the resolved queue CLI source for the real queue behavior and payload handling.
+- Inspect the resolved room queue API source when queue-name discovery matters. The current CLI does not expose a dedicated `meshagent room queue list` subcommand, but the room queue API does support listing visible queues.
 
 ## Related skills
 
@@ -59,14 +60,16 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 ## Default workflow
 
 1. Resolve the active room and the exact queue name.
-2. Inspect the queue state with `meshagent room queue size` before mutating or consuming it.
-3. If the task is to inject work, choose `send` for JSON payloads or `send-mail` for email-shaped messages.
-4. If the task is to verify end-to-end behavior, confirm both the sender path and the queue contents.
-5. After sending or receiving, re-check queue state when backlog or delivery matters.
+2. If the queue name is unknown, discover it from the current room configuration or by using the room queue API. Do not say queue listing is impossible just because the CLI lacks a dedicated `list` subcommand.
+3. Inspect the queue state with `meshagent room queue size` before mutating or consuming it.
+4. If the task is to inject work, choose `send` for JSON payloads or `send-mail` for email-shaped messages.
+5. If the task is to verify end-to-end behavior, confirm both the sender path and the queue contents.
+6. After sending or receiving, re-check queue state when backlog or delivery matters.
 
 ## Queue operation rules
 
 - Do not invent queue names. Reuse the queue already configured by the scheduler, mailbox, webhook, or Worker.
+- Do not claim that queues cannot be listed in a room. The current CLI lacks a dedicated `meshagent room queue list` command, but the room queue API can enumerate visible queues.
 - Prefer `send` for JSON payloads and `send-mail` only when the receiving workflow expects an email message shape.
 - Use `receive` to inspect the next queued message, but treat it as consumption of a live queue entry.
 - Use `size` when you need backlog verification without consuming a message.
