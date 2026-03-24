@@ -7,6 +7,7 @@ metadata:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
       - references/queue_discovery.md
+      - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
       - cli_root
@@ -32,6 +33,17 @@ metadata:
     excludes:
       - Worker or service YAML authoring
       - mailbox administration
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent Queue Operator
@@ -87,6 +99,13 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 - Verify the queue depth or queued payload after the upstream action.
 - If a queue-backed Worker is supposed to consume the message, verify both enqueue and downstream dequeue behavior.
 - If a queue is empty when it should contain messages, inspect the sender configuration before redesigning the consumer.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return queue evidence and observed state to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
 ## Out of scope
 
