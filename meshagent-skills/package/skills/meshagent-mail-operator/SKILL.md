@@ -98,6 +98,8 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Inbound email to that mailbox is delivered into the configured queue.
 - The queue name is part of the mailbox configuration. Do not invent it.
 - Creating a mailbox does not by itself create a consumer, service, or agent.
+- Creating a mailbox does not by itself publish toolkit `email` into the room.
+- When other agents depend on toolkit `email`, that toolkit must come from a running participant that publishes it, commonly a MailBot started with `--toolkit-name=email`.
 - For room-hosted outbound email workflows, the mailbox email address is the sender identity to use. Do not synthesize a sender address from the participant name and mail domain.
 
 ## Outbound delivery workflow
@@ -105,6 +107,8 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - For a room-hosted email workflow, first inspect or provision the mailbox that will own the sender address.
 - If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
 - If no mailbox exists and the task requires sending mail from the room, create one before claiming the workflow is complete.
+- If another agent will call toolkit `email`, separately verify that toolkit `email` is published in the room. Mailbox provisioning alone is not enough.
+- The common room pattern is a MailBot that owns the mailbox-backed sender identity and publishes toolkit `email` for chatbots or Workers that require it.
 - When creating a mailbox for a room-hosted workflow, use collision-resistant address candidates derived from the room and workflow purpose instead of generic names like `contact-form@...`.
 - If mailbox creation returns `409` and mailbox inspection returns `403`, treat that address as unavailable and try another candidate before asking the user for mailbox help.
 - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
@@ -138,6 +142,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
 - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
 - For queue-backed mail workers, do not claim success until the Worker has consumed a real test message and runtime evidence shows the send succeeded or shows the exact SMTP/provider blocker.
+- For Workers or chat agents that use `--require-toolkit=email`, do not treat a mailbox as proof that the toolkit exists. Verify that toolkit `email` is visible in the room from a live publisher such as a MailBot.
 - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
 - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
 - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
