@@ -6,6 +6,7 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
       - room_api_root
@@ -35,6 +36,17 @@ metadata:
     excludes:
       - memory-store workflows
       - full agent or service template authoring
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent Database Operator
@@ -124,6 +136,13 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 - Do not use `search` for joins or aggregate reporting that clearly requires SQL.
 - Do not invent namespace paths, index names, or schema annotations.
 - Verify destructive operations like `drop`, `drop-columns`, `restore`, and bulk `delete` carefully before executing them.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return database evidence and observed state to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
 ## Out of scope
 
