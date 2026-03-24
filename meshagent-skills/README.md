@@ -7,15 +7,15 @@ A MeshAgent room agent that automatically discovers and coordinates multipler sp
 ## Install Links
 
 Dev
-https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e8c01c7ad4c152910ab368ded586f6cf83a24ba0/meshagent-skills/agent.dev.yaml
+https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b510a054da38bd99d9bbe357762186f8edac984e/meshagent-skills/agent.dev.yaml
 
 Prod
-https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5ca3d8c280f89e3ee3c971dacdfe9140f6ee365c/meshagent-skills/agent.prod.yaml
+https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/17892bf80cb534a6e56f38318089fb7486c5a85e/meshagent-skills/agent.prod.yaml
 
 ## Raw SHA Links
 
 Dev
-https://raw.githubusercontent.com/dmcqueen/meshagent-agents/e8c01c7ad4c152910ab368ded586f6cf83a24ba0/meshagent-skills/agent.dev.yaml
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/b510a054da38bd99d9bbe357762186f8edac984e/meshagent-skills/agent.dev.yaml
 
 Prod
-https://raw.githubusercontent.com/dmcqueen/meshagent-agents/5ca3d8c280f89e3ee3c971dacdfe9140f6ee365c/meshagent-skills/agent.prod.yaml
+https://raw.githubusercontent.com/dmcqueen/meshagent-agents/17892bf80cb534a6e56f38318089fb7486c5a85e/meshagent-skills/agent.prod.yaml
