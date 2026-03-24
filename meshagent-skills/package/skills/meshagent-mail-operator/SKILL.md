@@ -82,6 +82,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 ## Live room execution
 
 - Apply `../_shared/references/live_room_cli_context.md` before asking for login or reconnecting.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped mail workflows.
 - If mailbox or queue access is uncertain, try the corresponding room-scoped or mailbox read command first and use the observed result.
 - If the workflow also publishes a public contact-form site, apply `../_shared/references/managed_hostname_rules.md` instead of inventing a suffix from examples.
 
