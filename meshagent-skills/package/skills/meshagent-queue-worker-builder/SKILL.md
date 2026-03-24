@@ -61,7 +61,7 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 
 1. Determine whether the target is a new Worker service, a modification to an existing Worker template, or a repair to a broken queue/schedule setup.
 2. Use `meshagent-sdk-researcher` to find the closest working example before drafting YAML.
-3. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities.
+3. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities. If the CLI does not expose a dedicated queue-list command, use the room queue API or the current room configuration rather than assuming queue discovery is impossible.
 4. Choose the nearest Worker example and adapt it instead of inventing a new template structure.
 5. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
 6. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
