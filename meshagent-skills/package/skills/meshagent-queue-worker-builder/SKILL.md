@@ -16,6 +16,8 @@ metadata:
       - packaging docs
       - Worker CLI source
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: The request spans Worker build, mail, runtime proof, and scheduling as one end-to-end workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before following example or source references.
     - skill: meshagent-scheduler
@@ -72,6 +74,7 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when the request spans Worker build, mail, runtime proof, and scheduling as one end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve the MeshAgent checkout roots and the exact example/source paths before using codebase references.
 - `meshagent-scheduler`: Use it after the Worker exists and the task becomes scheduled-task creation, timezone resolution, or queue verification.
 - `meshagent-mail-operator`: Use it when the queued job sends mail and must reuse a real mailbox-backed sender identity.
