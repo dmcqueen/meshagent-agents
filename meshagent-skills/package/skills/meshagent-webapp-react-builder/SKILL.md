@@ -6,11 +6,13 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - cli_root
       - docs_root
     resolved_targets:
+      - shared live-room CLI context rules
       - webserver CLI source
       - room service command help
   related_skills:
@@ -56,6 +58,7 @@ Use this skill when the task is to build or debug a small MeshAgent room website
 
 - After root resolution, inspect the resolved webserver CLI source for actual MeshAgent webserver behavior.
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent webserver ...` and room service command shapes.
+- Use `../_shared/references/live_room_cli_context.md` when the frontend workflow runs in or targets a known live room.
 
 ## Related skills
 
@@ -89,7 +92,9 @@ Use this skill when the task is to build or debug a small MeshAgent room website
 
 ## Live room and service rules
 
+- Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
 - If running inside a live MeshAgent room, use the existing room context first.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped frontend deploy or verification work.
 - For room service operations, use the actual command forms and flags. Do not assume positional service identifiers work.
 - The website runs in a separate container context. Do not rely on `localhost` checks from the agent container to prove the public site works.
 - Verify website behavior through the public URL after deploy.
