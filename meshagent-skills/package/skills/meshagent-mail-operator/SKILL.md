@@ -9,6 +9,7 @@ metadata:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/managed_hostname_rules.md
+      - ../_shared/references/service_yaml_correctness.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - cli_root
@@ -68,6 +69,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact CLI command shapes and flags.
 - Use `../_shared/references/live_room_cli_context.md` for shared live-room CLI context rules.
 - Use `../_shared/references/managed_hostname_rules.md` when the mail workflow also creates or validates a managed public hostname.
+- Use `../_shared/references/service_yaml_correctness.md` when mailbox-backed mail must be wired into authored service YAML.
 - After root resolution, inspect the resolved room mail implementation for SMTP sending behavior and defaults.
 
 ## Related skills
@@ -113,6 +115,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - If no mailbox exists and the task requires sending mail from the room, create one before claiming the workflow is complete.
 - If another agent will call toolkit `email`, separately verify that toolkit `email` is published in the room. Mailbox provisioning alone is not enough.
 - The common room pattern is a MailBot that owns the mailbox-backed sender identity and publishes toolkit `email` for chatbots or Workers that require it.
+- If authored service YAML is involved, make sure the MailBot queue matches the mailbox or inbound mail path rather than a separate scheduled job queue unless the implementation explicitly requires both to be the same.
 - When creating a mailbox for a room-hosted workflow, use collision-resistant address candidates derived from the room and workflow purpose instead of generic names like `contact-form@...`.
 - If mailbox creation returns `409` and mailbox inspection returns `403`, treat that address as unavailable and try another candidate before asking the user for mailbox help.
 - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
