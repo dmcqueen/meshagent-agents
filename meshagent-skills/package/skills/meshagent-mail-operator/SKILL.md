@@ -1,6 +1,38 @@
 ---
 name: meshagent-mail-operator
 description: Manage MeshAgent mailboxes, explain room SMTP behavior, and inspect inbound mail queues with the CLI and room APIs.
+metadata:
+  short-description: Operate mailboxes, room SMTP behavior, and inbound mail queue inspection.
+  references:
+    bundled:
+      - ../meshagent-cli-operator/references/command_groups.md
+      - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/live_room_cli_context.md
+      - ../_shared/references/managed_hostname_rules.md
+    requires_roots:
+      - cli_root
+      - server_root
+    resolved_targets:
+      - room mail implementation
+      - mailbox CLI help
+  related_skills:
+    - skill: meshagent-sdk-researcher
+      when: Resolve checkout roots before using server or CLI source references.
+    - skill: meshagent-queue-operator
+      when: The main task is generic queue inspection or queue injection rather than mailbox behavior.
+    - skill: meshagent-webapp-builder
+      when: Mail is one part of a room-hosted contact form or website workflow.
+    - skill: meshagent-cli-operator
+      when: Managed hostname and general room-scoped CLI rules matter.
+  scope:
+    owns:
+      - mailbox administration
+      - mailbox-backed sender identity rules
+      - inbound mail queue inspection
+      - room SMTP default behavior
+    excludes:
+      - generic queue workflows without mailbox context
+      - full website authoring
 ---
 
 # MeshAgent Mail Operator
@@ -17,14 +49,23 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 ## References
 
-- Use `references/command_groups.md` and `references/meshagent_cli_help.md` for exact CLI command shapes and flags.
-- For room SMTP sending behavior, inspect the actual implementation in `/src/meshagent-sdk/meshagent-agents/meshagent/agents/mail.py` and `/src/meshagent-sdk/meshagent-agents/meshagent/agents/mail_common.py`.
+- Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact CLI command shapes and flags.
+- Use `../_shared/references/live_room_cli_context.md` for shared live-room CLI context rules.
+- Use `../_shared/references/managed_hostname_rules.md` when the mail workflow also creates or validates a managed public hostname.
+- After root resolution, inspect the resolved room mail implementation for SMTP sending behavior and defaults.
+
+## Related skills
+
+- `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references for mail implementation details.
+- `meshagent-queue-operator`: Use it when the queue work is independent of mailbox provisioning or SMTP behavior.
+- `meshagent-webapp-builder`: Use it when mailbox-backed mail is part of a room website or contact form workflow.
+- `meshagent-cli-operator`: Reuse its managed-hostname and room-context rules when a mail workflow also creates or verifies a public site.
 
 ## Live room execution
 
-- If this skill is running inside a live MeshAgent room runtime, first use the existing MeshAgent CLI session and room context before asking for login or manual re-authentication.
+- Apply `../_shared/references/live_room_cli_context.md` before asking for login or reconnecting.
 - If mailbox or queue access is uncertain, try the corresponding room-scoped or mailbox read command first and use the observed result.
-- If the workflow also publishes a public contact-form site, derive the managed hostname suffix from `MESHAGENT_API_URL` and keep that suffix consistent with the current environment.
+- If the workflow also publishes a public contact-form site, apply `../_shared/references/managed_hostname_rules.md` instead of inventing a suffix from examples.
 
 ## Primary command groups
 
@@ -83,6 +124,6 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
 - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
 - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
-- If the workflow also creates a public route, do not copy `.meshagent.app` from CLI examples when the current runtime maps to a different managed suffix.
+- If the workflow also creates a public route, follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL.
 - If SMTP rejects delivery, report the exact observed blocker.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
