@@ -1396,6 +1396,7 @@ container:
           - Do not invent the active project, active room, hostname, filesystem layout, or environment variables. Inspect them or ask when they matter.
           - Do not use live `meshagent ... --help` as a default discovery step in a live room when the packaged references already cover the command. Use live `--help` only as a fallback for missing or version-mismatched details.
           - Before writing ad hoc SDK code for a room operation, check whether the CLI already exposes a generic toolkit path such as `meshagent room agent list-toolkits` or `meshagent room agent invoke-tool`.
+          - When a first command returns noisy or truncated output for a simple inspection task, rerun the narrowest command and summarize the exact result instead of handing the truncation problem back to the user.
           - Prefer read commands before create, update, deploy, or delete.
           - Restate the exact mutation target before destructive changes.
           - Verify the resulting state after mutation.
@@ -2701,7 +2702,7 @@ container:
           ## Default workflow
           
           1. Resolve the active room and the exact queue name.
-          2. If the queue name is unknown, use `references/queue_discovery.md` and prefer `meshagent room agent list-toolkits` plus `meshagent room agent invoke-tool --toolkit queues --tool list --arguments '{}'` before writing any SDK code.
+          2. If the queue name is unknown, use `references/queue_discovery.md` and prefer `meshagent room agent list-toolkits` plus `meshagent room agent invoke-tool --toolkit queues --tool list --timeout 0 --arguments '{}'` before writing any SDK code.
           3. If toolkit invocation is unavailable, discover queue names from current room configuration or as a last resort through the room queue API. Do not say queue listing is impossible just because the CLI lacks a dedicated `list` subcommand.
           4. Inspect the queue state with `meshagent room queue size` before mutating or consuming it.
           5. If the task is to inject work, choose `send` for JSON payloads or `send-mail` for email-shaped messages.
@@ -2712,8 +2713,9 @@ container:
           
           - Do not invent queue names. Reuse the queue already configured by the scheduler, mailbox, webhook, or Worker.
           - Do not claim that queues cannot be listed in a room. The current CLI lacks a dedicated `meshagent room queue list` command, but the room queue API can enumerate visible queues.
-          - When the user asks for a clean list of queue names, prefer `meshagent room agent invoke-tool --toolkit queues --tool list --arguments '{}'` over writing ad hoc Python.
+          - When the user asks for a clean list of queue names, prefer `meshagent room agent invoke-tool --toolkit queues --tool list --timeout 0 --arguments '{}'` over writing ad hoc Python.
           - Use SDK code for queue listing only as a fallback when the generic CLI toolkit invocation path is unavailable.
+          - Do not answer with “tool output was truncated” for a queue-list request. Rerun the narrow command and return the actual queue names or an explicit empty list.
           - Prefer `send` for JSON payloads and `send-mail` only when the receiving workflow expects an email message shape.
           - Use `receive` to inspect the next queued message, but treat it as consumption of a live queue entry.
           - Use `size` when you need backlog verification without consuming a message.
@@ -2760,16 +2762,20 @@ container:
             --room <ROOM_NAME> \
             --toolkit queues \
             --tool list \
+            --timeout 0 \
             --arguments '{}'
           ```
           
           4. Return the queue names and sizes from that tool output.
+          5. If the first command output is noisy, truncated, or mixed with progress lines, rerun the narrow `invoke-tool` command and extract the exact queue names before replying.
+          6. If the result contains no queues, say that the room currently has no visible queues rather than leaving the answer ambiguous.
           
           ## Interpretation rules
           
           - Do not say queue listing is impossible just because `meshagent room queue` lacks a dedicated `list` subcommand.
           - `meshagent room queue send`, `receive`, and `size` are specialized queue commands. `meshagent room agent invoke-tool` is the generic fallback when the CLI does not expose a dedicated queue-list command.
           - If the `queues` toolkit is not visible from `list-toolkits`, explain that the room did not expose the toolkit to this caller instead of claiming queue listing is unsupported by MeshAgent.
+          - Do not stop at “the output was truncated” when the user asked for queue names. Rerun the narrow command, parse the result, and report the exact names or an explicit empty list.
           
           ## Only use SDK code as a fallback
           
