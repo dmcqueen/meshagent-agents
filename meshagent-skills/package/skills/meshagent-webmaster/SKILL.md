@@ -10,6 +10,7 @@ metadata:
       - references/static_webserver_example.yaml
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/managed_hostname_rules.md
+      - ../_shared/references/workflow_accountability.md
     requires_roots:
       - router_root
       - server_root
@@ -34,6 +35,17 @@ metadata:
     excludes:
       - website implementation
       - service lifecycle by itself
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent Webmaster
@@ -101,3 +113,10 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 
 - Follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL or retrying a colliding hostname.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return route and hostname evidence to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
