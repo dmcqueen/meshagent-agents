@@ -62,7 +62,7 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room queue ...` command shapes.
 - Use `references/queue_discovery.md` when the user asks what queues are available in the room or when the queue name is unknown.
 - Inspect the resolved queue CLI source for the real queue behavior and payload handling.
-- Inspect the resolved room queue API source when queue-name discovery matters. The current CLI does not expose a dedicated `meshagent room queue list` subcommand, but the room queue API does support listing visible queues.
+- Inspect the resolved room queue API source when queue-name discovery matters. The current CLI does not expose a dedicated room-queue list subcommand, but the room queue API does support listing visible queues.
 
 ## Related skills
 
@@ -84,7 +84,7 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 ## Queue operation rules
 
 - Do not invent queue names. Reuse the queue already configured by the scheduler, mailbox, webhook, or Worker.
-- Do not claim that queues cannot be listed in a room. The current CLI lacks a dedicated `meshagent room queue list` command, but the room queue API can enumerate visible queues.
+- Do not claim that queues cannot be listed in a room. The current CLI lacks a dedicated room-queue list command, but the room queue API can enumerate visible queues.
 - When the user asks for a clean list of queue names, prefer `meshagent room agent invoke-tool --toolkit queues --tool list --timeout 0 --arguments '{}'` over writing ad hoc Python.
 - Use SDK code for queue listing only as a fallback when the generic CLI toolkit invocation path is unavailable.
 - Do not answer with “tool output was truncated” for a queue-list request. Rerun the narrow command and return the actual queue names or an explicit empty list.
