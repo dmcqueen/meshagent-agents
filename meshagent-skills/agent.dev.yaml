@@ -1725,6 +1725,7 @@ container:
           - Do not leave an obviously required user input such as the recipient email unasked in a workflow whose purpose is to send a real email.
           - Do not wait until the final step to discover that a required backend surface such as scheduled-task create is blocked when a cheap preflight could have shown that earlier.
           - Do not use broad auth or project-listing failures as proof that a room-scoped workflow cannot proceed when a narrower room-scoped probe was available.
+          - Do not use `meshagent auth whoami` as a prerequisite gatekeeper for a known-room workflow.
           - Do not treat queue drain, service creation, or scheduled-task creation as proof that a requested email was actually delivered.
           - Do not assume that a scheduled task payload implicitly means "send an email" unless the payload explicitly maps to the Worker's email-sending rules.
 
@@ -2706,6 +2707,7 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
@@ -2715,6 +2717,7 @@ container:
                 - server_root
               resolved_targets:
                 - room database docs
+                - shared live-room CLI context rules
                 - database CLI source
                 - Room API database client source
                 - server database toolkit
@@ -2765,6 +2768,7 @@ container:
           
           - After root resolution, use the resolved room database docs for the API model and examples.
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room database ...` command shapes.
+          - Use `../_shared/references/live_room_cli_context.md` when the database workflow runs in or targets a known live room.
           - Inspect the resolved database CLI source for the real CLI behavior, including schema parsing, JSON formats, and SQL/search options.
           - Inspect the resolved Room API client source for `RequiredTable`, `SqlTableReference`, namespaces, and `DatabaseClient`.
           - Inspect the resolved server database toolkit when you need the server-side toolkit operations or permission model.
@@ -2779,8 +2783,10 @@ container:
           
           ## Live room execution
           
+          - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
           - If this skill is running inside a live MeshAgent room workflow, first use the current room context instead of asking the user to reconnect.
           - Resolve the active room and inspect the existing tables before creating or mutating anything.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped database work.
           - If permissions are uncertain, start with a read path such as table listing or schema inspection before claiming the database is unavailable.
           
           ## Default workflow
@@ -2942,6 +2948,7 @@ container:
           ## Live room execution
           
           - Apply `../_shared/references/live_room_cli_context.md` before asking for login or reconnecting.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped mail workflows.
           - If mailbox or queue access is uncertain, try the corresponding room-scoped or mailbox read command first and use the observed result.
           - If the workflow also publishes a public contact-form site, apply `../_shared/references/managed_hostname_rules.md` instead of inventing a suffix from examples.
           
@@ -3037,6 +3044,7 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
@@ -3044,6 +3052,7 @@ container:
                 - api_root
               resolved_targets:
                 - room memory docs
+                - shared live-room CLI context rules
                 - memory CLI source
                 - room memory API examples
             related_skills:
@@ -3088,6 +3097,7 @@ container:
           ## References
           
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room memory ...` command shapes.
+          - Use `../_shared/references/live_room_cli_context.md` when the memory workflow runs in or targets a known live room.
           - Use the resolved room memory docs for the conceptual memory model and examples.
           - Inspect the resolved memory CLI source for the real command surface and payload formats.
           
@@ -3104,6 +3114,12 @@ container:
           3. Choose the narrowest operation: `create`, `inspect`, `query`, `recall`, `upsert-*`, `ingest-*`, `delete-*`, or `optimize`.
           4. If the workflow depends on imported data, verify the source text, file, storage path, or table before ingestion.
           5. After mutation or ingestion, verify with `inspect`, `query`, or `recall`.
+          
+          ## Live room execution
+          
+          - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped memory work.
+          - If permissions are uncertain, start with a room-scoped read path such as store listing, `inspect`, or `query` before claiming the memory surface is unavailable.
           
           ## Memory model rules
           
@@ -3150,6 +3166,7 @@ container:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
                 - references/queue_discovery.md
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
@@ -3157,6 +3174,7 @@ container:
                 - api_root
               resolved_targets:
                 - queue CLI help
+                - shared live-room CLI context rules
                 - queue CLI source
                 - room queue API examples
             related_skills:
@@ -3206,6 +3224,7 @@ container:
           
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room queue ...` command shapes.
           - Use `references/queue_discovery.md` when the user asks what queues are available in the room or when the queue name is unknown.
+          - Use `../_shared/references/live_room_cli_context.md` when the queue workflow runs in or targets a known live room.
           - Inspect the resolved queue CLI source for the real queue behavior and payload handling.
           - Inspect the resolved room queue API source when queue-name discovery matters. The current CLI does not expose a dedicated room-queue list subcommand, but the room queue API does support listing visible queues.
           
@@ -3226,6 +3245,12 @@ container:
           5. If the task is to inject work, choose `send` for JSON payloads or `send-mail` for email-shaped messages.
           6. If the task is to verify end-to-end behavior, confirm both the sender path and the queue contents.
           7. After sending or receiving, re-check queue state when backlog or delivery matters.
+          
+          ## Live room execution
+          
+          - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped queue work.
+          - If permissions are uncertain, start with a room-scoped read such as queue size or toolkit-based queue listing before claiming queue access is blocked.
           
           ## Queue operation rules
           
@@ -3317,6 +3342,7 @@ container:
             references:
               bundled:
                 - references/scheduled_email_worker.md
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
@@ -3324,6 +3350,7 @@ container:
                 - cli_root
               resolved_targets:
                 - Worker examples
+                - shared live-room CLI context rules
                 - packaging docs
                 - Worker CLI source
             related_skills:
@@ -3380,6 +3407,7 @@ container:
             - `examples/cli/multi-agent-news-reporter/meshagent.yaml` when a dedicated Worker cooperates with other agents in the same room
             - `examples/cli/meshagent-writer/meshagent.yaml` and `examples/cli/meshagent-codex-writer/meshagent.yaml` for scheduled writer workflows that rely on a Worker queue consumer
           - Use `references/scheduled_email_worker.md` for workflows that must dequeue a message and send an email before a one-time schedule is considered complete.
+          - Use `../_shared/references/live_room_cli_context.md` when the workflow runs in or targets a known live room.
           - Use the resolved packaging docs for service-template structure and annotation semantics.
           - Inspect the resolved Worker CLI source for the actual Worker flags and runtime shape.
           
@@ -3396,17 +3424,18 @@ container:
           
           1. Determine whether the target is a new Worker service, a modification to an existing Worker template, or a repair to a broken queue/schedule setup.
           2. Use `meshagent-sdk-researcher` to find the closest working example before drafting YAML.
-          3. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities. If the CLI does not expose a dedicated queue-list command, use the room queue API or the current room configuration rather than assuming queue discovery is impossible.
-          4. If the queued job sends email, inspect or provision the mailbox first and reuse its address as the sender identity instead of inventing one.
-          5. If the Worker will call the `email` toolkit, prove that a live publisher for toolkit `email` already exists in the room or build one first. The normal pattern is a MailBot publishing `--toolkit-name=email`.
-          6. Choose the nearest Worker example and adapt it instead of inventing a new template structure.
-          7. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
-          8. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
-          9. Validate the resulting YAML with the CLI when available.
-          10. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
-          11. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
-          12. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
-          13. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
+          3. If the room is already known, apply `../_shared/references/live_room_cli_context.md` and start with narrow room-scoped probes rather than broad auth or project-listing commands.
+          4. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities. If the CLI does not expose a dedicated queue-list command, use the room queue API or the current room configuration rather than assuming queue discovery is impossible.
+          5. If the queued job sends email, inspect or provision the mailbox first and reuse its address as the sender identity instead of inventing one.
+          6. If the Worker will call the `email` toolkit, prove that a live publisher for toolkit `email` already exists in the room or build one first. The normal pattern is a MailBot publishing `--toolkit-name=email`.
+          7. Choose the nearest Worker example and adapt it instead of inventing a new template structure.
+          8. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
+          9. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
+          10. Validate the resulting YAML with the CLI when available.
+          11. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
+          12. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
+          13. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
+          14. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
           
           ## Worker service model
           
@@ -3447,6 +3476,7 @@ container:
           - Do not invent undocumented annotation keys, runtime flags, or environment variables.
           - Do not guess YAML structure when a nearby Worker example already covers the pattern.
           - Prefer the simplest Worker example that satisfies the requested queued-job behavior.
+          - In a known live room, do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks before room-scoped worker setup.
           - Preserve the parts that make dequeueing work: `meshagent.agent.type: "Worker"`, `meshagent worker join --queue=...`, and any required room/container setup.
           - If the queued job sends email, use a real mailbox-backed sender identity from the current room instead of synthesizing a sender address.
           - Do not assume mailbox creation is enough to satisfy `--require-toolkit=email`. Mailbox provisioning and email-toolkit publication are separate concerns.
@@ -3486,22 +3516,23 @@ container:
           2. If the workflow is supposed to send a real email, collect the recipient email address before treating the workflow as ready for smoke testing or scheduling.
           3. If subject or body were not provided, either ask for them together with the recipient or use clearly stated defaults when the user has not asked for custom content.
           4. If the room is already known from runtime context or from the user's request, start with room-scoped probes. Do not use broad auth or room-listing commands as the gatekeeper for whether the workflow can proceed.
-          5. Inspect or provision the mailbox first.
-          6. Reuse the mailbox email address as the sender identity.
-          7. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
-          8. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-          9. Validate the YAML or rendered service before deployment.
-          10. Create or update the service.
-          11. Verify the live room service appears in `meshagent room service list`.
-          12. Verify the runtime is actually alive with room developer output, container state, or container logs.
-          13. Enqueue an immediate test message now, before creating the scheduled task.
-          14. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-          15. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
-          16. Only after the immediate smoke test passes should you create the one-time scheduled task.
-          17. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-          18. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-          19. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-          20. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+          5. In a known live room, do not run `meshagent auth whoami` as a prerequisite check for this workflow.
+          6. Inspect or provision the mailbox first.
+          7. Reuse the mailbox email address as the sender identity.
+          8. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
+          9. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
+          10. Validate the YAML or rendered service before deployment.
+          11. Create or update the service.
+          12. Verify the live room service appears in `meshagent room service list`.
+          13. Verify the runtime is actually alive with room developer output, container state, or container logs.
+          14. Enqueue an immediate test message now, before creating the scheduled task.
+          15. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+          16. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
+          17. Only after the immediate smoke test passes should you create the one-time scheduled task.
+          18. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+          19. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+          20. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+          21. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
           
           ## Success criteria
           
@@ -3532,6 +3563,7 @@ container:
           - If the user asked for a relative run time and setup consumed part of that window, recompute the relative schedule from the current moment before creating the scheduled task.
           - If the requesting user's timezone is unknown, do not schedule yet. First determine it from reliable user-specific context or ask the user directly.
           - If broad auth or room-listing commands fail but a narrower room-scoped workflow is still possible, continue with the room-scoped path instead of stopping early.
+          - In a known live room, `meshagent auth whoami` failing or reporting "Not logged in" does not by itself block this workflow. Use a room-scoped probe instead.
           - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
           - If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
           - If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
@@ -3562,11 +3594,13 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - cli_root
                 - server_root
               resolved_targets:
+                - shared live-room CLI context rules
                 - developer CLI source
                 - containers CLI source
                 - port-forward CLI source
@@ -3616,6 +3650,7 @@ container:
           ## References
           
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
+          - Use `../_shared/references/live_room_cli_context.md` when the runtime workflow runs in or targets a known live room.
           - Inspect the resolved developer CLI source for log-streaming behavior.
           - Inspect the resolved containers CLI source for container and image operations.
           - Inspect the resolved port CLI source for local-to-container port forwarding.
@@ -3638,6 +3673,12 @@ container:
           4. Use `exec`, `run`, or image operations only after you understand the live state.
           5. If local inspection is needed, use port forwarding with an explicit target container and port mapping.
           6. Verify that the runtime symptom changed after any intervention.
+          
+          ## Live room execution
+          
+          - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped runtime debugging.
+          - If permissions are uncertain, start with a narrow room-scoped read such as `meshagent room service list`, `meshagent room developer watch`, or `meshagent room container list` before claiming runtime access is blocked.
           
           ## Runtime rules
           
@@ -3712,6 +3753,7 @@ container:
               bundled:
                 - ../meshagent-cli-operator/references/command_groups.md
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
@@ -3719,6 +3761,7 @@ container:
                 - examples_root
               resolved_targets:
                 - scheduled task CLI help
+                - shared live-room CLI context rules
                 - scheduled task examples
             related_skills:
               - skill: meshagent-workflow-orchestrator
@@ -3766,6 +3809,7 @@ container:
           ## References
           
           - Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
+          - Use `../_shared/references/live_room_cli_context.md` when the scheduling workflow runs in or targets a known live room.
           
           ## Related skills
           
@@ -3802,6 +3846,12 @@ container:
           8. Create, update, or delete the scheduled task.
           9. Verify the task state with `meshagent scheduled-task list`.
           10. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+          
+          ## Live room execution
+          
+          - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped scheduling work.
+          - If permissions are uncertain, start with `meshagent scheduled-task list --room <ROOM_NAME>` or another narrow room-scoped scheduler probe before claiming scheduling is blocked.
           
           ## Payload design for scheduled email workflows
           
@@ -3930,8 +3980,10 @@ container:
             short-description: Resolve the MeshAgent checkout and research docs, examples, and source paths.
             references:
               bundled:
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               resolved_targets:
+                - shared live-room CLI context rules
                 - sdk_root
                 - docs_root
                 - examples_root
@@ -3983,6 +4035,7 @@ container:
           
           ## References
           
+          - Use `../_shared/references/live_room_cli_context.md` when this research runs inside a known live room and other skills will act on room-scoped results.
           - When this skill is available, treat it as the resolver for the MeshAgent codebase tree.
           - In a live room image, the MeshAgent SDK checkout is commonly preloaded at `/src/meshagent-sdk`, but do not assume that path blindly in every environment.
           - Resolve and expose these roots when available:
@@ -4005,6 +4058,7 @@ container:
           ## Operating rules
           
           - Prefer the preloaded docs, examples, and source over guessing API names or method signatures.
+          - If the task originates inside a known live room, do not recommend `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for the room-scoped follow-up work.
           - Resolve the codebase roots first before giving path-based guidance to another skill.
           - Match the actual SDK that corresponds to the language being used.
           - If the task is "how do we normally do this with MeshAgent?", search the preloaded docs/examples first.
@@ -4041,12 +4095,14 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
                 - cli_root
                 - server_root
               resolved_targets:
+                - shared live-room CLI context rules
                 - services CLI source
                 - room-services CLI source
                 - service examples and packaging docs
@@ -4097,6 +4153,7 @@ container:
           ## References
           
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
+          - Use `../_shared/references/live_room_cli_context.md` when the service workflow runs in or targets a known live room.
           - Inspect the resolved services CLI source for project/global/room service behavior, template rendering, and upsert rules.
           - Inspect the resolved room-services CLI source for live room service listing and restart behavior.
           
@@ -4117,6 +4174,12 @@ container:
           4. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
           5. After mutation, verify the service record and, when relevant, the live room service state.
           6. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
+          
+          ## Live room execution
+          
+          - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped service work.
+          - If permissions are uncertain, start with `meshagent room service list --room <ROOM_NAME>` or another narrow room-scoped read before claiming service access is blocked.
           
           ## Service scope rules
           
@@ -4163,6 +4226,7 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - docs_root
@@ -4170,6 +4234,7 @@ container:
                 - api_root
               resolved_targets:
                 - room storage docs
+                - shared live-room CLI context rules
                 - storage CLI source
                 - room storage API examples
             related_skills:
@@ -4216,6 +4281,7 @@ container:
           ## References
           
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room storage ...` command shapes.
+          - Use `../_shared/references/live_room_cli_context.md` when the storage workflow runs in or targets a known live room.
           - Use the resolved room storage docs for the storage model.
           - Inspect the resolved storage CLI source for the actual path parsing and copy behavior.
           
@@ -4233,6 +4299,12 @@ container:
           3. Use `cp` for transfers between local disk and room storage.
           4. Use `show` for content inspection and `ls` for structure inspection.
           5. Treat `rm` as destructive and verify the exact target path first.
+          
+          ## Live room execution
+          
+          - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped storage work.
+          - If permissions are uncertain, start with `exists`, `ls`, or `show` against the concrete room path before claiming the storage surface is unavailable.
           
           ## Path rules
           
@@ -4361,6 +4433,7 @@ container:
           ## Live room execution
           
           - Apply `../_shared/references/live_room_cli_context.md` for room context reuse, room-scoped command handling, and local-vs-room path rules.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped webapp deploy or verification work.
           - Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
           - For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
           - In a live room shell where `cwd` is `/src`, author deployable webapp files under a subdirectory of `/src`, not directly under `/data`.
@@ -4740,11 +4813,13 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
               requires_roots:
                 - cli_root
                 - docs_root
               resolved_targets:
+                - shared live-room CLI context rules
                 - webserver CLI source
                 - room service command help
             related_skills:
@@ -4790,6 +4865,7 @@ container:
           
           - After root resolution, inspect the resolved webserver CLI source for actual MeshAgent webserver behavior.
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent webserver ...` and room service command shapes.
+          - Use `../_shared/references/live_room_cli_context.md` when the frontend workflow runs in or targets a known live room.
           
           ## Related skills
           
@@ -4823,7 +4899,9 @@ container:
           
           ## Live room and service rules
           
+          - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
           - If running inside a live MeshAgent room, use the existing room context first.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped frontend deploy or verification work.
           - For room service operations, use the actual command forms and flags. Do not assume positional service identifiers work.
           - The website runs in a separate container context. Do not rely on `localhost` checks from the agent container to prove the public site works.
           - Verify website behavior through the public URL after deploy.
@@ -4956,6 +5034,7 @@ container:
           ## Live room execution
           
           - Apply `../_shared/references/live_room_cli_context.md` before asking for login or room discovery.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped route or hostname work.
           - Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
           - If route access is uncertain, try a read command such as `meshagent route list` or `meshagent route show` first and use the observed result.
           
@@ -5045,6 +5124,7 @@ container:
             short-description: Own multi-skill MeshAgent workflows from preflight through verified outcome.
             references:
               bundled:
+                - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/workflow_accountability.md
                 - ../meshagent-cli-operator/references/command_groups.md
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
@@ -5053,6 +5133,7 @@ container:
                 - docs_root
                 - server_root
               resolved_targets:
+                - shared live-room CLI context rules
                 - shared workflow accountability contract
                 - command-group routing reference
                 - packaged CLI help
@@ -5114,6 +5195,7 @@ container:
           
           ## References
           
+          - Use `../_shared/references/live_room_cli_context.md` when the workflow runs inside or targets a known live room.
           - Use `../_shared/references/workflow_accountability.md` as the contract for ownership, handoffs, evidence, and forbidden shortcuts.
           - Use `../meshagent-cli-operator/references/command_groups.md` when you need to route sub-steps to the right CLI family quickly.
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` when a sub-step depends on exact command shapes.
@@ -5148,7 +5230,8 @@ container:
           - Prefer one owner and several supporting skills over bouncing ownership implicitly between specialists.
           - Choose the narrowest specialist skill for execution, but keep orchestration here when the job spans multiple surfaces.
           - Preflight cheap blockers early: room access, scheduler visibility, toolkit publication, service visibility, queue discovery, mailbox identity, or route readiness.
-          - For room-scoped work, start from the known room context and the narrowest room-scoped probe. Do not let broader project-listing or auth-style commands become unnecessary blockers.
+          - For room-scoped work, apply `../_shared/references/live_room_cli_context.md`, start from the known room context, and use the narrowest room-scoped probe first.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite gatekeeper commands for a known-room workflow.
           - If a broad probe fails but a narrower room-scoped probe succeeds, continue the workflow and report the broad-scope limitation accurately instead of giving up.
           - If the workflow includes a relative schedule such as "one minute from now," make scheduling the final creation step after the worker/runtime path has already been proven.
           - If the workflow includes a real outgoing email, require a real recipient address unless the user explicitly asked for a payload-only template.
