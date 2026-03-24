@@ -73,6 +73,8 @@ Key files and directories in this package:
   Plugin metadata for the packaged skill pack.
 - `skills/_shared/references/`
   Shared package-level references for live-room CLI context and managed hostname rules.
+- `skills/_shared/references/workflow_accountability.md`
+  Shared workflow-owner, completion-gate, evidence, and handoff contract for multi-skill outcomes.
 - `commands/meshagent.md`
   General MeshAgent CLI entrypoint.
 - `commands/meshagent-room.md`
@@ -121,6 +123,8 @@ Key files and directories in this package:
   Queue-backed Worker `meshagent.yaml` authoring skill.
 - `skills/meshagent-queue-worker-builder/agents/openai.yaml`
   OpenAI agent metadata for the queue worker builder.
+- `skills/meshagent-queue-worker-builder/references/scheduled_email_worker.md`
+  End-to-end reference for mailbox-backed queue Workers that must pass an immediate smoke test before one-time scheduling.
 - `skills/meshagent-runtime-operator/SKILL.md`
   Live room runtime inspection and debugging skill.
 - `skills/meshagent-runtime-operator/agents/openai.yaml`
@@ -199,6 +203,7 @@ The current validator enforces these package rules:
 - skills must not reference sibling `SKILL.md` files by relative path
 - any packaged relative resource path mentioned by a skill must resolve to a real bundled file
 - every skill must provide `agents/openai.yaml` with an `interface` mapping that contains `display_name`, `short_description`, and a `default_prompt` that names the skill as `$skill-name`
+- every skill must carry workflow-accountability metadata and a `## Workflow accountability` section
 
 ## Scripts
 
