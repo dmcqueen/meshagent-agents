@@ -7,6 +7,7 @@ metadata:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
       - references/queue_discovery.md
+      - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
@@ -14,6 +15,7 @@ metadata:
       - api_root
     resolved_targets:
       - queue CLI help
+      - shared live-room CLI context rules
       - queue CLI source
       - room queue API examples
   related_skills:
@@ -63,6 +65,7 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room queue ...` command shapes.
 - Use `references/queue_discovery.md` when the user asks what queues are available in the room or when the queue name is unknown.
+- Use `../_shared/references/live_room_cli_context.md` when the queue workflow runs in or targets a known live room.
 - Inspect the resolved queue CLI source for the real queue behavior and payload handling.
 - Inspect the resolved room queue API source when queue-name discovery matters. The current CLI does not expose a dedicated room-queue list subcommand, but the room queue API does support listing visible queues.
 
@@ -83,6 +86,12 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 5. If the task is to inject work, choose `send` for JSON payloads or `send-mail` for email-shaped messages.
 6. If the task is to verify end-to-end behavior, confirm both the sender path and the queue contents.
 7. After sending or receiving, re-check queue state when backlog or delivery matters.
+
+## Live room execution
+
+- Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped queue work.
+- If permissions are uncertain, start with a room-scoped read such as queue size or toolkit-based queue listing before claiming queue access is blocked.
 
 ## Queue operation rules
 
