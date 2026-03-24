@@ -6,6 +6,7 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
@@ -13,6 +14,7 @@ metadata:
       - api_root
     resolved_targets:
       - room memory docs
+      - shared live-room CLI context rules
       - memory CLI source
       - room memory API examples
   related_skills:
@@ -57,6 +59,7 @@ Use this skill when the task is about the room memory API rather than the room d
 ## References
 
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room memory ...` command shapes.
+- Use `../_shared/references/live_room_cli_context.md` when the memory workflow runs in or targets a known live room.
 - Use the resolved room memory docs for the conceptual memory model and examples.
 - Inspect the resolved memory CLI source for the real command surface and payload formats.
 
@@ -73,6 +76,12 @@ Use this skill when the task is about the room memory API rather than the room d
 3. Choose the narrowest operation: `create`, `inspect`, `query`, `recall`, `upsert-*`, `ingest-*`, `delete-*`, or `optimize`.
 4. If the workflow depends on imported data, verify the source text, file, storage path, or table before ingestion.
 5. After mutation or ingestion, verify with `inspect`, `query`, or `recall`.
+
+## Live room execution
+
+- Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped memory work.
+- If permissions are uncertain, start with a room-scoped read path such as store listing, `inspect`, or `query` before claiming the memory surface is unavailable.
 
 ## Memory model rules
 
