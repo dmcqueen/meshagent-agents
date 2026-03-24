@@ -16,6 +16,8 @@ metadata:
       - room-services CLI source
       - service examples and packaging docs
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: The service work is only one part of a larger end-to-end workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using docs or source references.
     - skill: meshagent-queue-worker-builder
@@ -65,6 +67,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when the service work is only one part of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
 - `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-backed Worker YAML.
 - `meshagent-webapp-builder`: Use it when the main task is a website or public web application rather than service lifecycle.
