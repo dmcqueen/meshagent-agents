@@ -6,6 +6,7 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
       - cli_root
@@ -29,6 +30,17 @@ metadata:
     excludes:
       - website deployment by itself
       - general runtime debugging
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent Storage Operator
@@ -75,6 +87,13 @@ Use this skill when the task is about room storage paths or copying data into or
 - After `cp`, verify the destination path rather than assuming the transfer succeeded.
 - After `rm`, verify that the path is actually gone.
 - If a file is present in room storage but not visible in a running container, treat that as a runtime or mount issue and hand off appropriately.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return storage-path evidence and observed state to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
 ## Out of scope
 
