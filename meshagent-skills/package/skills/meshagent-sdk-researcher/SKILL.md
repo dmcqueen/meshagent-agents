@@ -5,8 +5,10 @@ metadata:
   short-description: Resolve the MeshAgent checkout and research docs, examples, and source paths.
   references:
     bundled:
+      - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/workflow_accountability.md
     resolved_targets:
+      - shared live-room CLI context rules
       - sdk_root
       - docs_root
       - examples_root
@@ -58,6 +60,7 @@ Use this skill when the task is mainly about how to use the MeshAgent SDK in cod
 
 ## References
 
+- Use `../_shared/references/live_room_cli_context.md` when this research runs inside a known live room and other skills will act on room-scoped results.
 - When this skill is available, treat it as the resolver for the MeshAgent codebase tree.
 - In a live room image, the MeshAgent SDK checkout is commonly preloaded at `/src/meshagent-sdk`, but do not assume that path blindly in every environment.
 - Resolve and expose these roots when available:
@@ -80,6 +83,7 @@ Use this skill when the task is mainly about how to use the MeshAgent SDK in cod
 ## Operating rules
 
 - Prefer the preloaded docs, examples, and source over guessing API names or method signatures.
+- If the task originates inside a known live room, do not recommend `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for the room-scoped follow-up work.
 - Resolve the codebase roots first before giving path-based guidance to another skill.
 - Match the actual SDK that corresponds to the language being used.
 - If the task is "how do we normally do this with MeshAgent?", search the preloaded docs/examples first.
