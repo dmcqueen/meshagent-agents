@@ -17,6 +17,8 @@ metadata:
       - queue CLI source
       - room queue API examples
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: Queue work is only one part of a larger end-to-end workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using docs or source references.
     - skill: meshagent-scheduler
@@ -66,6 +68,7 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when queue work is only one part of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
 - `meshagent-scheduler`: Use it when the queue messages come from scheduled tasks.
 - `meshagent-mail-operator`: Use it when the queue is part of a mailbox flow.
