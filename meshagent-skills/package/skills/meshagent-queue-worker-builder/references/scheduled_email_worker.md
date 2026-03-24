@@ -18,7 +18,7 @@ Use this reference when the user asks for a Worker that receives a queue message
 12. Enqueue an immediate test message now, before creating the scheduled task.
 13. Confirm the queue item was consumed and inspect logs for email-send success or failure.
 14. Only after the immediate smoke test passes should you create the one-time scheduled task.
-15. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list` so you know whether scheduler permissions and visibility are actually available in the room or project.
+15. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
 16. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
 17. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
 18. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
@@ -49,6 +49,7 @@ Do not call the workflow complete until all of the following are true:
 - If the user asked for a relative run time and setup consumed part of that window, recompute the relative schedule from the current moment before creating the scheduled task.
 - If the requesting user's timezone is unknown, do not schedule yet. First determine it from reliable user-specific context or ask the user directly.
 - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
+- If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
 - If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
 
 ## Input collection rules
