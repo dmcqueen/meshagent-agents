@@ -9,6 +9,7 @@ metadata:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/managed_hostname_rules.md
+      - ../_shared/references/workflow_accountability.md
     requires_roots:
       - cli_root
       - server_root
@@ -20,6 +21,8 @@ metadata:
       when: Resolve checkout roots before using server or CLI source references.
     - skill: meshagent-queue-operator
       when: The main task is generic queue inspection or queue injection rather than mailbox behavior.
+    - skill: meshagent-queue-worker-builder
+      when: Mail sending is part of a queue-backed Worker or scheduled queue workflow.
     - skill: meshagent-webapp-builder
       when: Mail is one part of a room-hosted contact form or website workflow.
     - skill: meshagent-cli-operator
@@ -33,6 +36,17 @@ metadata:
     excludes:
       - generic queue workflows without mailbox context
       - full website authoring
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent Mail Operator
@@ -58,6 +72,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references for mail implementation details.
 - `meshagent-queue-operator`: Use it when the queue work is independent of mailbox provisioning or SMTP behavior.
+- `meshagent-queue-worker-builder`: Use it when the mailbox-backed sender must be wired into a queue-consuming Worker or scheduled queue workflow.
 - `meshagent-webapp-builder`: Use it when mailbox-backed mail is part of a room website or contact form workflow.
 - `meshagent-cli-operator`: Reuse its managed-hostname and room-context rules when a mail workflow also creates or verifies a public site.
 
@@ -96,6 +111,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not treat a hardcoded mailbox-looking string as provisioned unless it came from a successful mailbox CLI result in the current project.
 - If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
 - Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
+- If the mail sender lives inside a queue-backed Worker, verify that the Worker runtime actually uses the provisioned mailbox address before treating mailbox creation as sufficient.
 
 ## Queue inspection
 
@@ -121,9 +137,17 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
 - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
+- For queue-backed mail workers, do not claim success until the Worker has consumed a real test message and runtime evidence shows the send succeeded or shows the exact SMTP/provider blocker.
 - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
 - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
 - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
 - If the workflow also creates a public route, follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL.
 - If SMTP rejects delivery, report the exact observed blocker.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return mailbox, queue, and SMTP evidence to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
