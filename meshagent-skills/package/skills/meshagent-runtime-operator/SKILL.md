@@ -6,6 +6,7 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/workflow_accountability.md
     requires_roots:
       - cli_root
       - server_root
@@ -16,6 +17,8 @@ metadata:
   related_skills:
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using CLI or server source references.
+    - skill: meshagent-queue-worker-builder
+      when: The runtime to inspect is a queue-backed Worker and the question is whether it actually dequeues or completes jobs.
     - skill: meshagent-service-operator
       when: The fix belongs in service definition or room service lifecycle rather than runtime debugging.
     - skill: meshagent-webapp-builder
@@ -28,6 +31,17 @@ metadata:
     excludes:
       - full service-template authoring
       - non-runtime queue, memory, database, or storage workflows
+  workflow:
+    can_be_owner: true
+    handoff_policy: retain_accountability_until_owner_transfer
+    completion_gates:
+      - mutation_target_confirmed_when_relevant
+      - observed_state_matches_claim
+      - user_visible_result_verified_or_exact_blocker_reported
+    evidence:
+      - exact_commands_or_artifacts_used
+      - observed_room_or_runtime_state
+      - user_visible_result_or_exact_blocker
 ---
 
 # MeshAgent Runtime Operator
@@ -51,6 +65,7 @@ Use this skill when the task is about the live runtime state inside a room rathe
 ## Related skills
 
 - `meshagent-sdk-researcher`: Resolve checkout roots before using CLI or server source references.
+- `meshagent-queue-worker-builder`: Use it when the runtime belongs to a queue-backed Worker and the remaining job is to prove or debug actual dequeue behavior.
 - `meshagent-service-operator`: Use it when the main task is changing a service definition or room service record rather than debugging the live runtime.
 - `meshagent-webapp-builder`: Use it when runtime checks pass but the remaining issue is public site behavior.
 
@@ -70,12 +85,27 @@ Use this skill when the task is about the live runtime state inside a room rathe
 - Treat `container exec` as a live-room debugging operation, not a substitute for fixing the service definition.
 - Use image build/pull/push/load/save only when the runtime problem or deployment workflow actually requires image operations.
 
+## Queue worker verification
+
+- For queue-backed Workers, verify the room service is visible, then inspect the live runtime with developer output, container list, and container logs.
+- Prefer an immediate smoke-test message over waiting only for a future scheduled task when you need to prove dequeue behavior.
+- For mail-sending Workers, inspect logs for dequeue evidence and mail-send success or failure before calling the workflow complete.
+- A queue size of `0` after a test or scheduled run is not enough by itself. Confirm whether the message was consumed successfully, failed during handling, or never arrived.
+
 ## Verification rules
 
 - Do not conclude that the runtime is healthy based only on service metadata.
 - Use logs, running container state, and port-forwarded behavior to confirm what is actually happening.
+- For queue-backed Workers, do not conclude success until you have runtime evidence that a test message was actually processed.
 - If a container-local check passes but the public behavior is still broken, hand off to the appropriate website or route skill rather than stopping at the runtime layer.
 - If a runtime issue persists after restart or stop/start behavior, inspect the declarative service definition before repeating the same action.
+
+## Workflow accountability
+
+- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
+- If another skill already owns the workflow, return runtime evidence and observed state to that owner instead of declaring the overall job complete.
+- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
+- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
 ## Out of scope
 
