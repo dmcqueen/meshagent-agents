@@ -1695,6 +1695,7 @@ container:
           - Before deployment, run the narrowest validation path that matches the asset:
             - `meshagent service validate` for a concrete `Service`
             - `meshagent service validate-template` and `meshagent service render-template` for a `ServiceTemplate`
+          - If validation fails, do not deploy and do not just rerun the same command blindly. Read the exact validation error, repair the YAML or template, and rerun validation. Repeat that fix-and-revalidate loop until validation passes or the remaining blocker is clearly external to the asset itself.
           - Before treating YAML as correct, verify all of these:
             - structural correctness: valid service or template shape
             - command correctness: every runtime flag is actually supported
@@ -3493,10 +3494,11 @@ container:
           11. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
           12. Validate the resulting YAML against `../_shared/references/service_yaml_correctness.md`, including real CLI flag support, mailbox identity, queue wiring, mounted files, and whether the workflow needs both MailBot and Worker roles.
           13. Validate the resulting YAML with `meshagent service validate` or `validate-template` and `render-template` when available.
-          14. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
-          15. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
-          16. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
-          17. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
+          14. If validation fails, inspect the exact error, repair the YAML, and rerun validation before attempting deployment.
+          15. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
+          16. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
+          17. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
+          18. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
           
           ## Worker service model
           
@@ -3594,18 +3596,19 @@ container:
           11. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
           12. For the service YAML, validate the actual command flags and role composition. A Worker must use real worker flags such as `--rule` or `--room-rules`; a MailBot must not be treated as the scheduled job consumer.
           13. Validate the YAML or rendered service before deployment.
-          14. Create or update the service.
-          15. Verify the live room service appears in `meshagent room service list`.
-          16. Verify the runtime is actually alive with room developer output, container state, or container logs.
-          17. Enqueue an immediate test message now, before creating the scheduled task.
-          18. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-          19. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
-          20. Only after the immediate smoke test passes should you create the one-time scheduled task.
-          21. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-          22. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
-          23. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-          24. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-          25. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+          14. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
+          15. Create or update the service.
+          16. Verify the live room service appears in `meshagent room service list`.
+          17. Verify the runtime is actually alive with room developer output, container state, or container logs.
+          18. Enqueue an immediate test message now, before creating the scheduled task.
+          19. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+          20. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
+          21. Only after the immediate smoke test passes should you create the one-time scheduled task.
+          22. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+          23. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+          24. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+          25. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+          26. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
           
           ## Success criteria
           
@@ -4259,9 +4262,10 @@ container:
           2. Read the existing YAML or list the current services before mutating anything.
           3. When the asset is being authored, prefer a generated starting point such as `meshagent worker spec`, `meshagent mailbot spec`, `meshagent multi spec`, or `meshagent service spec` instead of building the YAML from scratch.
           4. Validate or render the spec/template before create or update when a file is involved.
-          5. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
-          6. After mutation, verify the service record and, when relevant, the live room service state.
-          7. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
+          5. If validation fails, inspect the exact error, repair the asset, and rerun validation. Keep that fix-and-revalidate loop local to the service YAML until it passes or the remaining blocker is no longer a YAML problem.
+          6. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
+          7. After mutation, verify the service record and, when relevant, the live room service state.
+          8. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
           
           ## Live room execution
           
@@ -4276,6 +4280,7 @@ container:
           - Match the container image family to the actual MeshAgent environment. Do not copy a production docs image into a `.life` room unless the environment already proves that image family is correct there.
           - Validate service YAML for workflow correctness, not just schema shape. Check command flags, mailbox identity, queue wiring, and whether the declared roles actually match the intended behavior.
           - Prefer `validate` or `validate-template` before deployment when the source YAML is being authored or changed.
+          - If `validate` or `validate-template` fails, repair the YAML and rerun validation before moving on. Do not treat validation as a one-time gate or blindly retry without making a fix.
           - Prefer `render-template` when the user needs to inspect the concrete resolved template output.
           - Prefer generated specs or rendered templates over handwritten YAML when the runtime shape already has a CLI spec command.
           - Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
