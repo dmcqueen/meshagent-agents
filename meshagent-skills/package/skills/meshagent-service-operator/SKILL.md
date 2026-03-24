@@ -1,0 +1,88 @@
+---
+name: meshagent-service-operator
+description: Operate MeshAgent services and service templates. Use this skill for service spec generation, validation, create/update/delete, template rendering, room-scoped service lifecycle, and service inspection.
+metadata:
+  short-description: Operate services, service templates, and room service lifecycle.
+  references:
+    bundled:
+      - ../meshagent-cli-operator/references/meshagent_cli_help.md
+    requires_roots:
+      - docs_root
+      - cli_root
+      - server_root
+    resolved_targets:
+      - services CLI source
+      - room-services CLI source
+      - service examples and packaging docs
+  related_skills:
+    - skill: meshagent-sdk-researcher
+      when: Resolve checkout roots before using docs or source references.
+    - skill: meshagent-queue-worker-builder
+      when: The main task is authoring queue-backed Worker YAML.
+    - skill: meshagent-webapp-builder
+      when: The main task is a website or public web application rather than service lifecycle.
+    - skill: meshagent-runtime-operator
+      when: The remaining issue is live container behavior rather than service definition.
+  scope:
+    owns:
+      - service and service-template validation
+      - service create, update, delete, show, list
+      - room service listing and restart
+    excludes:
+      - detailed runtime debugging
+      - queue, database, memory, or storage operations by themselves
+---
+
+# MeshAgent Service Operator
+
+Use this skill when the task is primarily about MeshAgent services or service templates rather than one specific app running inside them.
+
+## Use this skill when
+
+- The user wants to create, update, list, show, validate, or delete a MeshAgent service.
+- The task involves `meshagent service spec`, `create`, `update`, `validate`, or template commands.
+- The user needs to render or validate a `ServiceTemplate`.
+- The task involves room-scoped services through `meshagent room service list` or `restart`.
+- The user needs to connect a YAML spec or template to an actual deployed service lifecycle.
+
+## References
+
+- Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
+- Inspect the resolved services CLI source for project/global/room service behavior, template rendering, and upsert rules.
+- Inspect the resolved room-services CLI source for live room service listing and restart behavior.
+
+## Related skills
+
+- `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
+- `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-backed Worker YAML.
+- `meshagent-webapp-builder`: Use it when the main task is a website or public web application rather than service lifecycle.
+- `meshagent-webmaster`: Use it when the main task is route and hostname management rather than service lifecycle.
+- `meshagent-runtime-operator`: Use it when the remaining problem is live runtime behavior rather than service definition.
+
+## Default workflow
+
+1. Determine whether the task is about a raw `Service`, a `ServiceTemplate`, or a live room service already running in a room.
+2. Read the existing YAML or list the current services before mutating anything.
+3. Validate or render the spec/template before create or update when a file is involved.
+4. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
+5. After mutation, verify the service record and, when relevant, the live room service state.
+
+## Service scope rules
+
+- Distinguish project/global services from room-scoped services before acting.
+- Distinguish declarative service CRUD (`meshagent service ...`) from runtime room-service state (`meshagent room service ...`).
+- Prefer `validate` or `validate-template` before deployment when the source YAML is being authored or changed.
+- Prefer `render-template` when the user needs to inspect the concrete resolved template output.
+- Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
+
+## Verification rules
+
+- Do not claim a service is deployed correctly based only on YAML generation.
+- After create or update, verify with `meshagent service show`, `meshagent service list`, or `meshagent room service list` as appropriate.
+- If a room service is unhealthy, use room-service state and runtime inspection before rewriting the spec.
+- If restart is requested, confirm the target by `--id` or `--name` before issuing it.
+
+## Out of scope
+
+- Detailed debugging inside running containers.
+- Queue, database, memory, or storage operations except where needed to confirm service wiring.
