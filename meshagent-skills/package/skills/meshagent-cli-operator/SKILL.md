@@ -13,6 +13,8 @@ metadata:
     resolved_targets:
       - live meshagent help output when bundled help is missing or stale
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: The user's goal is an end-to-end workflow that spans multiple specialized skills.
     - skill: meshagent-sdk-researcher
       when: The task depends on SDK or server source, not just CLI behavior.
     - skill: meshagent-webapp-builder
@@ -70,6 +72,7 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when the user's goal spans multiple specialized skills and one owner should keep accountability.
 - `meshagent-sdk-researcher`: Use it when the answer depends on source-level behavior or examples rather than command shape.
 - `meshagent-webapp-builder`: Use it when a CLI deploy command is only one part of building or fixing a room website.
 - `meshagent-service-operator`: Use it when the task is primarily about service semantics, templates, or room service lifecycle.
