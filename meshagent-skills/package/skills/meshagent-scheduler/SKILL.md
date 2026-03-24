@@ -115,6 +115,8 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Good scheduled email payloads either:
   - include an explicit prompt such as "Send an email to <RECIPIENT> using the email toolkit", or
   - include the exact structured fields the Worker rules already require, such as `to`, `subject`, `body`, and any other required action field.
+- If the Worker was authored around mounted or room-rules workflow files, a prompt that tells it to run that established workflow is usually the safer scheduled payload than ad hoc JSON fields.
+- The `industry-report` nightly-report Worker is the preferred model for non-trivial scheduled email/report jobs: durable worker rules plus a scheduled prompt that tells the Worker to run that workflow.
 - Do not rely on a generic payload like `{"message":"hello"}` unless the Worker rules clearly define that such a payload means "send an email."
 - Before creating the task, restate how the payload maps to the Worker's email-sending logic.
 - If that mapping is ambiguous, fix the Worker rules or the payload before scheduling.
