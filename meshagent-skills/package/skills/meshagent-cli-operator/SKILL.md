@@ -71,6 +71,7 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 
 - Do not invent the active project, active room, hostname, filesystem layout, or environment variables. Inspect them or ask when they matter.
 - Do not use live `meshagent ... --help` as a default discovery step in a live room when the packaged references already cover the command. Use live `--help` only as a fallback for missing or version-mismatched details.
+- Before writing ad hoc SDK code for a room operation, check whether the CLI already exposes a generic toolkit path such as `meshagent room agent list-toolkits` or `meshagent room agent invoke-tool`.
 - Prefer read commands before create, update, deploy, or delete.
 - Restate the exact mutation target before destructive changes.
 - Verify the resulting state after mutation.
