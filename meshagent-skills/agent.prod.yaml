@@ -1726,6 +1726,7 @@ container:
           - Do not wait until the final step to discover that a required backend surface such as scheduled-task create is blocked when a cheap preflight could have shown that earlier.
           - Do not use broad auth or project-listing failures as proof that a room-scoped workflow cannot proceed when a narrower room-scoped probe was available.
           - Do not use `meshagent auth whoami` as a prerequisite gatekeeper for a known-room workflow.
+          - Do not pass arbitrary human-readable ids into workflow surfaces that are UUID-backed. If a skill has not proven the id format is accepted, omit the custom id rather than guessing.
           - Do not treat queue drain, service creation, or scheduled-task creation as proof that a requested email was actually delivered.
           - Do not assume that a scheduled task payload implicitly means "send an email" unless the payload explicitly maps to the Worker's email-sending rules.
 
@@ -3530,9 +3531,10 @@ container:
           16. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
           17. Only after the immediate smoke test passes should you create the one-time scheduled task.
           18. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-          19. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-          20. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-          21. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+          19. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+          20. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+          21. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+          22. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
           
           ## Success criteria
           
@@ -3565,6 +3567,7 @@ container:
           - If broad auth or room-listing commands fail but a narrower room-scoped workflow is still possible, continue with the room-scoped path instead of stopping early.
           - In a known live room, `meshagent auth whoami` failing or reporting "Not logged in" does not by itself block this workflow. Use a room-scoped probe instead.
           - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
+          - If `meshagent scheduled-task add` fails after passing a human-readable `--id`, suspect invalid task-id format first. Scheduled-task ids are UUID-backed; omit `--id` or pass a real UUID.
           - If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
           - If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
           
@@ -3842,10 +3845,11 @@ container:
           4. Preflight scheduled-task capability before presenting the workflow as end-to-end ready: for a room-scoped workflow, inspect existing scheduled tasks with `meshagent scheduled-task list --room <ROOM_NAME>` first. Treat a permissions failure, `403`, or unexpected `5xx` as a real blocker only after using the narrowest room-scoped read path that matches the workflow.
           5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
           6. If the user expressed the schedule relatively, such as "one minute from now," anchor that relative time to the moment you are actually ready to create the scheduled task, not to the beginning of the broader setup workflow.
-          7. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
-          8. Create, update, or delete the scheduled task.
-          9. Verify the task state with `meshagent scheduled-task list`.
-          10. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+          7. If you plan to pass `--id`, make sure it is a real UUID. Otherwise omit `--id` and let the server generate the task id.
+          8. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
+          9. Create, update, or delete the scheduled task.
+          10. Verify the task state with `meshagent scheduled-task list`.
+          11. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
           
           ## Live room execution
           
@@ -3942,6 +3946,7 @@ container:
           - Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
           - If the requesting user's timezone cannot be acquired from reliable user-specific context, ask the user directly before creating the scheduled task.
           - Do not treat scheduler create as reliable just because the CLI command exists. Preflight actual scheduler access and health first.
+          - Do not pass a human-readable custom scheduled-task id such as `scheduled-email-once-2min`. The backend scheduled-task id is a UUID. Omit `--id` unless you already have a real UUID to use.
           - If scheduler preflight already failed, do not present the workflow as fully completable without clearly labeling the scheduler step as blocked.
           - Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
           - Do not anchor a relative scheduling request to the beginning of a longer setup workflow when the user's intent is relative to the actual task-creation moment.
