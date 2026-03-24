@@ -1,6 +1,42 @@
 ---
 name: meshagent-webapp-builder
 description: Build and verify deployable MeshAgent room web applications, including contact forms, public web handlers, and mailbox-backed outbound email flows.
+metadata:
+  short-description: Build, deploy, and verify room-hosted websites and handlers.
+  references:
+    bundled:
+      - references/command_groups.md
+      - references/meshagent_cli_help.md
+      - references/contact_form_example.py
+      - references/mailbox_backed_sender.md
+      - references/minimal_webserver.yaml
+      - references/verification_checklist.md
+      - ../_shared/references/live_room_cli_context.md
+      - ../_shared/references/managed_hostname_rules.md
+    requires_roots:
+      - cli_root
+      - server_root
+    resolved_targets:
+      - webserver CLI source
+      - room mail implementation
+  related_skills:
+    - skill: meshagent-cli-operator
+      when: General room-context, managed-hostname, and deploy-command rules matter.
+    - skill: meshagent-mail-operator
+      when: The blocker is mailbox provisioning or room SMTP behavior.
+    - skill: meshagent-webmaster
+      when: The main task is route and hostname administration rather than the web app itself.
+    - skill: meshagent-webapp-react-builder
+      when: The site is a small React-style UI built with Preact + htm.
+  scope:
+    owns:
+      - room website and handler implementation
+      - public deploy workflow
+      - contact form and mailbox-backed sender integration
+      - post-deploy HTTP verification
+    excludes:
+      - generic route administration
+      - deep frontend platform design beyond room webapps
 ---
 
 # MeshAgent Webapp Builder
@@ -23,19 +59,25 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
   - `references/mailbox_backed_sender.md`
   - `references/minimal_webserver.yaml`
   - `references/verification_checklist.md`
-- For actual webserver runtime behavior, inspect `/src/meshagent-sdk/meshagent-cli/meshagent/cli/webserver.py`.
-- For room mail behavior and SMTP defaults, inspect `/src/meshagent-sdk/meshagent-agents/meshagent/agents/mail.py` and `/src/meshagent-sdk/meshagent-agents/meshagent/agents/mail_common.py`.
+- Use `../_shared/references/live_room_cli_context.md` for shared room-context, path, and deploy workspace rules.
+- Use `../_shared/references/managed_hostname_rules.md` for shared managed-hostname selection and validation rules.
+- After root resolution, inspect the resolved webserver CLI source for actual runtime behavior.
+- After root resolution, inspect the resolved room mail implementation for SMTP defaults and sender behavior.
+
+## Related skills
+
+- `meshagent-cli-operator`: Reuse its general room-context, managed-hostname, and deploy-command rules instead of inventing environment behavior locally.
+- `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references outside this skill bundle.
+- `meshagent-mail-operator`: Use it when the blocker is mailbox provisioning, queue-backed mail intake, or SMTP behavior.
+- `meshagent-webmaster`: Use it when the main task is route and hostname administration rather than the web app itself.
+- `meshagent-webapp-react-builder`: Use it when the site is a small React-style UI built with Preact + htm.
 
 ## Live room execution
 
-- First use the existing MeshAgent CLI session and room context before asking the user to log in again.
-- If `MESHAGENT_ROOM` is present, prefer room-scoped commands and pass `--room "${MESHAGENT_ROOM}"` when required.
-- If `MESHAGENT_API_URL` is present, derive the managed hostname suffix from that API environment: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
-- If `MESHAGENT_API_URL` is absent or ambiguous, inspect existing routes or ask before inventing a managed public hostname.
-- Packaged `.meshagent.app` examples are illustrative only. Do not copy that suffix when the runtime indicates `.meshagent.dev`.
+- Apply `../_shared/references/live_room_cli_context.md` for room context reuse, room-scoped command handling, and local-vs-room path rules.
+- Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
 - For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
 - In a live room shell where `cwd` is `/src`, author deployable webapp files under a subdirectory of `/src`, not directly under `/data`.
-- If `MESHAGENT_ROOM` is already present, do not block on room-listing commands before deploy.
 
 ## Implementation rules
 
@@ -69,11 +111,9 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 
 ## Managed hostname selection
 
+- Follow `../_shared/references/managed_hostname_rules.md` for suffix selection, collision handling, and validity checks.
 - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
 - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
-- Keep retries within the same environment-specific suffix family.
-- If a candidate collides and follow-up route inspection is forbidden, treat that hostname as unavailable and try another candidate before reporting a permissions blocker.
-- Do not report a managed URL whose suffix contradicts the active API environment.
 
 ## Verification rules
 
