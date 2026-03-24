@@ -90,6 +90,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 ## Live room execution
 
 - Apply `../_shared/references/live_room_cli_context.md` for room context reuse, room-scoped command handling, and local-vs-room path rules.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped webapp deploy or verification work.
 - Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
 - For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
 - In a live room shell where `cwd` is `/src`, author deployable webapp files under a subdirectory of `/src`, not directly under `/data`.
