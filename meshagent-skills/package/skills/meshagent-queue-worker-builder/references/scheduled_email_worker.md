@@ -13,20 +13,25 @@ Use this reference when the user asks for a Worker that receives a queue message
 7. Reuse the mailbox email address as the sender identity.
 8. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
 9. Choose the Worker and MailBot runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
-10. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-11. Validate the YAML or rendered service before deployment.
-12. Create or update the service.
-13. Verify the live room service appears in `meshagent room service list`.
-14. Verify the runtime is actually alive with room developer output, container state, or container logs.
-15. Enqueue an immediate test message now, before creating the scheduled task.
-16. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-17. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
-18. Only after the immediate smoke test passes should you create the one-time scheduled task.
-19. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-20. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
-21. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-22. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-23. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+10. Generate the initial service asset from the real CLI when possible:
+   - `meshagent worker spec` for a dedicated Worker
+   - `meshagent mailbot spec` for a dedicated MailBot
+   - `meshagent multi spec` when one service must run both roles
+11. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
+12. For the service YAML, validate the actual command flags and role composition. A Worker must use real worker flags such as `--rule` or `--room-rules`; a MailBot must not be treated as the scheduled job consumer.
+13. Validate the YAML or rendered service before deployment.
+14. Create or update the service.
+15. Verify the live room service appears in `meshagent room service list`.
+16. Verify the runtime is actually alive with room developer output, container state, or container logs.
+17. Enqueue an immediate test message now, before creating the scheduled task.
+18. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+19. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
+20. Only after the immediate smoke test passes should you create the one-time scheduled task.
+21. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+22. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+23. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+24. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+25. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 
 ## Success criteria
 
@@ -50,6 +55,10 @@ Do not call the workflow complete until all of the following are true:
 - A created mailbox does not create toolkit `email`. If the Worker depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
 - A created service record does not prove a Worker runtime is running.
 - A copied docs image does not prove the runtime image matches the current MeshAgent environment. A `.life` room may need a different runtime image family than the production docs examples.
+- A MailBot service by itself does not satisfy a scheduled email worker workflow. The MailBot publishes toolkit `email`; the Worker must consume the scheduled job queue.
+- A manifest that declares both `MailBot` and `Worker` roles but starts only one runtime path is incorrect even if the YAML shape validates.
+- A worker command that uses unsupported flags such as `--prompt` is invalid YAML content even if the surrounding service shape looks correct.
+- A mailbox-looking sender such as `something@meshagent.local` is not a proven mailbox-backed sender identity.
 - A scheduled task payload that does not explicitly request email sending may enqueue successfully while never causing an email to be sent.
 - If the user asked for a real scheduled email and no recipient address has been collected yet, the workflow is still blocked on required user input. Do not pretend the remaining setup is complete.
 - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
