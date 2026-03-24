@@ -16,6 +16,8 @@ metadata:
       - scheduled task CLI help
       - scheduled task examples
   related_skills:
+    - skill: meshagent-workflow-orchestrator
+      when: Scheduling is one step inside a larger queue, mail, service, or worker workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using examples or source references.
     - skill: meshagent-queue-operator
@@ -62,6 +64,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 
 ## Related skills
 
+- `meshagent-workflow-orchestrator`: Use it when scheduling is only one step inside a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using examples or implementation references.
 - `meshagent-queue-operator`: Use it when the task is queue inspection or queue injection outside scheduled-task management.
 - `meshagent-queue-worker-builder`: Use it when a queue-consuming Worker or other explicit queue consumer must be built before scheduling can be claimed to work.
@@ -86,7 +89,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 1. Resolve the active project, room, queue, and intended local execution time.
 2. Resolve the requesting user's timezone before setting or changing a schedule.
 3. Inspect the current room and current agent context to determine whether the running agent already has an explicit queue-consuming path.
-4. Inspect existing scheduled tasks with `meshagent scheduled-task list`.
+4. Preflight scheduled-task capability before presenting the workflow as end-to-end ready: inspect existing scheduled tasks with `meshagent scheduled-task list` and treat a permissions failure, `403`, or unexpected `5xx` as a real blocker for scheduler completion.
 5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
 6. If the user expressed the schedule relatively, such as "one minute from now," anchor that relative time to the moment you are actually ready to create the scheduled task, not to the beginning of the broader setup workflow.
 7. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
@@ -113,8 +116,18 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Interpret relative requests such as "one minute from now" relative to the actual `meshagent scheduled-task add` moment after setup is complete, not relative to the original user message timestamp.
 - If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
 - If setup, deployment, or smoke testing has consumed most of the time window, move the one-time run farther into the future instead of leaving it effectively in the past.
+- Before sending `meshagent scheduled-task add`, make sure the computed UTC minute is still in the future with a real safety margin rather than merely equal to the next displayed minute.
+- If the scheduler endpoint is already showing `403`, `500`, or another backend failure during preflight, do not treat a near-future one-time request as ready for completion. Explain that scheduler creation is blocked before claiming end-to-end success.
 - Do not create a near-future one-time task until the queue consumer path is already proven with an immediate smoke test.
 - If the user asked for "a minute from now" but the workflow is not yet ready, explain that you are moving the one-time run to the next safe minute window rather than pretending the original time still makes sense.
+
+## Scheduler API preflight
+
+- `meshagent scheduled-task list` is the fastest packaged preflight for scheduler availability. Run it before treating scheduled completion as available in the current environment.
+- If `list` fails with `403`, treat scheduled-task visibility as blocked by permissions and do not promise that create/list verification will work later in the workflow.
+- If `list` or `add` fails with an unexpected `5xx`, treat the scheduler backend as unhealthy for this room or project until proven otherwise.
+- The current CLI and API do not locally validate that a one-time cron expression is still safely in the future. The backend create path is thin and backend cron failures can surface as generic server errors.
+- When preflight shows scheduler failure, either stop before provisioning a half-complete scheduled workflow or clearly label any continued Worker or MailBot setup as partial preparation only.
 
 ## Queue consumption
 
@@ -158,6 +171,8 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Do not schedule a task until the requesting user's timezone has been confirmed or reliably detected.
 - Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
 - If the requesting user's timezone cannot be acquired from reliable user-specific context, ask the user directly before creating the scheduled task.
+- Do not treat scheduler create as reliable just because the CLI command exists. Preflight actual scheduler access and health first.
+- If scheduler preflight already failed, do not present the workflow as fully completable without clearly labeling the scheduler step as blocked.
 - Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
 - Do not anchor a relative scheduling request to the beginning of a longer setup workflow when the user's intent is relative to the actual task-creation moment.
 - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
