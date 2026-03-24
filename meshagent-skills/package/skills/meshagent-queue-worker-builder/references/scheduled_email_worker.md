@@ -20,18 +20,19 @@ Use this reference when the user asks for a Worker that receives a queue message
 11. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
 12. For the service YAML, validate the actual command flags and role composition. A Worker must use real worker flags such as `--rule` or `--room-rules`; a MailBot must not be treated as the scheduled job consumer.
 13. Validate the YAML or rendered service before deployment.
-14. Create or update the service.
-15. Verify the live room service appears in `meshagent room service list`.
-16. Verify the runtime is actually alive with room developer output, container state, or container logs.
-17. Enqueue an immediate test message now, before creating the scheduled task.
-18. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-19. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
-20. Only after the immediate smoke test passes should you create the one-time scheduled task.
-21. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-22. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
-23. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-24. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-25. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+14. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
+15. Create or update the service.
+16. Verify the live room service appears in `meshagent room service list`.
+17. Verify the runtime is actually alive with room developer output, container state, or container logs.
+18. Enqueue an immediate test message now, before creating the scheduled task.
+19. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+20. Design the scheduled payload so it explicitly requests email sending, either through a prompt like "send an email using the email toolkit" or through the exact structured fields the Worker rules require.
+21. Only after the immediate smoke test passes should you create the one-time scheduled task.
+22. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+23. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+24. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+25. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+26. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 
 ## Success criteria
 
