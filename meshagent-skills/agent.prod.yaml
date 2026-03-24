@@ -234,6 +234,8 @@ container:
             CLI help reference generator.
           - `scripts/validate_meshagent_skills_package.py`
             Package validator.
+          - `scripts/audit_meshagent_skill_commands.py`
+            Command-reference audit against the live CLI tree.
           - `skills/meshagent-cli-operator/SKILL.md`
             Core CLI execution and command-routing skill.
           - `skills/meshagent-cli-operator/agents/openai.yaml`
@@ -354,6 +356,8 @@ container:
             Regenerates `skills/meshagent-cli-operator/references/meshagent_cli_help.md` by recursively capturing `meshagent --help`. This script reads the version label from `compat.json`; it does not update `compat.json`.
           - `scripts/validate_meshagent_skills_package.py`
             Validates package consistency against the installed CLI and the current skill-package rules.
+          - `scripts/audit_meshagent_skill_commands.py`
+            Crawls the live `meshagent --help` tree and checks whether packaged command references resolve to real command nouns.
           
           ## Update workflow
           
@@ -567,6 +571,289 @@ container:
           {
             "meshagent_cli_version": "0.33.0"
           }
+
+      - path: /meshagent-skills/scripts/audit_meshagent_skill_commands.py
+        text: |
+          #!/usr/bin/env python3
+          """Audit meshagent command references in the packaged skills against the live CLI tree."""
+          
+          from __future__ import annotations
+          
+          import argparse
+          import re
+          import shlex
+          import subprocess
+          import sys
+          from dataclasses import dataclass
+          from pathlib import Path
+          
+          
+          SKILLS_ROOT = Path(__file__).resolve().parents[1]
+          DEFAULT_BIN = Path("meshagent")
+          SKILLS_DIR = SKILLS_ROOT / "skills"
+          COMMANDS_DIR = SKILLS_ROOT / "commands"
+          INLINE_COMMAND_PATTERN = re.compile(r"`(?P<command>\$?\s*meshagent[^`\n]*)`")
+          COMMAND_WORD_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+          EXCLUDED_PATHS = {
+              SKILLS_DIR / "meshagent-cli-operator" / "references" / "meshagent_cli_help.md",
+          }
+          
+          
+          @dataclass(frozen=True)
+          class CommandReference:
+              file_path: Path
+              line_number: int
+              text: str
+          
+          
+          @dataclass(frozen=True)
+          class AuditIssue:
+              severity: str
+              file_path: Path
+              line_number: int
+              command: str
+              message: str
+          
+          
+          def parse_args() -> argparse.Namespace:
+              parser = argparse.ArgumentParser(
+                  description="Audit meshagent command references in packaged skills."
+              )
+              parser.add_argument(
+                  "--meshagent-bin",
+                  default=str(DEFAULT_BIN),
+                  help=f"Path to meshagent CLI. Default: {DEFAULT_BIN}",
+              )
+              parser.add_argument(
+                  "--max-depth",
+                  type=int,
+                  default=4,
+                  help="Maximum command depth to crawl from the root. Default: 4",
+              )
+              parser.add_argument(
+                  "--timeout-seconds",
+                  type=int,
+                  default=2,
+                  help="Per-command help timeout in seconds. Default: 2",
+              )
+              return parser.parse_args()
+          
+          
+          def parse_commands(help_text: str) -> list[str]:
+              commands: list[str] = []
+              in_commands = False
+              for line in help_text.splitlines():
+                  if re.match(r"^╭─ Commands ", line):
+                      in_commands = True
+                      continue
+                  if in_commands and line.startswith("╰"):
+                      in_commands = False
+                      continue
+                  if not in_commands:
+                      continue
+                  stripped = line.strip()
+                  if not stripped.startswith("│"):
+                      continue
+                  inner = stripped.strip("│").strip()
+                  if not inner:
+                      continue
+                  name = inner.split()[0]
+                  if COMMAND_WORD_PATTERN.match(name):
+                      commands.append(name)
+              return commands
+          
+          
+          def run_help(
+              *,
+              meshagent_bin: str,
+              path: tuple[str, ...],
+              timeout_seconds: int,
+          ) -> str:
+              cmd = [meshagent_bin, *path, "--help"]
+              completed = subprocess.run(
+                  cmd,
+                  capture_output=True,
+                  text=True,
+                  timeout=timeout_seconds,
+              )
+              if completed.returncode != 0:
+                  output = completed.stdout or completed.stderr
+                  raise RuntimeError(
+                      f"help command failed for {' '.join(cmd)}: {output.strip() or completed.returncode}"
+                  )
+              return completed.stdout
+          
+          
+          class CliHelpCache:
+              def __init__(self, *, meshagent_bin: str, timeout_seconds: int, max_depth: int):
+                  self._meshagent_bin = meshagent_bin
+                  self._timeout_seconds = timeout_seconds
+                  self._max_depth = max_depth
+                  self._children_by_path: dict[tuple[str, ...], set[str]] = {}
+          
+              def children(self, path: tuple[str, ...]) -> set[str]:
+                  if len(path) > self._max_depth:
+                      return set()
+                  cached = self._children_by_path.get(path)
+                  if cached is not None:
+                      return cached
+                  help_text = run_help(
+                      meshagent_bin=self._meshagent_bin,
+                      path=path,
+                      timeout_seconds=self._timeout_seconds,
+                  )
+                  children = set(parse_commands(help_text))
+                  self._children_by_path[path] = children
+                  return children
+          
+          
+          def iter_audit_files() -> list[Path]:
+              files: list[Path] = []
+              files.extend(sorted(SKILLS_DIR.glob("*/SKILL.md")))
+              files.extend(sorted(SKILLS_DIR.glob("*/references/**/*.md")))
+              files.extend(sorted(SKILLS_DIR.glob("_shared/references/**/*.md")))
+              files.extend(sorted(COMMANDS_DIR.glob("*.md")))
+              return [path for path in files if path not in EXCLUDED_PATHS]
+          
+          
+          def extract_command_references(path: Path) -> list[CommandReference]:
+              references: list[CommandReference] = []
+              seen: set[tuple[int, str]] = set()
+          
+              for line_number, line in enumerate(
+                  path.read_text(encoding="utf-8").splitlines(), 1
+              ):
+                  for match in INLINE_COMMAND_PATTERN.finditer(line):
+                      command = match.group("command").strip()
+                      key = (line_number, command)
+                      if key not in seen:
+                          seen.add(key)
+                          references.append(
+                              CommandReference(
+                                  file_path=path,
+                                  line_number=line_number,
+                                  text=command,
+                              )
+                          )
+          
+                  stripped = line.strip()
+                  for prefix in ("$ meshagent ", "meshagent "):
+                      if stripped.startswith(prefix):
+                          key = (line_number, stripped)
+                          if key in seen:
+                              continue
+                          seen.add(key)
+                          references.append(
+                              CommandReference(
+                                  file_path=path,
+                                  line_number=line_number,
+                                  text=stripped,
+                              )
+                          )
+                          break
+          
+              return references
+          
+          
+          def parse_command_tokens(command: str) -> list[str] | None:
+              normalized = command.strip()
+              if normalized.startswith("$"):
+                  normalized = normalized[1:].strip()
+              try:
+                  tokens = shlex.split(normalized)
+              except ValueError:
+                  return None
+              if not tokens or tokens[0] != "meshagent":
+                  return None
+              return tokens
+          
+          
+          def audit_reference(
+              *,
+              reference: CommandReference,
+              cli_help: CliHelpCache,
+          ) -> list[AuditIssue]:
+              tokens = parse_command_tokens(reference.text)
+              if tokens is None:
+                  return []
+          
+              issues: list[AuditIssue] = []
+              current: tuple[str, ...] = ()
+          
+              for token in tokens[1:]:
+                  if token.startswith("-"):
+                      break
+                  if not COMMAND_WORD_PATTERN.match(token):
+                      break
+          
+                  children = cli_help.children(current)
+                  if token in children:
+                      current = (*current, token)
+                      continue
+          
+                  severity = "error" if children else "warning"
+                  if current:
+                      message = f"unrecognized command noun '{token}' after `meshagent {' '.join(current)}`"
+                  else:
+                      message = f"unrecognized top-level command noun '{token}'"
+          
+                  issues.append(
+                      AuditIssue(
+                          severity=severity,
+                          file_path=reference.file_path,
+                          line_number=reference.line_number,
+                          command=reference.text,
+                          message=message,
+                      )
+                  )
+                  break
+          
+              return issues
+          
+          
+          def main() -> int:
+              args = parse_args()
+              meshagent_bin = args.meshagent_bin
+          
+              if "/" in meshagent_bin:
+                  meshagent_path = Path(meshagent_bin).resolve()
+                  meshagent_bin = str(meshagent_path)
+                  if not meshagent_path.is_file():
+                      print(f"meshagent CLI not found: {meshagent_path}", file=sys.stderr)
+                      return 1
+          
+              audit_files = iter_audit_files()
+              references: list[CommandReference] = []
+              for path in audit_files:
+                  references.extend(extract_command_references(path))
+          
+              cli_help = CliHelpCache(
+                  meshagent_bin=meshagent_bin,
+                  timeout_seconds=args.timeout_seconds,
+                  max_depth=args.max_depth,
+              )
+              issues: list[AuditIssue] = []
+              for reference in references:
+                  issues.extend(audit_reference(reference=reference, cli_help=cli_help))
+          
+              if issues:
+                  for issue in issues:
+                      print(
+                          f"{issue.severity.upper()}: {issue.file_path}:{issue.line_number}: "
+                          f"{issue.message} in `{issue.command}`",
+                          file=sys.stderr,
+                      )
+                  return 1
+          
+              print(
+                  "Audited "
+                  f"{len(references)} meshagent command references across {len(audit_files)} files"
+              )
+              return 0
+          
+          
+          if __name__ == "__main__":
+              raise SystemExit(main())
 
       - path: /meshagent-skills/scripts/generate_meshagent_cli_help_reference.py
         text: |
@@ -1406,6 +1693,7 @@ container:
           - Do not treat YAML generation alone as deployment success.
           - Do not treat queue size changes alone as business workflow success.
           - Do not treat a scheduled task record alone as proof that the future workflow will work.
+          - Do not use the room, server, or runtime timezone as a substitute for the requesting user's timezone when the workflow is about scheduling in the user's local time.
           - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
           - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
 
@@ -2633,6 +2921,8 @@ container:
           - Inbound email to that mailbox is delivered into the configured queue.
           - The queue name is part of the mailbox configuration. Do not invent it.
           - Creating a mailbox does not by itself create a consumer, service, or agent.
+          - Creating a mailbox does not by itself publish toolkit `email` into the room.
+          - When other agents depend on toolkit `email`, that toolkit must come from a running participant that publishes it, commonly a MailBot started with `--toolkit-name=email`.
           - For room-hosted outbound email workflows, the mailbox email address is the sender identity to use. Do not synthesize a sender address from the participant name and mail domain.
           
           ## Outbound delivery workflow
@@ -2640,6 +2930,8 @@ container:
           - For a room-hosted email workflow, first inspect or provision the mailbox that will own the sender address.
           - If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
           - If no mailbox exists and the task requires sending mail from the room, create one before claiming the workflow is complete.
+          - If another agent will call toolkit `email`, separately verify that toolkit `email` is published in the room. Mailbox provisioning alone is not enough.
+          - The common room pattern is a MailBot that owns the mailbox-backed sender identity and publishes toolkit `email` for chatbots or Workers that require it.
           - When creating a mailbox for a room-hosted workflow, use collision-resistant address candidates derived from the room and workflow purpose instead of generic names like `contact-form@...`.
           - If mailbox creation returns `409` and mailbox inspection returns `403`, treat that address as unavailable and try another candidate before asking the user for mailbox help.
           - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
@@ -2673,6 +2965,7 @@ container:
           - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
           - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
           - For queue-backed mail workers, do not claim success until the Worker has consumed a real test message and runtime evidence shows the send succeeded or shows the exact SMTP/provider blocker.
+          - For Workers or chat agents that use `--require-toolkit=email`, do not treat a mailbox as proof that the toolkit exists. Verify that toolkit `email` is visible in the room from a live publisher such as a MailBot.
           - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
           - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
           - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
@@ -2872,7 +3165,7 @@ container:
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact `meshagent room queue ...` command shapes.
           - Use `references/queue_discovery.md` when the user asks what queues are available in the room or when the queue name is unknown.
           - Inspect the resolved queue CLI source for the real queue behavior and payload handling.
-          - Inspect the resolved room queue API source when queue-name discovery matters. The current CLI does not expose a dedicated `meshagent room queue list` subcommand, but the room queue API does support listing visible queues.
+          - Inspect the resolved room queue API source when queue-name discovery matters. The current CLI does not expose a dedicated room-queue list subcommand, but the room queue API does support listing visible queues.
           
           ## Related skills
           
@@ -2894,7 +3187,7 @@ container:
           ## Queue operation rules
           
           - Do not invent queue names. Reuse the queue already configured by the scheduler, mailbox, webhook, or Worker.
-          - Do not claim that queues cannot be listed in a room. The current CLI lacks a dedicated `meshagent room queue list` command, but the room queue API can enumerate visible queues.
+          - Do not claim that queues cannot be listed in a room. The current CLI lacks a dedicated room-queue list command, but the room queue API can enumerate visible queues.
           - When the user asks for a clean list of queue names, prefer `meshagent room agent invoke-tool --toolkit queues --tool list --timeout 0 --arguments '{}'` over writing ad hoc Python.
           - Use SDK code for queue listing only as a fallback when the generic CLI toolkit invocation path is unavailable.
           - Do not answer with “tool output was truncated” for a queue-list request. Rerun the narrow command and return the actual queue names or an explicit empty list.
@@ -3059,14 +3352,15 @@ container:
           2. Use `meshagent-sdk-researcher` to find the closest working example before drafting YAML.
           3. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities. If the CLI does not expose a dedicated queue-list command, use the room queue API or the current room configuration rather than assuming queue discovery is impossible.
           4. If the queued job sends email, inspect or provision the mailbox first and reuse its address as the sender identity instead of inventing one.
-          5. Choose the nearest Worker example and adapt it instead of inventing a new template structure.
-          6. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
-          7. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
-          8. Validate the resulting YAML with the CLI when available.
-          9. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
-          10. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
-          11. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
-          12. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
+          5. If the Worker will call the `email` toolkit, prove that a live publisher for toolkit `email` already exists in the room or build one first. The normal pattern is a MailBot publishing `--toolkit-name=email`.
+          6. Choose the nearest Worker example and adapt it instead of inventing a new template structure.
+          7. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
+          8. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
+          9. Validate the resulting YAML with the CLI when available.
+          10. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
+          11. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
+          12. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
+          13. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
           
           ## Worker service model
           
@@ -3074,6 +3368,8 @@ container:
           - The core runtime pattern is a container command that starts `meshagent worker join --agent-name=... --queue=...`.
           - Treat the queue as the Worker's primary input channel. The Worker is useful only if something in the room actually sends payloads to that queue.
           - Room storage mounts, toolkits, and rules should support the queued task behavior, not distract from it.
+          - If the Worker requires toolkit `email`, that toolkit must be published by some running room participant. A mailbox alone does not publish toolkit `email`.
+          - The normal email-toolkit pattern is a MailBot in the same room publishing `--toolkit-name=email`, then the Worker can use `--require-toolkit=email`.
           
           ## Queue and scheduling rules
           
@@ -3095,6 +3391,7 @@ container:
           
           - Do not call the Worker complete based only on YAML generation or service creation.
           - For a queue-backed Worker, success requires live room service evidence, live runtime evidence, and a successful immediate dequeue smoke test.
+          - If the Worker uses `--require-toolkit=email`, verify that toolkit `email` is visible in the room before treating a non-dequeuing Worker as healthy. A Worker can wait on a missing required toolkit and never reach its queue-consume loop.
           - If the Worker sends email, do not call the workflow complete until logs or other runtime evidence show that the message send succeeded or show the exact blocker.
           - If the Worker runtime is missing, unhealthy, or not visibly dequeuing, switch to `meshagent-service-operator` and `meshagent-runtime-operator` before touching the schedule.
           - If the immediate queue smoke test fails, do not create the scheduled task yet.
@@ -3106,6 +3403,8 @@ container:
           - Prefer the simplest Worker example that satisfies the requested queued-job behavior.
           - Preserve the parts that make dequeueing work: `meshagent.agent.type: "Worker"`, `meshagent worker join --queue=...`, and any required room/container setup.
           - If the queued job sends email, use a real mailbox-backed sender identity from the current room instead of synthesizing a sender address.
+          - Do not assume mailbox creation is enough to satisfy `--require-toolkit=email`. Mailbox provisioning and email-toolkit publication are separate concerns.
+          - When adapting a pattern like the news reporter example, keep the MailBot or equivalent toolkit publisher that makes `email` visible to the Worker. Do not copy only the Worker half of the pattern.
           - If the user only asked to schedule an already running agent and the current room lacks a queue-consuming Worker, stop the scheduler workflow and switch to this skill before claiming scheduling is possible.
           - If the user actually needs a multi-channel process agent rather than a dedicated Worker, say so and use the more appropriate example instead of forcing a Worker pattern.
           
@@ -3139,34 +3438,40 @@ container:
           
           1. Inspect or provision the mailbox first.
           2. Reuse the mailbox email address as the sender identity.
-          3. Build or update a queue-backed Worker service that consumes the intended queue.
-          4. Validate the YAML or rendered service before deployment.
-          5. Create or update the service.
-          6. Verify the live room service appears in `meshagent room service list`.
-          7. Verify the runtime is actually alive with room developer output, container state, or container logs.
-          8. Enqueue an immediate test message now, before creating the scheduled task.
-          9. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-          10. Only after the immediate smoke test passes should you create the one-time scheduled task.
-          11. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+          3. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
+          4. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
+          5. Validate the YAML or rendered service before deployment.
+          6. Create or update the service.
+          7. Verify the live room service appears in `meshagent room service list`.
+          8. Verify the runtime is actually alive with room developer output, container state, or container logs.
+          9. Enqueue an immediate test message now, before creating the scheduled task.
+          10. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+          11. Only after the immediate smoke test passes should you create the one-time scheduled task.
+          12. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+          13. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
           
           ## Success criteria
           
           Do not call the workflow complete until all of the following are true:
           
           - the mailbox exists and its address is the sender identity used by the workflow
+          - toolkit `email` is visibly published in the room by a MailBot or equivalent service
           - the Worker service exists in the room
           - a live runtime or container is visibly running
           - an immediate test message is consumed from the queue
           - runtime evidence shows the mail send succeeded or shows the exact blocker
+          - the scheduled time was computed from the requesting user's known timezone, not just the room or server timezone
           - the scheduled task is set for a future absolute time with enough safety margin to avoid already being in the past
           
           ## Failure interpretation
           
           - A created mailbox does not prove outbound mail works.
+          - A created mailbox does not create toolkit `email`. If the Worker depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
           - A created service record does not prove a Worker runtime is running.
           - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
           - If the scheduled time is too close and setup is still incomplete, push the one-time run farther into the future instead of pretending the near-term run is still valid.
           - If the user asked for a relative run time and setup consumed part of that window, recompute the relative schedule from the current moment before creating the scheduled task.
+          - If the requesting user's timezone is unknown, do not schedule yet. First determine it from reliable user-specific context or ask the user directly.
 
       - path: /meshagent-skills/skills/meshagent-runtime-operator/SKILL.md
         text: |
@@ -3379,29 +3684,31 @@ container:
           ## Default workflow
           
           1. Resolve the active project, room, queue, and intended local execution time.
-          2. Resolve the user's timezone before setting or changing a schedule.
+          2. Resolve the requesting user's timezone before setting or changing a schedule.
           3. Inspect the current room and current agent context to determine whether the running agent already has an explicit queue-consuming path.
           4. Inspect existing scheduled tasks with `meshagent scheduled-task list`.
           5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
           6. If the user expressed the schedule relatively, such as "one minute from now," anchor that relative time to the moment you are actually ready to create the scheduled task, not to the beginning of the broader setup workflow.
-          7. Confirm the exact queue name, JSON payload, local execution time, timezone, and UTC cron expression before mutating anything.
+          7. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
           8. Create, update, or delete the scheduled task.
           9. Verify the task state with `meshagent scheduled-task list`.
           10. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
           
           ## Timezone resolution
           
-          - Do not assume the user's local timezone from the cron expression alone.
+          - Do not assume the requesting user's local timezone from the cron expression alone.
           - Prefer an explicit IANA timezone such as `America/Los_Angeles` or `Asia/Bangkok`.
           - If the user already gave a timezone, use it and restate the UTC conversion you will schedule.
-          - If no timezone was provided, first look up the current local timezone from the environment or system clock.
-          - If the current timezone is still ambiguous, if the task is for a different region, or if DST boundaries matter, ask the user to confirm the intended timezone before scheduling.
+          - If no timezone was provided, first try to determine the requesting user's timezone from user-specific context such as an explicit location, profile data, client-local timezone, or another reliable signal tied to that user.
+          - Do not use the room host timezone, server timezone, or agent runtime timezone as a proxy for the requesting user unless you have evidence that they are the same person in the same locale.
+          - If the requesting user's timezone still cannot be determined reliably without asking, ask the user directly before scheduling.
           - Convert the requested local time into the exact UTC cron expression that will be stored.
           - When the request is tied to a named local timezone that observes DST, explain that the current scheduler stores UTC cron only, so the UTC schedule may need seasonal adjustment.
+          - Before agreeing to create the task, make sure the requesting user's timezone is known and restated explicitly.
           
           ## One-time scheduling guard
           
-          - Restate the exact local scheduled time and the exact UTC time before creating a one-time task.
+          - Restate the exact requesting-user local scheduled time and the exact UTC time before creating a one-time task.
           - Use absolute times in the explanation, not just "one minute from now" or similar relative phrasing.
           - Interpret relative requests such as "one minute from now" relative to the actual `meshagent scheduled-task add` moment after setup is complete, not relative to the original user message timestamp.
           - If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
@@ -3414,7 +3721,7 @@ container:
           - CLI verification: use `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
           - For queue-name discovery, prefer `meshagent room agent list-toolkits` and `meshagent room agent invoke-tool --toolkit queues --tool list --arguments '{}'` before writing SDK code.
           - API verification: use the room queues client, for example `queues = await room.queues.list()` or `message = await room.queues.receive(name="my-queue")`.
-          - The current CLI does not expose a dedicated `meshagent room queue list` subcommand. If the queue name is unknown, use the room queue API or inspect room configuration rather than claiming queue discovery is impossible.
+          - The current CLI does not expose a dedicated room-queue list subcommand. If the queue name is unknown, use the room queue API or inspect room configuration rather than claiming queue discovery is impossible.
           - When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message. For mail-sending workers, this is still not enough by itself; runtime mail-send evidence must also be checked.
           
           ## Current agent queue discovery
@@ -3445,10 +3752,12 @@ container:
           ## Operating rules
           
           - Do not invent queue names.
-          - Do not say queue names cannot be listed just because the CLI lacks a dedicated `meshagent room queue list` subcommand.
+          - Do not say queue names cannot be listed just because the CLI lacks a dedicated room-queue list subcommand.
           - For “what queues are available?” questions, prefer generic CLI toolkit invocation over ad hoc SDK code.
           - Do not invent timezones.
-          - Do not schedule a task until the timezone has been confirmed or reliably detected.
+          - Do not schedule a task until the requesting user's timezone has been confirmed or reliably detected.
+          - Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
+          - If the requesting user's timezone cannot be acquired from reliable user-specific context, ask the user directly before creating the scheduled task.
           - Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
           - Do not anchor a relative scheduling request to the beginning of a longer setup workflow when the user's intent is relative to the actual task-creation moment.
           - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
