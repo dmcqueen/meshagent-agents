@@ -2,21 +2,33 @@
 
 Use these rules whenever a skill authors or rewrites `Service` or `ServiceTemplate` YAML.
 
-- Prefer generated specs over handwritten YAML when the CLI already has a generator for the runtime shape you need. Start from `meshagent worker spec`, `meshagent mailbot spec`, `meshagent multi spec`, or `meshagent service spec` before hand-editing fields.
+- Prefer generated specs over handwritten YAML when the CLI already has a generator for the runtime shape you need. Start from `meshagent worker spec`, `meshagent mailbot spec`, or `meshagent service spec` before hand-editing fields.
 - If you must hand-author YAML, start from the nearest working example or a rendered/generated spec. Do not invent a manifest structure from memory.
 - Treat the container `command` as code that must match the real CLI. Validate agent command flags against the packaged CLI help or the actual CLI source before treating the YAML as deployable.
 - Do not invent flags that the target command does not support. For example, `meshagent worker join` uses `--rule` and `--room-rules`; do not substitute unsupported flags such as `--prompt`.
 - Make the declared agent roles match the runtime command. If the manifest says it contains a `Worker`, the command must actually start a worker path. If it says it contains a `MailBot`, the command must start a mailbot path. Do not declare two roles and only start one of them.
 - For scheduled email workflows, only use these composition patterns:
   - a dedicated MailBot publishes toolkit `email` using a real mailbox-backed sender identity, and a dedicated Worker consumes the scheduled job queue and uses toolkit `email`
-  - one `meshagent multi join` service runs both the MailBot and Worker roles explicitly
+- For non-trivial scheduled email workflows, prefer durable worker behavior over ad hoc inline prompting:
+  - put the send logic in `--room-rules`, mounted rule files, or a startup-script-generated rules file
+  - then make the scheduled payload trigger that already-defined workflow in the same style the Worker expects
+- Treat the `industry-report` nightly-report worker pattern as the preferred design signal for non-trivial scheduled email jobs:
+  - the Worker owns the email workflow in durable rule files
+  - the scheduled payload is a prompt that tells the Worker to run that established workflow
+  - the MailBot only publishes toolkit `email`; it is not the scheduled job consumer
 - For scheduled email workflows, reject these patterns as incorrect:
   - a standalone MailBot pointed at the scheduled job queue
   - a Worker with no explicit rule telling it to send the email
   - a MailBot with an invented mailbox-looking sender identity
 - Keep mailbox and job queues distinct unless the implementation clearly requires them to be the same. A MailBot queue should match the mailbox or inbound mail path; a Worker queue should match the scheduled job queue.
+- Prefer separate MailBot and Worker services for new scheduled email workflows. Only preserve a combined process when you are repairing an already-existing deployment that truly depends on it.
 - Do not use invented sender identities such as `something@meshagent.local` for room email workflows. Use a real mailbox-backed address from the current project and room.
 - If the YAML embeds room rules files or startup scripts, make sure the files are actually mounted or written into the container before the command references them.
+- Match the scheduled payload shape to the Worker design:
+  - if the Worker is prompt-driven, schedule a prompt that clearly instructs the Worker to run the email workflow
+  - if the Worker is structured-field-driven, schedule the exact fields the Worker rules require
+  - do not enqueue a structured payload if the Worker was only taught to react to prompt-style instructions, and do not enqueue a bare prompt if the Worker only knows structured fields
+- For recurring or non-trivial scheduled email/report jobs, prefer a prompt that names the workflow to run from the Worker's durable rules rather than pushing the whole mail job into raw JSON fields.
 - Before deployment, run the narrowest validation path that matches the asset:
   - `meshagent service validate` for a concrete `Service`
   - `meshagent service validate-template` and `meshagent service render-template` for a `ServiceTemplate`
