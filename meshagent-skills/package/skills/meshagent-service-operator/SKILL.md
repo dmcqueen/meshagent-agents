@@ -26,6 +26,8 @@ metadata:
       when: The service work is only one part of a larger end-to-end workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using docs or source references.
+    - skill: meshagent-participant-token-operator
+      when: The main question is token-backed environment injection, participant identity, or service token wiring rather than generic service lifecycle.
     - skill: meshagent-queue-worker-builder
       when: The main task is authoring queue-backed Worker YAML.
     - skill: meshagent-webapp-builder
@@ -78,6 +80,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 
 - `meshagent-workflow-orchestrator`: Use it when the service work is only one part of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
+- `meshagent-participant-token-operator`: Use it when the issue is token-backed environment injection or participant-token wiring inside the service manifest.
 - `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-backed Worker YAML.
 - `meshagent-webapp-builder`: Use it when the main task is a website or public web application rather than service lifecycle.
 - `meshagent-webmaster`: Use it when the main task is route and hostname management rather than service lifecycle.
