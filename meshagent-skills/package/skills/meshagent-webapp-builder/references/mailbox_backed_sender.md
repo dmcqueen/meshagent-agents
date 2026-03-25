@@ -12,13 +12,18 @@ Use this flow for room-hosted contact forms that send outbound mail.
 - Use the visitor email only as `Reply-To` when present.
 - Do not synthesize sender addresses such as `contact-form@<mail-domain>`.
 - Do not invent sender env vars such as `FROM_ADDRESS`, `MAIL_FROM`, `SMTP_FROM`, or `MESHAGENT_PARTICIPANT_NAME`.
+- Do not treat mailbox creation alone as proof that the contact form has a working outbound send path.
+- Do not treat a missing queue in generic queue inspection as proof that mailbox creation failed. A contact form may still be broken for other reasons.
 
 ## Minimal CLI flow
 
 1. `meshagent mailbox list --room "$MESHAGENT_ROOM"`
 2. If needed, try one or more collision-resistant `meshagent mailbox create` candidates.
-3. Write the successful mailbox address into the handler configuration.
-4. Re-test a valid form submission after deploy.
+3. Choose the send path deliberately:
+   - prefer the room mail path for normal contact forms
+   - use direct SMTP only if the runtime has already proven SMTP configuration or the user asked for raw SMTP
+4. Write the successful mailbox address into the handler configuration.
+5. Re-test a valid form submission after deploy.
 
 ## SMTP configuration
 
@@ -30,6 +35,7 @@ When the handler uses direct SMTP, use only the runtime defaults that exist in `
 - `SMTP_PORT`
 
 The mailbox address is still the sender identity. SMTP username and password do not define the `From` address.
+If those runtime defaults are not actually present, do not keep the contact form on a direct-SMTP design just because the mailbox exists.
 
 ## Failure interpretation
 
