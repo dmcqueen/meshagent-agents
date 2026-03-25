@@ -100,6 +100,7 @@ Use the following status values exactly:
 ## Preferred routing
 
 - For room-scoped tasks, start with `meshagent room ...`.
+- When the task is room service discovery, prefer `meshagent room service list` over generic `meshagent room agent invoke-tool` calls.
 - For runtime deployment tasks, prefer the specific runtime family such as `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, or `meshagent webserver ...`.
 - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
 - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
