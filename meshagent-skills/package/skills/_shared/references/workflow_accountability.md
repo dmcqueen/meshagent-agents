@@ -83,6 +83,8 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not wait until the final step to discover that a required backend surface such as scheduled-task create is blocked when a cheap preflight could have shown that earlier.
 - Do not use broad auth or project-listing failures as proof that a room-scoped workflow cannot proceed when a narrower room-scoped probe was available.
 - Do not use `meshagent auth whoami` as a prerequisite gatekeeper for a known-room workflow.
+- Do not treat room messaging enablement as a setup task for workflows that do not actually require room messaging. If a command reports that messaging is already enabled, treat that as non-blocking room state rather than a failure to repair.
+- Do not keep retrying `meshagent room container exec` against another participant's private container after an isolation denial. Switch to container logs, developer watch, service state, public HTTP checks, or deployed artifacts instead.
 - Do not pass arbitrary human-readable ids into workflow surfaces that are UUID-backed. If a skill has not proven the id format is accepted, omit the custom id rather than guessing.
 - Do not treat queue drain, service creation, or scheduled-task creation as proof that a requested email was actually delivered.
 - Do not assume that a scheduled task payload implicitly means "send an email" unless the payload explicitly maps to the Worker's email-sending rules.
