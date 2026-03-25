@@ -136,6 +136,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - If the workflow includes relative scheduling, make schedule creation the last mutation after the runtime path is proven.
 - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
 - If the workflow returns a managed public URL, require the hostname suffix to match the active API environment before treating that URL as valid output.
+- If the workflow is a public site that sends email, inherit the webapp and mail completion rules together rather than relaxing either one at the orchestration layer.
 - If the request clearly includes ordinary prerequisite setup, do not stop to ask permission for that setup unless a real missing input remains.
 - If a near-future one-time schedule is retried, treat duplicate creation as a workflow bug to avoid.
 
@@ -146,6 +147,12 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - Translate supporting-skill claims into concrete workflow-gate evidence before moving on.
 - Name blockers by surface, for example scheduler permissions, missing toolkit publication, or unhealthy runtime.
 - For mail workflows, do not let queue drain or object creation stand in for delivery evidence.
+- For public-site workflows, do not let route creation, deploy success, DNS resolution, or redirects stand in for a verified working site.
+- For a public site-to-email workflow, require all of the following before declaring success:
+  - the managed hostname suffix matches the active API environment
+  - the public URL reaches the intended page with the expected final success status, normally `200`
+  - representative form submission paths behave as expected
+  - the valid submission path shows real mail-send success or the exact SMTP/provider blocker
 
 ## Ownership rules
 
