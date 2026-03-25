@@ -22,6 +22,8 @@ metadata:
       when: Storage work is only one part of a larger end-to-end workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using docs or source references.
+    - skill: meshagent-participant-token-operator
+      when: The real issue is whether the runtime or service has a participant token and storage API scope rather than storage path behavior.
     - skill: meshagent-webapp-builder
       when: Storage is one part of a website deploy workflow.
     - skill: meshagent-runtime-operator
@@ -69,6 +71,7 @@ Use this skill when the task is about room storage paths or copying data into or
 
 - `meshagent-workflow-orchestrator`: Use it when storage work is only one part of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
+- `meshagent-participant-token-operator`: Use it when the blocker is participant-token source, missing storage API grants, or token wiring rather than storage path behavior.
 - `meshagent-webapp-builder`: Use it when storage is only one part of deploying a website.
 - `meshagent-runtime-operator`: Use it when the real issue is a live container mount or runtime visibility problem rather than storage commands themselves.
 
