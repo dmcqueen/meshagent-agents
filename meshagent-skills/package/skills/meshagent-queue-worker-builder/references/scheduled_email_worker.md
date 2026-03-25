@@ -1,6 +1,6 @@
-# Scheduled Email Worker
+# Scheduled Email Queue Agent
 
-Use this reference when the user asks for a Worker that receives a queue message and sends an email, especially when that Worker will later be triggered by a one-time scheduled task.
+Use this reference when the user asks for a queue-consuming agent that receives a queue message and sends an email, especially when that runtime will later be triggered by a one-time scheduled task.
 
 ## Required sequence
 
@@ -13,21 +13,21 @@ Use this reference when the user asks for a Worker that receives a queue message
 7. If the workflow clearly needs real outbound email and no reusable mailbox exists yet, create one automatically as part of the workflow instead of asking the user whether mailbox creation is allowed.
 8. Reuse the mailbox email address as the sender identity.
 9. In `.life` rooms, prefer mailbox addresses under `@mail.meshagent.life`; in production `.com` environments, prefer `@mail.meshagent.com`. Do not default to `@meshagent.local` for outbound scheduled email workflows.
-10. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
-11. For a mailbox-backed MailBot, keep the mailbox address, mailbox queue, and MailBot inbox queue aligned by default. The safest pattern is to route the mailbox to its own email address as the queue and let the MailBot consume that same queue, unless you have explicit evidence that an override is intentional and correctly wired.
-12. Choose the Worker and MailBot runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
+10. Verify that toolkit `email` is already published in the room or create the mail channel or equivalent publisher that will publish it. The normal pattern is a mailbox-backed mail path.
+11. For a mailbox-backed mail path, keep the mailbox address, mailbox queue, and inbox queue aligned by default. The safest pattern is to route the mailbox to its own email address as the queue and let the mail runtime consume that same queue, unless you have explicit evidence that an override is intentional and correctly wired.
+12. Choose the queue-consumer and mail-runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
 13. Generate the initial service asset from the real CLI when possible:
-   - `meshagent worker spec` for a dedicated Worker
-   - `meshagent mailbot spec` for a dedicated MailBot
-   - `meshagent service spec` only when the narrower agent-specific spec commands are not the right fit
-14. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-15. For non-trivial scheduled email behavior, prefer mounted or startup-generated Worker rule files and pass them with `--room-rules` instead of relying only on a long inline rule string.
-16. Prefer separate MailBot and Worker services for new scheduled email workflows. Only preserve a combined process when you are repairing an existing deployment that already depends on it.
-17. For non-trivial scheduled email workflows, follow the same behavioral pattern as the `industry-report` nightly-report Worker:
-   - the Worker queue owns a named workflow through durable rule files
-   - the scheduled task prompt tells the Worker to run that workflow
-   - the MailBot exists only to publish toolkit `email`
-18. For the service YAML, validate the actual command flags and role composition. A Worker must use real worker flags such as `--rule` or `--room-rules`; a MailBot must not be treated as the scheduled job consumer.
+   - for new authored YAML, use `meshagent process spec`
+   - use `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly wants that split runtime shape
+   - use `meshagent service spec` only when the narrower agent-specific spec commands are not the right fit
+14. Build or update a process service that consumes the intended queue with `--channel=queue:<QUEUE_NAME>` and has access to the real email-sending path.
+15. For non-trivial scheduled email behavior, prefer mounted or startup-generated rule files and pass them with `--room-rules` instead of relying only on a long inline rule string.
+16. For new scheduled email workflows, prefer one process runtime with queue and mail channels. Use separate mail and Worker services only when the user explicitly asked for that split shape.
+17. For non-trivial scheduled email workflows, follow the same behavioral pattern as the `industry-report` nightly-report flow, adapted to a process design:
+   - the queue channel triggers a named workflow through durable rule files
+   - the scheduled task prompt tells the agent to run that workflow
+   - the mail channel or equivalent publisher is part of the same designed mail path
+18. For the service YAML, validate the actual command flags and role composition. A process agent should use `meshagent process join` plus real `--channel=...` flags; the mail path must not be treated as the scheduled job consumer.
 19. Validate the YAML or rendered service before deployment.
 20. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
 21. Create or update the service.
@@ -35,9 +35,9 @@ Use this reference when the user asks for a Worker that receives a queue message
 23. Verify the runtime is actually alive with room developer output, container state, or container logs.
 24. Enqueue an immediate test message now, before creating the scheduled task.
 25. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-26. Design the scheduled payload so it explicitly requests email sending in the same style the Worker already expects:
-   - prompt-style when the Worker rules define a named workflow to run
-   - structured fields when the Worker rules already key off `to`, `subject`, `body`, and any required action field
+26. Design the scheduled payload so it explicitly requests email sending in the same style the queue consumer already expects:
+   - prompt-style when the runtime rules define a named workflow to run
+   - structured fields when the runtime rules already key off `to`, `subject`, `body`, and any required action field
 27. Only after the immediate smoke test passes should you create the one-time scheduled task.
 28. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
 29. Before creating the scheduled task, check whether an equivalent near-future one-time task already exists for the same queue and payload so you do not create duplicates after an uncertain retry.
@@ -52,9 +52,9 @@ Use this reference when the user asks for a Worker that receives a queue message
 Do not call the workflow complete until all of the following are true:
 
 - the mailbox exists and its address is the sender identity used by the workflow
-- toolkit `email` is visibly published in the room by a MailBot or equivalent service
+- toolkit `email` is visibly published in the room by a mail runtime or equivalent service
 - the recipient email address for the real smoke test and scheduled message is known, unless the user explicitly asked for a payload-only template
-- the Worker service exists in the room
+- the queue-consuming service exists in the room
 - a live runtime or container is visibly running
 - an immediate test message is consumed from the queue
 - runtime evidence shows the mail send succeeded or shows the exact blocker
@@ -67,19 +67,19 @@ Do not call the workflow complete until all of the following are true:
 ## Failure interpretation
 
 - A created mailbox does not prove outbound mail works.
-- A created mailbox does not create toolkit `email`. If the Worker depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
-- A mailbox-backed MailBot can misbehave if the mailbox address, mailbox queue, and MailBot inbox queue do not line up. The safest default is to keep those names the same, but code-level overrides are possible and must be checked explicitly.
+- A created mailbox does not create toolkit `email`. If the queue consumer depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
+- A mailbox-backed mail runtime can misbehave if the mailbox address, mailbox queue, and inbox queue do not line up. The safest default is to keep those names the same, but code-level overrides are possible and must be checked explicitly.
 - A mailbox address under `@meshagent.local` is a bad default for outbound managed-mail workflows. In `.life` or production environments, first suspect the mailbox domain if SMTP rejects send with authorization errors such as `550 5.7.1`.
-- A created service record does not prove a Worker runtime is running.
+- A created service record does not prove the queue-consuming runtime is running.
 - A copied docs image does not prove the runtime image matches the current MeshAgent environment. A `.life` room may need a different runtime image family than the production docs examples.
-- A MailBot service by itself does not satisfy a scheduled email worker workflow. The MailBot publishes toolkit `email`; the Worker must consume the scheduled job queue.
-- A manifest that declares both `MailBot` and `Worker` roles but starts only one runtime path is incorrect even if the YAML shape validates.
-- A new scheduled email workflow should not default to a combined MailBot+Worker process when separate services would express the design more clearly.
-- A worker command that uses unsupported flags such as `--prompt` is invalid YAML content even if the surrounding service shape looks correct.
+- A mail runtime by itself does not satisfy a scheduled email workflow. The mail path publishes or owns the sender identity; the queue-consuming runtime must handle the scheduled job queue.
+- A manifest that declares multiple roles but starts only one runtime path is incorrect even if the YAML shape validates.
+- A new scheduled email workflow should not default to separate mail and Worker YAMLs when one process design would express the queue-plus-mail behavior more directly.
+- A queue-consuming runtime command that uses unsupported or mismatched flags is invalid YAML content even if the surrounding service shape looks correct.
 - A mailbox-looking sender such as `something@meshagent.local` is not a proven mailbox-backed sender identity.
 - A scheduled task payload that does not explicitly request email sending may enqueue successfully while never causing an email to be sent.
-- A scheduled task payload that uses structured fields can still fail if the Worker was only taught to react to prompt-style instructions from its rules file or room-rules. Match the payload to the Worker design.
-- For non-trivial scheduled email workflows, a prompt that triggers the durable Worker workflow is often more reliable than ad hoc `to`/`subject`/`body` JSON fields.
+- A scheduled task payload that uses structured fields can still fail if the process or dedicated Worker runtime was only taught to react to prompt-style instructions from its rules file or room-rules. Match the payload to the actual runtime design.
+- For non-trivial scheduled email workflows, a prompt that triggers the durable queue-handling workflow is often more reliable than ad hoc `to`/`subject`/`body` JSON fields.
 - If the user asked for a real scheduled email and no recipient address has been collected yet, the workflow is still blocked on required user input. Do not pretend the remaining setup is complete.
 - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
 - A consumed smoke-test queue message does not prove email delivery by itself. Delivery still needs runtime send evidence or an exact mail blocker.
@@ -92,7 +92,7 @@ Do not call the workflow complete until all of the following are true:
 - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
 - If `meshagent scheduled-task add` fails after passing a human-readable `--id`, suspect invalid task-id format first. Scheduled-task ids are UUID-backed; omit `--id` or pass a real UUID.
 - If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
-- If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
+- If the scheduler is blocked or unhealthy, do not silently continue as if only the queue consumer matters. Either stop or clearly mark queue and mail setup as partial preparation pending scheduler recovery.
 - If a one-time `scheduled-task add` was retried after an uncertain first result, first inspect for an already-created equivalent task before issuing a second add.
 - Two near-future tasks with the same queue, same payload intent, and same delivery window are usually a duplicate-creation bug, not a valid success case.
 
@@ -116,4 +116,4 @@ Do not call the workflow complete until all of the following are true:
   - `{"prompt":"Run the nightly report workflow from /data/agents/<AGENT_NAME>/rules-worker-report.txt and send the email using the email toolkit."}`
 - Structured payload example:
   - `{"to":"david.mcqueen@timu.com","subject":"Scheduled test","body":"This is a scheduled test email.","action":"send_email"}`
-- Match the payload style to the Worker's rules. If the Worker was built around prompt-driven instructions or a named room-rules workflow, keep using a prompt. If it was built around structured fields, use those exact fields.
+- Match the payload style to the queue consumer's rules. If the runtime was built around prompt-driven instructions or a named room-rules workflow, keep using a prompt. If it was built around structured fields, use those exact fields.
