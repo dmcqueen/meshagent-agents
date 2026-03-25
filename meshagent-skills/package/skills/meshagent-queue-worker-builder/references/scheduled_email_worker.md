@@ -40,10 +40,11 @@ Use this reference when the user asks for a Worker that receives a queue message
    - structured fields when the Worker rules already key off `to`, `subject`, `body`, and any required action field
 27. Only after the immediate smoke test passes should you create the one-time scheduled task.
 28. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-29. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
-30. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-31. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-32. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+29. Before creating the scheduled task, check whether an equivalent near-future one-time task already exists for the same queue and payload so you do not create duplicates after an uncertain retry.
+30. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+31. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+32. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+33. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 
 ## Success criteria
 
@@ -89,6 +90,8 @@ Do not call the workflow complete until all of the following are true:
 - If `meshagent scheduled-task add` fails after passing a human-readable `--id`, suspect invalid task-id format first. Scheduled-task ids are UUID-backed; omit `--id` or pass a real UUID.
 - If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
 - If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
+- If a one-time `scheduled-task add` was retried after an uncertain first result, first inspect for an already-created equivalent task before issuing a second add.
+- Two near-future tasks with the same queue, same payload intent, and same delivery window are usually a duplicate-creation bug, not a valid success case.
 
 ## Input collection rules
 
@@ -96,6 +99,7 @@ Do not call the workflow complete until all of the following are true:
 - Do not treat sender-address selection as required user input for a straightforward room scheduled-email workflow when the skill can safely provision a mailbox-backed sender itself.
 - Ask for all obviously blocking user-provided mail inputs in one message when possible: recipient first, then optional subject/body if needed.
 - Do not ask a generic "should I continue?" question when the real blocker is a specific missing input such as the recipient address.
+- If the user's original request already implies full setup plus scheduling, do not ask them to confirm ordinary prerequisite setup separately.
 - If the user says "yes" or otherwise confirms they want the workflow completed, continue the build and verification flow without making them repeat the high-level request.
 - If the user did not provide subject or body, you may continue with explicit defaults once the recipient is known, but say what defaults you are using.
 
