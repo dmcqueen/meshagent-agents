@@ -12,6 +12,8 @@ Use these rules whenever a skill authors or rewrites `Service` or `ServiceTempla
 - For scheduled email workflows, prefer these composition patterns in this order:
   - for new authored YAML, one `meshagent process` runtime with explicit `--channel=queue:...` and `--channel=mail:...` channels, durable rules, and one shared identity
   - only when the user explicitly asked for split runtimes, a dedicated MailBot publishes toolkit `email` using a real mailbox-backed sender identity, and a dedicated Worker consumes the scheduled job queue and uses toolkit `email`
+- Do not author a new scheduled-email service as a queue-only process plus `--require-toolkit=email` unless a live `email` publisher was already proven in the room and reusing that publisher is intentional.
+- For new authored scheduled-email YAML, a process service that must send email should normally include its own `mail:...` channel instead of depending on some other runtime to publish toolkit `email`.
 - For non-trivial scheduled email workflows, prefer durable queue-handling behavior over ad hoc inline prompting:
   - put the send logic in `--room-rules`, mounted rule files, or a startup-script-generated rules file
   - then make the scheduled payload trigger that already-defined workflow in the same style the queue consumer expects
@@ -21,6 +23,7 @@ Use these rules whenever a skill authors or rewrites `Service` or `ServiceTempla
   - the mail path only publishes or owns the sender identity; it is not the scheduled job consumer
 - For scheduled email workflows, reject these patterns as incorrect:
   - a standalone MailBot pointed at the scheduled job queue
+  - a queue-only process that requires toolkit `email` but does not include a mail channel and has no already-proven live email publisher
   - a Worker with no explicit rule telling it to send the email
   - a MailBot with an invented mailbox-looking sender identity
 - Keep mailbox and job queues distinct unless the implementation clearly requires them to be the same. A MailBot queue should match the mailbox or inbound mail path; a Worker queue should match the scheduled job queue.
