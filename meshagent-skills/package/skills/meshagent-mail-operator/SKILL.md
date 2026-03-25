@@ -68,6 +68,22 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - The user wants a room-hosted workflow such as a contact form to send email correctly.
 - The user wants to inspect or consume incoming mail messages through the CLI or room API.
 
+## Escalation model
+
+- Start with the lightest mail path that fits the user's actual request.
+- Do not provision a mailbox just because the task mentions sending one email.
+- A simple one-off outbound test email is usually a direct-send problem, not a mailbox-administration problem.
+- Escalate to mailbox provisioning only when the request actually needs mailbox features such as:
+  - a durable sender identity that should be reused by agents or services
+  - inbound mail routing into a room queue
+  - a MailBot or process `mail:` channel
+  - a room-hosted contact form or mailbox-backed workflow that must keep a stable sender address
+  - a queue-backed or scheduled workflow whose sender identity must be provisioned and reused later
+- If the user only asked to send a simple test email, first try the narrow direct-send path that matches the current runtime:
+  - a real `email` toolkit send path if one is already present
+  - or the explicit raw SMTP / `RoomClient` code path when the user asked for code or a live room client already exists
+- Only provision a mailbox for a simple test email when the observed runtime path proves a mailbox-backed sender is actually required for the requested send.
+
 ## References
 
 - Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact CLI command shapes and flags.
@@ -117,9 +133,10 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 ## Outbound delivery workflow
 
-- For a room-hosted email workflow, first inspect or provision the mailbox that will own the sender address.
+- Before provisioning a mailbox, decide whether the user's requested send is actually a mailbox-backed workflow or just a one-off outbound send.
+- For a room-hosted mailbox-backed email workflow, first inspect or provision the mailbox that will own the sender address.
 - If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
-- If no mailbox exists and the task requires sending mail from the room, create one before claiming the workflow is complete.
+- If no mailbox exists and the task specifically requires mailbox-backed send or inbound routing, create one before claiming the workflow is complete.
 - If another agent will call toolkit `email`, separately verify that toolkit `email` is published in the room. Mailbox provisioning alone is not enough.
 - The common room pattern is a MailBot that owns the mailbox-backed sender identity and publishes toolkit `email` for chatbots or Workers that require it.
 - When provisioning a new mailbox-backed MailBot, the safest default is to keep all three aligned:
@@ -145,6 +162,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
   - treat this as an advanced fallback or explicit user-directed path, not the default replacement for mailbox-backed toolkit workflows
 - Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
 - If the mail sender lives inside a queue-backed Worker, verify that the Worker runtime actually uses the provisioned mailbox address before treating mailbox creation as sufficient.
+- For a simple one-off test send, do not provision a mailbox first unless the requested runtime path clearly depends on mailbox ownership or inbound routing.
 
 ## Queue inspection
 
@@ -183,6 +201,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
 - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
+- For simple test-email requests, do not add mailbox provisioning as hidden scope creep unless the direct-send path actually fails for a mailbox-backed reason.
 - For queue-backed mail workers, do not claim success until the Worker has consumed a real test message and runtime evidence shows the send succeeded or shows the exact SMTP/provider blocker.
 - For Workers or chat agents that use `--require-toolkit=email`, do not treat a mailbox as proof that the toolkit exists. Verify that toolkit `email` is visible in the room from a live publisher such as a MailBot.
 - If a mailbox-backed MailBot exists but inbound or outbound behavior is inconsistent, check whether the mailbox address, mailbox queue, and MailBot queue diverged. That alignment is the default working pattern in the codebase, but overrides are possible and must be verified explicitly.
