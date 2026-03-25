@@ -22,6 +22,8 @@ metadata:
       when: Mail behavior is one piece of a larger end-to-end room workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using server or CLI source references.
+    - skill: meshagent-participant-token-operator
+      when: The main question is where the room participant token comes from or how raw SMTP code should obtain the in-room token.
     - skill: meshagent-queue-operator
       when: The main task is generic queue inspection or queue injection rather than mailbox behavior.
     - skill: meshagent-queue-worker-builder
@@ -61,6 +63,8 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - The task involves `meshagent mailbox ...` provisioning, inspection, update, or deletion.
 - The user needs to understand how inbound email is routed into a room queue.
 - The user needs enough SMTP detail to write code that sends email from a room workflow.
+- The user already has a room client in the room and wants to send email from coded Python using raw SMTP variables.
+- The user wants a coded Python path that sends mail directly from an in-room `RoomClient` without first standing up a MailBot.
 - The user wants a room-hosted workflow such as a contact form to send email correctly.
 - The user wants to inspect or consume incoming mail messages through the CLI or room API.
 
@@ -76,6 +80,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 - `meshagent-workflow-orchestrator`: Use it when mail behavior is only one piece of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references for mail implementation details.
+- `meshagent-participant-token-operator`: Use it when the main issue is participant-token discovery, service token injection, or raw SMTP code using the in-room room token.
 - `meshagent-queue-operator`: Use it when the queue work is independent of mailbox provisioning or SMTP behavior.
 - `meshagent-queue-worker-builder`: Use it when the mailbox-backed sender must be wired into a queue-consuming Worker or scheduled queue workflow.
 - `meshagent-webapp-builder`: Use it when mailbox-backed mail is part of a room website or contact form workflow.
@@ -132,6 +137,12 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
 - Do not treat a hardcoded mailbox-looking string as provisioned unless it came from a successful mailbox CLI result in the current project.
 - If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
+- If the user explicitly asks for coded Python with a live `RoomClient` and raw SMTP variables, allow that path. In that case:
+  - reuse the provisioned mailbox address as the sender identity
+  - mirror the room SMTP defaults from the implementation instead of inventing your own variable names or lookup path
+  - use the same fallback chain as the room mail implementation: `SMTP_USERNAME` else `room.local_participant.get_attribute("name")`, `SMTP_PASSWORD` else `room.protocol.token`, `SMTP_HOSTNAME` else the runtime mail domain, `SMTP_PORT` else `587`
+  - allow a direct `aiosmtplib.send(...)` Python path when the user explicitly asked for coded SMTP sending or already has a `RoomClient` and does not need MailBot behavior
+  - treat this as an advanced fallback or explicit user-directed path, not the default replacement for mailbox-backed toolkit workflows
 - Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
 - If the mail sender lives inside a queue-backed Worker, verify that the Worker runtime actually uses the provisioned mailbox address before treating mailbox creation as sufficient.
 
@@ -147,6 +158,8 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - The current room mail implementation uses `SmtpConfiguration` from `meshagent.agents.mail_common`.
 - If `SMTP_USERNAME` is unset, the room mail implementation uses `room.local_participant.get_attribute("name")` as the SMTP username.
 - If `SMTP_PASSWORD` is unset, the room mail implementation uses `room.protocol.token` as the SMTP password.
+- `room.protocol.token` is the room client's participant token, the same connection token passed through `MESHAGENT_TOKEN` or supplied to `WebSocketClientProtocol(token=...)`.
+- Treat that participant token as the current participant's room credential and API grant carrier. It says who the participant is and what the participant is allowed to do in the room.
 - If `SMTP_HOSTNAME` is unset, the room mail implementation uses its configured mail domain from the runtime configuration.
 - If `SMTP_PORT` is unset, the room mail implementation uses port `587`.
 - The current implementation reads those values when sending in `start_thread` and `send_reply_message`. Do not invent a different SMTP retrieval path.
@@ -154,6 +167,17 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - In a live room workflow, first check whether the default room SMTP values already work before asking the user for manual `SMTP_*` settings.
 - Only ask for explicit SMTP overrides when the room's default username, token, domain, or port is known to be insufficient for the target provider.
 - SMTP transport defaults do not define the sender email address. The sender address should come from the mailbox-backed workflow, not from the participant name.
+- If the user wants raw Python SMTP code inside a room runtime, use the same defaults the room mail implementation uses:
+  - `SMTP_USERNAME` else `room.local_participant.get_attribute(\"name\")`
+  - `SMTP_PASSWORD` else the room client's participant token at `room.protocol.token`
+  - `SMTP_HOSTNAME` else the runtime mail domain
+  - `SMTP_PORT` else `587`
+- If a live `RoomClient` already exists in the room runtime, you may write direct Python SMTP code against that client and the room defaults instead of forcing the task through MailBot setup first.
+- When using the coded Python/raw SMTP path, keep it narrow:
+  - use the existing `RoomClient`
+  - use the provisioned mailbox-backed sender address
+  - use the implementation's SMTP fallback chain
+  - do not invent a second configuration model
 
 ## Verification rules
 
@@ -168,6 +192,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
 - If the workflow also creates a public route, follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL.
 - If SMTP rejects delivery, report the exact observed blocker.
+- If the task uses coded Python/raw SMTP with a live `RoomClient`, report the exact sender address, hostname, port, and SMTP/provider response that the code used.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
 
 ## Workflow accountability
