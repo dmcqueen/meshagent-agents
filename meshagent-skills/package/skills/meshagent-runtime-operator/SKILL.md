@@ -100,6 +100,7 @@ Use this skill when the task is about the live runtime state inside a room rathe
 - Prefer `meshagent room developer watch` for room-wide developer telemetry and `meshagent room container log` for one container’s logs.
 - Prefer `container list` before `log`, `exec`, `stop`, or `port forward` so you target the right container.
 - Prefer `meshagent room service list` before container actions when the symptom is about a deployed service, Worker, or MailBot rather than an ad hoc container.
+- Do not use generic toolkit invocation for ordinary service discovery when `meshagent room service list` already covers the question directly.
 - Prefer `meshagent room agent list-toolkits` before concluding that a runtime dependency such as toolkit `email` is unavailable or unpublished.
 - Treat `container stop` as disruptive.
 - Treat `container exec` as a live-room debugging operation, not a substitute for fixing the service definition.
