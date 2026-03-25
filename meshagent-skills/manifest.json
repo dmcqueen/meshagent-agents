@@ -4,11 +4,11 @@
   "description": "A MeshAgent room agent that automatically discovers and coordinates multipler specialized skills including CLI operations, email workflows, task scheduling, and web deployment.",
   "long_description": "",
   "dev": {
-    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ee6c817bee459cb134468907d4723008ed2dcda6/meshagent-skills/agent.dev.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ee6c817bee459cb134468907d4723008ed2dcda6/meshagent-skills/agent.dev.yaml"
+    "install_link": "https://app.powerboards.life/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f3b38219e52ee6408cb70e49b81910d5a77cee97/meshagent-skills/agent.dev.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/f3b38219e52ee6408cb70e49b81910d5a77cee97/meshagent-skills/agent.dev.yaml"
   },
   "prod": {
-    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c9fd195b58189994beea388f6e745789bdccdd2d/meshagent-skills/agent.prod.yaml",
-    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/c9fd195b58189994beea388f6e745789bdccdd2d/meshagent-skills/agent.prod.yaml"
+    "install_link": "https://app.powerboards.com/install?url=https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ea65668b76b804d6d9e38f1d668de179da592e6e/meshagent-skills/agent.prod.yaml",
+    "raw_sha_link": "https://raw.githubusercontent.com/dmcqueen/meshagent-agents/ea65668b76b804d6d9e38f1d668de179da592e6e/meshagent-skills/agent.prod.yaml"
   }
 }
