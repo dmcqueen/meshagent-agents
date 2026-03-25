@@ -1,4 +1,0 @@
-interface:
-  display_name: "MeshAgent Queue Operator"
-  short_description: "Operate room queues and backlog"
-  default_prompt: "Use $meshagent-queue-operator to inspect a room queue, send a payload, or verify backlog."

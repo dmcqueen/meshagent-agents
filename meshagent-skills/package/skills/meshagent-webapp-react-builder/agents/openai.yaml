@@ -1,4 +1,0 @@
-interface:
-  display_name: "MeshAgent Webapp React Builder"
-  short_description: "Build React-style room web apps"
-  default_prompt: "Use $meshagent-webapp-react-builder to build a small React-style room web app with Preact + htm."

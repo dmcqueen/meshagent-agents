@@ -1,4 +1,0 @@
-interface:
-  display_name: "MeshAgent Memory Operator"
-  short_description: "Operate room memory stores"
-  default_prompt: "Use $meshagent-memory-operator to inspect, ingest, or query a room memory store."
