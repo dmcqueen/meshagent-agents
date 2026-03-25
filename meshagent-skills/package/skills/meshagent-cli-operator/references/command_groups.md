@@ -8,9 +8,9 @@ For room-visible runtime data, use `/data`.
 If the user asks to create or write a room-visible file and does not give a more specific path, default to `/data/<filename>`.
 For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
 For this skill, the current room is the value of `MESHAGENT_ROOM`.
-For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
+For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL`: `.com` environments must use `*.meshagent.app` and `.life` environments must use `*.meshagent.dev`. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
 The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
-Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL`. For `https://api.meshagent.life`, managed public hostnames must end in `.meshagent.dev`.
+Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL`. For `https://api.meshagent.life`, managed public hostnames must end in `.meshagent.dev`. For `https://api.meshagent.com`, managed public hostnames must end in `.meshagent.app`.
 
 ## Top-level command policy
 
@@ -105,15 +105,15 @@ Use the following status values exactly:
 - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
 - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
 - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
-- For room-site requests, deploy in the current room and return the public URL. Do not treat local example-app edits or local build output as completion of a room deployment request.
+- For room-site requests, deploy in the current room and return the public URL only after live verification succeeds. Do not treat local example-app edits, local build output, route creation, deploy success, DNS resolution, or a redirect alone as completion of a room deployment request.
 - For room-site requests that use `meshagent webserver deploy`, create the local app under the current working directory, keep route sources relative to the routes file when possible, and upload to room storage with `--website-path`.
 - If `MESHAGENT_ROOM` is already available, do not block on `meshagent rooms list` before attempting the room-scoped deploy.
-- For deployed websites, verify the live URL with at least one real HTTP request before replying with success.
+- For deployed websites, verify the live URL with a real HTTP GET and confirm the final response is the intended page with the expected final success status, normally `200`, before replying with success.
 - For contact forms, verify both the GET render path and at least one POST path after deploy. A live 500 is not an acceptable final state.
 - For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
 - If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
 - If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
-- Never return `.meshagent.app` from a `.life` environment or `.meshagent.dev` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
+- Managed hostname suffix is absolute, not advisory: never return anything except `.meshagent.dev` from a `.life` environment or `.meshagent.app` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
 - If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
 - Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
 - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
