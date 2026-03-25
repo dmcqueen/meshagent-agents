@@ -582,7 +582,7 @@ container:
       - path: /meshagent-skills/compat.json
         text: |
           {
-            "meshagent_cli_version": "0.33.2"
+            "meshagent_cli_version": "0.33.3"
           }
 
       - path: /meshagent-skills/scripts/audit_meshagent_skill_commands.py
@@ -1737,6 +1737,7 @@ container:
           - If `MESHAGENT_API_URL` is absent or does not clearly identify the environment, inspect an existing route in the current project or ask before inventing a managed public hostname.
           - Packaged help or example text that shows `.meshagent.app` is illustrative only. Do not copy that suffix blindly when the active runtime indicates a different environment.
           - Before running a deploy with `--domain` or reporting a managed public URL, verify that the chosen hostname suffix matches `MESHAGENT_API_URL`.
+          - Treat a mismatched managed suffix as invalid, not as an acceptable variant. In a `.life` environment, do not deploy, return, or accept a managed hostname outside `.meshagent.dev`. In a `.com` environment, do not deploy, return, or accept a managed hostname outside `.meshagent.app`.
           - If a candidate hostname collides, keep the same environment-specific suffix family and try additional candidates before asking the user to choose one.
           - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and a follow-up route read is forbidden, treat that hostname as unavailable and try a different candidate before reporting a generic permissions blocker.
           - Do not report a managed URL whose suffix contradicts the active API environment.
@@ -1929,6 +1930,8 @@ container:
           - Do not treat YAML generation alone as deployment success.
           - Do not treat queue size changes alone as business workflow success.
           - Do not treat a scheduled task record alone as proof that the future workflow will work.
+          - Do not present a created route record, deploy result, or hostname string as the achieved public URL until DNS and the required live HTTP checks have passed.
+          - If a public URL has not been verified yet, label it explicitly as an unverified candidate or partial preparation, not as the finished output.
           - Do not use the room, server, or runtime timezone as a substitute for the requesting user's timezone when the workflow is about scheduling in the user's local time.
           - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
           - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
@@ -2212,7 +2215,7 @@ container:
         text: |
           # MeshAgent CLI Help
           
-          _Packaged CLI help reference for MeshAgent CLI `0.33.2`._
+          _Packaged CLI help reference for MeshAgent CLI `0.33.3`._
           
           _Generated from the installed `meshagent` binary with recursive `--help` capture up to depth 1 and timeout 2s per command._
           
@@ -2837,6 +2840,277 @@ container:
           │ run      Join a room, run a process-backed agent, and wait for messages.     │
           │ use      Send a one-shot or interactive message to a running process-backed  │
           │          agent.                                                              │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
+          ### `meshagent process join`
+          
+          ```console
+          $ meshagent process join --help
+                                                                                          
+           Usage: meshagent process join [OPTIONS]                                        
+                                                                                          
+           Join a room and run a process-backed agent.                                    
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │    --project-id                             TEXT            A MeshAgent      │
+          │                                                             project id. If   │
+          │                                                             empty, the       │
+          │                                                             activated        │
+          │                                                             project will be  │
+          │                                                             used.            │
+          │                                                             [default:        │
+          │                                                             203b1bf9-72c9-4… │
+          │ *  --room                                   TEXT            Room name        │
+          │                                                             [required]       │
+          │    --role                                   TEXT            [default: agent] │
+          │    --agent-name                             TEXT            Name of the      │
+          │                                                             agent to call    │
+          │    --token-from-e…                          TEXT            Name of          │
+          │                                                             environment      │
+          │                                                             variable         │
+          │                                                             containing a     │
+          │                                                             MeshAgent token  │
+          │    --rule           -r                      TEXT            a system rule    │
+          │    --room-rules     -rr                     TEXT            a path to a      │
+          │                                                             rules file       │
+          │                                                             within the room  │
+          │                                                             that can be used │
+          │                                                             to customize the │
+          │                                                             agent's behavior │
+          │    --rules-file                             TEXT                             │
+          │    --require-tool…  -rt                     TEXT            the name or url  │
+          │                                                             of a required    │
+          │                                                             toolkit          │
+          │    --require-sche…  -rs                     TEXT            the name or url  │
+          │                                                             of a required    │
+          │                                                             schema           │
+          │    --model                                  TEXT            Name of the LLM  │
+          │                                                             model to use for │
+          │                                                             the chatbot      │
+          │                                                             [default:        │
+          │                                                             gpt-5.4]         │
+          │    --image-genera…                          TEXT            Name of an image │
+          │                                                             gen model        │
+          │    --computer-use        --no-computer-…                    Enable computer  │
+          │                                                             use              │
+          │                                                             [default:        │
+          │                                                             no-computer-use] │
+          │    --local-shell         --no-local-she…                    Enable local     │
+          │                                                             shell tool       │
+          │                                                             calling          │
+          │                                                             [default:        │
+          │                                                             no-local-shell]  │
+          │    --shell               --no-shell                         Enable function  │
+          │                                                             shell tool       │
+          │                                                             calling          │
+          │                                                             [default:        │
+          │                                                             no-shell]        │
+          │    --apply-patch         --no-apply-pat…                    Enable apply     │
+          │                                                             patch tool       │
+          │                                                             [default:        │
+          │                                                             no-apply-patch]  │
+          │    --web-search          --no-web-search                    Enable web       │
+          │                                                             search tool      │
+          │                                                             calling          │
+          │                                                             [default:        │
+          │                                                             no-web-search]   │
+          │    --web-fetch           --no-web-fetch                     Enable web fetch │
+          │                                                             tool calling     │
+          │                                                             [default:        │
+          │                                                             no-web-fetch]    │
+          │    --script-tool         --no-script-to…                    Enable script    │
+          │                                                             tool calling     │
+          │                                                             [default:        │
+          │                                                             no-script-tool]  │
+          │    --discover-scr…       --no-discover-…                    Automatically    │
+          │                                                             add script tools │
+          │                                                             from the room    │
+          │                                                             [default:        │
+          │                                                             no-discover-scr… │
+          │    --mcp                 --no-mcp                           Enable mcp tool  │
+          │                                                             calling          │
+          │                                                             [default:        │
+          │                                                             no-mcp]          │
+          │    --storage             --no-storage                       Enable storage   │
+          │                                                             toolkit          │
+          │                                                             [default:        │
+          │                                                             no-storage]      │
+          │    --storage-tool…                          TEXT            Mount local path │
+          │                                                             as               │
+          │                                                             <source>:<mount… │
+          │    --storage-tool…                          TEXT            Mount room path  │
+          │                                                             as               │
+          │                                                             <source>:<mount… │
+          │    --shell-room-m…                          TEXT            Mount room       │
+          │                                                             storage as       │
+          │                                                             <source>:<mount… │
+          │    --shell-projec…                          TEXT            Mount project    │
+          │                                                             storage as       │
+          │                                                             <source>:<mount… │
+          │    --shell-empty-…                          TEXT            Mount empty dir  │
+          │                                                             at               │
+          │                                                             <mount>[:ro|rw]  │
+          │    --shell-image-…                          TEXT            Mount image as   │
+          │                                                             <image>=<mount>… │
+          │    --require-imag…                          TEXT            Name of an image │
+          │                                                             gen model        │
+          │    --starting-url                           TEXT            Initial URL to   │
+          │                                                             open when        │
+          │                                                             starting a       │
+          │                                                             computer-use     │
+          │                                                             browser session  │
+          │    --allow-goto-u…                                          Expose the goto  │
+          │                                                             URL helper tool  │
+          │                                                             for computer use │
+          │    --require-loca…       --no-require-l…                    Enable local     │
+          │                                                             shell tool       │
+          │                                                             calling          │
+          │                                                             [default:        │
+          │                                                             no-require-loca… │
+          │    --require-shell       --no-require-s…                    Enable function  │
+          │                                                             shell tool       │
+          │                                                             calling          │
+          │                                                             [default:        │
+          │                                                             no-require-shel… │
+          │    --require-appl…       --no-require-a…                    Enable apply     │
+          │                                                             patch tool       │
+          │                                                             calling          │
+          │                                                             [default:        │
+          │                                                             no-require-appl… │
+          │    --require-web-…       --no-require-w…                    Enable web       │
+          │                                                             search tool      │
+          │                                                             calling          │
+          │                                                             [default:        │
+          │                                                             no-require-web-… │
+          │    --require-web-…       --no-require-w…                    Enable web fetch │
+          │                                                             tool calling     │
+          │                                                             [default:        │
+          │                                                             no-require-web-… │
+          │    --require-mcp         --no-require-m…                    Enable mcp tool  │
+          │                                                             calling          │
+          │                                                             [default:        │
+          │                                                             no-require-mcp]  │
+          │    --require-stor…       --no-require-s…                    Enable storage   │
+          │                                                             toolkit          │
+          │                                                             [default:        │
+          │                                                             no-require-stor… │
+          │    --database-nam…                          TEXT            Use a specific   │
+          │                                                             database         │
+          │                                                             namespace        │
+          │    --require-tabl…                          TEXT            Enable table     │
+          │                                                             read tools for a │
+          │                                                             specific table   │
+          │    --require-tabl…                          TEXT            Enable table     │
+          │                                                             write tools for  │
+          │                                                             a specific table │
+          │    --require-read…       --no-require-r…                    Enable read only │
+          │                                                             storage toolkit  │
+          │                                                             [default:        │
+          │                                                             no-require-read… │
+          │    --require-time        --no-require-t…                    Enable           │
+          │                                                             time/datetime    │
+          │                                                             tools            │
+          │                                                             [default:        │
+          │                                                             require-time]    │
+          │    --require-uuid        --no-require-u…                    Enable UUID      │
+          │                                                             generation tools │
+          │                                                             [default:        │
+          │                                                             no-require-uuid] │
+          │    --use-memory                             TEXT            Use memories     │
+          │                                                             toolkit for      │
+          │                                                             <name> or        │
+          │                                                             <namespace>/<na… │
+          │    --memory-model                           TEXT            Model name for   │
+          │                                                             memory LLM       │
+          │                                                             ingestion        │
+          │    --require-docu…       --no-require-d…                    Enable           │
+          │                                                             MeshDocument     │
+          │                                                             authoring        │
+          │                                                             [default:        │
+          │                                                             no-require-docu… │
+          │    --require-disc…       --no-require-d…                    Enable discovery │
+          │                                                             of agents and    │
+          │                                                             tools            │
+          │                                                             [default:        │
+          │                                                             no-require-disc… │
+          │    --working-dir                            TEXT            The default      │
+          │                                                             working          │
+          │                                                             directory for    │
+          │                                                             shell commands   │
+          │    --key                                    TEXT            an api key to    │
+          │                                                             sign the token   │
+          │                                                             with             │
+          │    --llm-particip…                          TEXT            Delegate LLM     │
+          │                                                             interactions to  │
+          │                                                             a remote         │
+          │                                                             participant      │
+          │    --decision-mod…                          TEXT            Model used for   │
+          │                                                             thread naming    │
+          │                                                             and other        │
+          │                                                             secondary LLM    │
+          │                                                             decisions        │
+          │    --host                                   TEXT            Host to bind the │
+          │                                                             service on       │
+          │    --port                                   INTEGER         Port to bind the │
+          │                                                             service on       │
+          │    --path                                   TEXT            HTTP path to     │
+          │                                                             mount the        │
+          │                                                             service at       │
+          │    --always-reply        --no-always-re…                    Always reply     │
+          │    --threading-mo…                          [none|default-  Threading mode   │
+          │                                             new]            for thread UIs.  │
+          │                                                             Use              │
+          │                                                             'default-new' to │
+          │                                                             show a           │
+          │                                                             new-thread       │
+          │                                                             composer before  │
+          │                                                             loading a        │
+          │                                                             thread.          │
+          │                                                             [default: none]  │
+          │    --thread-dir                             TEXT            Thread directory │
+          │                                                             for agent thread │
+          │                                                             files. Defaults  │
+          │                                                             to               │
+          │                                                             .threads/<agent… │
+          │                                                             when not         │
+          │                                                             provided.        │
+          │    --channel                                TEXT            Attach a channel │
+          │                                                             to the agent     │
+          │                                                             process. Can be  │
+          │                                                             repeated.        │
+          │                                                             Currently        │
+          │                                                             supported: chat, │
+          │                                                             mail:EMAIL_ADDR… │
+          │                                                             queue:QUEUE_NAM… │
+          │                                                             toolkit:NAME.    │
+          │    --skill-dir                              TEXT            an agent skills  │
+          │                                                             directory        │
+          │    --shell-image                            TEXT            an image tag to  │
+          │                                                             use to run shell │
+          │                                                             commands in      │
+          │    --delegate-she…       --no-delegate-…                    log all requests │
+          │                                                             to the llm       │
+          │                                                             [default:        │
+          │                                                             no-delegate-she… │
+          │    --shell-copy-e…                          TEXT            Copy local env   │
+          │                                                             vars into shell  │
+          │                                                             tool env.        │
+          │                                                             Accepts          │
+          │                                                             comma-separated  │
+          │                                                             names and can be │
+          │                                                             repeated.        │
+          │    --shell-set-env                          TEXT            Set env vars in  │
+          │                                                             shell tool env   │
+          │                                                             as NAME=VALUE.   │
+          │                                                             Can be repeated. │
+          │    --log-llm-requ…       --no-log-llm-r…                    log all requests │
+          │                                                             to the llm       │
+          │                                                             [default:        │
+          │                                                             no-log-llm-requ… │
+          │    --help                                                   Show this        │
+          │                                                             message and      │
+          │                                                             exit.            │
           ╰──────────────────────────────────────────────────────────────────────────────╯
           ```
           
@@ -3501,6 +3775,7 @@ container:
           │ --help          Show this message and exit.                                  │
           ╰──────────────────────────────────────────────────────────────────────────────╯
           ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ list       List queues in a room.                                            │
           │ send       Send a JSON message to a room queue.                              │
           │ send-mail  Create an email message and send it to a room queue.              │
           │ receive    Receive a message from a room queue.                              │
@@ -7077,6 +7352,7 @@ container:
           - Follow `../_shared/references/managed_hostname_rules.md` for suffix selection, collision handling, and validity checks.
           - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
           - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
+          - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
           
           ## Verification rules
           
@@ -7084,6 +7360,9 @@ container:
           - For every website task, perform at least one live HTTP GET against the public URL before reporting success.
           - For form-backed sites, also exercise representative POST paths after deploy.
           - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
+          - Do not present a public URL as the achieved site outcome until DNS resolution and the required live HTTP checks succeed.
+          - If route creation or deploy succeeds but public verification has not succeeded yet, report the URL only as an unverified candidate and keep the workflow in partial-preparation state.
+          - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
           - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
           - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
           - If a contact-form task asks for emailed submissions, do not report success while live submission still fails to send mail.
@@ -7670,10 +7949,14 @@ container:
           2. Confirm the exact hostname, room, and published port.
           3. Create, update, or delete the route.
           4. Verify that the hostname points to the intended room and service port.
+          5. If the hostname is MeshAgent-managed, verify that its suffix matches the active API environment before reporting it as valid.
           
           ## Verification rules
           
           - Follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL or retrying a colliding hostname.
+          - Treat a managed hostname with the wrong environment suffix as invalid output, even if the route record exists.
+          - Do not present a route hostname as a usable public URL unless the workflow has verified the level of reachability it claims, such as DNS or live HTTP.
+          - If the route exists but public reachability is still unverified, report it as route state only, not as a proven public result.
           - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
           
           ## Workflow accountability
@@ -7858,6 +8141,7 @@ container:
           - If the workflow must choose a service image, derive the image family from the actual environment before copying an example.
           - If the workflow includes relative scheduling, make schedule creation the last mutation after the runtime path is proven.
           - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
+          - If the workflow returns a managed public URL, require the hostname suffix to match the active API environment before treating that URL as valid output.
           - If the request clearly includes ordinary prerequisite setup, do not stop to ask permission for that setup unless a real missing input remains.
           - If a near-future one-time schedule is retried, treat duplicate creation as a workflow bug to avoid.
           
