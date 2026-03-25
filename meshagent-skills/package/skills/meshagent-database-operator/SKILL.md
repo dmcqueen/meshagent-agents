@@ -103,8 +103,9 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 3. Inspect the current schema with `meshagent room database inspect` or `room.database.inspect()` before proposing mutations or queries.
 4. Choose the narrowest operation: create, add columns, insert, merge, search, SQL, index management, or version restore.
 5. If the table does not exist yet, create it from an explicit schema, explicit seed data, or a `RequiredTable` definition.
-6. If the task is handler or agent code, copy the proven repo call shape instead of inventing a CLI-backed write path inside the runtime.
-7. Verify the result with a follow-up inspect/search/list command.
+6. If the task is handler or agent code, prove the database call in isolation before mixing it with email sending, response rendering, or other handler changes.
+7. Copy the proven repo call shape instead of inventing a CLI-backed write path inside the runtime.
+8. Verify the result with a follow-up inspect/search/list command.
 
 ## Choosing the query path
 
@@ -120,7 +121,13 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 - For form-style row capture, the grounded repo pattern is:
   - `await room.database.create_table_with_schema(name=..., schema={...}, mode="create_if_not_exists", data=None)`
   - then `await room.database.insert(table=..., records=[{...}])`
+- For live handler work, keep the DB path modular:
+  - one function or code block that validates and shapes the record
+  - one function or code block that performs the DB write
+  - a separate read-back or search step that proves the row exists
+- For existing live handlers, prefer the fewest-line additive change that can prove the DB write path before attempting a larger refactor.
 - For handler-side writes, prefer direct `room.database.*` calls over shelling out to `meshagent room database ...` from inside the handler runtime.
+- Do not discover whether the DB call shape works by embedding a first attempt directly into a larger live handler patch that also changes mail or response logic.
 - The CLI `--columns` path supports `int`, `bool`, `date`, `timestamp`, `float`, `text`, `binary`, `vector`, `list`, and `struct`.
 - Use `--columns` for compact schemas, `--schema-json` or `--schema-file` for nested types, and `--data-json` or `--data-file` when creating from seed rows.
 - If the workflow is defined as a reusable requirement, prefer a `RequiredTable` and the install path rather than retyping ad hoc create/index commands.
@@ -151,6 +158,7 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 - Do not assume an external database; this skill is for the MeshAgent room database.
 - Do not claim a table exists until you list or inspect it.
 - Do not describe handler-side room-database writes as speculative when the repo already has working `create_table_with_schema`, `insert`, and `search` patterns.
+- Do not treat integrated handler success as the first proof that the DB write works. Prove insert plus read-back first, then integrate.
 - Do not use SQL when `search` is enough.
 - Do not use `search` for joins or aggregate reporting that clearly requires SQL.
 - Do not invent namespace paths, index names, or schema annotations.
