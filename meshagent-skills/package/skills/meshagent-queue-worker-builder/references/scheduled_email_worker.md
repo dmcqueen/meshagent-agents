@@ -22,32 +22,34 @@ Use this reference when the user asks for a queue-consuming agent that receives 
    - for new authored YAML, use `meshagent process spec`
    - use `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly wants that split runtime shape
    - use `meshagent service spec` only when the narrower agent-specific spec commands are not the right fit
-16. Build or update a process service that consumes the intended queue with `--channel=queue:<QUEUE_NAME>` and has access to the real email-sending path.
-17. For non-trivial scheduled email behavior, prefer mounted or startup-generated rule files and pass them with `--room-rules` instead of relying only on a long inline rule string.
-18. For new scheduled email workflows, prefer one process runtime with queue and mail channels. Use separate mail and Worker services only when the user explicitly asked for that split shape.
-19. For non-trivial scheduled email workflows, follow the same behavioral pattern as the `industry-report` nightly-report flow, adapted to a process design:
+16. Build or update a process service that consumes the intended queue with `--channel=queue:<QUEUE_NAME>` and, for new authored scheduled-email services, also includes `--channel=mail:<MAILBOX_ADDRESS>` on the same runtime.
+17. Use a queue-only process that depends on external toolkit `email` publication only when that live publisher was already proven in the room and reusing it is intentional.
+18. For non-trivial scheduled email behavior, prefer mounted or startup-generated rule files and pass them with `--room-rules` instead of relying only on a long inline rule string.
+19. For new scheduled email workflows, prefer one process runtime with queue and mail channels. Use separate mail and Worker services only when the user explicitly asked for that split shape.
+20. For non-trivial scheduled email workflows, follow the same behavioral pattern as the `industry-report` nightly-report flow, adapted to a process design:
    - the queue channel triggers a named workflow through durable rule files
    - the scheduled task prompt tells the agent to run that workflow
    - the mail channel or equivalent publisher is part of the same designed mail path
-20. For the service YAML, validate the actual command flags and role composition. A process agent should use `meshagent process join` plus real `--channel=...` flags; the mail path must not be treated as the scheduled job consumer.
-21. Validate the YAML or rendered service before deployment.
-22. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
-23. Create or update the service.
-24. Verify the live room service appears in `meshagent room service list`.
-25. Verify the runtime is actually alive with room developer output, container state, or container logs.
-26. Enqueue an immediate test message now, before creating the scheduled task.
-27. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-28. Design the scheduled payload so it explicitly requests email sending in the same style the queue consumer already expects:
+21. For the service YAML, validate the actual command flags and role composition. A process agent should use `meshagent process join` plus real `--channel=...` flags; the mail path must not be treated as the scheduled job consumer.
+22. Reject a queue-only process plus `--require-toolkit=email` as incomplete by default for new scheduled-email services.
+23. Validate the YAML or rendered service before deployment.
+24. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
+25. Create or update the service.
+26. Verify the live room service appears in `meshagent room service list`.
+27. Verify the runtime is actually alive with room developer output, container state, or container logs.
+28. Enqueue an immediate test message now, before creating the scheduled task.
+29. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+30. Design the scheduled payload so it explicitly requests email sending in the same style the queue consumer already expects:
    - prompt-style when the runtime rules define a named workflow to run
    - structured fields when the runtime rules already key off `to`, `subject`, `body`, and any required action field
-29. Only after the immediate smoke test passes should you create the one-time scheduled task.
-30. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-31. Before creating the scheduled task, check whether an equivalent near-future one-time task already exists for the same queue and payload so you do not create duplicates after an uncertain retry.
-32. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
-33. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-34. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-35. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
-36. After creation, verify that the stored cron or UI-visible GMT schedule matches the computed UTC time rather than the user's local wall-clock time.
+31. Only after the immediate smoke test passes should you create the one-time scheduled task.
+32. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+33. Before creating the scheduled task, check whether an equivalent near-future one-time task already exists for the same queue and payload so you do not create duplicates after an uncertain retry.
+34. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+35. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+36. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+37. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+38. After creation, verify that the stored cron or UI-visible GMT schedule matches the computed UTC time rather than the user's local wall-clock time.
 
 ## Success criteria
 
@@ -70,6 +72,7 @@ Do not call the workflow complete until all of the following are true:
 
 - A created mailbox does not prove outbound mail works.
 - A created mailbox does not create toolkit `email`. If the queue consumer depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
+- A queue-only process that requires toolkit `email` but has no already-proven live email publisher is not a complete scheduled-email design.
 - A mailbox-backed mail runtime can misbehave if the mailbox address, mailbox queue, and inbox queue do not line up. For new workflows, those names should be the same. Any existing override must be treated as an exception that needs explicit verification.
 - A mailbox address under `@meshagent.local` is a bad default for outbound managed-mail workflows. In `.life` or production environments, first suspect the mailbox domain if SMTP rejects send with authorization errors such as `550 5.7.1`.
 - A created service record does not prove the queue-consuming runtime is running.
