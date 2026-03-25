@@ -143,6 +143,8 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - If the workflow includes a relative schedule such as "one minute from now," make scheduling the final creation step after the worker/runtime path has already been proven.
 - If the workflow includes a real outgoing email, require a real recipient address unless the user explicitly asked for a payload-only template.
 - If one branch of the workflow is healthy and another is blocked, report partial preparation clearly and keep the blocked surface attached to the overall outcome.
+- If the user's request already clearly includes ordinary prerequisite setup, do not stop to ask for permission to do that setup unless a real missing input or blocker remains.
+- If a near-future one-time schedule is being created, treat duplicate creation after retries as a workflow bug to avoid, not as an acceptable side effect.
 
 ## Evidence rules
 
