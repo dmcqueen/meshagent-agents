@@ -190,6 +190,10 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
 - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
 - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
+- If outbound SMTP fails with `550 5.7.1 Permission denied`, treat that as proof that the current runtime is not authorized to send from the mailbox or sender identity it attempted to use.
+- For `550 5.7.1 Permission denied`, do not summarize the problem only as "the user lacks permission." The failing principal may be the MailBot, Worker, room participant token, or SMTP auth identity behind the send.
+- If outbound SMTP fails with `550 5.7.1 Relaying denied`, treat that as a strong sign that the send attempted to use a `From` address other than the provisioned mailbox email address.
+- For `550 5.7.1 Relaying denied`, first compare the attempted sender address against the mailbox email address before blaming queue wiring, toolkit publication, or recipient-side issues.
 - If the workflow also creates a public route, follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL.
 - If SMTP rejects delivery, report the exact observed blocker.
 - If the task uses coded Python/raw SMTP with a live `RoomClient`, report the exact sender address, hostname, port, and SMTP/provider response that the code used.
