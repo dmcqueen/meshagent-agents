@@ -30,7 +30,7 @@ metadata:
     - skill: meshagent-mail-operator
       when: The queue is part of a mailbox flow.
     - skill: meshagent-queue-worker-builder
-      when: A queue consumer must be created or repaired.
+      when: A queue consumer must be created or updated.
   scope:
     owns:
       - room queue send and receive
@@ -78,7 +78,7 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 - `meshagent-participant-token-operator`: Use it when the blocker is participant-token source, missing queue API grants, or token wiring rather than queue behavior.
 - `meshagent-scheduler`: Use it when the queue messages come from scheduled tasks.
 - `meshagent-mail-operator`: Use it when the queue is part of a mailbox flow.
-- `meshagent-queue-worker-builder`: Use it when the missing piece is a queue-consuming Worker rather than queue operations themselves.
+- `meshagent-queue-worker-builder`: Use it when the missing piece is a queue-consuming runtime rather than queue operations themselves.
 
 ## Default workflow
 
@@ -112,7 +112,7 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 
 - Do not claim a queue-backed workflow works just because the sender command succeeded.
 - Verify the queue depth or queued payload after the upstream action.
-- If a queue-backed Worker is supposed to consume the message, verify both enqueue and downstream dequeue behavior.
+- If a queue consumer is supposed to consume the message, verify both enqueue and downstream dequeue behavior.
 - If a queue is empty when it should contain messages, inspect the sender configuration before redesigning the consumer.
 
 ## Workflow accountability
@@ -124,5 +124,5 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 
 ## Out of scope
 
-- Designing a Worker or service template to consume the queue.
+- Designing a queue consumer or service template to consume the queue.
 - Mailbox administration beyond queue verification.
