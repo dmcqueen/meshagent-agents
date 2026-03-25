@@ -45,6 +45,8 @@ The package now has one general CLI skill plus a larger specialized operator bun
   Small React-style room websites using Preact + htm.
 - `skills/meshagent-mail-operator/`
   Mailbox administration, room SMTP behavior, inbound queue inspection, and mailbox-backed sender guidance.
+- `skills/meshagent-participant-token-operator/`
+  Participant token source discovery, service token injection, delegated shell token behavior, and API-key-signed token guidance.
 - `skills/meshagent-webmaster/`
   Route/domain mapping behavior and the static webserver YAML reference example.
 
@@ -157,6 +159,10 @@ Key files and directories in this package:
   Mailbox, SMTP, queue, and room-hosted outbound mail workflow skill.
 - `skills/meshagent-mail-operator/agents/openai.yaml`
   OpenAI agent metadata for the mail operator.
+- `skills/meshagent-participant-token-operator/SKILL.md`
+  Participant token source, injection, delegation, and minting skill.
+- `skills/meshagent-participant-token-operator/agents/openai.yaml`
+  OpenAI agent metadata for the participant token operator.
 - `skills/meshagent-scheduler/SKILL.md`
   Scheduled-task and queue-delivery skill.
 - `skills/meshagent-scheduler/agents/openai.yaml`
