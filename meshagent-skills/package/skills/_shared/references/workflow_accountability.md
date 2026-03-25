@@ -54,6 +54,7 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not front-load broad environment surveys, project-wide discovery, or admin-style checks when one narrow task-matching room or runtime action would answer the question faster.
 - Defer deeper preflights until the chosen execution path actually depends on that surface, the first narrow path fails, or the workflow is about to cross a mutation boundary that makes the extra check necessary.
 - For simple requests, prefer one direct task-matching action first and expand only if that action fails or reveals ambiguity.
+- For new behavior added to an already-running handler, service, or workflow, prefer the smallest safe code change that can prove the new behavior before attempting a broader cleanup or rewrite.
 
 ## Preflight rules
 
@@ -93,3 +94,4 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not turn an obvious end-to-end request into a two-step consent dance by asking the user to approve ordinary prerequisite setup that is already inside the requested workflow.
 - Do not stop at an internal actionable blocker such as a crashing service, wrong hostname suffix, missing toolkit publisher, or failed smoke test and ask "if you want, I'll keep going." Continue the normal fix path until the workflow is complete or a true external blocker remains.
 - Do not blindly retry one-time scheduled-task creation after an uncertain add result. First check whether the task was already created or whether an equivalent near-future task already exists for the same queue and payload.
+- Do not answer a live integration request by rewriting large parts of an existing working handler when a small additive change could prove the new functionality first.
