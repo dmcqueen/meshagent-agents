@@ -104,6 +104,8 @@ Use this skill when the task is about the live runtime state inside a room rathe
 - Do not use generic toolkit invocation for ordinary service discovery when `meshagent room service list` already answers the question.
 - Treat `container stop` as disruptive.
 - Treat `container exec` as debugging, not as a substitute for fixing the service definition.
+- Do not assume `container exec` will work against another participant's private container.
+- If `container exec` fails with a private-container ownership or isolation error, stop using exec for that target and switch to logs, developer watch, service state, public HTTP probes, or deployed artifacts.
 - Use image build/pull/push/load/save only when the runtime problem actually requires image operations.
 
 ## Queue and toolkit diagnosis
@@ -131,6 +133,7 @@ Use this skill when the task is about the live runtime state inside a room rathe
 - For runtimes with required toolkits, do not conclude readiness until those toolkits are visibly present.
 - If a container-local check passes but the public behavior is still broken, hand off to the appropriate website or route skill rather than stopping at the runtime layer.
 - If a runtime issue persists after restart or stop/start behavior, inspect the declarative service definition before repeating the same action.
+- For website debugging, do not use repeated `container exec` attempts against another private container as the main path to inspect handler code or env vars.
 
 ## Workflow accountability
 
