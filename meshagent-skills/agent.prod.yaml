@@ -1643,6 +1643,8 @@ container:
           - Good first probes are commands such as `meshagent room service list --room <ROOM_NAME>`, `meshagent room queue size --room <ROOM_NAME> --queue <QUEUE_NAME>`, or `meshagent room agent list-toolkits --room <ROOM_NAME>` depending on the workflow.
           - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use.
           - Distinguish local authoring files from room-visible runtime files. Room-owned runtime data belongs under `/data`.
+          - If the user asks to write or create a file in the room and does not provide a more specific room-visible path, default to the room storage root under `/data`, for example `/data/<filename>`.
+          - Do not default room file writes to `.`, the current working directory, or other ad hoc paths when the request is clearly about a room-visible file.
           - For `meshagent webserver deploy`, local source files are uploaded from the current working directory, while `--website-path` is the room-storage destination.
           - Do not treat `/data/...` as the local source root for deployable website files unless the current working directory is already under `/data`.
           - Do not treat `/tmp` as the durable room workspace.
@@ -1942,6 +1944,7 @@ container:
           
           Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...`.
           For room-visible runtime data, use `/data`.
+          If the user asks to create or write a room-visible file and does not give a more specific path, default to `/data/<filename>`.
           For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
           For this skill, the current room is the value of `MESHAGENT_ROOM`.
           For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
@@ -3134,6 +3137,10 @@ container:
           - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
           - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
           - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
+          - If outbound SMTP fails with `550 5.7.1 Permission denied`, treat that as proof that the current runtime is not authorized to send from the mailbox or sender identity it attempted to use.
+          - For `550 5.7.1 Permission denied`, do not summarize the problem only as "the user lacks permission." The failing principal may be the MailBot, Worker, room participant token, or SMTP auth identity behind the send.
+          - If outbound SMTP fails with `550 5.7.1 Relaying denied`, treat that as a strong sign that the send attempted to use a `From` address other than the provisioned mailbox email address.
+          - For `550 5.7.1 Relaying denied`, first compare the attempted sender address against the mailbox email address before blaming queue wiring, toolkit publication, or recipient-side issues.
           - If the workflow also creates a public route, follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL.
           - If SMTP rejects delivery, report the exact observed blocker.
           - If the task uses coded Python/raw SMTP with a live `RoomClient`, report the exact sender address, hostname, port, and SMTP/provider response that the code used.
@@ -4666,6 +4673,7 @@ container:
           
           - Distinguish local paths from room paths explicitly.
           - Use room-visible paths that match the workflow, typically under `/data` inside room-mounted services.
+          - If the user asks to create or write a room file without specifying a concrete room path, default to `/data/<filename>` rather than `.` or another current-working-directory path.
           - Do not confuse deployable local source trees with room-owned runtime storage.
           - When another skill depends on a room file, verify the exact path instead of assuming the file is mounted where you expect.
           
