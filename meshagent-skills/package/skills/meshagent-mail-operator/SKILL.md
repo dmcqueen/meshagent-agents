@@ -158,8 +158,9 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - Mirror the implementation’s fallback chain:
   - `SMTP_USERNAME` else `room.local_participant.get_attribute("name")`
   - `SMTP_PASSWORD` else `room.protocol.token`
-  - `SMTP_HOSTNAME` else the runtime mail domain
+  - `SMTP_HOSTNAME` else `mail.meshagent.life` in `.life` or `mail.meshagent.com` in `.com`, determined from `MESHAGENT_API_URL`
   - `SMTP_PORT` else `587`
+- For raw SMTP in room code, treat that hostname fallback as fixed by `MESHAGENT_API_URL`: `.life` means `mail.meshagent.life`; production `.com` means `mail.meshagent.com`.
 - `room.protocol.token` is the room client’s participant token. It is the same room credential carried through `MESHAGENT_TOKEN` or passed to `WebSocketClientProtocol(token=...)`.
 - Keep this path narrow:
   - use the existing `RoomClient`
@@ -192,6 +193,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - `550 5.7.1 Relaying denied` strongly suggests the attempted `From` address did not match the provisioned mailbox email address.
 - If SMTP rejects delivery, report the exact blocker.
 - If the task uses raw SMTP code with a live `RoomClient`, report the exact sender, host, port, and SMTP/provider response used.
+- If raw SMTP code leaves `SMTP_HOSTNAME` unset, fill it from `MESHAGENT_API_URL` instead of leaving it null: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
 - Do not stop at “the CLI is not logged in” unless an actual mailbox, queue, or related command failed with auth or authz.
 
 ## Workflow accountability
