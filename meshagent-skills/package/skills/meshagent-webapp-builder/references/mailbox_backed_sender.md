@@ -35,6 +35,11 @@ When the handler uses direct SMTP, use only the runtime defaults that exist in `
 - `SMTP_PORT`
 
 The mailbox address is still the sender identity. SMTP username and password do not define the `From` address.
+If `SMTP_HOSTNAME` is null, fill it from `MESHAGENT_API_URL` before giving up:
+
+- `.life` -> `mail.meshagent.life`
+- `.com` -> `mail.meshagent.com`
+
 If those runtime defaults are not actually present, do not keep the contact form on a direct-SMTP design just because the mailbox exists.
 
 ## Failure interpretation
