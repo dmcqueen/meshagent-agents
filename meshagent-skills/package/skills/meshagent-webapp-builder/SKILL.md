@@ -122,7 +122,10 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
 - If the site must write submissions into the room database, reuse the proven repo pattern from `contact_form_route.py`: create the table with `room.database.create_table_with_schema(..., mode="create_if_not_exists")`, then insert rows with `room.database.insert(table=..., records=[...])`.
 - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
+- For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
+- For existing working handlers, add new functionality with the fewest lines possible before attempting any broader cleanup or structural rewrite.
 - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
+- Prove the DB insert path in isolation before integrating it into an existing handler that already sends email or renders user-visible success/error states.
 - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
 - A mailbox-backed sender address alone is not proof that the form has a working outbound mail path.
 - Do not synthesize sender identities from the participant name or mail domain. In particular, do not invent `FROM_ADDRESS`, `MAIL_FROM`, `SMTP_FROM`, or `MESHAGENT_PARTICIPANT_NAME`.
@@ -143,17 +146,18 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 4. Restrict email and phone fields with browser-side input types and patterns when helpful.
 5. Re-validate all submitted fields on the server.
 6. If the form persists submissions, use the direct `room.database.*` pattern from the resolved repo examples instead of inventing a handler-local CLI workflow.
-7. If the form sends outbound email from the room, inspect existing room mailboxes first.
-8. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
-9. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
-10. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
-11. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
-12. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
-13. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
-14. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
-15. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
-16. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-17. Verify the live site with actual GET and POST requests after deploy.
+7. Prove the DB insert path with a minimal isolated change and a read-back before combining it with mail-send and response-handling changes.
+8. If the form sends outbound email from the room, inspect existing room mailboxes first.
+9. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
+10. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
+11. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
+12. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+13. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
+14. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+15. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
+16. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
+17. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+18. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
@@ -175,6 +179,8 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
 - For contact forms that send mail, the valid POST must reach the success path or the exact mail blocker. A rendered form plus a failing submission is not a completed site.
 - If a contact form claims to store submissions but the follow-up read path stays empty, treat that as a still-broken database workflow even if mail send succeeds.
+- If DB write works but email or response handling still fails, report those as separate remaining bugs instead of collapsing them back into “the DB integration is broken.”
+- If the current deployed handler already works for other behavior, do not replace large working sections just to add one new capability unless the small additive change has already been proven insufficient.
 - Do not present a public URL as the achieved site outcome until DNS resolution and the required live HTTP checks succeed.
 - If route creation or deploy succeeds but public verification has not succeeded yet, report the URL only as an unverified candidate and keep the workflow in partial-preparation state.
 - Do not open the response with "done", "deployed", or equivalent completion language while the site is still in partial-preparation state.
