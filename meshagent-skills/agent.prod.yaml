@@ -1920,6 +1920,7 @@ container:
           - Do not front-load broad environment surveys, project-wide discovery, or admin-style checks when one narrow task-matching room or runtime action would answer the question faster.
           - Defer deeper preflights until the chosen execution path actually depends on that surface, the first narrow path fails, or the workflow is about to cross a mutation boundary that makes the extra check necessary.
           - For simple requests, prefer one direct task-matching action first and expand only if that action fails or reveals ambiguity.
+          - For new behavior added to an already-running handler, service, or workflow, prefer the smallest safe code change that can prove the new behavior before attempting a broader cleanup or rewrite.
           
           ## Preflight rules
           
@@ -1959,6 +1960,7 @@ container:
           - Do not turn an obvious end-to-end request into a two-step consent dance by asking the user to approve ordinary prerequisite setup that is already inside the requested workflow.
           - Do not stop at an internal actionable blocker such as a crashing service, wrong hostname suffix, missing toolkit publisher, or failed smoke test and ask "if you want, I'll keep going." Continue the normal fix path until the workflow is complete or a true external blocker remains.
           - Do not blindly retry one-time scheduled-task creation after an uncertain add result. First check whether the task was already created or whether an equivalent near-future task already exists for the same queue and payload.
+          - Do not answer a live integration request by rewriting large parts of an existing working handler when a small additive change could prove the new functionality first.
 
       - path: /meshagent-skills/skills/meshagent-cli-operator/SKILL.md
         text: |
@@ -5445,8 +5447,9 @@ container:
           3. Inspect the current schema with `meshagent room database inspect` or `room.database.inspect()` before proposing mutations or queries.
           4. Choose the narrowest operation: create, add columns, insert, merge, search, SQL, index management, or version restore.
           5. If the table does not exist yet, create it from an explicit schema, explicit seed data, or a `RequiredTable` definition.
-          6. If the task is handler or agent code, copy the proven repo call shape instead of inventing a CLI-backed write path inside the runtime.
-          7. Verify the result with a follow-up inspect/search/list command.
+          6. If the task is handler or agent code, prove the database call in isolation before mixing it with email sending, response rendering, or other handler changes.
+          7. Copy the proven repo call shape instead of inventing a CLI-backed write path inside the runtime.
+          8. Verify the result with a follow-up inspect/search/list command.
           
           ## Choosing the query path
           
@@ -5462,7 +5465,13 @@ container:
           - For form-style row capture, the grounded repo pattern is:
             - `await room.database.create_table_with_schema(name=..., schema={...}, mode="create_if_not_exists", data=None)`
             - then `await room.database.insert(table=..., records=[{...}])`
+          - For live handler work, keep the DB path modular:
+            - one function or code block that validates and shapes the record
+            - one function or code block that performs the DB write
+            - a separate read-back or search step that proves the row exists
+          - For existing live handlers, prefer the fewest-line additive change that can prove the DB write path before attempting a larger refactor.
           - For handler-side writes, prefer direct `room.database.*` calls over shelling out to `meshagent room database ...` from inside the handler runtime.
+          - Do not discover whether the DB call shape works by embedding a first attempt directly into a larger live handler patch that also changes mail or response logic.
           - The CLI `--columns` path supports `int`, `bool`, `date`, `timestamp`, `float`, `text`, `binary`, `vector`, `list`, and `struct`.
           - Use `--columns` for compact schemas, `--schema-json` or `--schema-file` for nested types, and `--data-json` or `--data-file` when creating from seed rows.
           - If the workflow is defined as a reusable requirement, prefer a `RequiredTable` and the install path rather than retyping ad hoc create/index commands.
@@ -5493,6 +5502,7 @@ container:
           - Do not assume an external database; this skill is for the MeshAgent room database.
           - Do not claim a table exists until you list or inspect it.
           - Do not describe handler-side room-database writes as speculative when the repo already has working `create_table_with_schema`, `insert`, and `search` patterns.
+          - Do not treat integrated handler success as the first proof that the DB write works. Prove insert plus read-back first, then integrate.
           - Do not use SQL when `search` is enough.
           - Do not use `search` for joins or aggregate reporting that clearly requires SQL.
           - Do not invent namespace paths, index names, or schema annotations.
@@ -7387,7 +7397,10 @@ container:
           - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
           - If the site must write submissions into the room database, reuse the proven repo pattern from `contact_form_route.py`: create the table with `room.database.create_table_with_schema(..., mode="create_if_not_exists")`, then insert rows with `room.database.insert(table=..., records=[...])`.
           - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
+          - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
+          - For existing working handlers, add new functionality with the fewest lines possible before attempting any broader cleanup or structural rewrite.
           - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
+          - Prove the DB insert path in isolation before integrating it into an existing handler that already sends email or renders user-visible success/error states.
           - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
           - A mailbox-backed sender address alone is not proof that the form has a working outbound mail path.
           - Do not synthesize sender identities from the participant name or mail domain. In particular, do not invent `FROM_ADDRESS`, `MAIL_FROM`, `SMTP_FROM`, or `MESHAGENT_PARTICIPANT_NAME`.
@@ -7408,17 +7421,18 @@ container:
           4. Restrict email and phone fields with browser-side input types and patterns when helpful.
           5. Re-validate all submitted fields on the server.
           6. If the form persists submissions, use the direct `room.database.*` pattern from the resolved repo examples instead of inventing a handler-local CLI workflow.
-          7. If the form sends outbound email from the room, inspect existing room mailboxes first.
-          8. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
-          9. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
-          10. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
-          11. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
-          12. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
-          13. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
-          14. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
-          15. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
-          16. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-          17. Verify the live site with actual GET and POST requests after deploy.
+          7. Prove the DB insert path with a minimal isolated change and a read-back before combining it with mail-send and response-handling changes.
+          8. If the form sends outbound email from the room, inspect existing room mailboxes first.
+          9. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
+          10. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
+          11. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
+          12. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+          13. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
+          14. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+          15. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
+          16. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
+          17. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+          18. Verify the live site with actual GET and POST requests after deploy.
           
           ## Managed hostname selection
           
@@ -7440,6 +7454,8 @@ container:
           - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
           - For contact forms that send mail, the valid POST must reach the success path or the exact mail blocker. A rendered form plus a failing submission is not a completed site.
           - If a contact form claims to store submissions but the follow-up read path stays empty, treat that as a still-broken database workflow even if mail send succeeds.
+          - If DB write works but email or response handling still fails, report those as separate remaining bugs instead of collapsing them back into “the DB integration is broken.”
+          - If the current deployed handler already works for other behavior, do not replace large working sections just to add one new capability unless the small additive change has already been proven insufficient.
           - Do not present a public URL as the achieved site outcome until DNS resolution and the required live HTTP checks succeed.
           - If route creation or deploy succeeds but public verification has not succeeded yet, report the URL only as an unverified candidate and keep the workflow in partial-preparation state.
           - Do not open the response with "done", "deployed", or equivalent completion language while the site is still in partial-preparation state.
@@ -8447,6 +8463,8 @@ container:
           - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
           - If the workflow returns a managed public URL, require the hostname suffix to match the active API environment before treating that URL as valid output.
           - If the workflow is a public site that sends email, inherit the webapp and mail completion rules together rather than relaxing either one at the orchestration layer.
+          - If the workflow adds a new database write path to a live site or handler, require the DB insert path to be proven in isolation before accepting a larger mixed patch as the next step.
+          - If the workflow modifies an existing working runtime, prefer the smallest safe change that proves the new behavior before approving a broader rewrite.
           - If the request clearly includes ordinary prerequisite setup, do not stop to ask permission for that setup unless a real missing input remains.
           - If a near-future one-time schedule is retried, treat duplicate creation as a workflow bug to avoid.
           
@@ -8458,6 +8476,7 @@ container:
           - Name blockers by surface, for example scheduler permissions, missing toolkit publication, or unhealthy runtime.
           - For mail workflows, do not let queue drain or object creation stand in for delivery evidence.
           - For public-site workflows, do not let route creation, deploy success, DNS resolution, or redirects stand in for a verified working site.
+          - For workflows with multiple side effects, keep evidence separated by stage, for example DB write proved, email send failing, response handling failing, instead of collapsing all failures into one vague integration status.
           - For a public site-to-email workflow, require all of the following before declaring success:
             - the managed hostname suffix matches the active API environment
             - the public URL reaches the intended page with the expected final success status, normally `200`
