@@ -27,7 +27,7 @@ metadata:
     - skill: meshagent-queue-operator
       when: The main task is generic queue inspection or queue injection rather than mailbox behavior.
     - skill: meshagent-queue-worker-builder
-      when: Mail sending is part of a queue-backed Worker or scheduled queue workflow.
+      when: Mail sending is part of a queue consumer or scheduled queue workflow.
     - skill: meshagent-webapp-builder
       when: Mail is one part of a room-hosted contact form or website workflow.
     - skill: meshagent-cli-operator
@@ -56,68 +56,57 @@ metadata:
 
 # MeshAgent Mail Operator
 
-Use this skill for mailbox administration, SMTP behavior, and inbound mail queue inspection.
+Use this skill for mailbox administration, room SMTP behavior, outbound send debugging, and inbound mail queue inspection.
 
 ## Use this skill when
 
-- The task involves `meshagent mailbox ...` provisioning, inspection, update, or deletion.
-- The user needs to understand how inbound email is routed into a room queue.
-- The user needs enough SMTP detail to write code that sends email from a room workflow.
-- The user already has a room client in the room and wants to send email from coded Python using raw SMTP variables.
-- The user wants a coded Python path that sends mail directly from an in-room `RoomClient` without first standing up a MailBot.
-- The user wants a room-hosted workflow such as a contact form to send email correctly.
-- The user wants to inspect or consume incoming mail messages through the CLI or room API.
+- The task involves `meshagent mailbox ...`.
+- The user needs to send or troubleshoot real room email.
+- The user needs SMTP details for code running inside a room.
+- The workflow is a contact form, MailBot, mailbox-backed sender, or inbound mailbox queue.
+- The user wants to inspect incoming mail in a room queue.
 
 ## Escalation model
 
-- Start with the lightest mail path that fits the user's actual request.
-- For a plain request like "send a test email," first try the narrowest real-email path that matches the current runtime instead of surveying every mail surface up front.
-- Interpret "send an email" as a real outbound email send by default, not as room messaging, chat, broadcast, or any other in-room communication shortcut.
-- If the recipient looks like an email address such as `name@example.com`, treat that as strong evidence that the user wants real email delivery.
-- Do not substitute a room message, direct message, broadcast, or other non-email action unless the user explicitly asked for that medium.
-- Do not provision a mailbox just because the task mentions sending one email.
-- A simple one-off outbound test email is usually a direct-send problem, not a mailbox-administration problem.
-- Escalate to mailbox provisioning only when the request actually needs mailbox features such as:
-  - a durable sender identity that should be reused by agents or services
-  - inbound mail routing into a room queue
+- Start with the lightest real-email path that fits the request.
+- Treat “send an email” as real outbound email by default, especially when the target looks like `name@example.com`.
+- Do not substitute room messaging, chat, or broadcast unless the user asked for that medium.
+- A simple one-off test email is usually a direct-send problem, not a mailbox-administration problem.
+- Escalate to mailbox provisioning only when the workflow needs:
+  - a durable sender identity
+  - inbound mail routing
   - a MailBot or process `mail:` channel
-  - a room-hosted contact form or mailbox-backed workflow that must keep a stable sender address
-  - a queue-backed or scheduled workflow whose sender identity must be provisioned and reused later
-- If the user only asked to send a simple test email, first try the narrow direct-send path that matches the current runtime:
-  - a real `email` toolkit send path if one is already present
-  - or the explicit raw SMTP / `RoomClient` code path when the user asked for code or a live room client already exists
-- Defer mailbox inspection, queue inspection, MailBot setup, or toolkit-publication checks until the chosen send path actually depends on them or the first direct-send attempt fails.
-- The direct-send path only applies cleanly when the runtime already has a concrete sender identity to use, such as:
-  - an existing mailbox-backed sender already configured for the running MailBot or toolkit path
-  - an explicit sender address the current runtime already owns and is authorized to use
-- If the request clearly requires real outbound email and the runtime does not already have a usable sender identity, prefer automatically provisioning or reusing the room mailbox path instead of stopping to ask the user for a sender address.
-- Only provision a mailbox for a simple test email when the observed runtime path proves a mailbox-backed sender is actually required for the requested send.
-- If the current runtime cannot send real email, report that exact blocker. Do not silently switch to room messaging and present that as if the email request was satisfied.
+  - a queue-backed or scheduled sender that must be reused
+- For a simple test email, first try:
+  - an existing `email` toolkit path
+  - or raw SMTP / `RoomClient` code if the user asked for code or a live `RoomClient` already exists
+- If the runtime lacks a real sender identity, provision or reuse the mailbox path automatically instead of asking the user for a sender address.
+- If the current runtime cannot send real email, report the exact blocker. Do not silently switch media.
 
 ## References
 
-- Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact CLI command shapes and flags.
-- Use `../_shared/references/live_room_cli_context.md` for shared live-room CLI context rules.
-- Use `../_shared/references/managed_hostname_rules.md` when the mail workflow also creates or validates a managed public hostname.
-- Use `../_shared/references/service_yaml_correctness.md` when mailbox-backed mail must be wired into authored service YAML.
-- After root resolution, inspect the resolved room mail implementation for SMTP sending behavior and defaults.
+- Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact CLI usage.
+- Use `../_shared/references/live_room_cli_context.md` for live-room rules.
+- Use `../_shared/references/managed_hostname_rules.md` when a mail workflow also creates or validates a managed public hostname.
+- Use `../_shared/references/service_yaml_correctness.md` when mail is wired into service YAML.
+- Inspect the room mail implementation after root resolution when SMTP behavior matters.
 
 ## Related skills
 
-- `meshagent-workflow-orchestrator`: Use it when mail behavior is only one piece of a larger end-to-end workflow.
-- `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references for mail implementation details.
-- `meshagent-participant-token-operator`: Use it when the main issue is participant-token discovery, service token injection, or raw SMTP code using the in-room room token.
-- `meshagent-queue-operator`: Use it when the queue work is independent of mailbox provisioning or SMTP behavior.
-- `meshagent-queue-worker-builder`: Use it when the mailbox-backed sender must be wired into a queue-consuming Worker or scheduled queue workflow.
-- `meshagent-webapp-builder`: Use it when mailbox-backed mail is part of a room website or contact form workflow.
-- `meshagent-cli-operator`: Reuse its managed-hostname and room-context rules when a mail workflow also creates or verifies a public site.
+- `meshagent-workflow-orchestrator`: mail is only one part of a larger workflow
+- `meshagent-sdk-researcher`: root resolution and source lookup
+- `meshagent-participant-token-operator`: participant-token sourcing or SMTP code using the in-room token
+- `meshagent-queue-operator`: generic queue work without mailbox logic
+- `meshagent-queue-worker-builder`: queue-backed or scheduled mail senders
+- `meshagent-webapp-builder`: contact forms and site workflows
+- `meshagent-cli-operator`: room-scoped CLI rules and managed hostname context
 
-## Live room execution
+## Live room rules
 
-- Apply `../_shared/references/live_room_cli_context.md` before asking for login or reconnecting.
-- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped mail workflows.
-- If mailbox or queue access is uncertain, try the corresponding room-scoped or mailbox read command first and use the observed result, but only after the chosen mail path actually needs that information.
-- If the workflow also publishes a public contact-form site, apply `../_shared/references/managed_hostname_rules.md` instead of inventing a suffix from examples.
+- Apply `../_shared/references/live_room_cli_context.md`.
+- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisites for room-scoped mail work.
+- Only inspect mailbox or queue state after the chosen send path actually needs it.
+- If the workflow publishes a public site, use `../_shared/references/managed_hostname_rules.md` instead of inventing hostname suffixes.
 
 ## Primary command groups
 
@@ -132,112 +121,77 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 ## Mailbox model
 
 - A mailbox maps an email address to a room and a queue.
-- Inbound email to that mailbox is delivered into the configured queue.
-- The queue name is part of the mailbox configuration. Do not invent it.
-- Creating a mailbox does not by itself create a consumer, service, or agent.
-- Creating a mailbox does not by itself publish toolkit `email` into the room.
-- When other agents depend on toolkit `email`, that toolkit must come from a running participant that publishes it, commonly a MailBot started with `--toolkit-name=email`.
-- For room-hosted outbound email workflows, the mailbox email address is the sender identity to use. Do not synthesize a sender address from the participant name and mail domain.
-- Do not use `MESHAGENT_MAIL_DOMAIN` by itself to invent mailbox addresses. It is a runtime mail-domain default, not proof that a synthesized mailbox address is provisioned or authorized to send.
-- For mailbox-backed MailBot workflows, prefer routing the mailbox to a queue with the same name as the mailbox email address. The MailBot runtime also defaults its queue to `email_address` when no explicit queue is given, so keeping those names aligned is the safest default, not a hard requirement.
-
-## Outbound delivery workflow
-
-- Before provisioning a mailbox, decide whether the user's requested send is actually a mailbox-backed workflow or just a one-off outbound send.
-- For a one-off outbound send, first inspect whether the current runtime already has a valid sender identity available. If it does not, then mailbox provisioning or reuse becomes necessary before the send can honestly proceed.
-- When mailbox provisioning becomes necessary for a straightforward room email workflow, do it automatically unless the user explicitly asked to choose the sender address themselves.
-- Do not expand a simple outbound-send request into mailbox administration unless the chosen runtime path proves that mailbox ownership, inbound routing, or durable sender reuse is part of the job.
-- For a room-hosted mailbox-backed email workflow, first inspect or provision the mailbox that will own the sender address.
-- If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
-- If no mailbox exists and the task specifically requires mailbox-backed send or inbound routing, create one before claiming the workflow is complete.
-- If another agent will call toolkit `email`, separately verify that toolkit `email` is published in the room. Mailbox provisioning alone is not enough.
-- The common room pattern is a MailBot that owns the mailbox-backed sender identity and publishes toolkit `email` for chatbots or Workers that require it.
-- When provisioning a new mailbox-backed MailBot, the safest default is to keep all three aligned:
+- Inbound mail goes to that configured queue.
+- Creating a mailbox does not create a consumer, service, or toolkit publisher.
+- Creating a mailbox does not publish toolkit `email`.
+- If another runtime depends on toolkit `email`, a live participant must publish it, commonly a MailBot with `--toolkit-name=email`.
+- For mailbox-backed outbound workflows, the mailbox email address is the sender identity. Do not synthesize one from participant name or mail domain.
+- Do not use `MESHAGENT_MAIL_DOMAIN` alone to invent mailbox addresses.
+- The safest default for a MailBot-backed mailbox is:
   - mailbox address
   - mailbox queue
   - MailBot inbox queue
-- If you intentionally override the MailBot queue away from the mailbox address, do it only with clear evidence that the mailbox routing was updated to match. The code supports intentional overrides; the risk is assuming alignment when it no longer exists.
-- If authored service YAML is involved, make sure the MailBot queue matches the mailbox or inbound mail path rather than a separate scheduled job queue unless the implementation explicitly requires both to be the same.
-- When creating a mailbox for a room-hosted workflow, use collision-resistant address candidates derived from the room and workflow purpose instead of generic names like `contact-form@...`.
-- For managed MeshAgent mailbox addresses, use the environment-appropriate mailbox domain family:
-  - `.life` environments should use addresses under `@mail.meshagent.life`
-  - production `.com` environments should use addresses under `@mail.meshagent.com`
-- Treat addresses like `...@meshagent.local` as suspect for outbound delivery unless the current environment explicitly proves they are authorized.
-- If mailbox creation returns `409` and mailbox inspection returns `403`, treat that address as unavailable and try another candidate before asking the user for mailbox help.
-- Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
-- Do not treat a hardcoded mailbox-looking string as provisioned unless it came from a successful mailbox CLI result in the current project.
-- If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
-- If the user explicitly asks for coded Python with a live `RoomClient` and raw SMTP variables, allow that path. In that case:
-  - reuse an already-provisioned sender identity if one exists
-  - if no sender identity is already provisioned or explicitly provided, stop and obtain one instead of inventing a `From` address
-  - mirror the room SMTP defaults from the implementation instead of inventing your own variable names or lookup path
-  - use the same fallback chain as the room mail implementation: `SMTP_USERNAME` else `room.local_participant.get_attribute("name")`, `SMTP_PASSWORD` else `room.protocol.token`, `SMTP_HOSTNAME` else the runtime mail domain, `SMTP_PORT` else `587`
-  - allow a direct `aiosmtplib.send(...)` Python path when the user explicitly asked for coded SMTP sending or already has a `RoomClient` and does not need MailBot behavior
-  - treat this as an advanced fallback or explicit user-directed path, not the default replacement for mailbox-backed toolkit workflows
-- Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
-- If the mail sender lives inside a queue-backed Worker, verify that the Worker runtime actually uses the provisioned mailbox address before treating mailbox creation as sufficient.
-- For a simple one-off test send, do not provision a mailbox first unless the requested runtime path clearly depends on mailbox ownership or inbound routing.
+  all aligned to the same email address.
+
+## Outbound send model
+
+- Before provisioning a mailbox, decide whether the request is mailbox-backed or just a one-off send.
+- For a one-off send, first check whether the runtime already has an authorized sender identity.
+- If no usable sender exists and real outbound email is still the goal, provision or reuse the mailbox path automatically unless the user explicitly wants to choose the sender.
+- If a mailbox already exists for the workflow, reuse its address and queue.
+- If another agent or runtime will call toolkit `email`, verify that toolkit `email` is actually published in the room.
+- For managed mailbox addresses:
+  - `.life` environments should use `@mail.meshagent.life`
+  - production `.com` environments should use `@mail.meshagent.com`
+- Treat addresses like `...@meshagent.local` as suspect for outbound delivery unless the environment proves they are authorized.
+- If mailbox creation returns `409` and mailbox inspection returns `403`, treat that candidate as unavailable and try another address.
+- Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox address.
+- Only use custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+
+## Raw SMTP / RoomClient path
+
+- If the user explicitly asks for coded Python with a live `RoomClient`, allow that path.
+- Reuse a real provisioned sender identity if one exists. If none exists, obtain one instead of inventing a `From` address.
+- Mirror the implementation’s fallback chain:
+  - `SMTP_USERNAME` else `room.local_participant.get_attribute("name")`
+  - `SMTP_PASSWORD` else `room.protocol.token`
+  - `SMTP_HOSTNAME` else the runtime mail domain
+  - `SMTP_PORT` else `587`
+- `room.protocol.token` is the room client’s participant token. It is the same room credential carried through `MESHAGENT_TOKEN` or passed to `WebSocketClientProtocol(token=...)`.
+- Keep this path narrow:
+  - use the existing `RoomClient`
+  - use the mailbox-backed sender
+  - use the implementation’s SMTP defaults
+  - do not invent a second configuration model
 
 ## Queue inspection
 
-- Use `meshagent room queue size --queue <QUEUE_NAME>` to check whether messages are accumulating.
-- Use `meshagent room queue receive --queue <QUEUE_NAME>` to read the next queued message.
-- In code, use the room queues client to consume messages, for example `message = await room.queues.receive(name="my-queue")`.
-- Queue inspection is different from agent design. Reading the queue does not require introducing another runtime.
-
-## Room SMTP sending behavior
-
-- The current room mail implementation uses `SmtpConfiguration` from `meshagent.agents.mail_common`.
-- If `SMTP_USERNAME` is unset, the room mail implementation uses `room.local_participant.get_attribute("name")` as the SMTP username.
-- If `SMTP_PASSWORD` is unset, the room mail implementation uses `room.protocol.token` as the SMTP password.
-- `room.protocol.token` is the room client's participant token, the same connection token passed through `MESHAGENT_TOKEN` or supplied to `WebSocketClientProtocol(token=...)`.
-- Treat that participant token as the current participant's room credential and API grant carrier. It says who the participant is and what the participant is allowed to do in the room.
-- If `SMTP_HOSTNAME` is unset, the room mail implementation uses its configured mail domain from the runtime configuration.
-- If `SMTP_PORT` is unset, the room mail implementation uses port `587`.
-- The current implementation reads those values when sending in `start_thread` and `send_reply_message`. Do not invent a different SMTP retrieval path.
-- Do not hardcode or assume a production-only or development-only mail hostname. Use the domain configured for the current runtime.
-- In a live room workflow, first check whether the default room SMTP values already work before asking the user for manual `SMTP_*` settings.
-- Only ask for explicit SMTP overrides when the room's default username, token, domain, or port is known to be insufficient for the target provider.
-- SMTP transport defaults do not define the sender email address. The sender address should come from the mailbox-backed workflow, not from the participant name.
-- For simple direct-send test emails, the sender still needs to be a real authorized sender identity already available to the runtime. SMTP defaults do not authorize inventing a new `From` address.
-- If the user wants raw Python SMTP code inside a room runtime, use the same defaults the room mail implementation uses:
-  - `SMTP_USERNAME` else `room.local_participant.get_attribute(\"name\")`
-  - `SMTP_PASSWORD` else the room client's participant token at `room.protocol.token`
-  - `SMTP_HOSTNAME` else the runtime mail domain
-  - `SMTP_PORT` else `587`
-- If a live `RoomClient` already exists in the room runtime, you may write direct Python SMTP code against that client and the room defaults instead of forcing the task through MailBot setup first.
-- When using the coded Python/raw SMTP path, keep it narrow:
-  - use the existing `RoomClient`
-  - use the provisioned mailbox-backed sender address
-  - use the implementation's SMTP fallback chain
-  - do not invent a second configuration model
+- Use `meshagent room queue size --queue <QUEUE_NAME>` to check buildup.
+- Use `meshagent room queue receive --queue <QUEUE_NAME>` to inspect the next message.
+- In code, use the room queues client directly.
+- Queue inspection does not require introducing another runtime.
 
 ## Verification rules
 
-- Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
-- Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
-- Distinguish the first send attempt from final verification. A simple test email can try the direct send path first, but it is only complete after delivery succeeds or the exact blocker is reported.
-- For simple test-email requests, do not add mailbox provisioning as hidden scope creep unless the direct-send path actually fails for a mailbox-backed reason.
-- For simple test-email requests, do not satisfy the request with room messaging, participant chat, or broadcast send. The verification target is actual email delivery or the exact blocker that prevented it.
-- For queue-backed mail workers, do not claim success until the Worker has consumed a real test message and runtime evidence shows the send succeeded or shows the exact SMTP/provider blocker.
-- For Workers or chat agents that use `--require-toolkit=email`, do not treat a mailbox as proof that the toolkit exists. Verify that toolkit `email` is visible in the room from a live publisher such as a MailBot.
-- If a mailbox-backed MailBot exists but inbound or outbound behavior is inconsistent, check whether the mailbox address, mailbox queue, and MailBot queue diverged. That alignment is the default working pattern in the codebase, but overrides are possible and must be verified explicitly.
-- If outbound send fails and the mailbox address is outside the expected managed mailbox domain family for the current environment, treat that as a likely sender-authorization problem before blaming queue wiring or toolkit publication.
-- Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
-- If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
-- If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
-- If outbound SMTP fails with `550 5.7.1 Permission denied`, treat that as proof that the current runtime is not authorized to send from the mailbox or sender identity it attempted to use.
-- For `550 5.7.1 Permission denied`, do not summarize the problem only as "the user lacks permission." The failing principal may be the MailBot, Worker, room participant token, or SMTP auth identity behind the send.
-- If outbound SMTP fails with `550 5.7.1 Relaying denied`, treat that as a strong sign that the send attempted to use a `From` address other than the provisioned mailbox email address.
-- For `550 5.7.1 Relaying denied`, first compare the attempted sender address against the mailbox email address before blaming queue wiring, toolkit publication, or recipient-side issues.
-- If the workflow also creates a public route, follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL.
-- If SMTP rejects delivery, report the exact observed blocker.
-- If the task uses coded Python/raw SMTP with a live `RoomClient`, report the exact sender address, hostname, port, and SMTP/provider response that the code used.
-- Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
+- Inbound mail is not proven until mailbox mapping and target queue behavior are verified.
+- Outbound mail is not proven until SMTP/provider acceptance is distinguished from local message construction.
+- For simple test-email requests, do not add mailbox provisioning as hidden scope creep unless the direct-send path actually needs it.
+- For simple test-email requests, do not satisfy the ask with room messaging or chat.
+- For queue-backed mail senders, do not call the workflow complete until a real queued message is consumed and runtime evidence shows success or the exact SMTP/provider blocker.
+- If a runtime uses `--require-toolkit=email`, a mailbox is not proof that the toolkit exists. Verify a live publisher.
+- If mailbox-backed behavior is inconsistent, check whether mailbox address, mailbox queue, and MailBot queue diverged.
+- If the mailbox address is outside the expected managed domain family for the environment, treat that as a likely sender-authorization problem.
+- Do not ask for generic SMTP credentials first when the room SMTP path is in use. Check the room defaults and observed failure first.
+- For room-hosted senders such as contact forms, verify that the sender is a real mailbox address before blaming the provider.
+- Treat `SMTPDataError`, `550`, `553`, and similar failures first as sender identity or authorization problems unless evidence shows otherwise.
+- `550 5.7.1 Permission denied` means the current runtime is not authorized to send from the mailbox or sender identity it attempted to use.
+- `550 5.7.1 Relaying denied` strongly suggests the attempted `From` address did not match the provisioned mailbox email address.
+- If SMTP rejects delivery, report the exact blocker.
+- If the task uses raw SMTP code with a live `RoomClient`, report the exact sender, host, port, and SMTP/provider response used.
+- Do not stop at “the CLI is not logged in” unless an actual mailbox, queue, or related command failed with auth or authz.
 
 ## Workflow accountability
 
-- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
-- If another skill already owns the workflow, return mailbox, queue, and SMTP evidence to that owner instead of declaring the overall job complete.
-- If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
-- Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+- This skill may own the workflow when mail is the main goal.
+- If another skill owns the end-to-end result, return mailbox, queue, and SMTP evidence to that owner.
+- Follow `../_shared/references/workflow_accountability.md` for ownership, evidence, and forbidden shortcuts.
