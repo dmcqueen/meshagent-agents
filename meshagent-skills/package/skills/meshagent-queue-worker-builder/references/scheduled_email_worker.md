@@ -45,6 +45,7 @@ Use this reference when the user asks for a Worker that receives a queue message
 31. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
 32. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
 33. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+34. After creation, verify that the stored cron or UI-visible GMT schedule matches the computed UTC time rather than the user's local wall-clock time.
 
 ## Success criteria
 
@@ -59,6 +60,7 @@ Do not call the workflow complete until all of the following are true:
 - runtime evidence shows the mail send succeeded or shows the exact blocker
 - the scheduled payload explicitly maps to the Worker's email-sending behavior rather than relying on an implied side effect
 - the scheduled time was computed from the requesting user's known timezone, not just the room or server timezone
+- the stored cron or UI-visible GMT schedule matches that computed UTC time rather than repeating the user's local clock fields
 - scheduler preflight showed that scheduled-task create and verification were actually available in this environment
 - the scheduled task is set for a future absolute time with enough safety margin to avoid already being in the past
 
@@ -83,6 +85,7 @@ Do not call the workflow complete until all of the following are true:
 - A consumed smoke-test queue message does not prove email delivery by itself. Delivery still needs runtime send evidence or an exact mail blocker.
 - If the scheduled time is too close and setup is still incomplete, push the one-time run farther into the future instead of pretending the near-term run is still valid.
 - If the user asked for a relative run time and setup consumed part of that window, recompute the relative schedule from the current moment before creating the scheduled task.
+- If the stored cron shows the user's local hour or minute inside a GMT-scheduled task, the schedule was created incorrectly even if the task record exists.
 - If the requesting user's timezone is unknown, do not schedule yet. First determine it from reliable user-specific context or ask the user directly.
 - If broad auth or room-listing commands fail but a narrower room-scoped workflow is still possible, continue with the room-scoped path instead of stopping early.
 - In a known live room, `meshagent auth whoami` failing or reporting "Not logged in" does not by itself block this workflow. Use a room-scoped probe instead.
