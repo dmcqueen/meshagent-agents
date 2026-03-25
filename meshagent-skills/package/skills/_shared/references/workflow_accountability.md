@@ -44,9 +44,18 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - After the user confirms they want the workflow completed, continue the workflow unless a new concrete blocker appears.
 - Do not make the user restate the original goal just because a sub-step was incomplete or partially verified.
 
+## Progressive disclosure rules
+
+- Start with the narrowest safe action or probe that could directly satisfy the user's request or prove the next blocker.
+- Separate checks that are required before acting from checks that are required before claiming success.
+- Do not front-load broad environment surveys, project-wide discovery, or admin-style checks when one narrow task-matching room or runtime action would answer the question faster.
+- Defer deeper preflights until the chosen execution path actually depends on that surface, the first narrow path fails, or the workflow is about to cross a mutation boundary that makes the extra check necessary.
+- For simple requests, prefer one direct task-matching action first and expand only if that action fails or reveals ambiguity.
+
 ## Preflight rules
 
 - If the workflow depends on a specific backend surface such as scheduled tasks, room services, mail delivery, or toolkit publication, preflight the required capability before presenting the workflow as end-to-end ready.
+- Do not read the preflight rule as "survey everything up front." Preflight only the surfaces that the current chosen path actually needs before the next risky or user-visible step.
 - For room-scoped workflows, preflight with the narrowest room-scoped command that matches the actual task before trying broader project-scoped discovery or admin-style checks.
 - Treat `403` responses as permission blockers, not as a cue to keep promising the blocked step later.
 - If a broad project-scoped probe returns `403`, do not declare the room-scoped workflow blocked until the narrower room-scoped probe also fails.
@@ -69,3 +78,5 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not pass arbitrary human-readable ids into workflow surfaces that are UUID-backed. If a skill has not proven the id format is accepted, omit the custom id rather than guessing.
 - Do not treat queue drain, service creation, or scheduled-task creation as proof that a requested email was actually delivered.
 - Do not assume that a scheduled task payload implicitly means "send an email" unless the payload explicitly maps to the Worker's email-sending rules.
+- Do not satisfy a user request for email by sending a room message, participant message, or broadcast unless the user explicitly asked for that communication medium instead of real email.
+- Do not stall a simple workflow by starting with broad project, room, or service surveys when one narrow task-matching action could have answered the request or revealed the blocker directly.
