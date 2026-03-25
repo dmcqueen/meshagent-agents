@@ -90,6 +90,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - The direct-send path only applies cleanly when the runtime already has a concrete sender identity to use, such as:
   - an existing mailbox-backed sender already configured for the running MailBot or toolkit path
   - an explicit sender address the current runtime already owns and is authorized to use
+- If the request clearly requires real outbound email and the runtime does not already have a usable sender identity, prefer automatically provisioning or reusing the room mailbox path instead of stopping to ask the user for a sender address.
 - Only provision a mailbox for a simple test email when the observed runtime path proves a mailbox-backed sender is actually required for the requested send.
 - If the current runtime cannot send real email, report that exact blocker. Do not silently switch to room messaging and present that as if the email request was satisfied.
 
@@ -144,6 +145,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 - Before provisioning a mailbox, decide whether the user's requested send is actually a mailbox-backed workflow or just a one-off outbound send.
 - For a one-off outbound send, first inspect whether the current runtime already has a valid sender identity available. If it does not, then mailbox provisioning or reuse becomes necessary before the send can honestly proceed.
+- When mailbox provisioning becomes necessary for a straightforward room email workflow, do it automatically unless the user explicitly asked to choose the sender address themselves.
 - Do not expand a simple outbound-send request into mailbox administration unless the chosen runtime path proves that mailbox ownership, inbound routing, or durable sender reuse is part of the job.
 - For a room-hosted mailbox-backed email workflow, first inspect or provision the mailbox that will own the sender address.
 - If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
