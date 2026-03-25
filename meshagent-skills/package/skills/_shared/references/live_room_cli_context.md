@@ -10,6 +10,8 @@ Use these rules when a skill runs inside an existing MeshAgent room runtime or r
 - For room-scoped workflows, do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as the primary readiness test.
 - A `403` from a broad project-scoped or room-listing command does not by itself prove that a narrower room-scoped workflow is blocked. Retry with the narrowest relevant room-scoped read path first.
 - Good first probes are commands such as `meshagent room service list --room <ROOM_NAME>`, `meshagent room queue size --room <ROOM_NAME> --queue <QUEUE_NAME>`, or `meshagent room agent list-toolkits --room <ROOM_NAME>` depending on the workflow.
+- Prefer direct room-scoped commands such as `meshagent room service list` over generic toolkit invocation when the CLI already exposes the room surface directly.
+- Do not use `meshagent room agent invoke-tool --toolkit services --tool list --arguments '{}'` for ordinary service discovery when `meshagent room service list` already answers the question more directly.
 - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use.
 - Distinguish local authoring files from room-visible runtime files. Room-owned runtime data belongs under `/data`.
 - If the user asks to write or create a file in the room and does not provide a more specific room-visible path, default to the room storage root under `/data`, for example `/data/<filename>`.
