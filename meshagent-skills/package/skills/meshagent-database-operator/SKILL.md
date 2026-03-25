@@ -26,6 +26,8 @@ metadata:
       when: Resolve checkout roots before using docs, examples, or source references.
     - skill: meshagent-cli-operator
       when: The main blocker is command discovery or exact CLI syntax.
+    - skill: meshagent-participant-token-operator
+      when: The real issue is whether the current runtime or service has a participant token and database API scope rather than table semantics.
     - skill: meshagent-queue-worker-builder
       when: Database schema must be wired into agent or service YAML.
     - skill: meshagent-memory-operator
@@ -77,6 +79,7 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 
 - `meshagent-sdk-researcher`: Resolve checkout roots and turn conceptual codebase references into actual paths in the current environment.
 - `meshagent-cli-operator`: Use it when the task is mainly about command selection, flags, or execution.
+- `meshagent-participant-token-operator`: Use it when the blocker is participant-token source, missing room API grants, or token wiring rather than database behavior.
 - `meshagent-queue-worker-builder`: Use it when database configuration must be added to `meshagent.yaml` or service YAML.
 - `meshagent-memory-operator`: Use it when the task is about memory ingestion, recall, or graph-style data rather than tables.
 
