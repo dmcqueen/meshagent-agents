@@ -12,6 +12,8 @@ Use these rules when a skill runs inside an existing MeshAgent room runtime or r
 - Good first probes are commands such as `meshagent room service list --room <ROOM_NAME>`, `meshagent room queue size --room <ROOM_NAME> --queue <QUEUE_NAME>`, or `meshagent room agent list-toolkits --room <ROOM_NAME>` depending on the workflow.
 - Prefer direct room-scoped commands such as `meshagent room service list` over generic toolkit invocation when the CLI already exposes the room surface directly.
 - Do not use `meshagent room agent invoke-tool --toolkit services --tool list --arguments '{}'` for ordinary service discovery when `meshagent room service list` already answers the question more directly.
+- Do not use room-messaging enablement as a routine prerequisite for room-scoped website, mail, runtime, or scheduler workflows. If messaging is already enabled, treat that as existing room state, not as a blocker to fix.
+- Do not assume a room shell can `meshagent room container exec` into another participant's private container. If private-container access is denied, treat that as expected isolation and switch to logs, service state, public HTTP checks, room-visible files, or other non-exec evidence paths.
 - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use.
 - Distinguish local authoring files from room-visible runtime files. Room-owned runtime data belongs under `/data`.
 - If the user asks to write or create a file in the room and does not provide a more specific room-visible path, default to the room storage root under `/data`, for example `/data/<filename>`.
