@@ -42,6 +42,7 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - If the workflow is blocked on specific user input, identify the exact missing input instead of asking a generic permission-to-continue question.
 - Do not ask the user for permission to create ordinary workflow prerequisites that the requested workflow clearly needs and the current skill is already allowed to create, such as a room mailbox for a mailbox-backed email workflow.
 - Treat room resources that can be safely provisioned as implementation work, not as user input, unless the user asked to control that choice directly.
+- If the user's original request is already an obvious end-to-end outcome such as "schedule a test email," do not stop at "I can set it up" or "reply yes and I'll proceed." Continue the ordinary prerequisite setup automatically unless a true missing input or hard blocker appears.
 - Ask for all clearly blocking user inputs together when possible rather than discovering them one at a time across multiple turns.
 - After the user confirms they want the workflow completed, continue the workflow unless a new concrete blocker appears.
 - Do not make the user restate the original goal just because a sub-step was incomplete or partially verified.
@@ -82,3 +83,5 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not assume that a scheduled task payload implicitly means "send an email" unless the payload explicitly maps to the Worker's email-sending rules.
 - Do not satisfy a user request for email by sending a room message, participant message, or broadcast unless the user explicitly asked for that communication medium instead of real email.
 - Do not stall a simple workflow by starting with broad project, room, or service surveys when one narrow task-matching action could have answered the request or revealed the blocker directly.
+- Do not turn an obvious end-to-end request into a two-step consent dance by asking the user to approve ordinary prerequisite setup that is already inside the requested workflow.
+- Do not blindly retry one-time scheduled-task creation after an uncertain add result. First check whether the task was already created or whether an equivalent near-future task already exists for the same queue and payload.
