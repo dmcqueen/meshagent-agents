@@ -114,11 +114,11 @@ Do not call the workflow complete until all of the following are true:
 ## Payload examples
 
 - Prompt-style payload example:
-  - `{"prompt":"Send an email to david.mcqueen@timu.com using the email toolkit. Subject: Scheduled test. Body: This is a scheduled test email."}`
+  - `{"prompt":"Send an email to recipient@example.com using the email toolkit. Subject: Scheduled test. Body: This is a scheduled test email."}`
 - Prompt-style workflow-trigger example:
-  - `{"prompt":"Run the scheduled email workflow and send the email using the email toolkit to david.mcqueen@timu.com. Subject: Scheduled test. Body: This is a scheduled test email."}`
+  - `{"prompt":"Run the scheduled email workflow and send the email using the email toolkit to recipient@example.com. Subject: Scheduled test. Body: This is a scheduled test email."}`
 - Rule-file workflow-trigger example:
   - `{"prompt":"Run the nightly report workflow from /data/agents/<AGENT_NAME>/rules-worker-report.txt and send the email using the email toolkit."}`
 - Structured payload example:
-  - `{"to":"david.mcqueen@timu.com","subject":"Scheduled test","body":"This is a scheduled test email.","action":"send_email"}`
+  - `{"to":"recipient@example.com","subject":"Scheduled test","body":"This is a scheduled test email.","action":"send_email"}`
 - Match the payload style to the queue consumer's rules. If the runtime was built around prompt-driven instructions or a named room-rules workflow, keep using a prompt. If it was built around structured fields, use those exact fields.
