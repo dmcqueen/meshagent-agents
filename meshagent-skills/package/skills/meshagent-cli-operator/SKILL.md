@@ -52,9 +52,10 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 
 1. Resolve the `meshagent` binary from `PATH` or use the explicit binary path the user provides.
 2. Identify the narrowest command path that matches the request.
-3. If flags are uncertain, consult `references/command_groups.md`, then `references/meshagent_cli_help.md`. Only run live `meshagent <path> --help` when the packaged references are missing the needed subcommand detail or appear inconsistent with the observed CLI version.
-4. Prefer read-only inspection before mutation.
-5. Verify the result with the corresponding read command.
+3. Run or explain one task-matching command first when the path is already clear.
+4. If flags are uncertain, consult `references/command_groups.md`, then `references/meshagent_cli_help.md`. Only run live `meshagent <path> --help` when the packaged references are missing the needed subcommand detail or appear inconsistent with the observed CLI version.
+5. Prefer read-only inspection before mutation unless the user directly asked for the mutation and the target is already clear.
+6. Verify the result with the corresponding read command.
 
 ## Resolve the CLI
 
@@ -89,6 +90,8 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 
 - Do not invent the active project, active room, hostname, filesystem layout, or environment variables. Inspect them or ask when they matter.
 - Do not use live `meshagent ... --help` as a default discovery step in a live room when the packaged references already cover the command. Use live `--help` only as a fallback for missing or version-mismatched details.
+- Do not start with broad discovery when one exact task-matching command can answer or do the work directly.
+- For simple asks, prefer one narrow command first and defer neighboring environment checks until that command fails or the next mutation depends on them.
 - For room-scoped workflows, do not make `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` the gatekeeper commands that decide whether work is possible.
 - If the user already named the room or the runtime already implies the room, probe the narrowest room-scoped read command first and only escalate to broader project-scoped checks when the workflow really needs them.
 - If a broad project-scoped or room-listing command returns `403`, do not conclude that the narrower room-scoped workflow is blocked until the matching room-scoped read path also fails.
@@ -103,6 +106,7 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 - When a deployed MeshAgent webserver returns 500, first suspect route-handler import/render/runtime errors before concluding that the room route or platform is broken.
 - For Python handlers that render inline HTML templates, do not use `str.format()` on raw HTML/CSS/regex-heavy strings unless every literal brace is escaped. Prefer a safer templating approach or pre-escaped placeholders.
 - Do not print secret values unless the user explicitly asks for them and the command returns them.
+- Distinguish "needed before acting" from "needed before claiming success." A narrow command can often run before the wider survey is necessary.
 
 ## Workflow accountability
 
