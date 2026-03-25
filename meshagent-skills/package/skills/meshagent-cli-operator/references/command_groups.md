@@ -47,7 +47,7 @@ Use the following status values exactly:
 - `meshagent chatbot`
   Use for chatbot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
 - `meshagent process`
-  Use for process-backed room agents in the current room. If a `--room` flag is used, it must match the current room.
+  Use for process room agents in the current room. If a `--room` flag is used, it must match the current room.
 - `meshagent mailbot`
   Use for mailbot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
 - `meshagent task-runner`
