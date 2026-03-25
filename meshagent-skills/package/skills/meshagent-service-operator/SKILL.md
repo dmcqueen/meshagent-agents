@@ -102,6 +102,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
 - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped service work.
 - If permissions are uncertain, start with `meshagent room service list --room <ROOM_NAME>` or another narrow room-scoped read before claiming service access is blocked.
+- For service discovery, prefer `meshagent room service list` over generic toolkit invocation. Do not route ordinary service listing through `meshagent room agent invoke-tool --toolkit services --tool list --arguments '{}'` when the direct room command exists.
 
 ## Service scope rules
 
@@ -119,6 +120,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 
 - Do not claim a service is deployed correctly based only on YAML generation.
 - After create or update, verify with `meshagent service show`, `meshagent service list`, or `meshagent room service list` as appropriate.
+- When the question is simply "what services are running in this room?", `meshagent room service list` is the default answer path.
 - For queue-backed Workers, a visible service record is not enough. Confirm that the room service is present and then use runtime inspection to prove that a live runtime or container is actually running.
 - If a room service is unhealthy, use room-service state and runtime inspection before rewriting the spec.
 - If restart is requested, confirm the target by `--id` or `--name` before issuing it.
