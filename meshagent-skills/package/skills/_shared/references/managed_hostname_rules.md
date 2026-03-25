@@ -1,6 +1,6 @@
 # Managed Hostname Rules
 
-Use these rules whenever a skill needs to choose, validate, or report a MeshAgent-managed public hostname for a room webserver, mini site, or public route.
+Use these rules whenever a skill needs to choose, validate, or report a MeshAgent-managed public hostname for a room webserver, site, or public route.
 
 - If `MESHAGENT_API_URL` is present, the managed suffix is fixed by that API environment: `.com` environments must use `*.meshagent.app` and `.life` environments must use `*.meshagent.dev`.
 - If `MESHAGENT_API_URL` is absent or does not clearly identify the environment, inspect an existing route in the current project or ask before inventing a managed public hostname.
