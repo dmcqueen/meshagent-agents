@@ -90,6 +90,7 @@ Use this skill when the task is about room storage paths or copying data into or
 
 - Distinguish local paths from room paths explicitly.
 - Use room-visible paths that match the workflow, typically under `/data` inside room-mounted services.
+- If the user asks to create or write a room file without specifying a concrete room path, default to `/data/<filename>` rather than `.` or another current-working-directory path.
 - Do not confuse deployable local source trees with room-owned runtime storage.
 - When another skill depends on a room file, verify the exact path instead of assuming the file is mounted where you expect.
 
