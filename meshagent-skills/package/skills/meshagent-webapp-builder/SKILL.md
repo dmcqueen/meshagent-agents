@@ -104,6 +104,9 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 
 - Use relative route sources like `handlers/contact.py` and `public` so the deploy stays portable.
 - For public webserver configs, set `host: 0.0.0.0` unless there is a concrete reason not to.
+- Treat a public site as designed output, not just working markup.
+- For contact forms, ship an intentional visual system: hierarchy, spacing, styled fields, a deliberate button treatment, and success/error states that feel part of the site.
+- Do not ship raw browser-default form controls, default Arial-on-white layouts, or full-width utility forms unless the user explicitly asked for that austere style.
 - Keep handler modules simple at import time. A module that raises during import can surface to the public site as a generic `500`.
 - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
 - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
@@ -122,19 +125,20 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 
 1. Create the local webapp project under the current working directory.
 2. Add a GET route that renders the form and a POST route that validates and handles submission.
-3. Restrict email and phone fields with browser-side input types and patterns when helpful.
-4. Re-validate all submitted fields on the server.
-5. If the form sends outbound email from the room, inspect existing room mailboxes first.
-6. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
-7. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking the user for help.
-8. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
-9. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
-10. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
-11. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
-12. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
-13. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
-14. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-15. Verify the live site with actual GET and POST requests after deploy.
+3. Give the page a deliberate layout and visual identity before deploy; a plain stack of unlabeled browser-default controls is not enough.
+4. Restrict email and phone fields with browser-side input types and patterns when helpful.
+5. Re-validate all submitted fields on the server.
+6. If the form sends outbound email from the room, inspect existing room mailboxes first.
+7. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
+8. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
+9. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
+10. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+11. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
+12. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+13. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
+14. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
+15. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+16. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
