@@ -71,6 +71,10 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 ## Escalation model
 
 - Start with the lightest mail path that fits the user's actual request.
+- For a plain request like "send a test email," first try the narrowest real-email path that matches the current runtime instead of surveying every mail surface up front.
+- Interpret "send an email" as a real outbound email send by default, not as room messaging, chat, broadcast, or any other in-room communication shortcut.
+- If the recipient looks like an email address such as `name@example.com`, treat that as strong evidence that the user wants real email delivery.
+- Do not substitute a room message, direct message, broadcast, or other non-email action unless the user explicitly asked for that medium.
 - Do not provision a mailbox just because the task mentions sending one email.
 - A simple one-off outbound test email is usually a direct-send problem, not a mailbox-administration problem.
 - Escalate to mailbox provisioning only when the request actually needs mailbox features such as:
@@ -82,7 +86,12 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - If the user only asked to send a simple test email, first try the narrow direct-send path that matches the current runtime:
   - a real `email` toolkit send path if one is already present
   - or the explicit raw SMTP / `RoomClient` code path when the user asked for code or a live room client already exists
+- Defer mailbox inspection, queue inspection, MailBot setup, or toolkit-publication checks until the chosen send path actually depends on them or the first direct-send attempt fails.
+- The direct-send path only applies cleanly when the runtime already has a concrete sender identity to use, such as:
+  - an existing mailbox-backed sender already configured for the running MailBot or toolkit path
+  - an explicit sender address the current runtime already owns and is authorized to use
 - Only provision a mailbox for a simple test email when the observed runtime path proves a mailbox-backed sender is actually required for the requested send.
+- If the current runtime cannot send real email, report that exact blocker. Do not silently switch to room messaging and present that as if the email request was satisfied.
 
 ## References
 
@@ -106,7 +115,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 - Apply `../_shared/references/live_room_cli_context.md` before asking for login or reconnecting.
 - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped mail workflows.
-- If mailbox or queue access is uncertain, try the corresponding room-scoped or mailbox read command first and use the observed result.
+- If mailbox or queue access is uncertain, try the corresponding room-scoped or mailbox read command first and use the observed result, but only after the chosen mail path actually needs that information.
 - If the workflow also publishes a public contact-form site, apply `../_shared/references/managed_hostname_rules.md` instead of inventing a suffix from examples.
 
 ## Primary command groups
@@ -134,6 +143,8 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 ## Outbound delivery workflow
 
 - Before provisioning a mailbox, decide whether the user's requested send is actually a mailbox-backed workflow or just a one-off outbound send.
+- For a one-off outbound send, first inspect whether the current runtime already has a valid sender identity available. If it does not, then mailbox provisioning or reuse becomes necessary before the send can honestly proceed.
+- Do not expand a simple outbound-send request into mailbox administration unless the chosen runtime path proves that mailbox ownership, inbound routing, or durable sender reuse is part of the job.
 - For a room-hosted mailbox-backed email workflow, first inspect or provision the mailbox that will own the sender address.
 - If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
 - If no mailbox exists and the task specifically requires mailbox-backed send or inbound routing, create one before claiming the workflow is complete.
@@ -155,7 +166,8 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - Do not treat a hardcoded mailbox-looking string as provisioned unless it came from a successful mailbox CLI result in the current project.
 - If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
 - If the user explicitly asks for coded Python with a live `RoomClient` and raw SMTP variables, allow that path. In that case:
-  - reuse the provisioned mailbox address as the sender identity
+  - reuse an already-provisioned sender identity if one exists
+  - if no sender identity is already provisioned or explicitly provided, stop and obtain one instead of inventing a `From` address
   - mirror the room SMTP defaults from the implementation instead of inventing your own variable names or lookup path
   - use the same fallback chain as the room mail implementation: `SMTP_USERNAME` else `room.local_participant.get_attribute("name")`, `SMTP_PASSWORD` else `room.protocol.token`, `SMTP_HOSTNAME` else the runtime mail domain, `SMTP_PORT` else `587`
   - allow a direct `aiosmtplib.send(...)` Python path when the user explicitly asked for coded SMTP sending or already has a `RoomClient` and does not need MailBot behavior
@@ -185,6 +197,7 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 - In a live room workflow, first check whether the default room SMTP values already work before asking the user for manual `SMTP_*` settings.
 - Only ask for explicit SMTP overrides when the room's default username, token, domain, or port is known to be insufficient for the target provider.
 - SMTP transport defaults do not define the sender email address. The sender address should come from the mailbox-backed workflow, not from the participant name.
+- For simple direct-send test emails, the sender still needs to be a real authorized sender identity already available to the runtime. SMTP defaults do not authorize inventing a new `From` address.
 - If the user wants raw Python SMTP code inside a room runtime, use the same defaults the room mail implementation uses:
   - `SMTP_USERNAME` else `room.local_participant.get_attribute(\"name\")`
   - `SMTP_PASSWORD` else the room client's participant token at `room.protocol.token`
@@ -201,7 +214,9 @@ Use this skill for mailbox administration, SMTP behavior, and inbound mail queue
 
 - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
 - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
+- Distinguish the first send attempt from final verification. A simple test email can try the direct send path first, but it is only complete after delivery succeeds or the exact blocker is reported.
 - For simple test-email requests, do not add mailbox provisioning as hidden scope creep unless the direct-send path actually fails for a mailbox-backed reason.
+- For simple test-email requests, do not satisfy the request with room messaging, participant chat, or broadcast send. The verification target is actual email delivery or the exact blocker that prevented it.
 - For queue-backed mail workers, do not claim success until the Worker has consumed a real test message and runtime evidence shows the send succeeded or shows the exact SMTP/provider blocker.
 - For Workers or chat agents that use `--require-toolkit=email`, do not treat a mailbox as proof that the toolkit exists. Verify that toolkit `email` is visible in the room from a live publisher such as a MailBot.
 - If a mailbox-backed MailBot exists but inbound or outbound behavior is inconsistent, check whether the mailbox address, mailbox queue, and MailBot queue diverged. That alignment is the default working pattern in the codebase, but overrides are possible and must be verified explicitly.
