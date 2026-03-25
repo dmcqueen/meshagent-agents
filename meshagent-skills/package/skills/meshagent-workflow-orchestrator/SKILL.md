@@ -137,6 +137,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - Do not start by inventorying room access, scheduler visibility, toolkit publication, service visibility, queue discovery, mailbox identity, and route readiness all at once when the user's first requested action only needs one of those surfaces.
 - For room-scoped work, apply `../_shared/references/live_room_cli_context.md`, start from the known room context, and use the narrowest room-scoped probe first.
 - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite gatekeeper commands for a known-room workflow.
+- If the workflow needs service discovery, prefer `meshagent room service list` over generic toolkit invocation because the direct room command is narrower and faster.
 - If the workflow must choose a service or worker image, derive the image family from the actual MeshAgent environment before copying a docs example.
 - If the workflow depends on authored service YAML, prefer a generated spec first and require command-flag correctness, role correctness, and wiring correctness before treating the asset as deployable.
 - If a broad probe fails but a narrower room-scoped probe succeeds, continue the workflow and report the broad-scope limitation accurately instead of giving up.
