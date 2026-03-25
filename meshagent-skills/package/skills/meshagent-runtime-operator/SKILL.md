@@ -21,6 +21,8 @@ metadata:
       when: Runtime debugging is one part of a larger end-to-end workflow that still needs one owner.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using CLI or server source references.
+    - skill: meshagent-participant-token-operator
+      when: The remaining question is whether the runtime or shell actually received a participant token and where it came from.
     - skill: meshagent-queue-worker-builder
       when: The runtime to inspect is a queue-backed Worker and the question is whether it actually dequeues or completes jobs.
     - skill: meshagent-service-operator
@@ -71,6 +73,7 @@ Use this skill when the task is about the live runtime state inside a room rathe
 
 - `meshagent-workflow-orchestrator`: Use it when runtime debugging is only one part of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using CLI or server source references.
+- `meshagent-participant-token-operator`: Use it when the question is about runtime token presence, delegated shell token behavior, or participant-token origin.
 - `meshagent-queue-worker-builder`: Use it when the runtime belongs to a queue-backed Worker and the remaining job is to prove or debug actual dequeue behavior.
 - `meshagent-mail-operator`: Use it when the runtime issue depends on mailbox identity, MailBot publication, or proving outbound mail behavior.
 - `meshagent-scheduler`: Use it when a required scheduled-task create, list, or timing step may be blocked by permissions or backend scheduler health.
