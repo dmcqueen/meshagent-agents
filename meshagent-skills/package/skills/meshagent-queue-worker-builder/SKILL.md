@@ -98,7 +98,9 @@ Use this skill to create or repair queue-backed room service YAML. Default to a 
 - The default queue runtime is `meshagent process join --channel=queue:<QUEUE_NAME>`.
 - Treat the queue as one channel into the agent, not as a standalone workflow by itself.
 - Use a dedicated `Worker` shape only when the user explicitly asks for it.
-- If the queued job sends email, a mailbox alone is not enough. The room still needs a live publisher for toolkit `email`.
+- If the queued job sends email, a mailbox alone is not enough.
+- For new authored scheduled-email services, the default process shape is `meshagent process join --channel=queue:<QUEUE_NAME> --channel=mail:<MAILBOX_ADDRESS>`.
+- Use a queue-only process plus `--require-toolkit=email` only when a live `email` publisher was already proven in the room and reusing it is intentional.
 
 ## Default workflow
 
@@ -107,23 +109,25 @@ Use this skill to create or repair queue-backed room service YAML. Default to a 
 3. In a known live room, use narrow room-scoped probes first. Do not start with broad auth or project checks.
 4. Reuse real room names when possible: queue names, service names, sender identities, mounted paths.
 5. If the queued job sends email, inspect or provision the mailbox first and reuse its real sender identity.
-6. If the runtime depends on toolkit `email`, prove that a live publisher exists or build one first.
-7. Generate the base shape instead of freehanding YAML:
+6. For new authored scheduled-email services, include the mailbox as a `mail:` channel on the same process service by default.
+7. If the runtime instead depends on toolkit `email` from some other runtime, prove that live publisher exists before treating the YAML as viable.
+8. Generate the base shape instead of freehanding YAML:
    - `meshagent process spec` for new queue-consuming services
    - `meshagent worker spec` only when the user explicitly wants a Worker runtime
    - `meshagent mailbot spec` only when the user explicitly wants a split mail runtime
    - `meshagent service spec` only when the narrower specs do not fit
-8. Adapt the nearest example only after the generated shape is in hand.
-9. Match the runtime image family to the actual MeshAgent environment.
-10. Make the startup command show the real queue-consuming path:
-   - process agent: `meshagent process join --channel=queue:<QUEUE_NAME>`
+9. Adapt the nearest example only after the generated shape is in hand.
+10. Match the runtime image family to the actual MeshAgent environment.
+11. Make the startup command show the real queue-consuming path:
+   - scheduled email process: `meshagent process join --channel=queue:<QUEUE_NAME> --channel=mail:<MAILBOX_ADDRESS>`
+   - queue-only process: `meshagent process join --channel=queue:<QUEUE_NAME>` only when a separate live email publisher is already proven
    - dedicated Worker: `meshagent worker join --queue=<QUEUE_NAME>`
-11. If the workflow will be scheduled, keep the scheduled queue and consumer queue identical.
-12. Validate the YAML structurally and semantically.
-13. If validation fails, fix the exact error and rerun validation before deployment.
-14. Hand off to service/runtime workflows to deploy and prove the live consumer.
-15. Send an immediate smoke-test message and confirm dequeue plus job completion before treating the runtime as ready.
-16. Only then hand off to the scheduler skill.
+12. If the workflow will be scheduled, keep the scheduled queue and consumer queue identical.
+13. Validate the YAML structurally and semantically.
+14. If validation fails, fix the exact error and rerun validation before deployment.
+15. Hand off to service/runtime workflows to deploy and prove the live consumer.
+16. Send an immediate smoke-test message and confirm dequeue plus job completion before treating the runtime as ready.
+17. Only then hand off to the scheduler skill.
 
 ## Queue and payload rules
 
@@ -138,8 +142,10 @@ Use this skill to create or repair queue-backed room service YAML. Default to a 
 
 - Use a real mailbox-backed sender from the room. Do not invent one.
 - Do not assume mailbox creation publishes toolkit `email`.
+- Do not treat a queue-only process plus `--require-toolkit=email` as complete scheduled-email design unless a live external email publisher was already proven.
 - Do not point a standalone MailBot at the scheduled job queue and call that complete.
 - Keep the mail path or equivalent toolkit publisher that makes `email` visible to the queue consumer.
+- For new authored scheduled-email services, prefer one process with both queue and mail channels so the mail path is part of the service itself.
 - For non-trivial email jobs, prefer durable `--room-rules` or mounted rules over inline ad hoc instructions.
 
 ## Verification rules
