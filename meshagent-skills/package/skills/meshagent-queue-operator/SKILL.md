@@ -23,6 +23,8 @@ metadata:
       when: Queue work is only one part of a larger end-to-end workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using docs or source references.
+    - skill: meshagent-participant-token-operator
+      when: The real issue is queue API access, participant-token source, delegated shell token behavior, or token-backed runtime wiring rather than queue semantics.
     - skill: meshagent-scheduler
       when: Queue traffic comes from scheduled tasks.
     - skill: meshagent-mail-operator
@@ -73,6 +75,7 @@ Use this skill when the task is to inspect or operate a queue inside a MeshAgent
 
 - `meshagent-workflow-orchestrator`: Use it when queue work is only one part of a larger end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
+- `meshagent-participant-token-operator`: Use it when the blocker is participant-token source, missing queue API grants, or token wiring rather than queue behavior.
 - `meshagent-scheduler`: Use it when the queue messages come from scheduled tasks.
 - `meshagent-mail-operator`: Use it when the queue is part of a mailbox flow.
 - `meshagent-queue-worker-builder`: Use it when the missing piece is a queue-consuming Worker rather than queue operations themselves.
