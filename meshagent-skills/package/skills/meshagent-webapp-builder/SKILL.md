@@ -8,6 +8,7 @@ metadata:
       - references/command_groups.md
       - references/meshagent_cli_help.md
       - references/contact_form_example.py
+      - references/contact_submission_store.py
       - references/mailbox_backed_sender.md
       - references/minimal_webserver.yaml
       - references/verification_checklist.md
@@ -78,6 +79,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - Start with `references/command_groups.md` and `references/meshagent_cli_help.md` in this skill. They are local wrappers that point to the shared packaged CLI references in this package.
 - Reuse the packaged implementation assets in this skill before inventing a fresh pattern:
   - `references/contact_form_example.py`
+  - `references/contact_submission_store.py`
   - `references/mailbox_backed_sender.md`
   - `references/minimal_webserver.yaml`
   - `references/verification_checklist.md`
@@ -124,6 +126,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
 - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
 - For existing working handlers, add new functionality with the fewest lines possible before attempting any broader cleanup or structural rewrite.
+- For existing handlers, prefer extracting new DB behavior into a separate helper module and changing the live handler by an import plus one narrow call site whenever that is practical.
 - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
 - Prove the DB insert path in isolation before integrating it into an existing handler that already sends email or renders user-visible success/error states.
 - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
@@ -146,18 +149,19 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 4. Restrict email and phone fields with browser-side input types and patterns when helpful.
 5. Re-validate all submitted fields on the server.
 6. If the form persists submissions, use the direct `room.database.*` pattern from the resolved repo examples instead of inventing a handler-local CLI workflow.
-7. Prove the DB insert path with a minimal isolated change and a read-back before combining it with mail-send and response-handling changes.
-8. If the form sends outbound email from the room, inspect existing room mailboxes first.
-9. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
-10. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
-11. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
-12. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
-13. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
-14. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
-15. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
-16. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
-17. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-18. Verify the live site with actual GET and POST requests after deploy.
+7. Prefer implementing the DB write in a helper module first, then wire it into the live handler with the smallest practical import-and-call change.
+8. Prove the DB insert path with that minimal isolated change and a read-back before combining it with mail-send and response-handling changes.
+9. If the form sends outbound email from the room, inspect existing room mailboxes first.
+10. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
+11. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
+12. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
+13. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+14. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
+15. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+16. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
+17. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
+18. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+19. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
