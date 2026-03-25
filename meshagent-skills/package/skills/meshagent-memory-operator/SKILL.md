@@ -20,6 +20,8 @@ metadata:
   related_skills:
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using docs or source references.
+    - skill: meshagent-participant-token-operator
+      when: The real issue is whether the runtime or service has a participant token and memory API scope rather than memory-store behavior.
     - skill: meshagent-database-operator
       when: The task is actually about structured tables and SQL/search rather than memory recall.
     - skill: meshagent-storage-operator
@@ -66,6 +68,7 @@ Use this skill when the task is about the room memory API rather than the room d
 ## Related skills
 
 - `meshagent-sdk-researcher`: Resolve checkout roots before using docs, examples, or source references.
+- `meshagent-participant-token-operator`: Use it when the blocker is participant-token source, missing room API grants, or token wiring rather than memory behavior.
 - `meshagent-database-operator`: Use it when the task is really about structured room tables rather than memory graphs and recall workflows.
 - `meshagent-storage-operator`: Use it when the main job is preparing files or storage paths for ingestion.
 
