@@ -5470,6 +5470,7 @@ container:
             - one function or code block that performs the DB write
             - a separate read-back or search step that proves the row exists
           - For existing live handlers, prefer the fewest-line additive change that can prove the DB write path before attempting a larger refactor.
+          - When practical, move the new DB write logic into a separate helper module and keep the live handler change to an import plus one narrow call site.
           - For handler-side writes, prefer direct `room.database.*` calls over shelling out to `meshagent room database ...` from inside the handler runtime.
           - Do not discover whether the DB call shape works by embedding a first attempt directly into a larger live handler patch that also changes mail or response logic.
           - The CLI `--columns` path supports `int`, `bool`, `date`, `timestamp`, `float`, `text`, `binary`, `vector`, `list`, and `struct`.
@@ -6512,13 +6513,13 @@ container:
           ## Payload examples
           
           - Prompt-style payload example:
-            - `{"prompt":"Send an email to david.mcqueen@timu.com using the email toolkit. Subject: Scheduled test. Body: This is a scheduled test email."}`
+            - `{"prompt":"Send an email to recipient@example.com using the email toolkit. Subject: Scheduled test. Body: This is a scheduled test email."}`
           - Prompt-style workflow-trigger example:
-            - `{"prompt":"Run the scheduled email workflow and send the email using the email toolkit to david.mcqueen@timu.com. Subject: Scheduled test. Body: This is a scheduled test email."}`
+            - `{"prompt":"Run the scheduled email workflow and send the email using the email toolkit to recipient@example.com. Subject: Scheduled test. Body: This is a scheduled test email."}`
           - Rule-file workflow-trigger example:
             - `{"prompt":"Run the nightly report workflow from /data/agents/<AGENT_NAME>/rules-worker-report.txt and send the email using the email toolkit."}`
           - Structured payload example:
-            - `{"to":"david.mcqueen@timu.com","subject":"Scheduled test","body":"This is a scheduled test email.","action":"send_email"}`
+            - `{"to":"recipient@example.com","subject":"Scheduled test","body":"This is a scheduled test email.","action":"send_email"}`
           - Match the payload style to the queue consumer's rules. If the runtime was built around prompt-driven instructions or a named room-rules workflow, keep using a prompt. If it was built around structured fields, use those exact fields.
 
       - path: /meshagent-skills/skills/meshagent-runtime-operator/SKILL.md
@@ -7283,6 +7284,7 @@ container:
                 - references/command_groups.md
                 - references/meshagent_cli_help.md
                 - references/contact_form_example.py
+                - references/contact_submission_store.py
                 - references/mailbox_backed_sender.md
                 - references/minimal_webserver.yaml
                 - references/verification_checklist.md
@@ -7353,6 +7355,7 @@ container:
           - Start with `references/command_groups.md` and `references/meshagent_cli_help.md` in this skill. They are local wrappers that point to the shared packaged CLI references in this package.
           - Reuse the packaged implementation assets in this skill before inventing a fresh pattern:
             - `references/contact_form_example.py`
+            - `references/contact_submission_store.py`
             - `references/mailbox_backed_sender.md`
             - `references/minimal_webserver.yaml`
             - `references/verification_checklist.md`
@@ -7399,6 +7402,7 @@ container:
           - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
           - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
           - For existing working handlers, add new functionality with the fewest lines possible before attempting any broader cleanup or structural rewrite.
+          - For existing handlers, prefer extracting new DB behavior into a separate helper module and changing the live handler by an import plus one narrow call site whenever that is practical.
           - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
           - Prove the DB insert path in isolation before integrating it into an existing handler that already sends email or renders user-visible success/error states.
           - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
@@ -7421,18 +7425,19 @@ container:
           4. Restrict email and phone fields with browser-side input types and patterns when helpful.
           5. Re-validate all submitted fields on the server.
           6. If the form persists submissions, use the direct `room.database.*` pattern from the resolved repo examples instead of inventing a handler-local CLI workflow.
-          7. Prove the DB insert path with a minimal isolated change and a read-back before combining it with mail-send and response-handling changes.
-          8. If the form sends outbound email from the room, inspect existing room mailboxes first.
-          9. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
-          10. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
-          11. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
-          12. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
-          13. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
-          14. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
-          15. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
-          16. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
-          17. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-          18. Verify the live site with actual GET and POST requests after deploy.
+          7. Prefer implementing the DB write in a helper module first, then wire it into the live handler with the smallest practical import-and-call change.
+          8. Prove the DB insert path with that minimal isolated change and a read-back before combining it with mail-send and response-handling changes.
+          9. If the form sends outbound email from the room, inspect existing room mailboxes first.
+          10. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
+          11. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
+          12. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
+          13. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+          14. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
+          15. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+          16. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
+          17. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
+          18. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+          19. Verify the live site with actual GET and POST requests after deploy.
           
           ## Managed hostname selection
           
@@ -7901,6 +7906,56 @@ container:
                   ),
                   content_type="text/html",
               )
+
+      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/contact_submission_store.py
+        text: |
+          from __future__ import annotations
+          
+          from datetime import datetime, timezone
+          from typing import Any
+          
+          from meshagent.api import RoomClient
+          from meshagent.api.room_server_client import TextDataType, TimestampDataType
+          
+          
+          CONTACT_SUBMISSIONS_TABLE = "contact_submissions"
+          
+          
+          async def ensure_contact_submissions_table(*, room: RoomClient) -> None:
+              await room.database.create_table_with_schema(
+                  name=CONTACT_SUBMISSIONS_TABLE,
+                  schema={
+                      "name": TextDataType(),
+                      "email": TextDataType(),
+                      "phone": TextDataType(),
+                      "message": TextDataType(),
+                      "submitted_at": TimestampDataType(),
+                      "user_agent": TextDataType(),
+                      "source_ip": TextDataType(),
+                  },
+                  mode="create_if_not_exists",
+                  data=None,
+              )
+          
+          
+          async def persist_contact_submission(
+              *,
+              room: RoomClient,
+              values: dict[str, str],
+              user_agent: str = "",
+              source_ip: str = "",
+          ) -> dict[str, Any]:
+              record: dict[str, Any] = {
+                  "name": values["name"],
+                  "email": values["email"] or None,
+                  "phone": values["phone"] or None,
+                  "message": values["message"],
+                  "submitted_at": datetime.now(timezone.utc),
+                  "user_agent": user_agent,
+                  "source_ip": source_ip,
+              }
+              await room.database.insert(table=CONTACT_SUBMISSIONS_TABLE, records=[record])
+              return record
 
       - path: /meshagent-skills/skills/meshagent-webapp-builder/references/mailbox_backed_sender.md
         text: |
@@ -8465,6 +8520,7 @@ container:
           - If the workflow is a public site that sends email, inherit the webapp and mail completion rules together rather than relaxing either one at the orchestration layer.
           - If the workflow adds a new database write path to a live site or handler, require the DB insert path to be proven in isolation before accepting a larger mixed patch as the next step.
           - If the workflow modifies an existing working runtime, prefer the smallest safe change that proves the new behavior before approving a broader rewrite.
+          - If the workflow adds one new behavior to an existing handler, prefer extracting that behavior into a helper and integrating it with the smallest practical call-site change.
           - If the request clearly includes ordinary prerequisite setup, do not stop to ask permission for that setup unless a real missing input remains.
           - If a near-future one-time schedule is retried, treat duplicate creation as a workflow bug to avoid.
           
