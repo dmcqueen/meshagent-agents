@@ -135,6 +135,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - If the workflow must choose a service image, derive the image family from the actual environment before copying an example.
 - If the workflow includes relative scheduling, make schedule creation the last mutation after the runtime path is proven.
 - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
+- If the workflow returns a managed public URL, require the hostname suffix to match the active API environment before treating that URL as valid output.
 - If the request clearly includes ordinary prerequisite setup, do not stop to ask permission for that setup unless a real missing input remains.
 - If a near-future one-time schedule is retried, treat duplicate creation as a workflow bug to avoid.
 
