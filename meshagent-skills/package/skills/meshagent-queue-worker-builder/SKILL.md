@@ -7,6 +7,7 @@ metadata:
     bundled:
       - references/scheduled_email_worker.md
       - ../_shared/references/live_room_cli_context.md
+      - ../_shared/references/process_agent_design.md
       - ../_shared/references/runtime_image_environment_rules.md
       - ../_shared/references/service_yaml_correctness.md
       - ../_shared/references/workflow_accountability.md
@@ -17,6 +18,7 @@ metadata:
     resolved_targets:
       - Worker examples
       - shared live-room CLI context rules
+      - shared process-agent design rules
       - shared runtime image environment rules
       - shared service YAML correctness rules
       - packaging docs
@@ -26,6 +28,8 @@ metadata:
       when: The request spans Worker build, mail, runtime proof, and scheduling as one end-to-end workflow.
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before following example or source references.
+    - skill: meshagent-participant-token-operator
+      when: The remaining issue is token-backed environment wiring, delegated shell token behavior, or participant-token scope inside the Worker or MailBot runtime.
     - skill: meshagent-scheduler
       when: The remaining task is to create or verify a scheduled task after the Worker exists.
     - skill: meshagent-mail-operator
@@ -41,7 +45,7 @@ metadata:
       - Worker service template adaptation from examples
     excludes:
       - scheduled-task CRUD
-      - generic multi-channel agent design
+      - generic process-agent design across chat, mail, toolkit, and queue channels
       - low-level CLI command discovery
   workflow:
     can_be_owner: true
@@ -72,10 +76,11 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 
 - After root resolution, start with the Worker examples under the resolved docs/examples tree:
   - `examples/cli/worker/meshagent.yaml` for the simplest queue-backed Worker service pattern
-  - `examples/cli/multi-agent-news-reporter/meshagent.yaml` when a dedicated Worker cooperates with other agents in the same room
+  - `examples/cli/process-news-agent/meshagent.yaml` when a queue workflow is part of a larger process-backed agent design
   - `examples/cli/meshagent-writer/meshagent.yaml` and `examples/cli/meshagent-codex-writer/meshagent.yaml` for scheduled writer workflows that rely on a Worker queue consumer
 - Use `references/scheduled_email_worker.md` for workflows that must dequeue a message and send an email before a one-time schedule is considered complete.
 - Use `../_shared/references/live_room_cli_context.md` when the workflow runs in or targets a known live room.
+- Use `../_shared/references/process_agent_design.md` when the user may really want one process-backed agent with queue plus other channels.
 - Use `../_shared/references/runtime_image_environment_rules.md` when the workflow must choose a container image for a room worker or MailBot.
 - Use `../_shared/references/service_yaml_correctness.md` when writing or repairing service YAML so command flags, mailbox wiring, and role composition stay valid.
 - Use the resolved packaging docs for service-template structure and annotation semantics.
@@ -85,6 +90,7 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 
 - `meshagent-workflow-orchestrator`: Use it when the request spans Worker build, mail, runtime proof, and scheduling as one end-to-end workflow.
 - `meshagent-sdk-researcher`: Resolve the MeshAgent checkout roots and the exact example/source paths before using codebase references.
+- `meshagent-participant-token-operator`: Use it when the blocker is token-backed env injection, participant-token scope, or delegated shell token behavior inside the Worker or MailBot runtime.
 - `meshagent-scheduler`: Use it after the Worker exists and the task becomes scheduled-task creation, timezone resolution, or queue verification.
 - `meshagent-mail-operator`: Use it when the queued job sends mail and must reuse a real mailbox-backed sender identity.
 - `meshagent-service-operator`: Use it when the main job is validating, rendering, creating, or updating a service rather than authoring the Worker spec itself.
@@ -99,6 +105,7 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 5. If the queued job sends email, inspect or provision the mailbox first and reuse its address as the sender identity instead of inventing one.
 6. If the Worker will call the `email` toolkit, prove that a live publisher for toolkit `email` already exists in the room or build one first. The normal pattern is a MailBot publishing `--toolkit-name=email`.
 7. Prefer a generated asset shape over freehand YAML:
+   - if the requested runtime is really one process-backed agent with queue plus other channels, switch to the process-agent design reference before authoring YAML
    - use `meshagent worker spec` for a dedicated Worker
    - use `meshagent mailbot spec` for a dedicated MailBot
    - use `meshagent service spec` only when a narrower agent-specific spec is not the right fit
@@ -123,7 +130,8 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 - If the Worker requires toolkit `email`, that toolkit must be published by some running room participant. A mailbox alone does not publish toolkit `email`.
 - The normal email-toolkit pattern is a MailBot in the same room publishing `--toolkit-name=email`, then the Worker can use `--require-toolkit=email`.
 - For non-trivial scheduled email workflows, prefer a durable setup that writes or mounts Worker rule files, then points the Worker at those rules with `--room-rules`.
-- Prefer separate MailBot and Worker services for new scheduled email workflows instead of combining both roles into one new process definition.
+- For new shared-identity queue-plus-mail workflows, follow `../_shared/references/process_agent_design.md` instead of inventing an ad hoc combined runtime shape.
+- Use separate MailBot and Worker services only when the room architecture truly needs distinct participants or a dedicated Worker is clearly the better fit.
 - If the Worker behavior lives in room-rules or startup-generated rule files, keep the scheduled payload thin and let it trigger that established workflow instead of restating the entire mail job ad hoc.
 
 ## Queue and scheduling rules
@@ -169,7 +177,7 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 - When adapting a pattern like the news reporter example, keep the MailBot or equivalent toolkit publisher that makes `email` visible to the Worker. Do not copy only the Worker half of the pattern.
 - For scheduled email workflows, make the scheduled payload match how the Worker was authored. A prompt-driven Worker should usually receive a prompt-driven scheduled payload. A structured-field Worker should receive those exact structured fields plus any required action field.
 - If the user only asked to schedule an already running agent and the current room lacks a queue-consuming Worker, stop the scheduler workflow and switch to this skill before claiming scheduling is possible.
-- If the user actually needs a multi-channel process agent rather than a dedicated Worker, say so and use the more appropriate example instead of forcing a Worker pattern.
+- If the user actually needs a process-backed agent with queue plus other channels rather than a dedicated Worker, say so and switch to `../_shared/references/process_agent_design.md` instead of forcing a Worker pattern.
 
 ## Workflow accountability
 
@@ -181,5 +189,5 @@ Use this skill when the task is to create or update `meshagent.yaml` for a queue
 ## Out of scope
 
 - This skill does not replace the scheduler skill for creating or verifying scheduled tasks.
-- This skill is not the default choice for chat-first, mail-first, or generic multi-channel agent authoring.
+- This skill is not the default choice for chat-first, mail-first, or generic process-agent authoring across multiple channels.
 - This skill does not replace the CLI operator skill for command discovery and execution details.
