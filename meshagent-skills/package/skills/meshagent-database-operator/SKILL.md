@@ -20,7 +20,8 @@ metadata:
       - database CLI source
       - Room API database client source
       - server database toolkit
-      - database examples
+      - room webserver database examples
+      - agent database examples
   related_skills:
     - skill: meshagent-sdk-researcher
       when: Resolve checkout roots before using docs, examples, or source references.
@@ -73,7 +74,11 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 - Inspect the resolved database CLI source for the real CLI behavior, including schema parsing, JSON formats, and SQL/search options.
 - Inspect the resolved Room API client source for `RequiredTable`, `SqlTableReference`, namespaces, and `DatabaseClient`.
 - Inspect the resolved server database toolkit when you need the server-side toolkit operations or permission model.
-- Use resolved examples such as the room webserver contact form and resume-taskrunner setup when you need concrete room-database setup patterns.
+- Use these resolved examples when the task is to write or debug room-database code:
+  - `meshagent-docs/examples/python/webserver/contact_form_route.py` for a working form handler that creates a table and inserts a row with `room.database.create_table_with_schema(...)` and `room.database.insert(...)`.
+  - `meshagent-docs/examples/python/webserver/contact_list_route.py` for a working read path that verifies writes with `room.database.search(...)`.
+  - `meshagent-docs/examples/python/getting-started/agent-with-custom-tools/main.py` for the minimal `context.room.database.insert(table=..., records=[...])` pattern inside tool code.
+  - `meshagent-api/meshagent/api/room_server_client.py` for the exact `create_table_with_schema`, `insert`, and `search` signatures.
 
 ## Related skills
 
@@ -98,7 +103,8 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 3. Inspect the current schema with `meshagent room database inspect` or `room.database.inspect()` before proposing mutations or queries.
 4. Choose the narrowest operation: create, add columns, insert, merge, search, SQL, index management, or version restore.
 5. If the table does not exist yet, create it from an explicit schema, explicit seed data, or a `RequiredTable` definition.
-6. Verify the result with a follow-up inspect/search/list command.
+6. If the task is handler or agent code, copy the proven repo call shape instead of inventing a CLI-backed write path inside the runtime.
+7. Verify the result with a follow-up inspect/search/list command.
 
 ## Choosing the query path
 
@@ -111,6 +117,10 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 ## Table construction rules
 
 - Do not invent columns or data types. Inspect the actual workflow requirements or an existing schema first.
+- For form-style row capture, the grounded repo pattern is:
+  - `await room.database.create_table_with_schema(name=..., schema={...}, mode="create_if_not_exists", data=None)`
+  - then `await room.database.insert(table=..., records=[{...}])`
+- For handler-side writes, prefer direct `room.database.*` calls over shelling out to `meshagent room database ...` from inside the handler runtime.
 - The CLI `--columns` path supports `int`, `bool`, `date`, `timestamp`, `float`, `text`, `binary`, `vector`, `list`, and `struct`.
 - Use `--columns` for compact schemas, `--schema-json` or `--schema-file` for nested types, and `--data-json` or `--data-file` when creating from seed rows.
 - If the workflow is defined as a reusable requirement, prefer a `RequiredTable` and the install path rather than retyping ad hoc create/index commands.
@@ -140,6 +150,7 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 
 - Do not assume an external database; this skill is for the MeshAgent room database.
 - Do not claim a table exists until you list or inspect it.
+- Do not describe handler-side room-database writes as speculative when the repo already has working `create_table_with_schema`, `insert`, and `search` patterns.
 - Do not use SQL when `search` is enough.
 - Do not use `search` for joins or aggregate reporting that clearly requires SQL.
 - Do not invent namespace paths, index names, or schema annotations.
