@@ -27,6 +27,8 @@ metadata:
       when: Exact command routing or command syntax is the remaining question.
     - skill: meshagent-sdk-researcher
       when: The workflow depends on examples, docs, or code-path inspection from the MeshAgent checkout.
+    - skill: meshagent-participant-token-operator
+      when: The workflow depends on participant token discovery, token-backed env injection, delegated shell token behavior, or token minting.
     - skill: meshagent-queue-operator
       when: Queue inspection, send, receive, or backlog verification is needed.
     - skill: meshagent-queue-worker-builder
@@ -91,6 +93,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 
 - `meshagent-cli-operator`: Use it for exact command routing and execution details.
 - `meshagent-sdk-researcher`: Use it when the workflow depends on examples, docs, or source inspection.
+- `meshagent-participant-token-operator`: Use it when a workflow depends on participant token source, service token injection, delegated shell token behavior, or token minting.
 - `meshagent-queue-operator`: Use it for queue discovery, send, receive, and backlog verification.
 - `meshagent-queue-worker-builder`: Use it when the workflow needs a queue-backed Worker or MailBot.
 - `meshagent-mail-operator`: Use it for mailbox provisioning, sender identity, and outbound mail behavior.
