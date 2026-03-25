@@ -103,8 +103,9 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 7. If you plan to pass `--id`, make sure it is a real UUID. Otherwise omit `--id` and let the server generate the task id.
 8. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
 9. Create, update, or delete the scheduled task.
-10. Verify the task state with `meshagent scheduled-task list`.
-11. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+10. If `add` has an uncertain result because of timeout, transport noise, or retry pressure, verify with `meshagent scheduled-task list` before issuing another `add`.
+11. Verify the task state with `meshagent scheduled-task list`.
+12. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
 
 ## Live room execution
 
@@ -146,9 +147,11 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
 - If setup, deployment, or smoke testing has consumed most of the time window, move the one-time run farther into the future instead of leaving it effectively in the past.
 - Before sending `meshagent scheduled-task add`, make sure the computed UTC minute is still in the future with a real safety margin rather than merely equal to the next displayed minute.
+- Before sending `meshagent scheduled-task add`, check whether an equivalent near-future one-time task already exists for the same room, queue, schedule, and payload so you do not create duplicates during a retry loop.
 - If the scheduler endpoint is already showing `403`, `500`, or another backend failure during preflight, do not treat a near-future one-time request as ready for completion. Explain that scheduler creation is blocked before claiming end-to-end success.
 - Do not create a near-future one-time task until the queue consumer path is already proven with an immediate smoke test.
 - If the user asked for "a minute from now" but the workflow is not yet ready, explain that you are moving the one-time run to the next safe minute window rather than pretending the original time still makes sense.
+- If an `add` attempt may already have succeeded, prefer inspecting existing tasks over issuing a second `add`.
 
 ## Scheduler API preflight
 
@@ -200,6 +203,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Do not say queue names cannot be listed just because the CLI lacks a dedicated room-queue list subcommand.
 - For “what queues are available?” questions, prefer generic CLI toolkit invocation over ad hoc SDK code.
 - When the request is simply "schedule a test email," do not stop just because no mailbox already exists. Hand off or continue into mailbox-backed sender provisioning as part of the ordinary workflow.
+- When the request itself already asks for the end-to-end outcome, do not stop to ask "should I set it up?" unless a true missing user input or hard blocker remains.
 - Do not invent timezones.
 - Do not schedule a task until the requesting user's timezone has been confirmed or reliably detected.
 - Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
