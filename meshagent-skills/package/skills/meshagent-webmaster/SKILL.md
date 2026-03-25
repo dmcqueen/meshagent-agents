@@ -112,10 +112,14 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 2. Confirm the exact hostname, room, and published port.
 3. Create, update, or delete the route.
 4. Verify that the hostname points to the intended room and service port.
+5. If the hostname is MeshAgent-managed, verify that its suffix matches the active API environment before reporting it as valid.
 
 ## Verification rules
 
 - Follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL or retrying a colliding hostname.
+- Treat a managed hostname with the wrong environment suffix as invalid output, even if the route record exists.
+- Do not present a route hostname as a usable public URL unless the workflow has verified the level of reachability it claims, such as DNS or live HTTP.
+- If the route exists but public reachability is still unverified, report it as route state only, not as a proven public result.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
 
 ## Workflow accountability
