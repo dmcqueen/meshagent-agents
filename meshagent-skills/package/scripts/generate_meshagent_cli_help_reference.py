@@ -21,6 +21,13 @@ DEFAULT_OUTPUT = (
     / "meshagent_cli_help.md"
 )
 DEFAULT_DISPLAY_BIN = "meshagent"
+SKILLS_DIR = SKILLS_ROOT / "skills"
+COMMANDS_DIR = SKILLS_ROOT / "commands"
+EXCLUDED_REFERENCE_PATHS = {
+    SKILLS_DIR / "meshagent-cli-operator" / "references" / "meshagent_cli_help.md",
+}
+INLINE_COMMAND_PATTERN = re.compile(r"`(?P<command>\$?\s*meshagent[^`\n]*)`")
+COMMAND_WORD_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
 def parse_args() -> argparse.Namespace:
@@ -95,6 +102,54 @@ def parse_commands(help_text: str) -> list[str]:
     return commands
 
 
+def iter_reference_files() -> list[Path]:
+    files: list[Path] = []
+    files.extend(sorted(SKILLS_DIR.glob("*/SKILL.md")))
+    files.extend(sorted(SKILLS_DIR.glob("*/references/**/*.md")))
+    files.extend(sorted(SKILLS_DIR.glob("_shared/references/**/*.md")))
+    files.extend(sorted(COMMANDS_DIR.glob("*.md")))
+    return [path for path in files if path not in EXCLUDED_REFERENCE_PATHS]
+
+
+def extract_referenced_command_paths() -> set[tuple[str, ...]]:
+    paths: set[tuple[str, ...]] = set()
+
+    for path in iter_reference_files():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            for match in INLINE_COMMAND_PATTERN.finditer(line):
+                referenced = match.group("command").strip()
+                parsed = parse_command_path(referenced)
+                if parsed:
+                    paths.add(parsed)
+
+            stripped = line.strip()
+            if stripped.startswith("$ meshagent ") or stripped.startswith("meshagent "):
+                parsed = parse_command_path(stripped)
+                if parsed:
+                    paths.add(parsed)
+
+    return paths
+
+
+def parse_command_path(command: str) -> tuple[str, ...] | None:
+    normalized = command.strip()
+    if normalized.startswith("$"):
+        normalized = normalized[1:].strip()
+    tokens = normalized.split()
+    if not tokens or tokens[0] != "meshagent":
+        return None
+
+    path: list[str] = []
+    for token in tokens[1:]:
+        if token.startswith("-"):
+            break
+        if not COMMAND_WORD_PATTERN.match(token):
+            break
+        path.append(token)
+
+    return tuple(path) if path else None
+
+
 def run_help(
     meshagent_bin: str, path: list[str], timeout_seconds: int
 ) -> tuple[int, str, bool]:
@@ -116,6 +171,17 @@ def run_help(
         return 124, output, True
 
 
+def sanitize_help_output(*, output: str, meshagent_bin: str, display_bin: str) -> str:
+    workspace_root = str(Path.cwd().resolve())
+    if workspace_root:
+        output = output.replace(workspace_root, "<workspace>")
+    if "/" in meshagent_bin:
+        resolved_bin = str(Path(meshagent_bin).resolve())
+        output = output.replace(meshagent_bin, display_bin)
+        output = output.replace(resolved_bin, display_bin)
+    return output
+
+
 def heading_for(path: list[str]) -> str:
     level = 2 + max(len(path) - 1, 0)
     hashes = "#" * min(level, 6)
@@ -130,7 +196,10 @@ def render_reference(
     max_depth: int,
     timeout_seconds: int,
 ) -> str:
+    referenced_paths = extract_referenced_command_paths()
     queue: deque[list[str]] = deque([[]])
+    for path in sorted(referenced_paths):
+        queue.append(list(path))
     seen: set[tuple[str, ...]] = set()
     sections: list[str] = []
 
@@ -142,6 +211,11 @@ def render_reference(
         seen.add(key)
 
         returncode, output, timed_out = run_help(meshagent_bin, path, timeout_seconds)
+        output = sanitize_help_output(
+            output=output,
+            meshagent_bin=meshagent_bin,
+            display_bin=display_bin,
+        )
         sections.append(heading_for(path))
         sections.append("")
         cmd = "$ " + " ".join([display_bin] + path + ["--help"])
