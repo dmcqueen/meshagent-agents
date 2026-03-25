@@ -26,7 +26,7 @@ The package now has one general CLI skill plus a larger specialized operator bun
 - `skills/meshagent-memory-operator/`
   Room memory creation, ingestion, recall, and query workflows.
 - `skills/meshagent-workflow-orchestrator/`
-  End-to-end multi-skill workflow ownership, preflight, sequencing, and completion-gate tracking.
+  End-to-end cross-skill workflow ownership, preflight, sequencing, and completion-gate tracking.
 - `skills/meshagent-queue-operator/`
   Queue send, receive, backlog inspection, and queue-delivery verification.
 - `skills/meshagent-queue-worker-builder/`
@@ -77,8 +77,10 @@ Key files and directories in this package:
   Plugin metadata for the packaged skill pack.
 - `skills/_shared/references/`
   Shared package-level references for live-room CLI context and managed hostname rules.
+- `skills/_shared/references/process_agent_design.md`
+  Shared process-first design reference for shared-identity agents across chat, mail, queue, and toolkit channels.
 - `skills/_shared/references/workflow_accountability.md`
-  Shared workflow-owner, completion-gate, evidence, and handoff contract for multi-skill outcomes.
+  Shared workflow-owner, completion-gate, evidence, and handoff contract for cross-skill outcomes.
 - `commands/meshagent.md`
   General MeshAgent CLI entrypoint.
 - `commands/meshagent-room.md`
@@ -120,7 +122,7 @@ Key files and directories in this package:
 - `skills/meshagent-memory-operator/agents/openai.yaml`
   OpenAI agent metadata for the memory operator.
 - `skills/meshagent-workflow-orchestrator/SKILL.md`
-  End-to-end multi-skill workflow orchestration and accountability skill.
+  End-to-end cross-skill workflow orchestration and accountability skill.
 - `skills/meshagent-workflow-orchestrator/agents/openai.yaml`
   OpenAI agent metadata for the workflow orchestrator.
 - `skills/meshagent-queue-operator/SKILL.md`
