@@ -108,8 +108,10 @@ Use the following status values exactly:
 - For room-site requests, deploy in the current room and return the public URL only after live verification succeeds. Do not treat local example-app edits, local build output, route creation, deploy success, DNS resolution, or a redirect alone as completion of a room deployment request.
 - For room-site requests that use `meshagent webserver deploy`, create the local app under the current working directory, keep route sources relative to the routes file when possible, and upload to room storage with `--website-path`.
 - If `MESHAGENT_ROOM` is already available, do not block on `meshagent rooms list` before attempting the room-scoped deploy.
+- Do not add room-messaging enablement to a site, contact-form, mail, or runtime workflow unless the user explicitly asked for room messaging itself.
 - For deployed websites, verify the live URL with a real HTTP GET and confirm the final response is the intended page with the expected final success status, normally `200`, before replying with success.
 - For contact forms, verify both the GET render path and at least one POST path after deploy. A live 500 is not an acceptable final state.
+- For deployed sites, do not use repeated `meshagent room container exec` attempts against another participant's private container as the primary debug path. Prefer service list, developer watch, container logs, public HTTP checks, and deployed artifacts first.
 - For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
 - If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
 - If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
