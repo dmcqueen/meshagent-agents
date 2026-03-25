@@ -17,6 +17,8 @@ metadata:
       when: The user's goal is an end-to-end workflow that spans multiple specialized skills.
     - skill: meshagent-sdk-researcher
       when: The task depends on SDK or server source, not just CLI behavior.
+    - skill: meshagent-participant-token-operator
+      when: The task is specifically about participant token discovery, token env wiring, or token generation rather than general command routing.
     - skill: meshagent-webapp-builder
       when: A CLI deploy task also requires authoring or debugging the web app itself.
     - skill: meshagent-service-operator
@@ -74,6 +76,7 @@ Use this skill when the task is primarily about running or explaining MeshAgent 
 
 - `meshagent-workflow-orchestrator`: Use it when the user's goal spans multiple specialized skills and one owner should keep accountability.
 - `meshagent-sdk-researcher`: Use it when the answer depends on source-level behavior or examples rather than command shape.
+- `meshagent-participant-token-operator`: Use it when the question is about participant token source, injection, delegation, or minting rather than generic CLI routing.
 - `meshagent-webapp-builder`: Use it when a CLI deploy command is only one part of building or fixing a room website.
 - `meshagent-service-operator`: Use it when the task is primarily about service semantics, templates, or room service lifecycle.
 
