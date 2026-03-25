@@ -2,11 +2,12 @@
 
 Use these rules whenever a skill authors or rewrites `Service` or `ServiceTemplate` YAML.
 
-- Prefer generated specs over handwritten YAML when the CLI already has a generator for the runtime shape you need. Start from `meshagent worker spec`, `meshagent mailbot spec`, or `meshagent service spec` before hand-editing fields.
+- Prefer generated specs over handwritten YAML when the CLI already has a generator for the runtime shape you need. Start from `meshagent process spec`, `meshagent worker spec`, `meshagent mailbot spec`, or `meshagent service spec` before hand-editing fields.
 - If you must hand-author YAML, start from the nearest working example or a rendered/generated spec. Do not invent a manifest structure from memory.
 - Treat the container `command` as code that must match the real CLI. Validate agent command flags against the packaged CLI help or the actual CLI source before treating the YAML as deployable.
 - Do not invent flags that the target command does not support. For example, `meshagent worker join` uses `--rule` and `--room-rules`; do not substitute unsupported flags such as `--prompt`.
 - Make the declared agent roles match the runtime command. If the manifest says it contains a `Worker`, the command must actually start a worker path. If it says it contains a `MailBot`, the command must start a mailbot path. Do not declare two roles and only start one of them.
+- For new shared-identity agents that need queue, chat, mail, or toolkit entry points on one runtime, prefer a `meshagent process` design with explicit channels instead of older combined-agent guidance.
 - For scheduled email workflows, only use these composition patterns:
   - a dedicated MailBot publishes toolkit `email` using a real mailbox-backed sender identity, and a dedicated Worker consumes the scheduled job queue and uses toolkit `email`
 - For non-trivial scheduled email workflows, prefer durable worker behavior over ad hoc inline prompting:
