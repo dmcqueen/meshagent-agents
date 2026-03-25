@@ -107,19 +107,34 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 ## Default workflow
 
 1. Restate the user-visible goal in one sentence and identify the current likely workflow owner.
-2. Identify the required surfaces for success, such as queue, mailbox, service, runtime, scheduler, or public web endpoint.
-3. Preflight the required backend surfaces before building deep workflow state. If a required surface is blocked by `403`, `5xx`, or missing room capability, treat that as an early blocker.
-4. Identify the concrete missing inputs, ask for them together only when they are truly blocking, and do not ask the user to restate the overall goal.
-5. Choose the specialist skill that should execute the next sub-step, but keep workflow ownership unless you intentionally transfer it.
-6. After each handoff, collect evidence rather than accepting a generic success claim.
-7. Re-evaluate the remaining completion gates after every mutation or verification step.
-8. Do not call the workflow complete until the final user-visible outcome is verified or the exact blocker is isolated.
+2. Choose the narrowest first action that could directly satisfy the request or expose the next blocker.
+3. Identify only the surfaces needed for that first action, such as queue, mailbox, service, runtime, scheduler, or public web endpoint.
+4. Preflight only the surfaces required before that next risky or user-visible step. If a required surface is blocked by `403`, `5xx`, or missing room capability, treat that as an early blocker for that branch.
+5. Identify the concrete missing inputs, ask for them together only when they are truly blocking, and do not ask the user to restate the overall goal.
+6. Choose the specialist skill that should execute the next sub-step, but keep workflow ownership unless you intentionally transfer it.
+7. After each handoff, collect evidence rather than accepting a generic success claim.
+8. Re-evaluate the remaining completion gates after every mutation or verification step.
+9. Do not call the workflow complete until the final user-visible outcome is verified or the exact blocker is isolated.
+
+## Fast path
+
+- Start with one narrow task-matching action before surveying every dependent surface.
+- For simple room asks, prefer the exact room-scoped read or mutation path that would satisfy the request directly.
+- For larger workflows, the first step should still be the cheapest action that can prove whether the workflow is viable, not a full environment inventory.
+
+## Escalate when
+
+- The first narrow path fails or returns an ambiguous blocker.
+- The next step depends on a new surface such as scheduler access, toolkit publication, mailbox ownership, or public route health.
+- The workflow is about to make a mutation whose success depends on a backend surface that has not been checked yet.
+- The user asked for an end-to-end verified outcome and the remaining completion gates require broader proof.
 
 ## Orchestration rules
 
 - Prefer one owner and several supporting skills over bouncing ownership implicitly between specialists.
 - Choose the narrowest specialist skill for execution, but keep orchestration here when the job spans multiple surfaces.
-- Preflight cheap blockers early: room access, scheduler visibility, toolkit publication, service visibility, queue discovery, mailbox identity, or route readiness.
+- Preflight cheap blockers early only when the currently chosen execution path actually depends on them.
+- Do not start by inventorying room access, scheduler visibility, toolkit publication, service visibility, queue discovery, mailbox identity, and route readiness all at once when the user's first requested action only needs one of those surfaces.
 - For room-scoped work, apply `../_shared/references/live_room_cli_context.md`, start from the known room context, and use the narrowest room-scoped probe first.
 - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite gatekeeper commands for a known-room workflow.
 - If the workflow must choose a service or worker image, derive the image family from the actual MeshAgent environment before copying a docs example.
