@@ -171,7 +171,7 @@ container:
           - `skills/meshagent-queue-operator/`
             Queue send, receive, backlog inspection, and queue-delivery verification.
           - `skills/meshagent-queue-worker-builder/`
-            Queue-backed Worker YAML authoring for schedulable or dequeued room jobs.
+            Queue-backed process YAML authoring for schedulable or dequeued room jobs.
           - `skills/meshagent-runtime-operator/`
             Live runtime debugging for developer logs, containers, and port forwarding.
           - `skills/meshagent-scheduler/`
@@ -219,7 +219,7 @@ container:
           - `skills/_shared/references/`
             Shared package-level references for live-room CLI context and managed hostname rules.
           - `skills/_shared/references/process_agent_design.md`
-            Shared process-first design reference for shared-identity agents across chat, mail, queue, and toolkit channels.
+            Shared process design reference for shared-identity agents across chat, mail, queue, and toolkit channels.
           - `skills/_shared/references/workflow_accountability.md`
             Shared workflow-owner, completion-gate, evidence, and handoff contract for cross-skill outcomes.
           - `commands/meshagent.md`
@@ -273,7 +273,7 @@ container:
           - `skills/meshagent-queue-operator/references/queue_discovery.md`
             Preferred room queue-discovery workflow using CLI toolkit inspection and invocation before any SDK fallback.
           - `skills/meshagent-queue-worker-builder/SKILL.md`
-            Queue-backed Worker `meshagent.yaml` authoring skill.
+            Queue-backed process and queue-consumer `meshagent.yaml` authoring skill.
           - `skills/meshagent-queue-worker-builder/agents/openai.yaml`
             OpenAI agent metadata for the queue worker builder.
           - `skills/meshagent-queue-worker-builder/references/scheduled_email_worker.md`
@@ -1747,7 +1747,7 @@ container:
           
           Use this reference when the requested runtime is one shared-identity agent that should be reachable through more than one entry path, such as chat, mail, queue, or toolkit calls.
           
-          ## Prefer process when
+          ## Use process when
           
           - One agent should keep the same identity, rules, tools, memory, and thread model across several channels.
           - Queue work is just one entry path into that same agent rather than a dedicated background-only worker identity.
@@ -1755,8 +1755,10 @@ container:
           
           ## Core model
           
-          - Prefer `meshagent process` for new shared-identity agent designs.
-          - Prefer `meshagent process spec` before freehanding service YAML for that shape.
+          - Use `meshagent process` for shared-identity agent designs.
+          - Use `meshagent process spec` before freehanding service YAML for that shape.
+          - For new authored YAML that needs queue handling plus mail or other channels, treat `meshagent process` as the default runtime shape.
+          - Assume current rooms are not legacy unless the user or observed room state proves otherwise.
           - Add channels explicitly with repeated `--channel` flags such as:
             - `--channel=chat`
             - `--channel=mail:<MAILBOX_ADDRESS>`
@@ -1766,14 +1768,14 @@ container:
           
           ## Good design anchors
           
-          - Treat `examples/cli/process-news-agent/meshagent.yaml` as the primary packaged example for a process-backed agent with chat, mail, and queue channels.
-          - Treat `meshagent-router/meshagent/router/templates/assistant.yaml` as the primary service-template example for a process-backed room assistant.
+          - Treat `examples/cli/process-news-agent/meshagent.yaml` as the primary packaged example for a process agent with chat, mail, and queue channels.
+          - Treat `meshagent-router/meshagent/router/templates/assistant.yaml` as the primary service-template example for a process room assistant.
           
           ## Queue-specific cautions
           
           - A queue channel such as `--channel=queue:<QUEUE_NAME>` is an entry path, not proof by itself that the runtime is the right consumer for the business workflow.
-          - The scheduled task queue, queue channel, and surrounding runtime behavior must still line up.
-          - If the workflow is really a dedicated queue consumer with its own identity and lifecycle, a `meshagent worker` may still be the better fit than `meshagent process`.
+          - The scheduled task queue, queue channel, startup command, and surrounding runtime behavior must still line up.
+          - For new authored YAML, a process queue channel is the default shape. Use a dedicated `meshagent worker` only when the user explicitly asked for that runtime shape.
           
           ## Scheduling guidance
           
@@ -1802,21 +1804,23 @@ container:
           
           Use these rules whenever a skill authors or rewrites `Service` or `ServiceTemplate` YAML.
           
-          - Prefer generated specs over handwritten YAML when the CLI already has a generator for the runtime shape you need. Start from `meshagent process spec`, `meshagent worker spec`, `meshagent mailbot spec`, or `meshagent service spec` before hand-editing fields.
+          - Prefer generated specs over handwritten YAML when the CLI already has a generator for the runtime shape you need. For new authored agent services, start from `meshagent process spec` first. Use `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly asked for those runtime shapes. Use `meshagent service spec` only when the agent-specific specs are not the right fit.
           - If you must hand-author YAML, start from the nearest working example or a rendered/generated spec. Do not invent a manifest structure from memory.
           - Treat the container `command` as code that must match the real CLI. Validate agent command flags against the packaged CLI help or the actual CLI source before treating the YAML as deployable.
           - Do not invent flags that the target command does not support. For example, `meshagent worker join` uses `--rule` and `--room-rules`; do not substitute unsupported flags such as `--prompt`.
           - Make the declared agent roles match the runtime command. If the manifest says it contains a `Worker`, the command must actually start a worker path. If it says it contains a `MailBot`, the command must start a mailbot path. Do not declare two roles and only start one of them.
-          - For new shared-identity agents that need queue, chat, mail, or toolkit entry points on one runtime, prefer a `meshagent process` design with explicit channels instead of older combined-agent guidance.
-          - For scheduled email workflows, only use these composition patterns:
-            - a dedicated MailBot publishes toolkit `email` using a real mailbox-backed sender identity, and a dedicated Worker consumes the scheduled job queue and uses toolkit `email`
-          - For non-trivial scheduled email workflows, prefer durable worker behavior over ad hoc inline prompting:
+          - For new shared-identity agents that need queue, chat, mail, or toolkit entry points on one runtime, use a `meshagent process` design with explicit channels instead of older combined-agent guidance.
+          - For new authored queue-backed email services, use a process design by default even when the workflow could be expressed as separate Worker and MailBot services.
+          - For scheduled email workflows, prefer these composition patterns in this order:
+            - for new authored YAML, one `meshagent process` runtime with explicit `--channel=queue:...` and `--channel=mail:...` channels, durable rules, and one shared identity
+            - only when the user explicitly asked for split runtimes, a dedicated MailBot publishes toolkit `email` using a real mailbox-backed sender identity, and a dedicated Worker consumes the scheduled job queue and uses toolkit `email`
+          - For non-trivial scheduled email workflows, prefer durable queue-handling behavior over ad hoc inline prompting:
             - put the send logic in `--room-rules`, mounted rule files, or a startup-script-generated rules file
-            - then make the scheduled payload trigger that already-defined workflow in the same style the Worker expects
-          - Treat the `industry-report` nightly-report worker pattern as the preferred design signal for non-trivial scheduled email jobs:
-            - the Worker owns the email workflow in durable rule files
-            - the scheduled payload is a prompt that tells the Worker to run that established workflow
-            - the MailBot only publishes toolkit `email`; it is not the scheduled job consumer
+            - then make the scheduled payload trigger that already-defined workflow in the same style the queue consumer expects
+          - Treat the `industry-report` nightly-report flow as the preferred design signal for non-trivial scheduled email jobs:
+            - the queue-consuming runtime owns the email workflow in durable rule files
+            - the scheduled payload is a prompt that tells that runtime to run the established workflow
+            - the mail path only publishes or owns the sender identity; it is not the scheduled job consumer
           - For scheduled email workflows, reject these patterns as incorrect:
             - a standalone MailBot pointed at the scheduled job queue
             - a Worker with no explicit rule telling it to send the email
@@ -1828,18 +1832,18 @@ container:
             - MailBot queue = that same email address, either explicitly or by relying on the MailBot default
           - This is a working default, not a hard platform requirement. If you intentionally override the mailbox queue or MailBot queue, verify the routing explicitly instead of assuming the default alignment still holds.
           - Do not reuse the scheduled Worker queue as the MailBot inbox queue for new scheduled email workflows unless you have explicit evidence that the mailbox routing was designed that way. Keep the mailbox/MailBot inbox path separate from the scheduled job queue by default.
-          - Prefer separate MailBot and Worker services for new scheduled email workflows. Only preserve a combined process when you are repairing an already-existing deployment that truly depends on it.
+          - Do not author new scheduled email YAML as separate MailBot and Worker services by default. Use that split shape only when the user explicitly asked for it.
           - Do not use invented sender identities such as `something@meshagent.local` for room email workflows. Use a real mailbox-backed address from the current project and room.
           - For managed MeshAgent mailbox-backed senders, prefer the environment-appropriate mailbox domain family:
             - `.life` environments: `@mail.meshagent.life`
             - production `.com` environments: `@mail.meshagent.com`
           - Treat `@meshagent.local` sender identities as invalid by default for outbound managed-mail workflows unless the current environment explicitly proves otherwise.
           - If the YAML embeds room rules files or startup scripts, make sure the files are actually mounted or written into the container before the command references them.
-          - Match the scheduled payload shape to the Worker design:
-            - if the Worker is prompt-driven, schedule a prompt that clearly instructs the Worker to run the email workflow
-            - if the Worker is structured-field-driven, schedule the exact fields the Worker rules require
-            - do not enqueue a structured payload if the Worker was only taught to react to prompt-style instructions, and do not enqueue a bare prompt if the Worker only knows structured fields
-          - For recurring or non-trivial scheduled email/report jobs, prefer a prompt that names the workflow to run from the Worker's durable rules rather than pushing the whole mail job into raw JSON fields.
+          - Match the scheduled payload shape to the queue consumer design:
+            - if the queue consumer is prompt-driven, schedule a prompt that clearly instructs it to run the email workflow
+            - if the queue consumer is structured-field-driven, schedule the exact fields its rules require
+            - do not enqueue a structured payload if the runtime was only taught to react to prompt-style instructions, and do not enqueue a bare prompt if it only knows structured fields
+          - For recurring or non-trivial scheduled email/report jobs, prefer a prompt that names the workflow to run from the queue consumer's durable rules rather than pushing the whole mail job into raw JSON fields.
           - Before deployment, run the narrowest validation path that matches the asset:
             - `meshagent service validate` for a concrete `Service`
             - `meshagent service validate-template` and `meshagent service render-template` for a `ServiceTemplate`
@@ -2124,7 +2128,7 @@ container:
           - `meshagent chatbot`
             Use for chatbot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
           - `meshagent process`
-            Use for process-backed room agents in the current room. If a `--room` flag is used, it must match the current room.
+            Use for process room agents in the current room. If a `--room` flag is used, it must match the current room.
           - `meshagent mailbot`
             Use for mailbot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
           - `meshagent task-runner`
@@ -5243,7 +5247,7 @@ container:
               - skill: meshagent-queue-operator
                 when: The main task is generic queue inspection or queue injection rather than mailbox behavior.
               - skill: meshagent-queue-worker-builder
-                when: Mail sending is part of a queue-backed Worker or scheduled queue workflow.
+                when: Mail sending is part of a queue consumer or scheduled queue workflow.
               - skill: meshagent-webapp-builder
                 when: Mail is one part of a room-hosted contact form or website workflow.
               - skill: meshagent-cli-operator
@@ -5272,68 +5276,57 @@ container:
           
           # MeshAgent Mail Operator
           
-          Use this skill for mailbox administration, SMTP behavior, and inbound mail queue inspection.
+          Use this skill for mailbox administration, room SMTP behavior, outbound send debugging, and inbound mail queue inspection.
           
           ## Use this skill when
           
-          - The task involves `meshagent mailbox ...` provisioning, inspection, update, or deletion.
-          - The user needs to understand how inbound email is routed into a room queue.
-          - The user needs enough SMTP detail to write code that sends email from a room workflow.
-          - The user already has a room client in the room and wants to send email from coded Python using raw SMTP variables.
-          - The user wants a coded Python path that sends mail directly from an in-room `RoomClient` without first standing up a MailBot.
-          - The user wants a room-hosted workflow such as a contact form to send email correctly.
-          - The user wants to inspect or consume incoming mail messages through the CLI or room API.
+          - The task involves `meshagent mailbox ...`.
+          - The user needs to send or troubleshoot real room email.
+          - The user needs SMTP details for code running inside a room.
+          - The workflow is a contact form, MailBot, mailbox-backed sender, or inbound mailbox queue.
+          - The user wants to inspect incoming mail in a room queue.
           
           ## Escalation model
           
-          - Start with the lightest mail path that fits the user's actual request.
-          - For a plain request like "send a test email," first try the narrowest real-email path that matches the current runtime instead of surveying every mail surface up front.
-          - Interpret "send an email" as a real outbound email send by default, not as room messaging, chat, broadcast, or any other in-room communication shortcut.
-          - If the recipient looks like an email address such as `name@example.com`, treat that as strong evidence that the user wants real email delivery.
-          - Do not substitute a room message, direct message, broadcast, or other non-email action unless the user explicitly asked for that medium.
-          - Do not provision a mailbox just because the task mentions sending one email.
-          - A simple one-off outbound test email is usually a direct-send problem, not a mailbox-administration problem.
-          - Escalate to mailbox provisioning only when the request actually needs mailbox features such as:
-            - a durable sender identity that should be reused by agents or services
-            - inbound mail routing into a room queue
+          - Start with the lightest real-email path that fits the request.
+          - Treat “send an email” as real outbound email by default, especially when the target looks like `name@example.com`.
+          - Do not substitute room messaging, chat, or broadcast unless the user asked for that medium.
+          - A simple one-off test email is usually a direct-send problem, not a mailbox-administration problem.
+          - Escalate to mailbox provisioning only when the workflow needs:
+            - a durable sender identity
+            - inbound mail routing
             - a MailBot or process `mail:` channel
-            - a room-hosted contact form or mailbox-backed workflow that must keep a stable sender address
-            - a queue-backed or scheduled workflow whose sender identity must be provisioned and reused later
-          - If the user only asked to send a simple test email, first try the narrow direct-send path that matches the current runtime:
-            - a real `email` toolkit send path if one is already present
-            - or the explicit raw SMTP / `RoomClient` code path when the user asked for code or a live room client already exists
-          - Defer mailbox inspection, queue inspection, MailBot setup, or toolkit-publication checks until the chosen send path actually depends on them or the first direct-send attempt fails.
-          - The direct-send path only applies cleanly when the runtime already has a concrete sender identity to use, such as:
-            - an existing mailbox-backed sender already configured for the running MailBot or toolkit path
-            - an explicit sender address the current runtime already owns and is authorized to use
-          - If the request clearly requires real outbound email and the runtime does not already have a usable sender identity, prefer automatically provisioning or reusing the room mailbox path instead of stopping to ask the user for a sender address.
-          - Only provision a mailbox for a simple test email when the observed runtime path proves a mailbox-backed sender is actually required for the requested send.
-          - If the current runtime cannot send real email, report that exact blocker. Do not silently switch to room messaging and present that as if the email request was satisfied.
+            - a queue-backed or scheduled sender that must be reused
+          - For a simple test email, first try:
+            - an existing `email` toolkit path
+            - or raw SMTP / `RoomClient` code if the user asked for code or a live `RoomClient` already exists
+          - If the runtime lacks a real sender identity, provision or reuse the mailbox path automatically instead of asking the user for a sender address.
+          - If the current runtime cannot send real email, report the exact blocker. Do not silently switch media.
           
           ## References
           
-          - Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact CLI command shapes and flags.
-          - Use `../_shared/references/live_room_cli_context.md` for shared live-room CLI context rules.
-          - Use `../_shared/references/managed_hostname_rules.md` when the mail workflow also creates or validates a managed public hostname.
-          - Use `../_shared/references/service_yaml_correctness.md` when mailbox-backed mail must be wired into authored service YAML.
-          - After root resolution, inspect the resolved room mail implementation for SMTP sending behavior and defaults.
+          - Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact CLI usage.
+          - Use `../_shared/references/live_room_cli_context.md` for live-room rules.
+          - Use `../_shared/references/managed_hostname_rules.md` when a mail workflow also creates or validates a managed public hostname.
+          - Use `../_shared/references/service_yaml_correctness.md` when mail is wired into service YAML.
+          - Inspect the room mail implementation after root resolution when SMTP behavior matters.
           
           ## Related skills
           
-          - `meshagent-workflow-orchestrator`: Use it when mail behavior is only one piece of a larger end-to-end workflow.
-          - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references for mail implementation details.
-          - `meshagent-participant-token-operator`: Use it when the main issue is participant-token discovery, service token injection, or raw SMTP code using the in-room room token.
-          - `meshagent-queue-operator`: Use it when the queue work is independent of mailbox provisioning or SMTP behavior.
-          - `meshagent-queue-worker-builder`: Use it when the mailbox-backed sender must be wired into a queue-consuming Worker or scheduled queue workflow.
-          - `meshagent-webapp-builder`: Use it when mailbox-backed mail is part of a room website or contact form workflow.
-          - `meshagent-cli-operator`: Reuse its managed-hostname and room-context rules when a mail workflow also creates or verifies a public site.
+          - `meshagent-workflow-orchestrator`: mail is only one part of a larger workflow
+          - `meshagent-sdk-researcher`: root resolution and source lookup
+          - `meshagent-participant-token-operator`: participant-token sourcing or SMTP code using the in-room token
+          - `meshagent-queue-operator`: generic queue work without mailbox logic
+          - `meshagent-queue-worker-builder`: queue-backed or scheduled mail senders
+          - `meshagent-webapp-builder`: contact forms and site workflows
+          - `meshagent-cli-operator`: room-scoped CLI rules and managed hostname context
           
-          ## Live room execution
+          ## Live room rules
           
-          - Apply `../_shared/references/live_room_cli_context.md` before asking for login or reconnecting.
-          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped mail workflows.
-          - If mailbox or queue access is uncertain, try the corresponding room-scoped or mailbox read command first and use the observed result, but only after the chosen mail path actually needs that information.
-          - If the workflow also publishes a public contact-form site, apply `../_shared/references/managed_hostname_rules.md` instead of inventing a suffix from examples.
+          - Apply `../_shared/references/live_room_cli_context.md`.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisites for room-scoped mail work.
+          - Only inspect mailbox or queue state after the chosen send path actually needs it.
+          - If the workflow publishes a public site, use `../_shared/references/managed_hostname_rules.md` instead of inventing hostname suffixes.
           
           ## Primary command groups
           
@@ -5348,115 +5341,80 @@ container:
           ## Mailbox model
           
           - A mailbox maps an email address to a room and a queue.
-          - Inbound email to that mailbox is delivered into the configured queue.
-          - The queue name is part of the mailbox configuration. Do not invent it.
-          - Creating a mailbox does not by itself create a consumer, service, or agent.
-          - Creating a mailbox does not by itself publish toolkit `email` into the room.
-          - When other agents depend on toolkit `email`, that toolkit must come from a running participant that publishes it, commonly a MailBot started with `--toolkit-name=email`.
-          - For room-hosted outbound email workflows, the mailbox email address is the sender identity to use. Do not synthesize a sender address from the participant name and mail domain.
-          - Do not use `MESHAGENT_MAIL_DOMAIN` by itself to invent mailbox addresses. It is a runtime mail-domain default, not proof that a synthesized mailbox address is provisioned or authorized to send.
-          - For mailbox-backed MailBot workflows, prefer routing the mailbox to a queue with the same name as the mailbox email address. The MailBot runtime also defaults its queue to `email_address` when no explicit queue is given, so keeping those names aligned is the safest default, not a hard requirement.
-          
-          ## Outbound delivery workflow
-          
-          - Before provisioning a mailbox, decide whether the user's requested send is actually a mailbox-backed workflow or just a one-off outbound send.
-          - For a one-off outbound send, first inspect whether the current runtime already has a valid sender identity available. If it does not, then mailbox provisioning or reuse becomes necessary before the send can honestly proceed.
-          - When mailbox provisioning becomes necessary for a straightforward room email workflow, do it automatically unless the user explicitly asked to choose the sender address themselves.
-          - Do not expand a simple outbound-send request into mailbox administration unless the chosen runtime path proves that mailbox ownership, inbound routing, or durable sender reuse is part of the job.
-          - For a room-hosted mailbox-backed email workflow, first inspect or provision the mailbox that will own the sender address.
-          - If a mailbox already exists for the room workflow, reuse its email address and queue configuration.
-          - If no mailbox exists and the task specifically requires mailbox-backed send or inbound routing, create one before claiming the workflow is complete.
-          - If another agent will call toolkit `email`, separately verify that toolkit `email` is published in the room. Mailbox provisioning alone is not enough.
-          - The common room pattern is a MailBot that owns the mailbox-backed sender identity and publishes toolkit `email` for chatbots or Workers that require it.
-          - When provisioning a new mailbox-backed MailBot, the safest default is to keep all three aligned:
+          - Inbound mail goes to that configured queue.
+          - Creating a mailbox does not create a consumer, service, or toolkit publisher.
+          - Creating a mailbox does not publish toolkit `email`.
+          - If another runtime depends on toolkit `email`, a live participant must publish it, commonly a MailBot with `--toolkit-name=email`.
+          - For mailbox-backed outbound workflows, the mailbox email address is the sender identity. Do not synthesize one from participant name or mail domain.
+          - Do not use `MESHAGENT_MAIL_DOMAIN` alone to invent mailbox addresses.
+          - The safest default for a MailBot-backed mailbox is:
             - mailbox address
             - mailbox queue
             - MailBot inbox queue
-          - If you intentionally override the MailBot queue away from the mailbox address, do it only with clear evidence that the mailbox routing was updated to match. The code supports intentional overrides; the risk is assuming alignment when it no longer exists.
-          - If authored service YAML is involved, make sure the MailBot queue matches the mailbox or inbound mail path rather than a separate scheduled job queue unless the implementation explicitly requires both to be the same.
-          - When creating a mailbox for a room-hosted workflow, use collision-resistant address candidates derived from the room and workflow purpose instead of generic names like `contact-form@...`.
-          - For managed MeshAgent mailbox addresses, use the environment-appropriate mailbox domain family:
-            - `.life` environments should use addresses under `@mail.meshagent.life`
-            - production `.com` environments should use addresses under `@mail.meshagent.com`
-          - Treat addresses like `...@meshagent.local` as suspect for outbound delivery unless the current environment explicitly proves they are authorized.
-          - If mailbox creation returns `409` and mailbox inspection returns `403`, treat that address as unavailable and try another candidate before asking the user for mailbox help.
-          - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox email address as the sender identity.
-          - Do not treat a hardcoded mailbox-looking string as provisioned unless it came from a successful mailbox CLI result in the current project.
-          - If the implementation uses the room mail agent path, let it keep the mailbox address as the default sender instead of overriding it with a synthesized address.
-          - If the user explicitly asks for coded Python with a live `RoomClient` and raw SMTP variables, allow that path. In that case:
-            - reuse an already-provisioned sender identity if one exists
-            - if no sender identity is already provisioned or explicitly provided, stop and obtain one instead of inventing a `From` address
-            - mirror the room SMTP defaults from the implementation instead of inventing your own variable names or lookup path
-            - use the same fallback chain as the room mail implementation: `SMTP_USERNAME` else `room.local_participant.get_attribute("name")`, `SMTP_PASSWORD` else `room.protocol.token`, `SMTP_HOSTNAME` else the runtime mail domain, `SMTP_PORT` else `587`
-            - allow a direct `aiosmtplib.send(...)` Python path when the user explicitly asked for coded SMTP sending or already has a `RoomClient` and does not need MailBot behavior
-            - treat this as an advanced fallback or explicit user-directed path, not the default replacement for mailbox-backed toolkit workflows
-          - Only fall back to a custom raw SMTP implementation when the user explicitly asks for it or the MeshAgent mailbox-backed path is unavailable.
-          - If the mail sender lives inside a queue-backed Worker, verify that the Worker runtime actually uses the provisioned mailbox address before treating mailbox creation as sufficient.
-          - For a simple one-off test send, do not provision a mailbox first unless the requested runtime path clearly depends on mailbox ownership or inbound routing.
+            all aligned to the same email address.
+          
+          ## Outbound send model
+          
+          - Before provisioning a mailbox, decide whether the request is mailbox-backed or just a one-off send.
+          - For a one-off send, first check whether the runtime already has an authorized sender identity.
+          - If no usable sender exists and real outbound email is still the goal, provision or reuse the mailbox path automatically unless the user explicitly wants to choose the sender.
+          - If a mailbox already exists for the workflow, reuse its address and queue.
+          - If another agent or runtime will call toolkit `email`, verify that toolkit `email` is actually published in the room.
+          - For managed mailbox addresses:
+            - `.life` environments should use `@mail.meshagent.life`
+            - production `.com` environments should use `@mail.meshagent.com`
+          - Treat addresses like `...@meshagent.local` as suspect for outbound delivery unless the environment proves they are authorized.
+          - If mailbox creation returns `409` and mailbox inspection returns `403`, treat that candidate as unavailable and try another address.
+          - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox address.
+          - Only use custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+          
+          ## Raw SMTP / RoomClient path
+          
+          - If the user explicitly asks for coded Python with a live `RoomClient`, allow that path.
+          - Reuse a real provisioned sender identity if one exists. If none exists, obtain one instead of inventing a `From` address.
+          - Mirror the implementation’s fallback chain:
+            - `SMTP_USERNAME` else `room.local_participant.get_attribute("name")`
+            - `SMTP_PASSWORD` else `room.protocol.token`
+            - `SMTP_HOSTNAME` else the runtime mail domain
+            - `SMTP_PORT` else `587`
+          - `room.protocol.token` is the room client’s participant token. It is the same room credential carried through `MESHAGENT_TOKEN` or passed to `WebSocketClientProtocol(token=...)`.
+          - Keep this path narrow:
+            - use the existing `RoomClient`
+            - use the mailbox-backed sender
+            - use the implementation’s SMTP defaults
+            - do not invent a second configuration model
           
           ## Queue inspection
           
-          - Use `meshagent room queue size --queue <QUEUE_NAME>` to check whether messages are accumulating.
-          - Use `meshagent room queue receive --queue <QUEUE_NAME>` to read the next queued message.
-          - In code, use the room queues client to consume messages, for example `message = await room.queues.receive(name="my-queue")`.
-          - Queue inspection is different from agent design. Reading the queue does not require introducing another runtime.
-          
-          ## Room SMTP sending behavior
-          
-          - The current room mail implementation uses `SmtpConfiguration` from `meshagent.agents.mail_common`.
-          - If `SMTP_USERNAME` is unset, the room mail implementation uses `room.local_participant.get_attribute("name")` as the SMTP username.
-          - If `SMTP_PASSWORD` is unset, the room mail implementation uses `room.protocol.token` as the SMTP password.
-          - `room.protocol.token` is the room client's participant token, the same connection token passed through `MESHAGENT_TOKEN` or supplied to `WebSocketClientProtocol(token=...)`.
-          - Treat that participant token as the current participant's room credential and API grant carrier. It says who the participant is and what the participant is allowed to do in the room.
-          - If `SMTP_HOSTNAME` is unset, the room mail implementation uses its configured mail domain from the runtime configuration.
-          - If `SMTP_PORT` is unset, the room mail implementation uses port `587`.
-          - The current implementation reads those values when sending in `start_thread` and `send_reply_message`. Do not invent a different SMTP retrieval path.
-          - Do not hardcode or assume a production-only or development-only mail hostname. Use the domain configured for the current runtime.
-          - In a live room workflow, first check whether the default room SMTP values already work before asking the user for manual `SMTP_*` settings.
-          - Only ask for explicit SMTP overrides when the room's default username, token, domain, or port is known to be insufficient for the target provider.
-          - SMTP transport defaults do not define the sender email address. The sender address should come from the mailbox-backed workflow, not from the participant name.
-          - For simple direct-send test emails, the sender still needs to be a real authorized sender identity already available to the runtime. SMTP defaults do not authorize inventing a new `From` address.
-          - If the user wants raw Python SMTP code inside a room runtime, use the same defaults the room mail implementation uses:
-            - `SMTP_USERNAME` else `room.local_participant.get_attribute(\"name\")`
-            - `SMTP_PASSWORD` else the room client's participant token at `room.protocol.token`
-            - `SMTP_HOSTNAME` else the runtime mail domain
-            - `SMTP_PORT` else `587`
-          - If a live `RoomClient` already exists in the room runtime, you may write direct Python SMTP code against that client and the room defaults instead of forcing the task through MailBot setup first.
-          - When using the coded Python/raw SMTP path, keep it narrow:
-            - use the existing `RoomClient`
-            - use the provisioned mailbox-backed sender address
-            - use the implementation's SMTP fallback chain
-            - do not invent a second configuration model
+          - Use `meshagent room queue size --queue <QUEUE_NAME>` to check buildup.
+          - Use `meshagent room queue receive --queue <QUEUE_NAME>` to inspect the next message.
+          - In code, use the room queues client directly.
+          - Queue inspection does not require introducing another runtime.
           
           ## Verification rules
           
-          - Do not claim that inbound mail handling works until you verify the mailbox mapping and inspect the target queue.
-          - Do not claim that outbound mail delivery works until you distinguish message construction from SMTP/provider acceptance.
-          - Distinguish the first send attempt from final verification. A simple test email can try the direct send path first, but it is only complete after delivery succeeds or the exact blocker is reported.
-          - For simple test-email requests, do not add mailbox provisioning as hidden scope creep unless the direct-send path actually fails for a mailbox-backed reason.
-          - For simple test-email requests, do not satisfy the request with room messaging, participant chat, or broadcast send. The verification target is actual email delivery or the exact blocker that prevented it.
-          - For queue-backed mail workers, do not claim success until the Worker has consumed a real test message and runtime evidence shows the send succeeded or shows the exact SMTP/provider blocker.
-          - For Workers or chat agents that use `--require-toolkit=email`, do not treat a mailbox as proof that the toolkit exists. Verify that toolkit `email` is visible in the room from a live publisher such as a MailBot.
-          - If a mailbox-backed MailBot exists but inbound or outbound behavior is inconsistent, check whether the mailbox address, mailbox queue, and MailBot queue diverged. That alignment is the default working pattern in the codebase, but overrides are possible and must be verified explicitly.
-          - If outbound send fails and the mailbox address is outside the expected managed mailbox domain family for the current environment, treat that as a likely sender-authorization problem before blaming queue wiring or toolkit publication.
-          - Do not ask for generic SMTP credentials first if the task is using the room SMTP path. Check the default room values and observed failure mode first.
-          - If the workflow is a contact form or other room-hosted sender, verify that the sender identity is a real mailbox address before treating SMTP errors as provider-side issues.
-          - If a valid form submission fails with `SMTPDataError`, `550`, `553`, or similar, treat that first as sender identity or authorization failure, not just generic SMTP transport failure.
-          - If outbound SMTP fails with `550 5.7.1 Permission denied`, treat that as proof that the current runtime is not authorized to send from the mailbox or sender identity it attempted to use.
-          - For `550 5.7.1 Permission denied`, do not summarize the problem only as "the user lacks permission." The failing principal may be the MailBot, Worker, room participant token, or SMTP auth identity behind the send.
-          - If outbound SMTP fails with `550 5.7.1 Relaying denied`, treat that as a strong sign that the send attempted to use a `From` address other than the provisioned mailbox email address.
-          - For `550 5.7.1 Relaying denied`, first compare the attempted sender address against the mailbox email address before blaming queue wiring, toolkit publication, or recipient-side issues.
-          - If the workflow also creates a public route, follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL.
-          - If SMTP rejects delivery, report the exact observed blocker.
-          - If the task uses coded Python/raw SMTP with a live `RoomClient`, report the exact sender address, hostname, port, and SMTP/provider response that the code used.
-          - Do not stop at "the MeshAgent CLI is not logged in" unless an actual mailbox, room queue, or related MeshAgent command fails with an authentication or authorization error.
+          - Inbound mail is not proven until mailbox mapping and target queue behavior are verified.
+          - Outbound mail is not proven until SMTP/provider acceptance is distinguished from local message construction.
+          - For simple test-email requests, do not add mailbox provisioning as hidden scope creep unless the direct-send path actually needs it.
+          - For simple test-email requests, do not satisfy the ask with room messaging or chat.
+          - For queue-backed mail senders, do not call the workflow complete until a real queued message is consumed and runtime evidence shows success or the exact SMTP/provider blocker.
+          - If a runtime uses `--require-toolkit=email`, a mailbox is not proof that the toolkit exists. Verify a live publisher.
+          - If mailbox-backed behavior is inconsistent, check whether mailbox address, mailbox queue, and MailBot queue diverged.
+          - If the mailbox address is outside the expected managed domain family for the environment, treat that as a likely sender-authorization problem.
+          - Do not ask for generic SMTP credentials first when the room SMTP path is in use. Check the room defaults and observed failure first.
+          - For room-hosted senders such as contact forms, verify that the sender is a real mailbox address before blaming the provider.
+          - Treat `SMTPDataError`, `550`, `553`, and similar failures first as sender identity or authorization problems unless evidence shows otherwise.
+          - `550 5.7.1 Permission denied` means the current runtime is not authorized to send from the mailbox or sender identity it attempted to use.
+          - `550 5.7.1 Relaying denied` strongly suggests the attempted `From` address did not match the provisioned mailbox email address.
+          - If SMTP rejects delivery, report the exact blocker.
+          - If the task uses raw SMTP code with a live `RoomClient`, report the exact sender, host, port, and SMTP/provider response used.
+          - Do not stop at “the CLI is not logged in” unless an actual mailbox, queue, or related command failed with auth or authz.
           
           ## Workflow accountability
           
-          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
-          - If another skill already owns the workflow, return mailbox, queue, and SMTP evidence to that owner instead of declaring the overall job complete.
-          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
-          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+          - This skill may own the workflow when mail is the main goal.
+          - If another skill owns the end-to-end result, return mailbox, queue, and SMTP evidence to that owner.
+          - Follow `../_shared/references/workflow_accountability.md` for ownership, evidence, and forbidden shortcuts.
 
       - path: /meshagent-skills/skills/meshagent-mail-operator/agents/openai.yaml
         text: |
@@ -5781,7 +5739,7 @@ container:
               - skill: meshagent-mail-operator
                 when: The queue is part of a mailbox flow.
               - skill: meshagent-queue-worker-builder
-                when: A queue consumer must be created or repaired.
+                when: A queue consumer must be created or updated.
             scope:
               owns:
                 - room queue send and receive
@@ -5829,7 +5787,7 @@ container:
           - `meshagent-participant-token-operator`: Use it when the blocker is participant-token source, missing queue API grants, or token wiring rather than queue behavior.
           - `meshagent-scheduler`: Use it when the queue messages come from scheduled tasks.
           - `meshagent-mail-operator`: Use it when the queue is part of a mailbox flow.
-          - `meshagent-queue-worker-builder`: Use it when the missing piece is a queue-consuming Worker rather than queue operations themselves.
+          - `meshagent-queue-worker-builder`: Use it when the missing piece is a queue-consuming runtime rather than queue operations themselves.
           
           ## Default workflow
           
@@ -5863,7 +5821,7 @@ container:
           
           - Do not claim a queue-backed workflow works just because the sender command succeeded.
           - Verify the queue depth or queued payload after the upstream action.
-          - If a queue-backed Worker is supposed to consume the message, verify both enqueue and downstream dequeue behavior.
+          - If a queue consumer is supposed to consume the message, verify both enqueue and downstream dequeue behavior.
           - If a queue is empty when it should contain messages, inspect the sender configuration before redesigning the consumer.
           
           ## Workflow accountability
@@ -5875,7 +5833,7 @@ container:
           
           ## Out of scope
           
-          - Designing a Worker or service template to consume the queue.
+          - Designing a queue consumer or service template to consume the queue.
           - Mailbox administration beyond queue verification.
 
       - path: /meshagent-skills/skills/meshagent-queue-operator/agents/openai.yaml
@@ -5931,9 +5889,9 @@ container:
         text: |
           ---
           name: meshagent-queue-worker-builder
-          description: Build or update MeshAgent room queue-backed Worker YAML, especially Worker services that dequeue tasks in a room and process scheduled or queued jobs.
+          description: Build or update MeshAgent room queue-backed agent YAML, defaulting to process services that dequeue tasks in a room and process scheduled or queued jobs.
           metadata:
-            short-description: Build queue-backed Worker agent and service YAML for room jobs.
+            short-description: Build queue-backed process agent and service YAML for room jobs.
             references:
               bundled:
                 - references/scheduled_email_worker.md
@@ -5947,33 +5905,33 @@ container:
                 - examples_root
                 - cli_root
               resolved_targets:
-                - Worker examples
+                - queue agent examples
                 - shared live-room CLI context rules
                 - shared process-agent design rules
                 - shared runtime image environment rules
                 - shared service YAML correctness rules
                 - packaging docs
-                - Worker CLI source
+                - process and worker CLI source
             related_skills:
               - skill: meshagent-workflow-orchestrator
-                when: The request spans Worker build, mail, runtime proof, and scheduling as one end-to-end workflow.
+                when: The request spans queue-consumer build, mail, runtime proof, and scheduling as one end-to-end workflow.
               - skill: meshagent-sdk-researcher
                 when: Resolve checkout roots before following example or source references.
               - skill: meshagent-participant-token-operator
-                when: The remaining issue is token-backed environment wiring, delegated shell token behavior, or participant-token scope inside the Worker or MailBot runtime.
+                when: The remaining issue is token-backed environment wiring, delegated shell token behavior, or participant-token scope inside the queue consumer or mail runtime.
               - skill: meshagent-scheduler
-                when: The remaining task is to create or verify a scheduled task after the Worker exists.
+                when: The remaining task is to create or verify a scheduled task after the queue consumer exists.
               - skill: meshagent-mail-operator
                 when: The queued job sends email or depends on mailbox-backed sender identity.
               - skill: meshagent-service-operator
-                when: The main task is service lifecycle rather than Worker YAML authoring.
+                when: The main task is service lifecycle rather than queue-consumer YAML authoring.
               - skill: meshagent-runtime-operator
-                when: The YAML exists but the remaining work is proving that the live Worker runtime actually dequeues and completes jobs.
+                when: The YAML exists but the remaining work is proving that the live queue-consuming runtime actually dequeues and completes jobs.
             scope:
               owns:
-                - queue-backed Worker YAML authoring
+                - queue-backed agent YAML authoring
                 - queue and schedule alignment in agent definitions
-                - Worker service template adaptation from examples
+                - queue-consuming service template adaptation from examples
               excludes:
                 - scheduled-task CRUD
                 - generic process-agent design across chat, mail, toolkit, and queue channels
@@ -5993,148 +5951,131 @@ container:
           
           # MeshAgent Queue Worker Builder
           
-          Use this skill when the task is to create or update `meshagent.yaml` for a queue-backed MeshAgent Worker agent or Worker service template.
+          Use this skill to create or repair queue-backed room service YAML. Default to a process agent with `--channel=queue:...`.
           
           ## Use this skill when
           
-          - The current workflow needs a Worker agent that consumes a queue in a room.
-          - The scheduler workflow needs a real queue consumer before a scheduled task can be added safely.
-          - The user needs a `meshagent.yaml` or service template that starts `meshagent worker join --queue=...`.
-          - The task involves fixing queue names, Worker annotations, container commands, or room-service YAML for dequeued jobs.
-          - The user wants a room worker that can be spun up, receive queued payloads, and process them with storage, tools, or other room capabilities.
+          - The workflow needs a real queue consumer before scheduling or sending jobs.
+          - The task is to write or repair queue-related `meshagent.yaml`.
+          - The user needs a room service that dequeues payloads and completes work with storage, tools, or mail.
           
           ## References
           
-          - After root resolution, start with the Worker examples under the resolved docs/examples tree:
-            - `examples/cli/worker/meshagent.yaml` for the simplest queue-backed Worker service pattern
-            - `examples/cli/process-news-agent/meshagent.yaml` when a queue workflow is part of a larger process-backed agent design
-            - `examples/cli/meshagent-writer/meshagent.yaml` and `examples/cli/meshagent-codex-writer/meshagent.yaml` for scheduled writer workflows that rely on a Worker queue consumer
-          - Use `references/scheduled_email_worker.md` for workflows that must dequeue a message and send an email before a one-time schedule is considered complete.
-          - Use `../_shared/references/live_room_cli_context.md` when the workflow runs in or targets a known live room.
-          - Use `../_shared/references/process_agent_design.md` when the user may really want one process-backed agent with queue plus other channels.
-          - Use `../_shared/references/runtime_image_environment_rules.md` when the workflow must choose a container image for a room worker or MailBot.
-          - Use `../_shared/references/service_yaml_correctness.md` when writing or repairing service YAML so command flags, mailbox wiring, and role composition stay valid.
-          - Use the resolved packaging docs for service-template structure and annotation semantics.
-          - Inspect the resolved Worker CLI source for the actual Worker flags and runtime shape.
+          - Start with the nearest working example:
+            - `examples/cli/process-news-agent/meshagent.yaml` for a process agent with queue plus other channels
+            - `meshagent-router/meshagent/router/templates/assistant.yaml` for a process room assistant service template
+          - Use `references/scheduled_email_worker.md` for queued email jobs.
+          - Use `../_shared/references/live_room_cli_context.md` for known live rooms.
+          - Use `../_shared/references/process_agent_design.md` for process channel design.
+          - Use `../_shared/references/runtime_image_environment_rules.md` for image selection.
+          - Use `../_shared/references/service_yaml_correctness.md` for validation and repair rules.
           
           ## Related skills
           
-          - `meshagent-workflow-orchestrator`: Use it when the request spans Worker build, mail, runtime proof, and scheduling as one end-to-end workflow.
-          - `meshagent-sdk-researcher`: Resolve the MeshAgent checkout roots and the exact example/source paths before using codebase references.
-          - `meshagent-participant-token-operator`: Use it when the blocker is token-backed env injection, participant-token scope, or delegated shell token behavior inside the Worker or MailBot runtime.
-          - `meshagent-scheduler`: Use it after the Worker exists and the task becomes scheduled-task creation, timezone resolution, or queue verification.
-          - `meshagent-mail-operator`: Use it when the queued job sends mail and must reuse a real mailbox-backed sender identity.
-          - `meshagent-service-operator`: Use it when the main job is validating, rendering, creating, or updating a service rather than authoring the Worker spec itself.
-          - `meshagent-runtime-operator`: Use it when the YAML exists but the remaining work is proving that the live Worker runtime is actually running, dequeuing, and completing the job.
+          - `meshagent-workflow-orchestrator`: end-to-end queue, mail, runtime, and scheduling workflows
+          - `meshagent-sdk-researcher`: resolve roots and locate the best example
+          - `meshagent-participant-token-operator`: token-backed env and delegated shell token issues
+          - `meshagent-scheduler`: scheduled-task creation after the consumer is proven
+          - `meshagent-mail-operator`: mailbox-backed senders and email-toolkit publication
+          - `meshagent-service-operator`: service lifecycle after YAML authoring
+          - `meshagent-runtime-operator`: proving the live runtime dequeues and finishes jobs
+          
+          ## Core model
+          
+          - New authored YAML should use `meshagent process`.
+          - Assume current rooms are not legacy unless the user or observed room state proves otherwise.
+          - The default queue runtime is `meshagent process join --channel=queue:<QUEUE_NAME>`.
+          - Treat the queue as one channel into the agent, not as a standalone workflow by itself.
+          - Use a dedicated `Worker` shape only when the user explicitly asks for it.
+          - If the queued job sends email, a mailbox alone is not enough. The room still needs a live publisher for toolkit `email`.
           
           ## Default workflow
           
-          1. Determine whether the target is a new Worker service, a modification to an existing Worker template, or a repair to a broken queue/schedule setup.
-          2. Use `meshagent-sdk-researcher` to find the closest working example before drafting YAML.
-          3. If the room is already known, apply `../_shared/references/live_room_cli_context.md` and start with narrow room-scoped probes rather than broad auth or project-listing commands.
-          4. Inspect the current room, current queue names, and existing service files so you can reuse real names and identities. If the CLI does not expose a dedicated queue-list command, use the room queue API or the current room configuration rather than assuming queue discovery is impossible.
-          5. If the queued job sends email, inspect or provision the mailbox first and reuse its address as the sender identity instead of inventing one.
-          6. If the Worker will call the `email` toolkit, prove that a live publisher for toolkit `email` already exists in the room or build one first. The normal pattern is a MailBot publishing `--toolkit-name=email`.
-          7. Prefer a generated asset shape over freehand YAML:
-             - if the requested runtime is really one process-backed agent with queue plus other channels, switch to the process-agent design reference before authoring YAML
-             - use `meshagent worker spec` for a dedicated Worker
-             - use `meshagent mailbot spec` for a dedicated MailBot
-             - use `meshagent service spec` only when a narrower agent-specific spec is not the right fit
-          8. Choose the nearest example and adapt it only after the generated or example shape is in hand.
-          9. Choose the container image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
-          10. Make sure the Worker runtime explicitly consumes the intended queue with `meshagent worker join --queue=<QUEUE_NAME>`.
-          11. If the workflow is schedulable, make sure the schedule targets the same queue that the Worker consumes.
-          12. Validate the resulting YAML against `../_shared/references/service_yaml_correctness.md`, including real CLI flag support, mailbox identity, queue wiring, mounted files, and whether the workflow needs both MailBot and Worker roles.
-          13. Validate the resulting YAML with `meshagent service validate` or `validate-template` and `render-template` when available.
-          14. If validation fails, inspect the exact error, repair the YAML, and rerun validation before attempting deployment.
-          15. Hand off to the service workflow to create or update the service, then verify the room service appears in live room state.
-          16. Hand off to the runtime workflow to prove the Worker runtime is alive with room developer output, container state, or logs.
-          17. Enqueue an immediate smoke-test message and confirm that the Worker dequeues it and completes the job before claiming the Worker is ready.
-          18. Only after the smoke test passes should you hand off to the scheduler skill for a one-time or recurring scheduled task.
+          1. Confirm whether this is new YAML, a template update, or an explicit request to modify an existing asset.
+          2. Resolve the closest working example before drafting.
+          3. In a known live room, use narrow room-scoped probes first. Do not start with broad auth or project checks.
+          4. Reuse real room names when possible: queue names, service names, sender identities, mounted paths.
+          5. If the queued job sends email, inspect or provision the mailbox first and reuse its real sender identity.
+          6. If the runtime depends on toolkit `email`, prove that a live publisher exists or build one first.
+          7. Generate the base shape instead of freehanding YAML:
+             - `meshagent process spec` for new queue-consuming services
+             - `meshagent worker spec` only when the user explicitly wants a Worker runtime
+             - `meshagent mailbot spec` only when the user explicitly wants a split mail runtime
+             - `meshagent service spec` only when the narrower specs do not fit
+          8. Adapt the nearest example only after the generated shape is in hand.
+          9. Match the runtime image family to the actual MeshAgent environment.
+          10. Make the startup command show the real queue-consuming path:
+             - process agent: `meshagent process join --channel=queue:<QUEUE_NAME>`
+             - dedicated Worker: `meshagent worker join --queue=<QUEUE_NAME>`
+          11. If the workflow will be scheduled, keep the scheduled queue and consumer queue identical.
+          12. Validate the YAML structurally and semantically.
+          13. If validation fails, fix the exact error and rerun validation before deployment.
+          14. Hand off to service/runtime workflows to deploy and prove the live consumer.
+          15. Send an immediate smoke-test message and confirm dequeue plus job completion before treating the runtime as ready.
+          16. Only then hand off to the scheduler skill.
           
-          ## Worker service model
+          ## Queue and payload rules
           
-          - Prefer a dedicated Worker agent with `meshagent.agent.type: "Worker"` when the job is queue-driven background work.
-          - The core runtime pattern is a container command that starts `meshagent worker join --agent-name=... --queue=...`.
-          - Treat the queue as the Worker's primary input channel. The Worker is useful only if something in the room actually sends payloads to that queue.
-          - Room storage mounts, toolkits, and rules should support the queued task behavior, not distract from it.
-          - If the Worker requires toolkit `email`, that toolkit must be published by some running room participant. A mailbox alone does not publish toolkit `email`.
-          - The normal email-toolkit pattern is a MailBot in the same room publishing `--toolkit-name=email`, then the Worker can use `--require-toolkit=email`.
-          - For non-trivial scheduled email workflows, prefer a durable setup that writes or mounts Worker rule files, then points the Worker at those rules with `--room-rules`.
-          - For new shared-identity queue-plus-mail workflows, follow `../_shared/references/process_agent_design.md` instead of inventing an ad hoc combined runtime shape.
-          - Use separate MailBot and Worker services only when the room architecture truly needs distinct participants or a dedicated Worker is clearly the better fit.
-          - If the Worker behavior lives in room-rules or startup-generated rule files, keep the scheduled payload thin and let it trigger that established workflow instead of restating the entire mail job ad hoc.
+          - Do not create a schedule for a queue that has no matching live consumer.
+          - A queue-looking annotation is not enough. The container command must show the actual queue-consuming path.
+          - Reuse an existing queue when it already represents the workflow; otherwise define one name and keep it consistent across sender, scheduler, and runtime.
+          - Smoke-test with the same payload style the scheduled run will use.
+          - If the runtime is rule-driven or prompt-driven, keep scheduled payloads thin and let the established rules do the work.
+          - If the runtime expects structured fields, the scheduled payload must use those exact fields.
           
-          ## Queue and scheduling rules
+          ## Scheduled email rules
           
-          - Do not add a scheduled task to a Worker definition that lacks a matching queue consumer.
-          - The queue named inside `meshagent.agent.schedule` must match the queue consumed by `meshagent worker join --queue=...`.
-          - Prefer reusing an existing queue in the current room when it already represents the intended workflow.
-          - If there is no queue yet, define one explicitly and keep the name consistent across scheduler, sender, and Worker YAML.
-          - A queue channel or queue annotation alone is not enough. The runtime must show an actual queue-consuming path, normally `meshagent worker join --queue=...`, and the surrounding service/container setup must point at the same workflow.
-          - For one-time scheduled jobs, do not schedule first and hope the Worker path works later. Prove the Worker path with an immediate queue message before creating the scheduled task.
-          - The smoke-test payload should use the same payload style as the final scheduled task. If the scheduled run will enqueue a prompt-style instruction, smoke-test with a prompt-style instruction. If the scheduled run will enqueue structured fields, smoke-test with those same structured fields.
+          - Use a real mailbox-backed sender from the room. Do not invent one.
+          - Do not assume mailbox creation publishes toolkit `email`.
+          - Do not point a standalone MailBot at the scheduled job queue and call that complete.
+          - Keep the mail path or equivalent toolkit publisher that makes `email` visible to the queue consumer.
+          - For non-trivial email jobs, prefer durable `--room-rules` or mounted rules over inline ad hoc instructions.
           
-          ## What to build
+          ## Verification rules
           
-          - Prefer a room `Service` or `ServiceTemplate` that can be deployed into a room and stay available to dequeue tasks.
-          - Include the minimum container command, token identity, storage mounts, and Worker rule set required for the job.
-          - If the Worker needs storage, mail, web search, memory, or database access, add only the capabilities the actual task requires.
-          - Keep the Worker focused on consuming queue messages and completing the queued job.
-          - Prefer YAML that is generated or minimally edited from the real CLI spec commands over hand-written manifests assembled from scratch.
-          
-          ## Verification and handoff rules
-          
-          - Do not call the Worker complete based only on YAML generation or service creation.
-          - For a queue-backed Worker, success requires live room service evidence, live runtime evidence, and a successful immediate dequeue smoke test.
-          - If the Worker uses `--require-toolkit=email`, verify that toolkit `email` is visible in the room before treating a non-dequeuing Worker as healthy. A Worker can wait on a missing required toolkit and never reach its queue-consume loop.
-          - If the Worker sends email, do not call the workflow complete until logs or other runtime evidence show that the message send succeeded or show the exact blocker.
-          - If the Worker runtime is missing, unhealthy, or not visibly dequeuing, switch to `meshagent-service-operator` and `meshagent-runtime-operator` before touching the schedule.
-          - If the immediate queue smoke test fails, do not create the scheduled task yet.
+          - YAML generation alone is not success.
+          - Service creation alone is not success.
+          - Success requires:
+            - live room service evidence
+            - live runtime evidence
+            - successful immediate dequeue smoke test
+          - If the runtime requires toolkit `email`, verify that toolkit is visible before assuming the consumer is healthy.
+          - If the queued job sends email, do not call the workflow complete until runtime evidence shows a successful send or the exact blocker.
+          - If the smoke test fails, do not create the scheduled task yet.
           
           ## Operating rules
           
-          - Do not invent undocumented annotation keys, runtime flags, or environment variables.
-          - Do not guess YAML structure when a nearby Worker example already covers the pattern.
-          - Prefer the simplest Worker example that satisfies the requested queued-job behavior.
-          - In a known live room, do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks before room-scoped worker setup.
-          - Do not copy a docs example runtime image blindly. Match the worker or MailBot image family to the actual MeshAgent environment first.
-          - Do not emit a worker command with flags that `meshagent worker join` does not support. For worker instructions, use `--rule` or `--room-rules`, not invented flags like `--prompt`.
-          - Preserve the parts that make dequeueing work: `meshagent.agent.type: "Worker"`, `meshagent worker join --queue=...`, and any required room/container setup.
-          - If the queued job sends email, use a real mailbox-backed sender identity from the current room instead of synthesizing a sender address.
-          - Do not assume mailbox creation is enough to satisfy `--require-toolkit=email`. Mailbox provisioning and email-toolkit publication are separate concerns.
-          - For scheduled email workflows, do not point a standalone MailBot at the scheduled job queue and call that complete. The MailBot publishes toolkit `email`; the Worker consumes the scheduled job queue.
-          - For scheduled email workflows, do not declare both `MailBot` and `Worker` roles in one YAML asset unless you are intentionally repairing an existing combined deployment and the container command really starts both roles.
-          - When adapting a pattern like the news reporter example, keep the MailBot or equivalent toolkit publisher that makes `email` visible to the Worker. Do not copy only the Worker half of the pattern.
-          - For scheduled email workflows, make the scheduled payload match how the Worker was authored. A prompt-driven Worker should usually receive a prompt-driven scheduled payload. A structured-field Worker should receive those exact structured fields plus any required action field.
-          - If the user only asked to schedule an already running agent and the current room lacks a queue-consuming Worker, stop the scheduler workflow and switch to this skill before claiming scheduling is possible.
-          - If the user actually needs a process-backed agent with queue plus other channels rather than a dedicated Worker, say so and switch to `../_shared/references/process_agent_design.md` instead of forcing a Worker pattern.
+          - Do not invent undocumented flags, annotations, or env vars.
+          - Prefer the smallest process example that fits the job.
+          - In a live room, do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisites.
+          - Do not copy a docs image blindly across environments.
+          - For dedicated Worker cases, use only supported flags. Do not invent flags like `--prompt`.
+          - If the user only asked to schedule an already running agent and no queue consumer exists, stop the scheduling path and switch to this skill.
           
           ## Workflow accountability
           
-          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
-          - If another skill already owns the workflow, return worker, service, runtime, and smoke-test evidence to that owner instead of declaring the overall job complete.
-          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
-          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+          - This skill may own queue-consumer authoring when that is the main goal.
+          - If another skill owns the end-to-end workflow, return YAML, runtime, and smoke-test evidence to that owner.
+          - Follow `../_shared/references/workflow_accountability.md` for ownership, evidence, and forbidden shortcuts.
           
           ## Out of scope
           
-          - This skill does not replace the scheduler skill for creating or verifying scheduled tasks.
-          - This skill is not the default choice for chat-first, mail-first, or generic process-agent authoring across multiple channels.
-          - This skill does not replace the CLI operator skill for command discovery and execution details.
+          - scheduled-task CRUD
+          - generic multi-channel process design beyond queue-centric authoring
+          - low-level CLI discovery
 
       - path: /meshagent-skills/skills/meshagent-queue-worker-builder/agents/openai.yaml
         text: |
           interface:
             display_name: "MeshAgent Queue Worker Builder"
-            short_description: "Build queue-backed Worker agents"
-            default_prompt: "Use $meshagent-queue-worker-builder to create or update a queue-backed Worker meshagent.yaml."
+            short_description: "Build queue-backed process agents"
+            default_prompt: "Use $meshagent-queue-worker-builder to create or update a queue-backed process meshagent.yaml."
 
       - path: /meshagent-skills/skills/meshagent-queue-worker-builder/references/scheduled_email_worker.md
         text: |
-          # Scheduled Email Worker
+          # Scheduled Email Queue Agent
           
-          Use this reference when the user asks for a Worker that receives a queue message and sends an email, especially when that Worker will later be triggered by a one-time scheduled task.
+          Use this reference when the user asks for a queue-consuming agent that receives a queue message and sends an email, especially when that runtime will later be triggered by a one-time scheduled task.
           
           ## Required sequence
           
@@ -6147,21 +6088,21 @@ container:
           7. If the workflow clearly needs real outbound email and no reusable mailbox exists yet, create one automatically as part of the workflow instead of asking the user whether mailbox creation is allowed.
           8. Reuse the mailbox email address as the sender identity.
           9. In `.life` rooms, prefer mailbox addresses under `@mail.meshagent.life`; in production `.com` environments, prefer `@mail.meshagent.com`. Do not default to `@meshagent.local` for outbound scheduled email workflows.
-          10. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
-          11. For a mailbox-backed MailBot, keep the mailbox address, mailbox queue, and MailBot inbox queue aligned by default. The safest pattern is to route the mailbox to its own email address as the queue and let the MailBot consume that same queue, unless you have explicit evidence that an override is intentional and correctly wired.
-          12. Choose the Worker and MailBot runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
+          10. Verify that toolkit `email` is already published in the room or create the mail channel or equivalent publisher that will publish it. The normal pattern is a mailbox-backed mail path.
+          11. For a mailbox-backed mail path, keep the mailbox address, mailbox queue, and inbox queue aligned by default. The safest pattern is to route the mailbox to its own email address as the queue and let the mail runtime consume that same queue, unless you have explicit evidence that an override is intentional and correctly wired.
+          12. Choose the queue-consumer and mail-runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
           13. Generate the initial service asset from the real CLI when possible:
-             - `meshagent worker spec` for a dedicated Worker
-             - `meshagent mailbot spec` for a dedicated MailBot
-             - `meshagent service spec` only when the narrower agent-specific spec commands are not the right fit
-          14. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-          15. For non-trivial scheduled email behavior, prefer mounted or startup-generated Worker rule files and pass them with `--room-rules` instead of relying only on a long inline rule string.
-          16. Prefer separate MailBot and Worker services for new scheduled email workflows. Only preserve a combined process when you are repairing an existing deployment that already depends on it.
-          17. For non-trivial scheduled email workflows, follow the same behavioral pattern as the `industry-report` nightly-report Worker:
-             - the Worker queue owns a named workflow through durable rule files
-             - the scheduled task prompt tells the Worker to run that workflow
-             - the MailBot exists only to publish toolkit `email`
-          18. For the service YAML, validate the actual command flags and role composition. A Worker must use real worker flags such as `--rule` or `--room-rules`; a MailBot must not be treated as the scheduled job consumer.
+             - for new authored YAML, use `meshagent process spec`
+             - use `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly wants that split runtime shape
+             - use `meshagent service spec` only when the narrower agent-specific spec commands are not the right fit
+          14. Build or update a process service that consumes the intended queue with `--channel=queue:<QUEUE_NAME>` and has access to the real email-sending path.
+          15. For non-trivial scheduled email behavior, prefer mounted or startup-generated rule files and pass them with `--room-rules` instead of relying only on a long inline rule string.
+          16. For new scheduled email workflows, prefer one process runtime with queue and mail channels. Use separate mail and Worker services only when the user explicitly asked for that split shape.
+          17. For non-trivial scheduled email workflows, follow the same behavioral pattern as the `industry-report` nightly-report flow, adapted to a process design:
+             - the queue channel triggers a named workflow through durable rule files
+             - the scheduled task prompt tells the agent to run that workflow
+             - the mail channel or equivalent publisher is part of the same designed mail path
+          18. For the service YAML, validate the actual command flags and role composition. A process agent should use `meshagent process join` plus real `--channel=...` flags; the mail path must not be treated as the scheduled job consumer.
           19. Validate the YAML or rendered service before deployment.
           20. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
           21. Create or update the service.
@@ -6169,9 +6110,9 @@ container:
           23. Verify the runtime is actually alive with room developer output, container state, or container logs.
           24. Enqueue an immediate test message now, before creating the scheduled task.
           25. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-          26. Design the scheduled payload so it explicitly requests email sending in the same style the Worker already expects:
-             - prompt-style when the Worker rules define a named workflow to run
-             - structured fields when the Worker rules already key off `to`, `subject`, `body`, and any required action field
+          26. Design the scheduled payload so it explicitly requests email sending in the same style the queue consumer already expects:
+             - prompt-style when the runtime rules define a named workflow to run
+             - structured fields when the runtime rules already key off `to`, `subject`, `body`, and any required action field
           27. Only after the immediate smoke test passes should you create the one-time scheduled task.
           28. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
           29. Before creating the scheduled task, check whether an equivalent near-future one-time task already exists for the same queue and payload so you do not create duplicates after an uncertain retry.
@@ -6186,9 +6127,9 @@ container:
           Do not call the workflow complete until all of the following are true:
           
           - the mailbox exists and its address is the sender identity used by the workflow
-          - toolkit `email` is visibly published in the room by a MailBot or equivalent service
+          - toolkit `email` is visibly published in the room by a mail runtime or equivalent service
           - the recipient email address for the real smoke test and scheduled message is known, unless the user explicitly asked for a payload-only template
-          - the Worker service exists in the room
+          - the queue-consuming service exists in the room
           - a live runtime or container is visibly running
           - an immediate test message is consumed from the queue
           - runtime evidence shows the mail send succeeded or shows the exact blocker
@@ -6201,19 +6142,19 @@ container:
           ## Failure interpretation
           
           - A created mailbox does not prove outbound mail works.
-          - A created mailbox does not create toolkit `email`. If the Worker depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
-          - A mailbox-backed MailBot can misbehave if the mailbox address, mailbox queue, and MailBot inbox queue do not line up. The safest default is to keep those names the same, but code-level overrides are possible and must be checked explicitly.
+          - A created mailbox does not create toolkit `email`. If the queue consumer depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
+          - A mailbox-backed mail runtime can misbehave if the mailbox address, mailbox queue, and inbox queue do not line up. The safest default is to keep those names the same, but code-level overrides are possible and must be checked explicitly.
           - A mailbox address under `@meshagent.local` is a bad default for outbound managed-mail workflows. In `.life` or production environments, first suspect the mailbox domain if SMTP rejects send with authorization errors such as `550 5.7.1`.
-          - A created service record does not prove a Worker runtime is running.
+          - A created service record does not prove the queue-consuming runtime is running.
           - A copied docs image does not prove the runtime image matches the current MeshAgent environment. A `.life` room may need a different runtime image family than the production docs examples.
-          - A MailBot service by itself does not satisfy a scheduled email worker workflow. The MailBot publishes toolkit `email`; the Worker must consume the scheduled job queue.
-          - A manifest that declares both `MailBot` and `Worker` roles but starts only one runtime path is incorrect even if the YAML shape validates.
-          - A new scheduled email workflow should not default to a combined MailBot+Worker process when separate services would express the design more clearly.
-          - A worker command that uses unsupported flags such as `--prompt` is invalid YAML content even if the surrounding service shape looks correct.
+          - A mail runtime by itself does not satisfy a scheduled email workflow. The mail path publishes or owns the sender identity; the queue-consuming runtime must handle the scheduled job queue.
+          - A manifest that declares multiple roles but starts only one runtime path is incorrect even if the YAML shape validates.
+          - A new scheduled email workflow should not default to separate mail and Worker YAMLs when one process design would express the queue-plus-mail behavior more directly.
+          - A queue-consuming runtime command that uses unsupported or mismatched flags is invalid YAML content even if the surrounding service shape looks correct.
           - A mailbox-looking sender such as `something@meshagent.local` is not a proven mailbox-backed sender identity.
           - A scheduled task payload that does not explicitly request email sending may enqueue successfully while never causing an email to be sent.
-          - A scheduled task payload that uses structured fields can still fail if the Worker was only taught to react to prompt-style instructions from its rules file or room-rules. Match the payload to the Worker design.
-          - For non-trivial scheduled email workflows, a prompt that triggers the durable Worker workflow is often more reliable than ad hoc `to`/`subject`/`body` JSON fields.
+          - A scheduled task payload that uses structured fields can still fail if the process or dedicated Worker runtime was only taught to react to prompt-style instructions from its rules file or room-rules. Match the payload to the actual runtime design.
+          - For non-trivial scheduled email workflows, a prompt that triggers the durable queue-handling workflow is often more reliable than ad hoc `to`/`subject`/`body` JSON fields.
           - If the user asked for a real scheduled email and no recipient address has been collected yet, the workflow is still blocked on required user input. Do not pretend the remaining setup is complete.
           - A queue size of `0` after the scheduled time does not prove success; it may also mean the job never enqueued or failed after dequeue.
           - A consumed smoke-test queue message does not prove email delivery by itself. Delivery still needs runtime send evidence or an exact mail blocker.
@@ -6226,7 +6167,7 @@ container:
           - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
           - If `meshagent scheduled-task add` fails after passing a human-readable `--id`, suspect invalid task-id format first. Scheduled-task ids are UUID-backed; omit `--id` or pass a real UUID.
           - If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
-          - If the scheduler is blocked or unhealthy, do not silently continue as if only the Worker matters. Either stop or clearly mark Worker and MailBot creation as partial preparation pending scheduler recovery.
+          - If the scheduler is blocked or unhealthy, do not silently continue as if only the queue consumer matters. Either stop or clearly mark queue and mail setup as partial preparation pending scheduler recovery.
           - If a one-time `scheduled-task add` was retried after an uncertain first result, first inspect for an already-created equivalent task before issuing a second add.
           - Two near-future tasks with the same queue, same payload intent, and same delivery window are usually a duplicate-creation bug, not a valid success case.
           
@@ -6250,7 +6191,7 @@ container:
             - `{"prompt":"Run the nightly report workflow from /data/agents/<AGENT_NAME>/rules-worker-report.txt and send the email using the email toolkit."}`
           - Structured payload example:
             - `{"to":"david.mcqueen@timu.com","subject":"Scheduled test","body":"This is a scheduled test email.","action":"send_email"}`
-          - Match the payload style to the Worker's rules. If the Worker was built around prompt-driven instructions or a named room-rules workflow, keep using a prompt. If it was built around structured fields, use those exact fields.
+          - Match the payload style to the queue consumer's rules. If the runtime was built around prompt-driven instructions or a named room-rules workflow, keep using a prompt. If it was built around structured fields, use those exact fields.
 
       - path: /meshagent-skills/skills/meshagent-runtime-operator/SKILL.md
         text: |
@@ -6280,7 +6221,7 @@ container:
               - skill: meshagent-participant-token-operator
                 when: The remaining question is whether the runtime or shell actually received a participant token and where it came from.
               - skill: meshagent-queue-worker-builder
-                when: The runtime to inspect is a queue-backed Worker and the question is whether it actually dequeues or completes jobs.
+                when: The runtime to inspect is a queue consumer and the question is whether it actually dequeues or completes jobs.
               - skill: meshagent-service-operator
                 when: The fix belongs in service definition or room service lifecycle rather than runtime debugging.
               - skill: meshagent-webapp-builder
@@ -6327,23 +6268,14 @@ container:
           
           ## Related skills
           
-          - `meshagent-workflow-orchestrator`: Use it when runtime debugging is only one part of a larger end-to-end workflow.
-          - `meshagent-sdk-researcher`: Resolve checkout roots before using CLI or server source references.
-          - `meshagent-participant-token-operator`: Use it when the question is about runtime token presence, delegated shell token behavior, or participant-token origin.
-          - `meshagent-queue-worker-builder`: Use it when the runtime belongs to a queue-backed Worker and the remaining job is to prove or debug actual dequeue behavior.
-          - `meshagent-mail-operator`: Use it when the runtime issue depends on mailbox identity, MailBot publication, or proving outbound mail behavior.
-          - `meshagent-scheduler`: Use it when a required scheduled-task create, list, or timing step may be blocked by permissions or backend scheduler health.
-          - `meshagent-service-operator`: Use it when the main task is changing a service definition or room service record rather than debugging the live runtime.
-          - `meshagent-webapp-builder`: Use it when runtime checks pass but the remaining issue is public site behavior.
-          
-          ## Default workflow
-          
-          1. Resolve the room and identify the runtime target: service, container, port, or log stream.
-          2. Start with read-only inspection: room service state, toolkit visibility, developer logs, container list, container logs, or port-forward target discovery.
-          3. For queue-backed workflows, check the dependency chain in order: service state, required toolkit publication, worker logs, immediate queue smoke test, and only then scheduler or external-action verification.
-          4. Use `exec`, `run`, or image operations only after you understand the live state.
-          5. If local inspection is needed, use port forwarding with an explicit target container and port mapping.
-          6. Verify that the runtime symptom changed after any intervention.
+          - `meshagent-workflow-orchestrator`: end-to-end workflows with multiple surfaces
+          - `meshagent-sdk-researcher`: source and docs lookup
+          - `meshagent-participant-token-operator`: runtime token presence and delegated shell token behavior
+          - `meshagent-queue-worker-builder`: queue consumer behavior and runtime design
+          - `meshagent-mail-operator`: mailbox identity, toolkit `email`, and outbound mail behavior
+          - `meshagent-scheduler`: scheduler permissions, create/list health, and timing issues
+          - `meshagent-service-operator`: service definition and lifecycle fixes
+          - `meshagent-webapp-builder`: public site behavior after runtime checks pass
           
           ## Live room execution
           
@@ -6351,47 +6283,49 @@ container:
           - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped runtime debugging.
           - If permissions are uncertain, start with a narrow room-scoped read such as `meshagent room service list`, `meshagent room developer watch`, or `meshagent room container list` before claiming runtime access is blocked.
           
-          ## Runtime rules
+          ## Core workflow
           
-          - Prefer `meshagent room developer watch` for room-wide developer telemetry and `meshagent room container log` for one container’s logs.
+          1. Resolve the room and the runtime target: service, container, log stream, or port-forward target.
+          2. Start read-only: service list, toolkit visibility, developer watch, container list, container logs.
+          3. For queue workflows, check in order: service state, required toolkits, runtime logs, immediate smoke test, then scheduler or external-action proof.
+          4. Use `exec`, `run`, `stop`, or image operations only after the live state is clear.
+          5. If local inspection is needed, use port forwarding with an explicit target container and port.
+          6. After any intervention, verify that the observed symptom actually changed.
+          
+          ## Operating rules
+          
+          - Prefer `meshagent room service list` before container actions when the symptom is about a deployed service.
+          - Prefer `meshagent room developer watch` for room-wide telemetry and `meshagent room container log` for one container.
           - Prefer `container list` before `log`, `exec`, `stop`, or `port forward` so you target the right container.
-          - Prefer `meshagent room service list` before container actions when the symptom is about a deployed service, Worker, or MailBot rather than an ad hoc container.
-          - Do not use generic toolkit invocation for ordinary service discovery when `meshagent room service list` already covers the question directly.
-          - Prefer `meshagent room agent list-toolkits` before concluding that a runtime dependency such as toolkit `email` is unavailable or unpublished.
+          - Prefer `meshagent room agent list-toolkits` before concluding a runtime dependency such as toolkit `email` is missing.
+          - Do not use generic toolkit invocation for ordinary service discovery when `meshagent room service list` already answers the question.
           - Treat `container stop` as disruptive.
-          - Treat `container exec` as a live-room debugging operation, not a substitute for fixing the service definition.
-          - Use image build/pull/push/load/save only when the runtime problem or deployment workflow actually requires image operations.
+          - Treat `container exec` as debugging, not as a substitute for fixing the service definition.
+          - Use image build/pull/push/load/save only when the runtime problem actually requires image operations.
           
-          ## Queue worker verification
+          ## Queue and toolkit diagnosis
           
-          - For queue-backed Workers, verify the room service is visible, then inspect the live runtime with developer output, container list, and container logs.
-          - Verify that every required toolkit the Worker depends on is visibly published in the room before assuming the Worker is truly ready to process jobs.
-          - Distinguish "service exists" from "worker is ready." A Worker may appear running while still waiting for a required toolkit or another runtime dependency.
-          - Prefer an immediate smoke-test message over waiting only for a future scheduled task when you need to prove dequeue behavior.
-          - For mail-sending Workers, inspect logs for dequeue evidence and mail-send success or failure before calling the workflow complete.
-          - A queue size of `0` after a test or scheduled run is not enough by itself. Confirm whether the message was consumed successfully, failed during handling, or never arrived.
-          - If a smoke-test message remains in the queue, check toolkit publication, Worker startup logs, and service/container restart state before changing the queue or payload.
+          - Distinguish “service exists” from “runtime is ready.”
+          - If a runtime uses `--require-toolkit=<NAME>`, verify that toolkit is visibly published in the room.
+          - Do not assume mailbox, service, or queue creation also publishes a toolkit.
+          - For email workflows, separate mailbox existence from toolkit `email` publication.
+          - Prefer an immediate smoke-test message over waiting for a future scheduled task when you need to prove dequeue behavior.
+          - A queue size of `0` is not enough by itself. Confirm whether the message was consumed successfully, failed during handling, or never arrived.
+          - If a smoke-test message remains queued, check toolkit publication, startup logs, and service/container restart state before changing the queue or payload.
           
-          ## Toolkit dependency diagnosis
+          ## Cross-surface rules
           
-          - When a Worker uses `--require-toolkit=<NAME>`, verify that toolkit is actually published in the room with `meshagent room agent list-toolkits`.
-          - Do not assume that creating a mailbox, service, or queue also publishes a toolkit. Prove the toolkit exists as a live room participant capability.
-          - For email workflows, separate mailbox existence from toolkit `email` publication. A mailbox alone does not satisfy a Worker waiting on toolkit `email`.
-          - If the required toolkit is missing, treat that as a readiness blocker first rather than debugging queue payload shape or scheduler timing.
-          
-          ## Cross-surface diagnosis
-          
-          - For queue-backed mail workflows, use this order: `meshagent room service list`, `meshagent room agent list-toolkits`, `meshagent room developer watch`, `meshagent room container list/log`, immediate queue smoke test, then mail-send evidence.
-          - If the queue path works but the future scheduled run does not, hand off to `meshagent-scheduler` to preflight scheduler permissions or backend health rather than treating it as a pure runtime failure.
-          - If scheduler create or list is failing with `403` or `5xx`, report that as a scheduler blocker even if the runtime path is healthy.
-          - If the runtime path is unhealthy, do not let scheduler troubleshooting distract from fixing service state, required toolkits, or Worker readiness first.
+          - For queue-backed mail workflows, use this order: service list, toolkit list, developer watch, container list/logs, immediate smoke test, then mail-send evidence.
+          - If the runtime path is healthy but scheduled runs fail, hand off to `meshagent-scheduler`.
+          - If scheduler create or list fails with `403` or `5xx`, report a scheduler blocker even when the runtime is healthy.
+          - If the runtime path is unhealthy, fix service state, required toolkits, or runtime readiness before spending time on scheduler diagnosis.
           
           ## Verification rules
           
           - Do not conclude that the runtime is healthy based only on service metadata.
           - Use logs, running container state, toolkit visibility, and port-forwarded behavior to confirm what is actually happening.
-          - For queue-backed Workers, do not conclude success until you have runtime evidence that a test message was actually processed.
-          - For Workers with required toolkits, do not conclude readiness until the required toolkits are visibly present in the room.
+          - For queue-backed runtimes, do not conclude success until you have evidence that a test message was actually processed.
+          - For runtimes with required toolkits, do not conclude readiness until those toolkits are visibly present.
           - If a container-local check passes but the public behavior is still broken, hand off to the appropriate website or route skill rather than stopping at the runtime layer.
           - If a runtime issue persists after restart or stop/start behavior, inspect the declarative service definition before repeating the same action.
           
@@ -6445,7 +6379,7 @@ container:
               - skill: meshagent-queue-operator
                 when: The task is generic queue inspection or queue injection outside scheduled-task management.
               - skill: meshagent-queue-worker-builder
-                when: A queue-consuming Worker must be created or repaired before scheduling.
+                when: A queue-consuming runtime must be created or repaired before scheduling.
             scope:
               owns:
                 - scheduled-task CRUD
@@ -6469,29 +6403,29 @@ container:
           
           # MeshAgent Scheduler
           
-          Use this skill for `meshagent scheduled-task ...` workflows and for verifying the queue behavior they trigger.
+          Use this skill for `meshagent scheduled-task ...` work and for proving what those tasks actually enqueue.
           
-          The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT schedule unless the implementation changes.
+          The scheduler stores cron text only. Treat every stored schedule as UTC/GMT unless the implementation changes.
           
           ## Use this skill when
           
           - The user wants to add, inspect, update, pause, resume, or delete a scheduled task.
-          - The task involves a cron schedule or one-time dispatch through `meshagent scheduled-task ...`.
-          - The user needs to verify that a scheduled task is actually sending work into a queue.
-          - The user needs to connect scheduled dispatch to an existing queue consumer or service without designing that consumer.
+          - The task is about one-time or recurring queue dispatch through `meshagent scheduled-task ...`.
+          - The user needs proof that a scheduled task reaches a queue.
+          - The user already has, or is trying to target, a known queue consumer.
           
           ## References
           
-          - Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
-          - Use `../_shared/references/live_room_cli_context.md` when the scheduling workflow runs in or targets a known live room.
-          - Use `../_shared/references/process_agent_design.md` when the queue target may really be a process-backed agent with queue plus other channels.
+          - Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact commands and flags.
+          - Use `../_shared/references/live_room_cli_context.md` for known live-room work.
+          - Use `../_shared/references/process_agent_design.md` when the target consumer is a process agent.
           
           ## Related skills
           
-          - `meshagent-workflow-orchestrator`: Use it when scheduling is only one step inside a larger end-to-end workflow.
-          - `meshagent-sdk-researcher`: Resolve checkout roots before using examples or implementation references.
-          - `meshagent-queue-operator`: Use it when the task is queue inspection or queue injection outside scheduled-task management.
-          - `meshagent-queue-worker-builder`: Use it when a queue-consuming Worker or other explicit queue consumer must be built before scheduling can be claimed to work.
+          - `meshagent-workflow-orchestrator`: scheduling is only one step in a larger workflow.
+          - `meshagent-sdk-researcher`: resolve checkout roots before citing examples or source.
+          - `meshagent-queue-operator`: queue inspection or injection outside scheduled-task management.
+          - `meshagent-queue-worker-builder`: the room still lacks a real queue consumer.
           
           ## Primary command groups
           
@@ -6502,165 +6436,102 @@ container:
           - `meshagent room queue receive`
           - `meshagent room queue size`
           
-          ## Delivery model
+          ## Core model
           
-          - A scheduled task does not execute business logic directly.
-          - It enqueues a JSON payload onto the configured queue on the requested schedule.
-          - The scheduled workflow is only end-to-end useful when something else consumes that queue.
-          - For scheduled email workflows, the payload itself should explicitly tell the Worker to send the email or should carry the fields the Worker's rules require for email sending. Do not assume the schedule "knows" to send mail just because the queue consumer has access to toolkit `email`.
-          - For straightforward scheduled email requests, treat sender provisioning as part of the workflow build, not as extra user input, unless the user explicitly asked to choose the sender identity.
+          - A scheduled task only enqueues JSON onto a queue.
+          - It does not execute business logic directly.
+          - The workflow is only useful if some runtime actually consumes that queue.
+          - For scheduled email, the payload must clearly map to the runtime's email-sending rules. Do not assume the schedule itself "knows" to send email.
           
           ## Default workflow
           
-          1. Resolve the active project, room, queue, and intended local execution time.
-          2. Resolve the requesting user's timezone before setting or changing a schedule.
-          3. Inspect the current room and current agent context to determine whether the running agent already has an explicit queue-consuming path.
-          4. Preflight scheduled-task capability before presenting the workflow as end-to-end ready: for a room-scoped workflow, inspect existing scheduled tasks with `meshagent scheduled-task list --room <ROOM_NAME>` first. Treat a permissions failure, `403`, or unexpected `5xx` as a real blocker only after using the narrowest room-scoped read path that matches the workflow.
-          5. For a new queue-backed workflow, verify that the queue consumer has already passed an immediate smoke test before creating a one-time or near-future scheduled task.
-          6. If the user expressed the schedule relatively, such as "one minute from now," anchor that relative time to the moment you are actually ready to create the scheduled task, not to the beginning of the broader setup workflow.
-          7. If you plan to pass `--id`, make sure it is a real UUID. Otherwise omit `--id` and let the server generate the task id.
-          8. Confirm the exact queue name, JSON payload, requesting-user local execution time, timezone, and UTC cron expression before mutating anything.
-          9. Create, update, or delete the scheduled task.
-          10. If `add` has an uncertain result because of timeout, transport noise, or retry pressure, verify with `meshagent scheduled-task list` before issuing another `add`.
-          11. Verify the task state with `meshagent scheduled-task list`.
-          12. Verify that the stored cron fields exactly match the computed UTC time, not the requesting user's local clock fields.
-          13. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+          1. Resolve the active project, room, queue, and intended execution time.
+          2. Resolve the requesting user's timezone.
+          3. Confirm that the target runtime really consumes the queue.
+          4. Preflight scheduler access with the narrowest matching read path, usually `meshagent scheduled-task list --room <ROOM_NAME>`.
+          5. For new queue-backed workflows, require a successful immediate smoke test before creating a near-future task.
+          6. For relative requests such as "in 2 minutes," anchor the time to the moment you are actually ready to create the task.
+          7. Confirm queue, payload, local execution time, timezone, and UTC cron before mutating anything.
+          8. Create, update, or delete the task.
+          9. Verify the stored task and the resulting queue behavior.
           
-          ## Live room execution
+          ## Live room rules
           
-          - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
-          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped scheduling work.
-          - If permissions are uncertain, start with `meshagent scheduled-task list --room <ROOM_NAME>` or another narrow room-scoped scheduler probe before claiming scheduling is blocked.
+          - Apply `../_shared/references/live_room_cli_context.md`.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks.
+          - If permissions are unclear, start with `meshagent scheduled-task list --room <ROOM_NAME>` or another narrow room-scoped scheduler probe.
           
-          ## Payload design for scheduled email workflows
+          ## Scheduled email payloads
           
-          - A scheduled task only enqueues payload. It does not implicitly request email sending.
-          - If the target workflow is "send an email later," design the payload so the Worker can clearly infer that it must use toolkit `email`.
-          - Good scheduled email payloads either:
-            - include an explicit prompt such as "Send an email to <RECIPIENT> using the email toolkit", or
-            - include the exact structured fields the Worker rules already require, such as `to`, `subject`, `body`, and any other required action field.
-          - If the Worker was authored around mounted or room-rules workflow files, a prompt that tells it to run that established workflow is usually the safer scheduled payload than ad hoc JSON fields.
-          - The `industry-report` nightly-report Worker is the preferred model for non-trivial scheduled email/report jobs: durable worker rules plus a scheduled prompt that tells the Worker to run that workflow.
-          - Keep the MailBot inbox path separate from the scheduled Worker queue. The mailbox-backed MailBot should normally consume the mailbox email address as its queue, while the scheduled Worker consumes its own job queue.
-          - Do not rely on a generic payload like `{"message":"hello"}` unless the Worker rules clearly define that such a payload means "send an email."
-          - Before creating the task, restate how the payload maps to the Worker's email-sending logic.
-          - If that mapping is ambiguous, fix the Worker rules or the payload before scheduling.
+          - The payload must explicitly request email sending in the style the queue consumer already expects.
+          - Good payloads either:
+            - use an explicit prompt such as `Send an email to <RECIPIENT> using the email toolkit`, or
+            - provide the exact structured fields the runtime rules already require, such as `to`, `subject`, `body`, and any required action field.
+          - If the runtime is built around durable room-rules workflows, a prompt that tells it to run that workflow is usually safer than ad hoc JSON fields.
+          - Keep the mailbox inbox path separate from the scheduled job queue unless the implementation clearly requires them to be the same.
+          - If the payload-to-runtime mapping is ambiguous, fix the runtime or the payload before scheduling.
           
-          ## Timezone resolution
+          ## Timezone rules
           
-          - Do not assume the requesting user's local timezone from the cron expression alone.
           - Prefer an explicit IANA timezone such as `America/Los_Angeles` or `Asia/Bangkok`.
-          - If the user already gave a timezone, use it and restate the UTC conversion you will schedule.
-          - Treat relative requests differently from absolute local-time requests:
-            - relative requests such as "in 2 minutes", "in an hour", or "tomorrow in 30 minutes" only need a trustworthy current-user `now`
-            - absolute requests such as "9 AM every day" or "March 30 at 4 PM" require the intended local timezone itself to be correct
-          - If no timezone was provided, first try to determine the requesting user's timezone from user-specific context such as an explicit location, profile data, client-local timezone, or another reliable signal tied to that user.
-          - If a strong user-specific timezone signal is already available from the current user context, previous user-specific metadata, or the client-local timezone exposed to the current session, you may use it without stopping to ask, but restate the assumed timezone explicitly before creating the task.
-          - Do not use the room host timezone, server timezone, or agent runtime timezone as a proxy for the requesting user unless you have evidence that they are the same person in the same locale.
-          - Ask the user directly only when there is no credible user-specific timezone basis at all, not merely because the timezone was inferred rather than typed by the user in the current turn.
-          - For relative scheduling requests, use the best available current user/session timezone signal to determine the user's current `now`, convert that to UTC, and anchor the relative offset from that UTC moment.
-          - For relative scheduling requests, do not force the same level of timezone confirmation that absolute local-time scheduling needs. The key requirement is a credible current-user `now`, not a separately negotiated wall-clock timezone label.
-          - For relative scheduling requests, prefer timezone sources in this order:
-            - current session or client-local timezone tied to the user making the request
-            - explicit timezone or location already provided by the user
-            - recent user-specific context for the same user
-            - only then weaker profile/default signals
-          - If a fresher current-session timezone signal exists, do not override it with older or weaker user defaults.
-          - Convert the requested local time into the exact UTC cron expression that will be stored.
-          - Build the cron fields from the converted UTC timestamp itself. Do not reuse the user's local hour or minute fields after conversion.
-          - When the request is tied to a named local timezone that observes DST, explain that the current scheduler stores UTC cron only, so the UTC schedule may need seasonal adjustment.
-          - Before agreeing to create the task, make sure the requesting user's timezone is known and restated explicitly.
+          - Do not use the room, server, or agent runtime timezone as a proxy for the requesting user unless you know they are the same.
+          - If no timezone was provided, use the best reliable user-specific signal first:
+            - current session or client-local timezone
+            - explicit user timezone or location
+            - recent user-specific context
+            - only then weaker defaults
+          - Ask the user only when no credible user-specific basis exists.
+          - Relative requests such as `in 2 minutes` need a credible current-user `now`.
+          - Absolute requests such as `9 AM every day` need the intended local timezone itself to be correct.
+          - Always restate the timezone assumption and the UTC conversion before creating or changing the task.
+          - Build cron fields from the converted UTC timestamp itself, not from the user's local clock fields.
           
-          ## One-time scheduling guard
+          ## One-time task guard
           
-          - Restate the exact requesting-user local scheduled time and the exact UTC time before creating a one-time task.
-          - The stored cron must reflect the converted UTC time, not a copy of the user's local wall-clock fields.
-          - Use absolute times in the explanation, not just "one minute from now" or similar relative phrasing.
-          - Interpret relative requests such as "one minute from now" relative to the actual `meshagent scheduled-task add` moment after setup is complete, not relative to the original user message timestamp.
-          - For relative requests, compute the offset from the user's current `now`, then treat the resulting UTC timestamp as the source of truth for the stored schedule.
-          - If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
-          - If setup, deployment, or smoke testing has consumed most of the time window, move the one-time run farther into the future instead of leaving it effectively in the past.
-          - Before sending `meshagent scheduled-task add`, make sure the computed UTC minute is still in the future with a real safety margin rather than merely equal to the next displayed minute.
-          - Before sending `meshagent scheduled-task add`, check whether an equivalent near-future one-time task already exists for the same room, queue, schedule, and payload so you do not create duplicates during a retry loop.
-          - If the scheduler endpoint is already showing `403`, `500`, or another backend failure during preflight, do not treat a near-future one-time request as ready for completion. Explain that scheduler creation is blocked before claiming end-to-end success.
-          - Do not create a near-future one-time task until the queue consumer path is already proven with an immediate smoke test.
-          - If the user asked for "a minute from now" but the workflow is not yet ready, explain that you are moving the one-time run to the next safe minute window rather than pretending the original time still makes sense.
-          - If an `add` attempt may already have succeeded, prefer inspecting existing tasks over issuing a second `add`.
-          - If the stored cron or UI-visible GMT time matches the user's local wall clock instead of the computed UTC time, treat that as a scheduling bug and correct it before claiming success.
+          - Restate the exact local time and exact UTC time before creating a one-time task.
+          - Use absolute times in the explanation, not only relative phrasing.
+          - Recompute relative times after setup if deployment or smoke testing took long enough to matter.
+          - Keep a real safety margin so the stored UTC minute is still in the future.
+          - Before `add`, check for an equivalent near-future task so you do not create duplicates after retries.
+          - If the first `add` may already have succeeded, inspect before retrying.
+          - If setup consumed too much of the original window, move the task to the next safe future time and say so.
           
-          ## Scheduler API preflight
+          ## Scheduler preflight
           
-          - For room-scoped scheduling work, prefer `meshagent scheduled-task list --room <ROOM_NAME>` before an unfiltered project-wide `list`.
-          - An unfiltered `meshagent scheduled-task list` can require broader project-level permissions than a room-scoped create or room-scoped list. Do not use the broader query as your first preflight when the actual workflow targets one room.
-          - `meshagent scheduled-task list --room <ROOM_NAME>` is the fastest packaged preflight for a room-scoped scheduler workflow. Run it before treating scheduled completion as available in the current environment.
-          - If room-scoped `list --room` fails with `403`, treat scheduled-task visibility for that room as blocked by permissions and do not promise that create/list verification will work later in the workflow.
-          - If only the unfiltered project-wide `list` fails with `403`, explain that project-wide scheduled-task visibility is blocked, but do not assume the room-scoped create path is blocked too.
-          - If `list` or `add` fails with an unexpected `5xx`, treat the scheduler backend as unhealthy for this room or project until proven otherwise.
-          - The current CLI and API do not locally validate that a one-time cron expression is still safely in the future. The backend create path is thin and backend cron failures can surface as generic server errors.
-          - When preflight shows scheduler failure, either stop before provisioning a half-complete scheduled workflow or clearly label any continued Worker or MailBot setup as partial preparation only.
+          - For room-scoped work, prefer `meshagent scheduled-task list --room <ROOM_NAME>` over an unfiltered project-wide `list`.
+          - A project-wide `list` can require broader permissions than a room-scoped workflow.
+          - If room-scoped `list --room` fails with `403`, treat scheduler visibility for that room as blocked.
+          - If only the unfiltered project-wide `list` fails with `403`, do not assume the room-scoped path is blocked too.
+          - If `list` or `add` returns an unexpected `5xx`, treat the scheduler backend as unhealthy until proven otherwise.
+          - If preflight already failed, do not present the workflow as fully completable.
           
-          ## Queue consumption
+          ## Queue checks
           
-          - CLI verification: use `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
-          - For queue-name discovery, prefer `meshagent room agent list-toolkits` and `meshagent room agent invoke-tool --toolkit queues --tool list --arguments '{}'` before writing SDK code.
-          - API verification: use the room queues client, for example `queues = await room.queues.list()` or `message = await room.queues.receive(name="my-queue")`.
-          - The current CLI does not expose a dedicated room-queue list subcommand. If the queue name is unknown, use the room queue API or inspect room configuration rather than claiming queue discovery is impossible.
-          - When you need end-to-end proof, verify both the scheduled task definition and the resulting queued message. For mail-sending workers, this is still not enough by itself; runtime mail-send evidence must also be checked.
+          - Verify queue behavior with `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
+          - If the queue name is unknown, prefer room toolkit invocation or the room queue API over ad hoc SDK code.
+          - Do not say queue listing is impossible just because the CLI lacks a dedicated room-queue list subcommand.
+          - For end-to-end proof, verify both the scheduled task definition and the queued message.
+          - Queue delivery alone is still not enough when the queued workflow must send email or perform another external action.
           
-          ## Current agent queue discovery
+          ## Queue consumer checks
           
-          - If this skill is running inside a live MeshAgent room runtime, first inspect the current room and current agent before inventing a queue or assuming a separate worker exists.
-          - If the queue name is not already known from the scheduled task, service config, mailbox config, or Worker config, first try generic CLI toolkit invocation to enumerate visible queues, then use the room queue API if needed.
-          - First look for an explicit queue-consuming runtime such as `meshagent worker join --queue=<QUEUE_NAME>` in the current startup command or service template.
-          - If the runtime is not a Worker, follow `../_shared/references/process_agent_design.md` before treating a queue channel such as `--channel=queue:<QUEUE_NAME>` as sufficient evidence of the intended queue consumer path.
-          - Also inspect agent annotations or nearby service YAML when the current runtime was created from a template. The schedule queue and the actual consumer path must match.
-          - If the current agent already consumes a queue in the current room, reuse that queue for scheduling the current agent.
-          - If the current agent does not already consume a queue, do not claim that scheduling the current running agent is possible yet.
-          - If the queue-consuming path is ambiguous, inspect the actual service template, startup command, or room-visible agent files before asking the user or choosing a queue name.
-          
-          ## Service integration
-          
-          - A service may expose queue channels such as `--channel=queue:QUEUE_NAME`, but channel wiring alone does not prove the runtime actually dequeues work. Use `../_shared/references/process_agent_design.md` when scheduling against a process-backed runtime.
-          - Scheduled-task configuration must match the queue that the runtime really consumes.
-          - Designing or implementing the queue consumer belongs in an agent-building workflow, not this skill.
-          
-          ## Handoff to agent building
-          
-          - If the current room already has an agent with a matching explicit queue consumer, stay in this skill and schedule against that queue.
-          - If the current agent does not have an explicit queue consumer, hand off to the `meshagent-queue-worker-builder` skill instead of inventing a queue consumer here.
-          - The `meshagent-queue-worker-builder` skill should construct or update `meshagent.yaml` so the agent consumes a queue and can be scheduled.
-          - When handing off, direct that skill to use `meshagent-sdk-researcher` first to inspect the nearest MeshAgent examples and packaging docs before writing YAML.
-          - Relevant examples are the resolved process-news-agent and meshagent-writer examples under the docs/examples tree.
+          - In a process agent, `meshagent process join` plus `--channel=queue:<QUEUE_NAME>` is the normal queue-consuming path.
+          - If the user explicitly asked for a dedicated Worker runtime, `meshagent worker join --queue=<QUEUE_NAME>` is valid too.
+          - Queue-looking metadata alone is not enough; the startup command must show the real queue-consuming runtime.
+          - If the current agent already consumes a matching queue, reuse it.
+          - If the room still lacks a confirmed queue consumer, hand off to `meshagent-queue-worker-builder` instead of inventing one here.
           
           ## Operating rules
           
           - Do not invent queue names.
-          - Do not say queue names cannot be listed just because the CLI lacks a dedicated room-queue list subcommand.
-          - For “what queues are available?” questions, prefer generic CLI toolkit invocation over ad hoc SDK code.
-          - When the request is simply "schedule a test email," do not stop just because no mailbox already exists. Hand off or continue into mailbox-backed sender provisioning as part of the ordinary workflow.
-          - When the request itself already asks for the end-to-end outcome, do not stop to ask "should I set it up?" unless a true missing user input or hard blocker remains.
           - Do not invent timezones.
-          - Do not schedule a task until the requesting user's timezone has been confirmed or reliably detected.
-          - Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
-          - If the requesting user's timezone cannot be acquired from reliable user-specific context, ask the user directly before creating the scheduled task.
-          - Do not ask for timezone again when a strong user-specific inferred timezone is already available; use it and restate the assumption.
-          - Do not treat scheduler create as reliable just because the CLI command exists. Preflight actual scheduler access and health first.
-          - Do not pass a human-readable custom scheduled-task id such as `scheduled-email-once-2min`. The backend scheduled-task id is a UUID. Omit `--id` unless you already have a real UUID to use.
-          - If scheduler preflight already failed, do not present the workflow as fully completable without clearly labeling the scheduler step as blocked.
-          - Do not schedule a near-future one-time task until the queue consumer has already passed an immediate smoke test.
-          - Do not anchor a relative scheduling request to the beginning of a longer setup workflow when the user's intent is relative to the actual task-creation moment.
-          - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
-          - Do not treat a bare `queue:` channel as proof of consumption unless the runtime clearly shows how it dequeues that queue.
-          - Always state the timezone assumption and the resulting UTC schedule when adding or updating a task.
-          - When verifying a created task, compare three things explicitly:
-            - the intended local wall-clock time in the user's timezone
-            - the converted UTC time
-            - the stored cron or UI-visible GMT schedule
-          - Those three must agree under UTC conversion. If the stored cron matches the local time instead of the UTC time, the task was created incorrectly.
-          - Do not claim that a scheduled task "works" just because the task exists; verify that messages reach the queue.
-          - Do not treat queue delivery alone as end-to-end success when the queued workflow must send email or perform another externally visible action.
+          - Do not pass a human-readable `--id`; omit it unless you already have a real UUID.
+          - Do not schedule a near-future task until the queue consumer has passed an immediate smoke test.
+          - Do not anchor a relative request to the start of a long setup workflow.
+          - Do not claim success because the task exists; prove that messages reach the queue.
+          - Do not call queue delivery alone end-to-end success when the queued workflow must still send email or do something else externally visible.
           - Treat `update` and `delete` as destructive.
-          - Keep this skill focused on scheduling and queue verification, not on the implementation of the consumer.
+          - Keep this skill focused on scheduling and queue verification, not consumer implementation.
           
           ## Workflow accountability
           
@@ -6709,7 +6580,7 @@ container:
               - skill: meshagent-database-operator
                 when: The problem has already narrowed to room database operations.
               - skill: meshagent-queue-worker-builder
-                when: The research phase is done and the next step is authoring Worker YAML.
+                when: The research phase is done and the next step is authoring queue-consumer YAML.
             scope:
               owns:
                 - checkout root resolution
@@ -6762,7 +6633,7 @@ container:
           
           - `meshagent-cli-operator`: Use it when the problem is mainly exact command paths, flags, or non-interactive execution.
           - `meshagent-database-operator`: Use it after the research step when the task has narrowed to room database operations.
-          - `meshagent-queue-worker-builder`: Use it after the research step when the next job is authoring queue-backed Worker YAML.
+          - `meshagent-queue-worker-builder`: Use it after the research step when the next job is authoring queue-consumer YAML.
           
           ## Operating rules
           
@@ -6827,7 +6698,7 @@ container:
               - skill: meshagent-participant-token-operator
                 when: The main question is token-backed environment injection, participant identity, or service token wiring rather than generic service lifecycle.
               - skill: meshagent-queue-worker-builder
-                when: The main task is authoring queue-backed Worker YAML.
+                when: The main task is authoring queue-consumer YAML.
               - skill: meshagent-webapp-builder
                 when: The main task is a website or public web application rather than service lifecycle.
               - skill: meshagent-runtime-operator
@@ -6879,7 +6750,7 @@ container:
           - `meshagent-workflow-orchestrator`: Use it when the service work is only one part of a larger end-to-end workflow.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
           - `meshagent-participant-token-operator`: Use it when the issue is token-backed environment injection or participant-token wiring inside the service manifest.
-          - `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-backed Worker YAML.
+          - `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-consumer YAML.
           - `meshagent-webapp-builder`: Use it when the main task is a website or public web application rather than service lifecycle.
           - `meshagent-webmaster`: Use it when the main task is route and hostname management rather than service lifecycle.
           - `meshagent-runtime-operator`: Use it when the remaining problem is live runtime behavior rather than service definition.
@@ -6893,7 +6764,7 @@ container:
           5. If validation fails, inspect the exact error, repair the asset, and rerun validation. Keep that fix-and-revalidate loop local to the service YAML until it passes or the remaining blocker is no longer a YAML problem.
           6. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
           7. After mutation, verify the service record and, when relevant, the live room service state.
-          8. If the service is a queue-backed Worker or other background runtime, hand off to runtime inspection before calling the deployment successful.
+          8. If the service is a queue consumer or other background runtime, hand off to runtime inspection before calling the deployment successful.
           
           ## Live room execution
           
@@ -6919,7 +6790,7 @@ container:
           - Do not claim a service is deployed correctly based only on YAML generation.
           - After create or update, verify with `meshagent service show`, `meshagent service list`, or `meshagent room service list` as appropriate.
           - When the question is simply "what services are running in this room?", `meshagent room service list` is the default answer path.
-          - For queue-backed Workers, a visible service record is not enough. Confirm that the room service is present and then use runtime inspection to prove that a live runtime or container is actually running.
+          - For queue consumers, a visible service record is not enough. Confirm that the room service is present and then use runtime inspection to prove that a live runtime or container is actually running.
           - If a room service is unhealthy, use room-service state and runtime inspection before rewriting the spec.
           - If restart is requested, confirm the target by `--id` or `--name` before issuing it.
           
@@ -7884,7 +7755,7 @@ container:
               - skill: meshagent-queue-operator
                 when: Queue inspection, send, receive, or backlog verification is needed.
               - skill: meshagent-queue-worker-builder
-                when: The workflow needs a queue-backed Worker or MailBot service.
+                when: The workflow needs a queue consumer or mail runtime service.
               - skill: meshagent-mail-operator
                 when: Mailbox identity, room SMTP behavior, or outbound email verification is required.
               - skill: meshagent-service-operator
@@ -7943,82 +7814,73 @@ container:
           
           ## Related skills
           
-          - `meshagent-cli-operator`: Use it for exact command routing and execution details.
-          - `meshagent-sdk-researcher`: Use it when the workflow depends on examples, docs, or source inspection.
-          - `meshagent-participant-token-operator`: Use it when a workflow depends on participant token source, service token injection, delegated shell token behavior, or token minting.
-          - `meshagent-queue-operator`: Use it for queue discovery, send, receive, and backlog verification.
-          - `meshagent-queue-worker-builder`: Use it when the workflow needs a queue-backed Worker or MailBot.
-          - `meshagent-mail-operator`: Use it for mailbox provisioning, sender identity, and outbound mail behavior.
-          - `meshagent-service-operator`: Use it for declarative service lifecycle and room service operations.
-          - `meshagent-runtime-operator`: Use it to prove runtime state, toolkit publication, logs, or live container behavior.
-          - `meshagent-scheduler`: Use it for scheduled-task timing, timezone handling, and queue-schedule alignment.
-          - `meshagent-storage-operator`: Use it for room storage copy, inspection, and path verification.
-          - `meshagent-webapp-builder`: Use it for room-hosted websites, handlers, and public web verification.
-          - `meshagent-webmaster`: Use it for route and managed-hostname administration.
+          - `meshagent-cli-operator`: exact command routing and syntax
+          - `meshagent-sdk-researcher`: docs, examples, and source inspection
+          - `meshagent-participant-token-operator`: token sourcing and token-backed env wiring
+          - `meshagent-queue-operator`: queue send, receive, and backlog checks
+          - `meshagent-queue-worker-builder`: queue-consuming service YAML
+          - `meshagent-mail-operator`: mailbox, sender identity, and SMTP behavior
+          - `meshagent-service-operator`: service lifecycle and room service operations
+          - `meshagent-runtime-operator`: runtime state, toolkit publication, logs, and containers
+          - `meshagent-scheduler`: scheduled-task timing and queue alignment
+          - `meshagent-storage-operator`: room storage copy and path verification
+          - `meshagent-webapp-builder`: room-hosted websites and handlers
+          - `meshagent-webmaster`: routes and managed hostnames
+          
+          ## Core model
+          
+          - Keep one owner for the whole user-visible result.
+          - Start with the narrowest action that could satisfy the request or expose the next blocker.
+          - Preflight only the surfaces needed for that next action.
+          - Use specialist skills for execution, but require evidence back from them.
+          - Do not call the workflow complete until the final result is verified or the exact blocker is isolated.
           
           ## Default workflow
           
-          1. Restate the user-visible goal in one sentence and identify the current likely workflow owner.
-          2. Choose the narrowest first action that could directly satisfy the request or expose the next blocker.
-          3. Identify only the surfaces needed for that first action, such as queue, mailbox, service, runtime, scheduler, or public web endpoint.
-          4. Preflight only the surfaces required before that next risky or user-visible step. If a required surface is blocked by `403`, `5xx`, or missing room capability, treat that as an early blocker for that branch.
-          5. Identify the concrete missing inputs, ask for them together only when they are truly blocking, and do not ask the user to restate the overall goal.
-          6. Choose the specialist skill that should execute the next sub-step, but keep workflow ownership unless you intentionally transfer it.
-          7. After each handoff, collect evidence rather than accepting a generic success claim.
-          8. Re-evaluate the remaining completion gates after every mutation or verification step.
-          9. Do not call the workflow complete until the final user-visible outcome is verified or the exact blocker is isolated.
+          1. Restate the goal in one sentence and identify the current owner.
+          2. Pick the cheapest action that can move the workflow forward.
+          3. Identify only the surfaces needed for that step.
+          4. Check only the blockers that matter before the next risky or user-visible mutation.
+          5. Ask for missing inputs only when they are truly blocking.
+          6. Route the sub-step to the narrowest specialist skill.
+          7. Collect evidence after each mutation or handoff.
+          8. Re-evaluate the remaining gates.
+          9. Finish only when the user-visible outcome is proven or the blocker is exact.
           
-          ## Fast path
+          ## Operating rules
           
-          - Start with one narrow task-matching action before surveying every dependent surface.
-          - For simple room asks, prefer the exact room-scoped read or mutation path that would satisfy the request directly.
-          - For larger workflows, the first step should still be the cheapest action that can prove whether the workflow is viable, not a full environment inventory.
-          
-          ## Escalate when
-          
-          - The first narrow path fails or returns an ambiguous blocker.
-          - The next step depends on a new surface such as scheduler access, toolkit publication, mailbox ownership, or public route health.
-          - The workflow is about to make a mutation whose success depends on a backend surface that has not been checked yet.
-          - The user asked for an end-to-end verified outcome and the remaining completion gates require broader proof.
-          
-          ## Orchestration rules
-          
-          - Prefer one owner and several supporting skills over bouncing ownership implicitly between specialists.
-          - Choose the narrowest specialist skill for execution, but keep orchestration here when the job spans multiple surfaces.
-          - Preflight cheap blockers early only when the currently chosen execution path actually depends on them.
-          - Do not start by inventorying room access, scheduler visibility, toolkit publication, service visibility, queue discovery, mailbox identity, and route readiness all at once when the user's first requested action only needs one of those surfaces.
-          - For room-scoped work, apply `../_shared/references/live_room_cli_context.md`, start from the known room context, and use the narrowest room-scoped probe first.
-          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite gatekeeper commands for a known-room workflow.
-          - If the workflow needs service discovery, prefer `meshagent room service list` over generic toolkit invocation because the direct room command is narrower and faster.
-          - If the workflow must choose a service or worker image, derive the image family from the actual MeshAgent environment before copying a docs example.
-          - If the workflow depends on authored service YAML, prefer a generated spec first and require command-flag correctness, role correctness, and wiring correctness before treating the asset as deployable.
-          - If a broad probe fails but a narrower room-scoped probe succeeds, continue the workflow and report the broad-scope limitation accurately instead of giving up.
-          - If the workflow includes a relative schedule such as "one minute from now," make scheduling the final creation step after the worker/runtime path has already been proven.
-          - If the workflow includes a real outgoing email, require a real recipient address unless the user explicitly asked for a payload-only template.
-          - If one branch of the workflow is healthy and another is blocked, report partial preparation clearly and keep the blocked surface attached to the overall outcome.
-          - If the user's request already clearly includes ordinary prerequisite setup, do not stop to ask for permission to do that setup unless a real missing input or blocker remains.
-          - If a near-future one-time schedule is being created, treat duplicate creation after retries as a workflow bug to avoid, not as an acceptable side effect.
+          - Do not inventory every backend surface before the first useful action.
+          - For room-scoped work, apply `../_shared/references/live_room_cli_context.md` and start from the known room context.
+          - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as gatekeeper checks for known-room workflows.
+          - If service discovery is needed, prefer `meshagent room service list` over generic toolkit invocation.
+          - If a broad probe fails but a narrower room-scoped probe succeeds, continue and report the broad-scope limitation accurately.
+          - If the workflow depends on authored service YAML, prefer generated specs and require valid flags, roles, and wiring before treating the asset as deployable.
+          - If the workflow must choose a service image, derive the image family from the actual environment before copying an example.
+          - If the workflow includes relative scheduling, make schedule creation the last mutation after the runtime path is proven.
+          - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
+          - If the request clearly includes ordinary prerequisite setup, do not stop to ask permission for that setup unless a real missing input remains.
+          - If a near-future one-time schedule is retried, treat duplicate creation as a workflow bug to avoid.
           
           ## Evidence rules
           
-          - Collect evidence per surface, not just per command.
-          - Prefer evidence such as queue names, service ids, mailbox addresses, toolkit visibility, runtime logs, scheduled-task ids, or live URLs.
-          - When a supporting skill reports success, translate that into concrete workflow-gate evidence before moving on.
-          - If a blocker appears, name the blocked surface directly, for example scheduler permissions, missing toolkit publication, or unhealthy runtime.
-          - For delivered-email workflows, do not let queue drain or object creation stand in for mail-delivery evidence. Require runtime send evidence or clearly report that delivery is still unproven.
+          - Collect evidence by surface, not just by command.
+          - Prefer evidence like queue names, mailbox addresses, service ids, toolkit visibility, runtime logs, scheduled-task ids, or live URLs.
+          - Translate supporting-skill claims into concrete workflow-gate evidence before moving on.
+          - Name blockers by surface, for example scheduler permissions, missing toolkit publication, or unhealthy runtime.
+          - For mail workflows, do not let queue drain or object creation stand in for delivery evidence.
           
-          ## Ownership transfer rules
+          ## Ownership rules
           
-          - Keep ownership here when the user asked for a cross-surface end-to-end result.
-          - Transfer ownership only when the remainder of the job is now clearly inside one specialist skill's scope.
-          - If ownership transfers, say so in reasoning and make sure the new owner continues tracking completion gates and evidence.
-          - If ownership does not transfer, supporting skills should return evidence to this skill rather than declaring the whole workflow complete.
+          - Keep ownership here when the request is cross-surface and end-to-end.
+          - Transfer ownership only when the remainder is clearly inside one specialist skill.
+          - If ownership stays here, supporting skills return evidence rather than declaring the whole workflow complete.
+          - If ownership transfers, the new owner must continue tracking gates and evidence.
           
           ## Workflow accountability
           
-          - This skill should own the workflow outcome when the user's goal spans multiple specialized skills.
-          - If another skill already owns the workflow and the remaining task is now fully within that narrower scope, transfer ownership explicitly rather than keeping two implicit owners.
-          - If this skill hands off to another skill without ownership transfer, keep accountability for the original goal until the handoff returns evidence or an exact blocker.
+          - This skill should own the workflow when the goal spans multiple specialized skills.
+          - If another skill already owns the workflow and the remainder is now fully inside that narrower scope, transfer ownership explicitly.
+          - If this skill hands off without ownership transfer, keep accountability until the handoff returns evidence or an exact blocker.
           - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
           
           ## Out of scope
