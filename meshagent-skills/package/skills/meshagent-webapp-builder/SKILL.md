@@ -25,6 +25,8 @@ metadata:
       when: The web app is one piece of a larger end-to-end workflow.
     - skill: meshagent-cli-operator
       when: General room-context, managed-hostname, and deploy-command rules matter.
+    - skill: meshagent-participant-token-operator
+      when: The blocker is token-backed service environment wiring, participant-token discovery, or direct room API auth inside the handler runtime.
     - skill: meshagent-mail-operator
       when: The blocker is mailbox provisioning or room SMTP behavior.
     - skill: meshagent-webmaster
@@ -83,6 +85,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - `meshagent-workflow-orchestrator`: Use it when the web app is only one piece of a larger end-to-end workflow.
 - `meshagent-cli-operator`: Reuse its general room-context, managed-hostname, and deploy-command rules instead of inventing environment behavior locally.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references outside this skill bundle.
+- `meshagent-participant-token-operator`: Use it when the blocker is service token injection, participant-token discovery, or direct room API auth inside the handler runtime.
 - `meshagent-mail-operator`: Use it when the blocker is mailbox provisioning, queue-backed mail intake, or SMTP behavior.
 - `meshagent-webmaster`: Use it when the main task is route and hostname administration rather than the web app itself.
 - `meshagent-webapp-react-builder`: Use it when the site is a small React-style UI built with Preact + htm.
