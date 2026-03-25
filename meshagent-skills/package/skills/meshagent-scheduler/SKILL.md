@@ -8,6 +8,7 @@ metadata:
       - ../meshagent-cli-operator/references/command_groups.md
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
       - ../_shared/references/live_room_cli_context.md
+      - ../_shared/references/process_agent_design.md
       - ../_shared/references/workflow_accountability.md
     requires_roots:
       - docs_root
@@ -16,6 +17,7 @@ metadata:
     resolved_targets:
       - scheduled task CLI help
       - shared live-room CLI context rules
+      - shared process-agent design rules
       - scheduled task examples
   related_skills:
     - skill: meshagent-workflow-orchestrator
@@ -64,6 +66,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 
 - Use `../meshagent-cli-operator/references/command_groups.md` and `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes and flags.
 - Use `../_shared/references/live_room_cli_context.md` when the scheduling workflow runs in or targets a known live room.
+- Use `../_shared/references/process_agent_design.md` when the queue target may really be a process-backed agent with queue plus other channels.
 
 ## Related skills
 
@@ -170,7 +173,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - If this skill is running inside a live MeshAgent room runtime, first inspect the current room and current agent before inventing a queue or assuming a separate worker exists.
 - If the queue name is not already known from the scheduled task, service config, mailbox config, or Worker config, first try generic CLI toolkit invocation to enumerate visible queues, then use the room queue API if needed.
 - First look for an explicit queue-consuming runtime such as `meshagent worker join --queue=<QUEUE_NAME>` in the current startup command or service template.
-- If the runtime is not a Worker, a queue channel such as `--channel=queue:<QUEUE_NAME>` is only supporting evidence. Treat it as sufficient only when the runtime and surrounding implementation clearly consume that queue.
+- If the runtime is not a Worker, follow `../_shared/references/process_agent_design.md` before treating a queue channel such as `--channel=queue:<QUEUE_NAME>` as sufficient evidence of the intended queue consumer path.
 - Also inspect agent annotations or nearby service YAML when the current runtime was created from a template. The schedule queue and the actual consumer path must match.
 - If the current agent already consumes a queue in the current room, reuse that queue for scheduling the current agent.
 - If the current agent does not already consume a queue, do not claim that scheduling the current running agent is possible yet.
@@ -178,7 +181,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 
 ## Service integration
 
-- A service may expose queue channels such as `--channel=queue:QUEUE_NAME`, but channel wiring alone does not prove the runtime actually dequeues work.
+- A service may expose queue channels such as `--channel=queue:QUEUE_NAME`, but channel wiring alone does not prove the runtime actually dequeues work. Use `../_shared/references/process_agent_design.md` when scheduling against a process-backed runtime.
 - Scheduled-task configuration must match the queue that the runtime really consumes.
 - Designing or implementing the queue consumer belongs in an agent-building workflow, not this skill.
 
@@ -188,7 +191,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - If the current agent does not have an explicit queue consumer, hand off to the `meshagent-queue-worker-builder` skill instead of inventing a queue consumer here.
 - The `meshagent-queue-worker-builder` skill should construct or update `meshagent.yaml` so the agent consumes a queue and can be scheduled.
 - When handing off, direct that skill to use `meshagent-sdk-researcher` first to inspect the nearest MeshAgent examples and packaging docs before writing YAML.
-- Relevant examples are the resolved process-news-agent, multi-agent-news-reporter, and meshagent-writer examples under the docs/examples tree.
+- Relevant examples are the resolved process-news-agent and meshagent-writer examples under the docs/examples tree.
 
 ## Operating rules
 
