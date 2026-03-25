@@ -120,6 +120,7 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 - Treat a managed hostname with the wrong environment suffix as invalid output, even if the route record exists.
 - Do not present a route hostname as a usable public URL unless the workflow has verified the level of reachability it claims, such as DNS or live HTTP.
 - If the route exists but public reachability is still unverified, report it as route state only, not as a proven public result.
+- If route creation or update produced a hostname that fails suffix validation or DNS verification, do not summarize the route workflow as complete.
 - Do not stop at "the MeshAgent CLI is not logged in" unless an actual route or related MeshAgent command fails with an authentication or authorization error.
 
 ## Workflow accountability
