@@ -92,6 +92,12 @@ def _room_smtp_config(*, room: RoomClient) -> tuple[str | None, str | None, int,
 
     hostname = os.getenv("SMTP_HOSTNAME")
     if hostname is None:
+        api_url = os.getenv("MESHAGENT_API_URL", "")
+        if ".life" in api_url:
+            hostname = "mail.meshagent.life"
+        elif ".com" in api_url:
+            hostname = "mail.meshagent.com"
+    if hostname is None:
         raise RuntimeError(
             "SMTP_HOSTNAME is not configured for this runtime; inspect the room mail configuration before using direct SMTP."
         )
