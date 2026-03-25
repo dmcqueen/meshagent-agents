@@ -133,10 +133,21 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Do not assume the requesting user's local timezone from the cron expression alone.
 - Prefer an explicit IANA timezone such as `America/Los_Angeles` or `Asia/Bangkok`.
 - If the user already gave a timezone, use it and restate the UTC conversion you will schedule.
+- Treat relative requests differently from absolute local-time requests:
+  - relative requests such as "in 2 minutes", "in an hour", or "tomorrow in 30 minutes" only need a trustworthy current-user `now`
+  - absolute requests such as "9 AM every day" or "March 30 at 4 PM" require the intended local timezone itself to be correct
 - If no timezone was provided, first try to determine the requesting user's timezone from user-specific context such as an explicit location, profile data, client-local timezone, or another reliable signal tied to that user.
 - If a strong user-specific timezone signal is already available from the current user context, previous user-specific metadata, or the client-local timezone exposed to the current session, you may use it without stopping to ask, but restate the assumed timezone explicitly before creating the task.
 - Do not use the room host timezone, server timezone, or agent runtime timezone as a proxy for the requesting user unless you have evidence that they are the same person in the same locale.
 - Ask the user directly only when there is no credible user-specific timezone basis at all, not merely because the timezone was inferred rather than typed by the user in the current turn.
+- For relative scheduling requests, use the best available current user/session timezone signal to determine the user's current `now`, convert that to UTC, and anchor the relative offset from that UTC moment.
+- For relative scheduling requests, do not force the same level of timezone confirmation that absolute local-time scheduling needs. The key requirement is a credible current-user `now`, not a separately negotiated wall-clock timezone label.
+- For relative scheduling requests, prefer timezone sources in this order:
+  - current session or client-local timezone tied to the user making the request
+  - explicit timezone or location already provided by the user
+  - recent user-specific context for the same user
+  - only then weaker profile/default signals
+- If a fresher current-session timezone signal exists, do not override it with older or weaker user defaults.
 - Convert the requested local time into the exact UTC cron expression that will be stored.
 - Build the cron fields from the converted UTC timestamp itself. Do not reuse the user's local hour or minute fields after conversion.
 - When the request is tied to a named local timezone that observes DST, explain that the current scheduler stores UTC cron only, so the UTC schedule may need seasonal adjustment.
@@ -148,6 +159,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - The stored cron must reflect the converted UTC time, not a copy of the user's local wall-clock fields.
 - Use absolute times in the explanation, not just "one minute from now" or similar relative phrasing.
 - Interpret relative requests such as "one minute from now" relative to the actual `meshagent scheduled-task add` moment after setup is complete, not relative to the original user message timestamp.
+- For relative requests, compute the offset from the user's current `now`, then treat the resulting UTC timestamp as the source of truth for the stored schedule.
 - If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
 - If setup, deployment, or smoke testing has consumed most of the time window, move the one-time run farther into the future instead of leaving it effectively in the past.
 - Before sending `meshagent scheduled-task add`, make sure the computed UTC minute is still in the future with a real safety margin rather than merely equal to the next displayed minute.
