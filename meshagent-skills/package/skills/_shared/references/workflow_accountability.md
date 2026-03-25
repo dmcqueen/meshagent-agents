@@ -72,8 +72,10 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not treat queue size changes alone as business workflow success.
 - Do not treat a scheduled task record alone as proof that the future workflow will work.
 - Do not present a created route record, deploy result, or hostname string as the achieved public URL until DNS and the required live HTTP checks have passed.
+- For a normal public website or contact form, do not treat DNS resolution, a TCP connection, or a redirect alone as sufficient verification. The live GET must reach the intended page with the expected final success status, normally `200`.
 - If a public URL has not been verified yet, label it explicitly as an unverified candidate or partial preparation, not as the finished output.
 - Do not lead with "done", "deployed", "created route", or similar completion language when the public-site outcome is still blocked on DNS or live HTTP verification.
+- Do not summarize a site request as "built", "deployed", or "created in the room" when the actual requested outcome is still a non-working public site.
 - Do not use the room, server, or runtime timezone as a substitute for the requesting user's timezone when the workflow is about scheduling in the user's local time.
 - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
 - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
