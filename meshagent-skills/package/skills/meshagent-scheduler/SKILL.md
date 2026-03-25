@@ -105,7 +105,8 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 9. Create, update, or delete the scheduled task.
 10. If `add` has an uncertain result because of timeout, transport noise, or retry pressure, verify with `meshagent scheduled-task list` before issuing another `add`.
 11. Verify the task state with `meshagent scheduled-task list`.
-12. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
+12. Verify that the stored cron fields exactly match the computed UTC time, not the requesting user's local clock fields.
+13. Verify the queue behavior with `meshagent room queue size` or `meshagent room queue receive`, or with the room queue API.
 
 ## Live room execution
 
@@ -133,15 +134,18 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Prefer an explicit IANA timezone such as `America/Los_Angeles` or `Asia/Bangkok`.
 - If the user already gave a timezone, use it and restate the UTC conversion you will schedule.
 - If no timezone was provided, first try to determine the requesting user's timezone from user-specific context such as an explicit location, profile data, client-local timezone, or another reliable signal tied to that user.
+- If a strong user-specific timezone signal is already available from the current user context, previous user-specific metadata, or the client-local timezone exposed to the current session, you may use it without stopping to ask, but restate the assumed timezone explicitly before creating the task.
 - Do not use the room host timezone, server timezone, or agent runtime timezone as a proxy for the requesting user unless you have evidence that they are the same person in the same locale.
-- If the requesting user's timezone still cannot be determined reliably without asking, ask the user directly before scheduling.
+- Ask the user directly only when there is no credible user-specific timezone basis at all, not merely because the timezone was inferred rather than typed by the user in the current turn.
 - Convert the requested local time into the exact UTC cron expression that will be stored.
+- Build the cron fields from the converted UTC timestamp itself. Do not reuse the user's local hour or minute fields after conversion.
 - When the request is tied to a named local timezone that observes DST, explain that the current scheduler stores UTC cron only, so the UTC schedule may need seasonal adjustment.
 - Before agreeing to create the task, make sure the requesting user's timezone is known and restated explicitly.
 
 ## One-time scheduling guard
 
 - Restate the exact requesting-user local scheduled time and the exact UTC time before creating a one-time task.
+- The stored cron must reflect the converted UTC time, not a copy of the user's local wall-clock fields.
 - Use absolute times in the explanation, not just "one minute from now" or similar relative phrasing.
 - Interpret relative requests such as "one minute from now" relative to the actual `meshagent scheduled-task add` moment after setup is complete, not relative to the original user message timestamp.
 - If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
@@ -152,6 +156,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Do not create a near-future one-time task until the queue consumer path is already proven with an immediate smoke test.
 - If the user asked for "a minute from now" but the workflow is not yet ready, explain that you are moving the one-time run to the next safe minute window rather than pretending the original time still makes sense.
 - If an `add` attempt may already have succeeded, prefer inspecting existing tasks over issuing a second `add`.
+- If the stored cron or UI-visible GMT time matches the user's local wall clock instead of the computed UTC time, treat that as a scheduling bug and correct it before claiming success.
 
 ## Scheduler API preflight
 
@@ -208,6 +213,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Do not schedule a task until the requesting user's timezone has been confirmed or reliably detected.
 - Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
 - If the requesting user's timezone cannot be acquired from reliable user-specific context, ask the user directly before creating the scheduled task.
+- Do not ask for timezone again when a strong user-specific inferred timezone is already available; use it and restate the assumption.
 - Do not treat scheduler create as reliable just because the CLI command exists. Preflight actual scheduler access and health first.
 - Do not pass a human-readable custom scheduled-task id such as `scheduled-email-once-2min`. The backend scheduled-task id is a UUID. Omit `--id` unless you already have a real UUID to use.
 - If scheduler preflight already failed, do not present the workflow as fully completable without clearly labeling the scheduler step as blocked.
@@ -216,6 +222,11 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Do not schedule the current running agent unless you have confirmed that it already consumes the target queue.
 - Do not treat a bare `queue:` channel as proof of consumption unless the runtime clearly shows how it dequeues that queue.
 - Always state the timezone assumption and the resulting UTC schedule when adding or updating a task.
+- When verifying a created task, compare three things explicitly:
+  - the intended local wall-clock time in the user's timezone
+  - the converted UTC time
+  - the stored cron or UI-visible GMT schedule
+- Those three must agree under UTC conversion. If the stored cron matches the local time instead of the UTC time, the task was created incorrectly.
 - Do not claim that a scheduled task "works" just because the task exists; verify that messages reach the queue.
 - Do not treat queue delivery alone as end-to-end success when the queued workflow must send email or perform another externally visible action.
 - Treat `update` and `delete` as destructive.
