@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Database Operator"
+  short_description: "Operate the room database"
+  default_prompt: "Use $meshagent-database-operator to inspect or change the in-room database schema and data."
