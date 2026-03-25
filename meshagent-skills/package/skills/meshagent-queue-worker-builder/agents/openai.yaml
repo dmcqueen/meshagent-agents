@@ -1,4 +1,4 @@
 interface:
   display_name: "MeshAgent Queue Worker Builder"
-  short_description: "Build queue-backed Worker agents"
-  default_prompt: "Use $meshagent-queue-worker-builder to create or update a queue-backed Worker meshagent.yaml."
+  short_description: "Build queue-backed process agents"
+  default_prompt: "Use $meshagent-queue-worker-builder to create or update a queue-backed process meshagent.yaml."
