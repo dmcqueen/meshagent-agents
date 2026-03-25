@@ -105,7 +105,7 @@ Use this skill when the task is to build or debug a small MeshAgent room website
 - Read before writing. Match the existing site structure and style.
 - Keep the implementation simple and reversible.
 - If a change breaks the site, return to the last known working state before trying a different fix.
-- Prefer rewriting a whole small file over brittle multi-line shell substitutions when generating frontend assets.
+- Prefer rewriting a whole small file over brittle shell substitutions that span several lines when generating frontend assets.
 - After writing or rewriting files, verify the contents and then verify the live behavior.
 - If you emit JavaScript through shell heredocs, be careful with Unicode escape handling and other quoting pitfalls.
 
