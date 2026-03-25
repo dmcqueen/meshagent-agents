@@ -1716,6 +1716,8 @@ container:
           - For room-scoped workflows, do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as the primary readiness test.
           - A `403` from a broad project-scoped or room-listing command does not by itself prove that a narrower room-scoped workflow is blocked. Retry with the narrowest relevant room-scoped read path first.
           - Good first probes are commands such as `meshagent room service list --room <ROOM_NAME>`, `meshagent room queue size --room <ROOM_NAME> --queue <QUEUE_NAME>`, or `meshagent room agent list-toolkits --room <ROOM_NAME>` depending on the workflow.
+          - Prefer direct room-scoped commands such as `meshagent room service list` over generic toolkit invocation when the CLI already exposes the room surface directly.
+          - Do not use `meshagent room agent invoke-tool --toolkit services --tool list --arguments '{}'` for ordinary service discovery when `meshagent room service list` already answers the question more directly.
           - Treat existing MeshAgent environment variables and active CLI session state as real runtime context to inspect and use.
           - Distinguish local authoring files from room-visible runtime files. Room-owned runtime data belongs under `/data`.
           - If the user asks to write or create a file in the room and does not provide a more specific room-visible path, default to the room storage root under `/data`, for example `/data/<filename>`.
@@ -2175,6 +2177,7 @@ container:
           ## Preferred routing
           
           - For room-scoped tasks, start with `meshagent room ...`.
+          - When the task is room service discovery, prefer `meshagent room service list` over generic `meshagent room agent invoke-tool` calls.
           - For runtime deployment tasks, prefer the specific runtime family such as `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, or `meshagent webserver ...`.
           - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
           - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
@@ -6353,6 +6356,7 @@ container:
           - Prefer `meshagent room developer watch` for room-wide developer telemetry and `meshagent room container log` for one container’s logs.
           - Prefer `container list` before `log`, `exec`, `stop`, or `port forward` so you target the right container.
           - Prefer `meshagent room service list` before container actions when the symptom is about a deployed service, Worker, or MailBot rather than an ad hoc container.
+          - Do not use generic toolkit invocation for ordinary service discovery when `meshagent room service list` already covers the question directly.
           - Prefer `meshagent room agent list-toolkits` before concluding that a runtime dependency such as toolkit `email` is unavailable or unpublished.
           - Treat `container stop` as disruptive.
           - Treat `container exec` as a live-room debugging operation, not a substitute for fixing the service definition.
@@ -6547,10 +6551,21 @@ container:
           - Do not assume the requesting user's local timezone from the cron expression alone.
           - Prefer an explicit IANA timezone such as `America/Los_Angeles` or `Asia/Bangkok`.
           - If the user already gave a timezone, use it and restate the UTC conversion you will schedule.
+          - Treat relative requests differently from absolute local-time requests:
+            - relative requests such as "in 2 minutes", "in an hour", or "tomorrow in 30 minutes" only need a trustworthy current-user `now`
+            - absolute requests such as "9 AM every day" or "March 30 at 4 PM" require the intended local timezone itself to be correct
           - If no timezone was provided, first try to determine the requesting user's timezone from user-specific context such as an explicit location, profile data, client-local timezone, or another reliable signal tied to that user.
           - If a strong user-specific timezone signal is already available from the current user context, previous user-specific metadata, or the client-local timezone exposed to the current session, you may use it without stopping to ask, but restate the assumed timezone explicitly before creating the task.
           - Do not use the room host timezone, server timezone, or agent runtime timezone as a proxy for the requesting user unless you have evidence that they are the same person in the same locale.
           - Ask the user directly only when there is no credible user-specific timezone basis at all, not merely because the timezone was inferred rather than typed by the user in the current turn.
+          - For relative scheduling requests, use the best available current user/session timezone signal to determine the user's current `now`, convert that to UTC, and anchor the relative offset from that UTC moment.
+          - For relative scheduling requests, do not force the same level of timezone confirmation that absolute local-time scheduling needs. The key requirement is a credible current-user `now`, not a separately negotiated wall-clock timezone label.
+          - For relative scheduling requests, prefer timezone sources in this order:
+            - current session or client-local timezone tied to the user making the request
+            - explicit timezone or location already provided by the user
+            - recent user-specific context for the same user
+            - only then weaker profile/default signals
+          - If a fresher current-session timezone signal exists, do not override it with older or weaker user defaults.
           - Convert the requested local time into the exact UTC cron expression that will be stored.
           - Build the cron fields from the converted UTC timestamp itself. Do not reuse the user's local hour or minute fields after conversion.
           - When the request is tied to a named local timezone that observes DST, explain that the current scheduler stores UTC cron only, so the UTC schedule may need seasonal adjustment.
@@ -6562,6 +6577,7 @@ container:
           - The stored cron must reflect the converted UTC time, not a copy of the user's local wall-clock fields.
           - Use absolute times in the explanation, not just "one minute from now" or similar relative phrasing.
           - Interpret relative requests such as "one minute from now" relative to the actual `meshagent scheduled-task add` moment after setup is complete, not relative to the original user message timestamp.
+          - For relative requests, compute the offset from the user's current `now`, then treat the resulting UTC timestamp as the source of truth for the stored schedule.
           - If setup, deployment, or smoke testing took longer than expected, recompute the relative time from the current moment before creating the scheduled task.
           - If setup, deployment, or smoke testing has consumed most of the time window, move the one-time run farther into the future instead of leaving it effectively in the past.
           - Before sending `meshagent scheduled-task add`, make sure the computed UTC minute is still in the future with a real safety margin rather than merely equal to the next displayed minute.
@@ -6884,6 +6900,7 @@ container:
           - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
           - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped service work.
           - If permissions are uncertain, start with `meshagent room service list --room <ROOM_NAME>` or another narrow room-scoped read before claiming service access is blocked.
+          - For service discovery, prefer `meshagent room service list` over generic toolkit invocation. Do not route ordinary service listing through `meshagent room agent invoke-tool --toolkit services --tool list --arguments '{}'` when the direct room command exists.
           
           ## Service scope rules
           
@@ -6901,6 +6918,7 @@ container:
           
           - Do not claim a service is deployed correctly based only on YAML generation.
           - After create or update, verify with `meshagent service show`, `meshagent service list`, or `meshagent room service list` as appropriate.
+          - When the question is simply "what services are running in this room?", `meshagent room service list` is the default answer path.
           - For queue-backed Workers, a visible service record is not enough. Confirm that the room service is present and then use runtime inspection to prove that a live runtime or container is actually running.
           - If a room service is unhealthy, use room-service state and runtime inspection before rewriting the spec.
           - If restart is requested, confirm the target by `--id` or `--name` before issuing it.
@@ -7971,6 +7989,7 @@ container:
           - Do not start by inventorying room access, scheduler visibility, toolkit publication, service visibility, queue discovery, mailbox identity, and route readiness all at once when the user's first requested action only needs one of those surfaces.
           - For room-scoped work, apply `../_shared/references/live_room_cli_context.md`, start from the known room context, and use the narrowest room-scoped probe first.
           - Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite gatekeeper commands for a known-room workflow.
+          - If the workflow needs service discovery, prefer `meshagent room service list` over generic toolkit invocation because the direct room command is narrower and faster.
           - If the workflow must choose a service or worker image, derive the image family from the actual MeshAgent environment before copying a docs example.
           - If the workflow depends on authored service YAML, prefer a generated spec first and require command-flag correctness, role correctness, and wiring correctness before treating the asset as deployable.
           - If a broad probe fails but a narrower room-scoped probe succeeds, continue the workflow and report the broad-scope limitation accurately instead of giving up.
