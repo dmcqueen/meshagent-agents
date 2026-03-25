@@ -142,6 +142,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - If no usable sender exists and real outbound email is still the goal, provision or reuse the mailbox path automatically unless the user explicitly wants to choose the sender.
 - If a mailbox already exists for the workflow, reuse its address and queue.
 - If another agent or runtime will call toolkit `email`, verify that toolkit `email` is actually published in the room.
+- Do not treat a mailbox record by itself as proof that a contact form or site can already send mail.
 - For managed mailbox addresses:
   - `.life` environments should use `@mail.meshagent.life`
   - production `.com` environments should use `@mail.meshagent.com`
@@ -182,6 +183,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - For queue-backed mail senders, do not call the workflow complete until a real queued message is consumed and runtime evidence shows success or the exact SMTP/provider blocker.
 - If a runtime uses `--require-toolkit=email`, a mailbox is not proof that the toolkit exists. Verify a live publisher.
 - If mailbox-backed behavior is inconsistent, check whether mailbox address, mailbox queue, and MailBot queue diverged.
+- If a site or contact form fails on valid submission, identify the actual send path first. A mailbox queue problem, a missing toolkit publisher, and a broken raw-SMTP path are different failures.
 - If the mailbox address is outside the expected managed domain family for the environment, treat that as a likely sender-authorization problem.
 - Do not ask for generic SMTP credentials first when the room SMTP path is in use. Check the room defaults and observed failure first.
 - For room-hosted senders such as contact forms, verify that the sender is a real mailbox address before blaming the provider.
