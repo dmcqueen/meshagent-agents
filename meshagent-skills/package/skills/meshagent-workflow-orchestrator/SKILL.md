@@ -2,7 +2,7 @@
 name: meshagent-workflow-orchestrator
 description: Orchestrate end-to-end MeshAgent workflows that span multiple specialized skills. Use this skill when the user's goal crosses queues, workers, mail, services, runtime, scheduling, storage, or room web workflows and one skill must keep accountability for the final outcome.
 metadata:
-  short-description: Own multi-skill MeshAgent workflows from preflight through verified outcome.
+  short-description: Own cross-skill MeshAgent workflows from preflight through verified outcome.
   references:
     bundled:
       - ../_shared/references/live_room_cli_context.md
