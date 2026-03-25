@@ -1,0 +1,53 @@
+# Service YAML Correctness
+
+Use these rules whenever a skill authors or rewrites `Service` or `ServiceTemplate` YAML.
+
+- Prefer generated specs over handwritten YAML when the CLI already has a generator for the runtime shape you need. For new authored agent services, start from `meshagent process spec` first. Use `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly asked for those runtime shapes. Use `meshagent service spec` only when the agent-specific specs are not the right fit.
+- If you must hand-author YAML, start from the nearest working example or a rendered/generated spec. Do not invent a manifest structure from memory.
+- Treat the container `command` as code that must match the real CLI. Validate agent command flags against the packaged CLI help or the actual CLI source before treating the YAML as deployable.
+- Do not invent flags that the target command does not support. For example, `meshagent worker join` uses `--rule` and `--room-rules`; do not substitute unsupported flags such as `--prompt`.
+- Make the declared agent roles match the runtime command. If the manifest says it contains a `Worker`, the command must actually start a worker path. If it says it contains a `MailBot`, the command must start a mailbot path. Do not declare two roles and only start one of them.
+- For new shared-identity agents that need queue, chat, mail, or toolkit entry points on one runtime, use a `meshagent process` design with explicit channels instead of older combined-agent guidance.
+- For new authored queue-backed email services, use a process design by default even when the workflow could be expressed as separate Worker and MailBot services.
+- For scheduled email workflows, prefer these composition patterns in this order:
+  - for new authored YAML, one `meshagent process` runtime with explicit `--channel=queue:...` and `--channel=mail:...` channels, durable rules, and one shared identity
+  - only when the user explicitly asked for split runtimes, a dedicated MailBot publishes toolkit `email` using a real mailbox-backed sender identity, and a dedicated Worker consumes the scheduled job queue and uses toolkit `email`
+- For non-trivial scheduled email workflows, prefer durable queue-handling behavior over ad hoc inline prompting:
+  - put the send logic in `--room-rules`, mounted rule files, or a startup-script-generated rules file
+  - then make the scheduled payload trigger that already-defined workflow in the same style the queue consumer expects
+- Treat the `industry-report` nightly-report flow as the preferred design signal for non-trivial scheduled email jobs:
+  - the queue-consuming runtime owns the email workflow in durable rule files
+  - the scheduled payload is a prompt that tells that runtime to run the established workflow
+  - the mail path only publishes or owns the sender identity; it is not the scheduled job consumer
+- For scheduled email workflows, reject these patterns as incorrect:
+  - a standalone MailBot pointed at the scheduled job queue
+  - a Worker with no explicit rule telling it to send the email
+  - a MailBot with an invented mailbox-looking sender identity
+- Keep mailbox and job queues distinct unless the implementation clearly requires them to be the same. A MailBot queue should match the mailbox or inbound mail path; a Worker queue should match the scheduled job queue.
+- For mailbox-backed MailBot setups, the safest default is:
+  - mailbox address = MailBot `--email-address`
+  - mailbox queue = that same email address
+  - MailBot queue = that same email address, either explicitly or by relying on the MailBot default
+- This is a working default, not a hard platform requirement. If you intentionally override the mailbox queue or MailBot queue, verify the routing explicitly instead of assuming the default alignment still holds.
+- Do not reuse the scheduled Worker queue as the MailBot inbox queue for new scheduled email workflows unless you have explicit evidence that the mailbox routing was designed that way. Keep the mailbox/MailBot inbox path separate from the scheduled job queue by default.
+- Do not author new scheduled email YAML as separate MailBot and Worker services by default. Use that split shape only when the user explicitly asked for it.
+- Do not use invented sender identities such as `something@meshagent.local` for room email workflows. Use a real mailbox-backed address from the current project and room.
+- For managed MeshAgent mailbox-backed senders, prefer the environment-appropriate mailbox domain family:
+  - `.life` environments: `@mail.meshagent.life`
+  - production `.com` environments: `@mail.meshagent.com`
+- Treat `@meshagent.local` sender identities as invalid by default for outbound managed-mail workflows unless the current environment explicitly proves otherwise.
+- If the YAML embeds room rules files or startup scripts, make sure the files are actually mounted or written into the container before the command references them.
+- Match the scheduled payload shape to the queue consumer design:
+  - if the queue consumer is prompt-driven, schedule a prompt that clearly instructs it to run the email workflow
+  - if the queue consumer is structured-field-driven, schedule the exact fields its rules require
+  - do not enqueue a structured payload if the runtime was only taught to react to prompt-style instructions, and do not enqueue a bare prompt if it only knows structured fields
+- For recurring or non-trivial scheduled email/report jobs, prefer a prompt that names the workflow to run from the queue consumer's durable rules rather than pushing the whole mail job into raw JSON fields.
+- Before deployment, run the narrowest validation path that matches the asset:
+  - `meshagent service validate` for a concrete `Service`
+  - `meshagent service validate-template` and `meshagent service render-template` for a `ServiceTemplate`
+- If validation fails, do not deploy and do not just rerun the same command blindly. Read the exact validation error, repair the YAML or template, and rerun validation. Repeat that fix-and-revalidate loop until validation passes or the remaining blocker is clearly external to the asset itself.
+- Before treating YAML as correct, verify all of these:
+  - structural correctness: valid service or template shape
+  - command correctness: every runtime flag is actually supported
+  - role correctness: declared agent roles match the command that will run
+  - wiring correctness: queue names, toolkit publication, mailbox identity, and mounted files all match the intended behavior
