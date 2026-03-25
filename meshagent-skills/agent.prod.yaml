@@ -1731,17 +1731,17 @@ container:
         text: |
           # Managed Hostname Rules
           
-          Use these rules whenever a skill needs to choose, validate, or report a MeshAgent-managed public hostname.
+          Use these rules whenever a skill needs to choose, validate, or report a MeshAgent-managed public hostname for a room webserver, mini site, or public route.
           
-          - If `MESHAGENT_API_URL` is present, derive the managed suffix from that API environment: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments.
+          - If `MESHAGENT_API_URL` is present, the managed suffix is fixed by that API environment: `.com` environments must use `*.meshagent.app` and `.life` environments must use `*.meshagent.dev`.
           - If `MESHAGENT_API_URL` is absent or does not clearly identify the environment, inspect an existing route in the current project or ask before inventing a managed public hostname.
           - Packaged help or example text that shows `.meshagent.app` is illustrative only. Do not copy that suffix blindly when the active runtime indicates a different environment.
           - Before running a deploy with `--domain` or reporting a managed public URL, verify that the chosen hostname suffix matches `MESHAGENT_API_URL`.
-          - Treat a mismatched managed suffix as invalid, not as an acceptable variant. In a `.life` environment, do not deploy, return, or accept a managed hostname outside `.meshagent.dev`. In a `.com` environment, do not deploy, return, or accept a managed hostname outside `.meshagent.app`.
+          - Treat a mismatched managed suffix as invalid, not as an acceptable variant. In a `.life` environment, do not deploy, return, or accept any managed hostname outside `.meshagent.dev`. In a `.com` environment, do not deploy, return, or accept any managed hostname outside `.meshagent.app`.
           - If a deploy command warns that the hostname suffix is wrong for the current environment, treat that deploy result as failed for public-hostname purposes and fix the hostname before reporting success.
           - If a candidate hostname collides, keep the same environment-specific suffix family and try additional candidates before asking the user to choose one.
           - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and a follow-up route read is forbidden, treat that hostname as unavailable and try a different candidate before reporting a generic permissions blocker.
-          - Do not report a managed URL whose suffix contradicts the active API environment.
+          - Do not report a managed URL whose suffix contradicts the active API environment. Nothing else will work.
 
       - path: /meshagent-skills/skills/_shared/references/process_agent_design.md
         text: |
@@ -1933,8 +1933,10 @@ container:
           - Do not treat queue size changes alone as business workflow success.
           - Do not treat a scheduled task record alone as proof that the future workflow will work.
           - Do not present a created route record, deploy result, or hostname string as the achieved public URL until DNS and the required live HTTP checks have passed.
+          - For a normal public website or contact form, do not treat DNS resolution, a TCP connection, or a redirect alone as sufficient verification. The live GET must reach the intended page with the expected final success status, normally `200`.
           - If a public URL has not been verified yet, label it explicitly as an unverified candidate or partial preparation, not as the finished output.
           - Do not lead with "done", "deployed", "created route", or similar completion language when the public-site outcome is still blocked on DNS or live HTTP verification.
+          - Do not summarize a site request as "built", "deployed", or "created in the room" when the actual requested outcome is still a non-working public site.
           - Do not use the room, server, or runtime timezone as a substitute for the requesting user's timezone when the workflow is about scheduling in the user's local time.
           - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
           - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
@@ -2096,9 +2098,9 @@ container:
           If the user asks to create or write a room-visible file and does not give a more specific path, default to `/data/<filename>`.
           For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
           For this skill, the current room is the value of `MESHAGENT_ROOM`.
-          For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
+          For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL`: `.com` environments must use `*.meshagent.app` and `.life` environments must use `*.meshagent.dev`. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
           The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
-          Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL`. For `https://api.meshagent.life`, managed public hostnames must end in `.meshagent.dev`.
+          Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL`. For `https://api.meshagent.life`, managed public hostnames must end in `.meshagent.dev`. For `https://api.meshagent.com`, managed public hostnames must end in `.meshagent.app`.
           
           ## Top-level command policy
           
@@ -2193,15 +2195,15 @@ container:
           - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
           - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
           - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
-          - For room-site requests, deploy in the current room and return the public URL. Do not treat local example-app edits or local build output as completion of a room deployment request.
+          - For room-site requests, deploy in the current room and return the public URL only after live verification succeeds. Do not treat local example-app edits, local build output, route creation, deploy success, DNS resolution, or a redirect alone as completion of a room deployment request.
           - For room-site requests that use `meshagent webserver deploy`, create the local app under the current working directory, keep route sources relative to the routes file when possible, and upload to room storage with `--website-path`.
           - If `MESHAGENT_ROOM` is already available, do not block on `meshagent rooms list` before attempting the room-scoped deploy.
-          - For deployed websites, verify the live URL with at least one real HTTP request before replying with success.
+          - For deployed websites, verify the live URL with a real HTTP GET and confirm the final response is the intended page with the expected final success status, normally `200`, before replying with success.
           - For contact forms, verify both the GET render path and at least one POST path after deploy. A live 500 is not an acceptable final state.
           - For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
           - If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
           - If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
-          - Never return `.meshagent.app` from a `.life` environment or `.meshagent.dev` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
+          - Managed hostname suffix is absolute, not advisory: never return anything except `.meshagent.dev` from a `.life` environment or `.meshagent.app` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
           - If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
           - Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
           - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
@@ -7358,6 +7360,7 @@ container:
           ## Managed hostname selection
           
           - Follow `../_shared/references/managed_hostname_rules.md` for suffix selection, collision handling, and validity checks.
+          - Managed hostname suffix is absolute: `.life` means only `.meshagent.dev`; `.com` means only `.meshagent.app`.
           - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
           - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
           - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
@@ -7366,16 +7369,20 @@ container:
           ## Verification rules
           
           - Do not treat `meshagent webserver check`, local file generation, or deploy success alone as completion.
-          - For every website task, perform at least one live HTTP GET against the public URL before reporting success.
+          - For every website task, perform at least one live HTTP GET against the public URL and confirm that the final response is the expected successful page.
+          - For a normal HTML page or contact form, the final GET must succeed with the expected final status, normally `200`, after following any expected redirect.
+          - Confirm that the final page content matches the intended site, not just that some page responded.
           - For form-backed sites, also exercise representative POST paths after deploy.
           - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
           - Do not present a public URL as the achieved site outcome until DNS resolution and the required live HTTP checks succeed.
           - If route creation or deploy succeeds but public verification has not succeeded yet, report the URL only as an unverified candidate and keep the workflow in partial-preparation state.
           - Do not open the response with "done", "deployed", or equivalent completion language while the site is still in partial-preparation state.
+          - Do not summarize the site as "created" or "deployed in the room" when the user-visible public site is still not working.
           - If the remaining blocker is an internal service or route problem you can act on, such as a crashing container, wrong hostname suffix, failed DNS, or failing HTTP smoke test, continue fixing it instead of stopping with "if you want, I'll keep going."
           - Do not foreground an unverified candidate URL when the real user-visible outcome is still blocked on the service staying up.
           - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
           - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
+          - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
           - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
           - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
           - If the service is crashing or failing liveness checks, treat the site workflow as still in active repair, not as a finished deploy with a caveat.
@@ -7968,6 +7975,7 @@ container:
           ## Verification rules
           
           - Follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL or retrying a colliding hostname.
+          - Managed hostname suffix is absolute: `.life` means only `.meshagent.dev`; `.com` means only `.meshagent.app`.
           - Treat a managed hostname with the wrong environment suffix as invalid output, even if the route record exists.
           - Do not present a route hostname as a usable public URL unless the workflow has verified the level of reachability it claims, such as DNS or live HTTP.
           - If the route exists but public reachability is still unverified, report it as route state only, not as a proven public result.
