@@ -1,6 +1,6 @@
 # MeshAgent CLI Help
 
-_Packaged CLI help reference for MeshAgent CLI `0.33.2`._
+_Packaged CLI help reference for MeshAgent CLI `0.33.3`._
 
 _Generated from the installed `meshagent` binary with recursive `--help` capture up to depth 1 and timeout 2s per command._
 
@@ -625,6 +625,277 @@ $ meshagent process --help
 │ run      Join a room, run a process-backed agent, and wait for messages.     │
 │ use      Send a one-shot or interactive message to a running process-backed  │
 │          agent.                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+### `meshagent process join`
+
+```console
+$ meshagent process join --help
+                                                                                
+ Usage: meshagent process join [OPTIONS]                                        
+                                                                                
+ Join a room and run a process-backed agent.                                    
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│    --project-id                             TEXT            A MeshAgent      │
+│                                                             project id. If   │
+│                                                             empty, the       │
+│                                                             activated        │
+│                                                             project will be  │
+│                                                             used.            │
+│                                                             [default:        │
+│                                                             203b1bf9-72c9-4… │
+│ *  --room                                   TEXT            Room name        │
+│                                                             [required]       │
+│    --role                                   TEXT            [default: agent] │
+│    --agent-name                             TEXT            Name of the      │
+│                                                             agent to call    │
+│    --token-from-e…                          TEXT            Name of          │
+│                                                             environment      │
+│                                                             variable         │
+│                                                             containing a     │
+│                                                             MeshAgent token  │
+│    --rule           -r                      TEXT            a system rule    │
+│    --room-rules     -rr                     TEXT            a path to a      │
+│                                                             rules file       │
+│                                                             within the room  │
+│                                                             that can be used │
+│                                                             to customize the │
+│                                                             agent's behavior │
+│    --rules-file                             TEXT                             │
+│    --require-tool…  -rt                     TEXT            the name or url  │
+│                                                             of a required    │
+│                                                             toolkit          │
+│    --require-sche…  -rs                     TEXT            the name or url  │
+│                                                             of a required    │
+│                                                             schema           │
+│    --model                                  TEXT            Name of the LLM  │
+│                                                             model to use for │
+│                                                             the chatbot      │
+│                                                             [default:        │
+│                                                             gpt-5.4]         │
+│    --image-genera…                          TEXT            Name of an image │
+│                                                             gen model        │
+│    --computer-use        --no-computer-…                    Enable computer  │
+│                                                             use              │
+│                                                             [default:        │
+│                                                             no-computer-use] │
+│    --local-shell         --no-local-she…                    Enable local     │
+│                                                             shell tool       │
+│                                                             calling          │
+│                                                             [default:        │
+│                                                             no-local-shell]  │
+│    --shell               --no-shell                         Enable function  │
+│                                                             shell tool       │
+│                                                             calling          │
+│                                                             [default:        │
+│                                                             no-shell]        │
+│    --apply-patch         --no-apply-pat…                    Enable apply     │
+│                                                             patch tool       │
+│                                                             [default:        │
+│                                                             no-apply-patch]  │
+│    --web-search          --no-web-search                    Enable web       │
+│                                                             search tool      │
+│                                                             calling          │
+│                                                             [default:        │
+│                                                             no-web-search]   │
+│    --web-fetch           --no-web-fetch                     Enable web fetch │
+│                                                             tool calling     │
+│                                                             [default:        │
+│                                                             no-web-fetch]    │
+│    --script-tool         --no-script-to…                    Enable script    │
+│                                                             tool calling     │
+│                                                             [default:        │
+│                                                             no-script-tool]  │
+│    --discover-scr…       --no-discover-…                    Automatically    │
+│                                                             add script tools │
+│                                                             from the room    │
+│                                                             [default:        │
+│                                                             no-discover-scr… │
+│    --mcp                 --no-mcp                           Enable mcp tool  │
+│                                                             calling          │
+│                                                             [default:        │
+│                                                             no-mcp]          │
+│    --storage             --no-storage                       Enable storage   │
+│                                                             toolkit          │
+│                                                             [default:        │
+│                                                             no-storage]      │
+│    --storage-tool…                          TEXT            Mount local path │
+│                                                             as               │
+│                                                             <source>:<mount… │
+│    --storage-tool…                          TEXT            Mount room path  │
+│                                                             as               │
+│                                                             <source>:<mount… │
+│    --shell-room-m…                          TEXT            Mount room       │
+│                                                             storage as       │
+│                                                             <source>:<mount… │
+│    --shell-projec…                          TEXT            Mount project    │
+│                                                             storage as       │
+│                                                             <source>:<mount… │
+│    --shell-empty-…                          TEXT            Mount empty dir  │
+│                                                             at               │
+│                                                             <mount>[:ro|rw]  │
+│    --shell-image-…                          TEXT            Mount image as   │
+│                                                             <image>=<mount>… │
+│    --require-imag…                          TEXT            Name of an image │
+│                                                             gen model        │
+│    --starting-url                           TEXT            Initial URL to   │
+│                                                             open when        │
+│                                                             starting a       │
+│                                                             computer-use     │
+│                                                             browser session  │
+│    --allow-goto-u…                                          Expose the goto  │
+│                                                             URL helper tool  │
+│                                                             for computer use │
+│    --require-loca…       --no-require-l…                    Enable local     │
+│                                                             shell tool       │
+│                                                             calling          │
+│                                                             [default:        │
+│                                                             no-require-loca… │
+│    --require-shell       --no-require-s…                    Enable function  │
+│                                                             shell tool       │
+│                                                             calling          │
+│                                                             [default:        │
+│                                                             no-require-shel… │
+│    --require-appl…       --no-require-a…                    Enable apply     │
+│                                                             patch tool       │
+│                                                             calling          │
+│                                                             [default:        │
+│                                                             no-require-appl… │
+│    --require-web-…       --no-require-w…                    Enable web       │
+│                                                             search tool      │
+│                                                             calling          │
+│                                                             [default:        │
+│                                                             no-require-web-… │
+│    --require-web-…       --no-require-w…                    Enable web fetch │
+│                                                             tool calling     │
+│                                                             [default:        │
+│                                                             no-require-web-… │
+│    --require-mcp         --no-require-m…                    Enable mcp tool  │
+│                                                             calling          │
+│                                                             [default:        │
+│                                                             no-require-mcp]  │
+│    --require-stor…       --no-require-s…                    Enable storage   │
+│                                                             toolkit          │
+│                                                             [default:        │
+│                                                             no-require-stor… │
+│    --database-nam…                          TEXT            Use a specific   │
+│                                                             database         │
+│                                                             namespace        │
+│    --require-tabl…                          TEXT            Enable table     │
+│                                                             read tools for a │
+│                                                             specific table   │
+│    --require-tabl…                          TEXT            Enable table     │
+│                                                             write tools for  │
+│                                                             a specific table │
+│    --require-read…       --no-require-r…                    Enable read only │
+│                                                             storage toolkit  │
+│                                                             [default:        │
+│                                                             no-require-read… │
+│    --require-time        --no-require-t…                    Enable           │
+│                                                             time/datetime    │
+│                                                             tools            │
+│                                                             [default:        │
+│                                                             require-time]    │
+│    --require-uuid        --no-require-u…                    Enable UUID      │
+│                                                             generation tools │
+│                                                             [default:        │
+│                                                             no-require-uuid] │
+│    --use-memory                             TEXT            Use memories     │
+│                                                             toolkit for      │
+│                                                             <name> or        │
+│                                                             <namespace>/<na… │
+│    --memory-model                           TEXT            Model name for   │
+│                                                             memory LLM       │
+│                                                             ingestion        │
+│    --require-docu…       --no-require-d…                    Enable           │
+│                                                             MeshDocument     │
+│                                                             authoring        │
+│                                                             [default:        │
+│                                                             no-require-docu… │
+│    --require-disc…       --no-require-d…                    Enable discovery │
+│                                                             of agents and    │
+│                                                             tools            │
+│                                                             [default:        │
+│                                                             no-require-disc… │
+│    --working-dir                            TEXT            The default      │
+│                                                             working          │
+│                                                             directory for    │
+│                                                             shell commands   │
+│    --key                                    TEXT            an api key to    │
+│                                                             sign the token   │
+│                                                             with             │
+│    --llm-particip…                          TEXT            Delegate LLM     │
+│                                                             interactions to  │
+│                                                             a remote         │
+│                                                             participant      │
+│    --decision-mod…                          TEXT            Model used for   │
+│                                                             thread naming    │
+│                                                             and other        │
+│                                                             secondary LLM    │
+│                                                             decisions        │
+│    --host                                   TEXT            Host to bind the │
+│                                                             service on       │
+│    --port                                   INTEGER         Port to bind the │
+│                                                             service on       │
+│    --path                                   TEXT            HTTP path to     │
+│                                                             mount the        │
+│                                                             service at       │
+│    --always-reply        --no-always-re…                    Always reply     │
+│    --threading-mo…                          [none|default-  Threading mode   │
+│                                             new]            for thread UIs.  │
+│                                                             Use              │
+│                                                             'default-new' to │
+│                                                             show a           │
+│                                                             new-thread       │
+│                                                             composer before  │
+│                                                             loading a        │
+│                                                             thread.          │
+│                                                             [default: none]  │
+│    --thread-dir                             TEXT            Thread directory │
+│                                                             for agent thread │
+│                                                             files. Defaults  │
+│                                                             to               │
+│                                                             .threads/<agent… │
+│                                                             when not         │
+│                                                             provided.        │
+│    --channel                                TEXT            Attach a channel │
+│                                                             to the agent     │
+│                                                             process. Can be  │
+│                                                             repeated.        │
+│                                                             Currently        │
+│                                                             supported: chat, │
+│                                                             mail:EMAIL_ADDR… │
+│                                                             queue:QUEUE_NAM… │
+│                                                             toolkit:NAME.    │
+│    --skill-dir                              TEXT            an agent skills  │
+│                                                             directory        │
+│    --shell-image                            TEXT            an image tag to  │
+│                                                             use to run shell │
+│                                                             commands in      │
+│    --delegate-she…       --no-delegate-…                    log all requests │
+│                                                             to the llm       │
+│                                                             [default:        │
+│                                                             no-delegate-she… │
+│    --shell-copy-e…                          TEXT            Copy local env   │
+│                                                             vars into shell  │
+│                                                             tool env.        │
+│                                                             Accepts          │
+│                                                             comma-separated  │
+│                                                             names and can be │
+│                                                             repeated.        │
+│    --shell-set-env                          TEXT            Set env vars in  │
+│                                                             shell tool env   │
+│                                                             as NAME=VALUE.   │
+│                                                             Can be repeated. │
+│    --log-llm-requ…       --no-log-llm-r…                    log all requests │
+│                                                             to the llm       │
+│                                                             [default:        │
+│                                                             no-log-llm-requ… │
+│    --help                                                   Show this        │
+│                                                             message and      │
+│                                                             exit.            │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
@@ -1289,6 +1560,7 @@ $ meshagent room queue --help
 │ --help          Show this message and exit.                                  │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ list       List queues in a room.                                            │
 │ send       Send a JSON message to a room queue.                              │
 │ send-mail  Create an email message and send it to a room queue.              │
 │ receive    Receive a message from a room queue.                              │
