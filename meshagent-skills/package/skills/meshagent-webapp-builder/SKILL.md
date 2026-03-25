@@ -131,6 +131,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 ## Managed hostname selection
 
 - Follow `../_shared/references/managed_hostname_rules.md` for suffix selection, collision handling, and validity checks.
+- Managed hostname suffix is absolute: `.life` means only `.meshagent.dev`; `.com` means only `.meshagent.app`.
 - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
 - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
 - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
@@ -139,16 +140,20 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 ## Verification rules
 
 - Do not treat `meshagent webserver check`, local file generation, or deploy success alone as completion.
-- For every website task, perform at least one live HTTP GET against the public URL before reporting success.
+- For every website task, perform at least one live HTTP GET against the public URL and confirm that the final response is the expected successful page.
+- For a normal HTML page or contact form, the final GET must succeed with the expected final status, normally `200`, after following any expected redirect.
+- Confirm that the final page content matches the intended site, not just that some page responded.
 - For form-backed sites, also exercise representative POST paths after deploy.
 - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
 - Do not present a public URL as the achieved site outcome until DNS resolution and the required live HTTP checks succeed.
 - If route creation or deploy succeeds but public verification has not succeeded yet, report the URL only as an unverified candidate and keep the workflow in partial-preparation state.
 - Do not open the response with "done", "deployed", or equivalent completion language while the site is still in partial-preparation state.
+- Do not summarize the site as "created" or "deployed in the room" when the user-visible public site is still not working.
 - If the remaining blocker is an internal service or route problem you can act on, such as a crashing container, wrong hostname suffix, failed DNS, or failing HTTP smoke test, continue fixing it instead of stopping with "if you want, I'll keep going."
 - Do not foreground an unverified candidate URL when the real user-visible outcome is still blocked on the service staying up.
 - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
 - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
+- If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
 - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
 - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
 - If the service is crashing or failing liveness checks, treat the site workflow as still in active repair, not as a finished deploy with a caveat.
