@@ -10,39 +10,40 @@ Use this reference when the user asks for a Worker that receives a queue message
 4. If the room is already known from runtime context or from the user's request, start with room-scoped probes. Do not use broad auth or room-listing commands as the gatekeeper for whether the workflow can proceed.
 5. In a known live room, do not run `meshagent auth whoami` as a prerequisite check for this workflow.
 6. Inspect or provision the mailbox first.
-7. Reuse the mailbox email address as the sender identity.
-8. In `.life` rooms, prefer mailbox addresses under `@mail.meshagent.life`; in production `.com` environments, prefer `@mail.meshagent.com`. Do not default to `@meshagent.local` for outbound scheduled email workflows.
-9. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
-10. For a mailbox-backed MailBot, keep the mailbox address, mailbox queue, and MailBot inbox queue aligned by default. The safest pattern is to route the mailbox to its own email address as the queue and let the MailBot consume that same queue, unless you have explicit evidence that an override is intentional and correctly wired.
-11. Choose the Worker and MailBot runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
-12. Generate the initial service asset from the real CLI when possible:
+7. If the workflow clearly needs real outbound email and no reusable mailbox exists yet, create one automatically as part of the workflow instead of asking the user whether mailbox creation is allowed.
+8. Reuse the mailbox email address as the sender identity.
+9. In `.life` rooms, prefer mailbox addresses under `@mail.meshagent.life`; in production `.com` environments, prefer `@mail.meshagent.com`. Do not default to `@meshagent.local` for outbound scheduled email workflows.
+10. Verify that toolkit `email` is already published in the room or create the MailBot or equivalent service that will publish it. The normal pattern is a MailBot with `--toolkit-name=email`.
+11. For a mailbox-backed MailBot, keep the mailbox address, mailbox queue, and MailBot inbox queue aligned by default. The safest pattern is to route the mailbox to its own email address as the queue and let the MailBot consume that same queue, unless you have explicit evidence that an override is intentional and correctly wired.
+12. Choose the Worker and MailBot runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
+13. Generate the initial service asset from the real CLI when possible:
    - `meshagent worker spec` for a dedicated Worker
    - `meshagent mailbot spec` for a dedicated MailBot
    - `meshagent service spec` only when the narrower agent-specific spec commands are not the right fit
-13. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
-14. For non-trivial scheduled email behavior, prefer mounted or startup-generated Worker rule files and pass them with `--room-rules` instead of relying only on a long inline rule string.
-15. Prefer separate MailBot and Worker services for new scheduled email workflows. Only preserve a combined process when you are repairing an existing deployment that already depends on it.
-16. For non-trivial scheduled email workflows, follow the same behavioral pattern as the `industry-report` nightly-report Worker:
+14. Build or update a queue-backed Worker service that consumes the intended queue and uses `--require-toolkit=email` only when the `email` toolkit publisher is real.
+15. For non-trivial scheduled email behavior, prefer mounted or startup-generated Worker rule files and pass them with `--room-rules` instead of relying only on a long inline rule string.
+16. Prefer separate MailBot and Worker services for new scheduled email workflows. Only preserve a combined process when you are repairing an existing deployment that already depends on it.
+17. For non-trivial scheduled email workflows, follow the same behavioral pattern as the `industry-report` nightly-report Worker:
    - the Worker queue owns a named workflow through durable rule files
    - the scheduled task prompt tells the Worker to run that workflow
    - the MailBot exists only to publish toolkit `email`
-17. For the service YAML, validate the actual command flags and role composition. A Worker must use real worker flags such as `--rule` or `--room-rules`; a MailBot must not be treated as the scheduled job consumer.
-18. Validate the YAML or rendered service before deployment.
-19. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
-20. Create or update the service.
-21. Verify the live room service appears in `meshagent room service list`.
-22. Verify the runtime is actually alive with room developer output, container state, or container logs.
-23. Enqueue an immediate test message now, before creating the scheduled task.
-24. Confirm the queue item was consumed and inspect logs for email-send success or failure.
-25. Design the scheduled payload so it explicitly requests email sending in the same style the Worker already expects:
+18. For the service YAML, validate the actual command flags and role composition. A Worker must use real worker flags such as `--rule` or `--room-rules`; a MailBot must not be treated as the scheduled job consumer.
+19. Validate the YAML or rendered service before deployment.
+20. If validation fails, inspect the exact validation error, repair the asset, and rerun validation before deploying.
+21. Create or update the service.
+22. Verify the live room service appears in `meshagent room service list`.
+23. Verify the runtime is actually alive with room developer output, container state, or container logs.
+24. Enqueue an immediate test message now, before creating the scheduled task.
+25. Confirm the queue item was consumed and inspect logs for email-send success or failure.
+26. Design the scheduled payload so it explicitly requests email sending in the same style the Worker already expects:
    - prompt-style when the Worker rules define a named workflow to run
    - structured fields when the Worker rules already key off `to`, `subject`, `body`, and any required action field
-26. Only after the immediate smoke test passes should you create the one-time scheduled task.
-27. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
-28. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
-29. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-30. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-31. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+27. Only after the immediate smoke test passes should you create the one-time scheduled task.
+28. Before creating the scheduled task, preflight scheduled-task access with `meshagent scheduled-task list --room <ROOM_NAME>` so you know whether scheduler permissions and visibility are actually available for the target room.
+29. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
+30. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
+31. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
+32. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 
 ## Success criteria
 
@@ -92,6 +93,7 @@ Do not call the workflow complete until all of the following are true:
 ## Input collection rules
 
 - When the user asked for a worker that actually sends an email, treat the recipient address as required input unless it is already present in the request or in a clearly reusable existing workflow.
+- Do not treat sender-address selection as required user input for a straightforward room scheduled-email workflow when the skill can safely provision a mailbox-backed sender itself.
 - Ask for all obviously blocking user-provided mail inputs in one message when possible: recipient first, then optional subject/body if needed.
 - Do not ask a generic "should I continue?" question when the real blocker is a specific missing input such as the recipient address.
 - If the user says "yes" or otherwise confirms they want the workflow completed, continue the build and verification flow without making them repeat the high-level request.
