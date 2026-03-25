@@ -5,6 +5,7 @@ This reference set is anchored to the MeshAgent CLI version recorded in `compat.
 
 Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...`.
 For room-visible runtime data, use `/data`.
+If the user asks to create or write a room-visible file and does not give a more specific path, default to `/data/<filename>`.
 For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
 For this skill, the current room is the value of `MESHAGENT_ROOM`.
 For website, route, and public hostname work in this environment, derive the default MeshAgent-managed hostname suffix from `MESHAGENT_API_URL`: use `*.meshagent.app` for `.com` environments and `*.meshagent.dev` for `.life` environments. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
