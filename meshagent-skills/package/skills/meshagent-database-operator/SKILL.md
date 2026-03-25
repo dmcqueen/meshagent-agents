@@ -126,6 +126,7 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
   - one function or code block that performs the DB write
   - a separate read-back or search step that proves the row exists
 - For existing live handlers, prefer the fewest-line additive change that can prove the DB write path before attempting a larger refactor.
+- When practical, move the new DB write logic into a separate helper module and keep the live handler change to an import plus one narrow call site.
 - For handler-side writes, prefer direct `room.database.*` calls over shelling out to `meshagent room database ...` from inside the handler runtime.
 - Do not discover whether the DB call shape works by embedding a first attempt directly into a larger live handler patch that also changes mail or response logic.
 - The CLI `--columns` path supports `int`, `bool`, `date`, `timestamp`, `float`, `text`, `binary`, `vector`, `list`, and `struct`.
