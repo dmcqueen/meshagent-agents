@@ -134,6 +134,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
 - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
 - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
+- If a deploy command warns that the hostname uses the wrong managed suffix, treat that as a blocker and correct the hostname before reporting a deployed public site.
 
 ## Verification rules
 
@@ -143,7 +144,9 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
 - Do not present a public URL as the achieved site outcome until DNS resolution and the required live HTTP checks succeed.
 - If route creation or deploy succeeds but public verification has not succeeded yet, report the URL only as an unverified candidate and keep the workflow in partial-preparation state.
+- Do not open the response with "done", "deployed", or equivalent completion language while the site is still in partial-preparation state.
 - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
+- If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
 - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
 - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
 - If a contact-form task asks for emailed submissions, do not report success while live submission still fails to send mail.
