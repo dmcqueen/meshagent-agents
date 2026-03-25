@@ -87,4 +87,5 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not satisfy a user request for email by sending a room message, participant message, or broadcast unless the user explicitly asked for that communication medium instead of real email.
 - Do not stall a simple workflow by starting with broad project, room, or service surveys when one narrow task-matching action could have answered the request or revealed the blocker directly.
 - Do not turn an obvious end-to-end request into a two-step consent dance by asking the user to approve ordinary prerequisite setup that is already inside the requested workflow.
+- Do not stop at an internal actionable blocker such as a crashing service, wrong hostname suffix, missing toolkit publisher, or failed smoke test and ask "if you want, I'll keep going." Continue the normal fix path until the workflow is complete or a true external blocker remains.
 - Do not blindly retry one-time scheduled-task creation after an uncertain add result. First check whether the task was already created or whether an equivalent near-future task already exists for the same queue and payload.
