@@ -90,6 +90,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - It enqueues a JSON payload onto the configured queue on the requested schedule.
 - The scheduled workflow is only end-to-end useful when something else consumes that queue.
 - For scheduled email workflows, the payload itself should explicitly tell the Worker to send the email or should carry the fields the Worker's rules require for email sending. Do not assume the schedule "knows" to send mail just because the queue consumer has access to toolkit `email`.
+- For straightforward scheduled email requests, treat sender provisioning as part of the workflow build, not as extra user input, unless the user explicitly asked to choose the sender identity.
 
 ## Default workflow
 
@@ -198,6 +199,7 @@ The scheduler currently stores cron text only. Treat every schedule as a UTC/GMT
 - Do not invent queue names.
 - Do not say queue names cannot be listed just because the CLI lacks a dedicated room-queue list subcommand.
 - For “what queues are available?” questions, prefer generic CLI toolkit invocation over ad hoc SDK code.
+- When the request is simply "schedule a test email," do not stop just because no mailbox already exists. Hand off or continue into mailbox-backed sender provisioning as part of the ordinary workflow.
 - Do not invent timezones.
 - Do not schedule a task until the requesting user's timezone has been confirmed or reliably detected.
 - Do not agree to schedule based on the room, server, or agent runtime timezone when the requesting user's timezone may be different.
