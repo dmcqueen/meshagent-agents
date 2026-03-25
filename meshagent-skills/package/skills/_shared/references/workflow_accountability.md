@@ -40,6 +40,8 @@ The workflow owner must collect concrete evidence for each gate, such as:
 ## Missing-input rules
 
 - If the workflow is blocked on specific user input, identify the exact missing input instead of asking a generic permission-to-continue question.
+- Do not ask the user for permission to create ordinary workflow prerequisites that the requested workflow clearly needs and the current skill is already allowed to create, such as a room mailbox for a mailbox-backed email workflow.
+- Treat room resources that can be safely provisioned as implementation work, not as user input, unless the user asked to control that choice directly.
 - Ask for all clearly blocking user inputs together when possible rather than discovering them one at a time across multiple turns.
 - After the user confirms they want the workflow completed, continue the workflow unless a new concrete blocker appears.
 - Do not make the user restate the original goal just because a sub-step was incomplete or partially verified.
