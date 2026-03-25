@@ -1,4 +1,4 @@
 interface:
   display_name: "MeshAgent Workflow Orchestrator"
   short_description: "Coordinate end-to-end MeshAgent workflows across multiple skills"
-  default_prompt: "Use $meshagent-workflow-orchestrator to own a multi-skill MeshAgent workflow from preflight through verified outcome."
+  default_prompt: "Use $meshagent-workflow-orchestrator to own a cross-skill MeshAgent workflow from preflight through verified outcome."
