@@ -42,8 +42,6 @@ Use the following status values exactly:
   Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer the managed hostname suffix derived from `MESHAGENT_API_URL` by default in this environment.
 - `meshagent codex`
   Use for Codex-backed runtime operations that stay within room scope.
-- `meshagent multi`
-  Use for multi-agent runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
 - `meshagent voicebot`
   Use for voicebot runtime deployment and operation in the current room. If a `--room` flag is used, it must match the current room.
 - `meshagent chatbot`
@@ -102,7 +100,7 @@ Use the following status values exactly:
 ## Preferred routing
 
 - For room-scoped tasks, start with `meshagent room ...`.
-- For runtime deployment tasks, prefer the specific runtime family such as `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, `meshagent webserver ...`, or `meshagent multi ...`.
+- For runtime deployment tasks, prefer the specific runtime family such as `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, or `meshagent webserver ...`.
 - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
 - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
 - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
