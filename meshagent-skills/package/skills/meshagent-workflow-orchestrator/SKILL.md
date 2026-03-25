@@ -139,6 +139,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - If the workflow is a public site that sends email, inherit the webapp and mail completion rules together rather than relaxing either one at the orchestration layer.
 - If the workflow adds a new database write path to a live site or handler, require the DB insert path to be proven in isolation before accepting a larger mixed patch as the next step.
 - If the workflow modifies an existing working runtime, prefer the smallest safe change that proves the new behavior before approving a broader rewrite.
+- If the workflow adds one new behavior to an existing handler, prefer extracting that behavior into a helper and integrating it with the smallest practical call-site change.
 - If the request clearly includes ordinary prerequisite setup, do not stop to ask permission for that setup unless a real missing input remains.
 - If a near-future one-time schedule is retried, treat duplicate creation as a workflow bug to avoid.
 
