@@ -145,10 +145,13 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - Do not present a public URL as the achieved site outcome until DNS resolution and the required live HTTP checks succeed.
 - If route creation or deploy succeeds but public verification has not succeeded yet, report the URL only as an unverified candidate and keep the workflow in partial-preparation state.
 - Do not open the response with "done", "deployed", or equivalent completion language while the site is still in partial-preparation state.
+- If the remaining blocker is an internal service or route problem you can act on, such as a crashing container, wrong hostname suffix, failed DNS, or failing HTTP smoke test, continue fixing it instead of stopping with "if you want, I'll keep going."
+- Do not foreground an unverified candidate URL when the real user-visible outcome is still blocked on the service staying up.
 - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
 - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
 - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
 - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
+- If the service is crashing or failing liveness checks, treat the site workflow as still in active repair, not as a finished deploy with a caveat.
 - If a contact-form task asks for emailed submissions, do not report success while live submission still fails to send mail.
 - Distinguish SMTP transport from sender authorization. A form that renders but fails with `SMTPDataError`, `550`, `553`, or similar on valid submission is not complete.
 - If outbound mail fails with an authorization error such as `550 5.7.1 Permission denied`, switch to mailbox-backed sender provisioning if permissions allow, then re-test.
