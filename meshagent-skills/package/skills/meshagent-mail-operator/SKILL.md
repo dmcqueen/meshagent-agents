@@ -127,11 +127,13 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - If another runtime depends on toolkit `email`, a live participant must publish it, commonly a MailBot with `--toolkit-name=email`.
 - For mailbox-backed outbound workflows, the mailbox email address is the sender identity. Do not synthesize one from participant name or mail domain.
 - Do not use `MESHAGENT_MAIL_DOMAIN` alone to invent mailbox addresses.
-- The safest default for a MailBot-backed mailbox is:
+- For new mailbox-backed MailBot workflows, use this naming convention:
   - mailbox address
   - mailbox queue
   - MailBot inbox queue
   all aligned to the same email address.
+- Do not invent a different mailbox queue name for a new mailbox-backed workflow.
+- Treat any existing room that already uses different mailbox and inbox queue names as an explicit exception that must be verified, not as a design choice to repeat by default.
 
 ## Outbound send model
 
