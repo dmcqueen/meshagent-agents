@@ -30,7 +30,7 @@ The package now has one general CLI skill plus a larger specialized operator bun
 - `skills/meshagent-queue-operator/`
   Queue send, receive, backlog inspection, and queue-delivery verification.
 - `skills/meshagent-queue-worker-builder/`
-  Queue-backed Worker YAML authoring for schedulable or dequeued room jobs.
+  Queue-backed process YAML authoring for schedulable or dequeued room jobs.
 - `skills/meshagent-runtime-operator/`
   Live runtime debugging for developer logs, containers, and port forwarding.
 - `skills/meshagent-scheduler/`
@@ -78,7 +78,7 @@ Key files and directories in this package:
 - `skills/_shared/references/`
   Shared package-level references for live-room CLI context and managed hostname rules.
 - `skills/_shared/references/process_agent_design.md`
-  Shared process-first design reference for shared-identity agents across chat, mail, queue, and toolkit channels.
+  Shared process design reference for shared-identity agents across chat, mail, queue, and toolkit channels.
 - `skills/_shared/references/workflow_accountability.md`
   Shared workflow-owner, completion-gate, evidence, and handoff contract for cross-skill outcomes.
 - `commands/meshagent.md`
@@ -132,7 +132,7 @@ Key files and directories in this package:
 - `skills/meshagent-queue-operator/references/queue_discovery.md`
   Preferred room queue-discovery workflow using CLI toolkit inspection and invocation before any SDK fallback.
 - `skills/meshagent-queue-worker-builder/SKILL.md`
-  Queue-backed Worker `meshagent.yaml` authoring skill.
+  Queue-backed process and queue-consumer `meshagent.yaml` authoring skill.
 - `skills/meshagent-queue-worker-builder/agents/openai.yaml`
   OpenAI agent metadata for the queue worker builder.
 - `skills/meshagent-queue-worker-builder/references/scheduled_email_worker.md`
