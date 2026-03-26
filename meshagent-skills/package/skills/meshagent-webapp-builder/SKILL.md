@@ -171,9 +171,11 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 
 - Follow `../_shared/references/managed_hostname_rules.md` for suffix selection, collision handling, and validity checks.
 - Managed hostname suffix is absolute: `.life` means only `.meshagent.dev`; `.com` means only `.meshagent.app`.
+- Before choosing, deploying, or reporting a managed hostname, resolve the active environment from `MESHAGENT_API_URL` and state the expected public suffix: `.life` -> `.meshagent.dev`, `.com` -> `.meshagent.app`.
 - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
 - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
 - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
+- If the mailbox domain or other room evidence suggests `.life` but the chosen public hostname is `.meshagent.app`, or vice versa, treat that as an environment-resolution failure and stop before reporting the URL as valid.
 - If a deploy command warns that the hostname uses the wrong managed suffix, treat that as a blocker and correct the hostname before reporting a deployed public site.
 
 ## Verification rules
@@ -191,6 +193,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - If a contact form claims to store submissions but the follow-up read path stays empty, treat that as a still-broken database workflow even if mail send succeeds.
 - If the current deployed handler already works for other behavior, do not replace large working sections just to add one new capability unless the small additive change has already been proven insufficient.
 - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
+- If the agent cannot state the resolved environment and its matching managed suffix before reporting the URL, the public-site verification is incomplete.
 - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
 - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
 - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
