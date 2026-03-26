@@ -117,7 +117,7 @@ Use the following status values exactly:
 - If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
 - Managed hostname suffix is absolute, not advisory: never return anything except `.meshagent.dev` from a `.life` environment or `.meshagent.app` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
 - If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
-- Use `meshagent-mail-operator` for mailbox, inbox, MailBot, or contact-form email workflows.
+- Use `meshagent-mail-operator` for mailbox, inbox, process `mail:` channel, or contact-form email workflows.
 - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
 - Use `meshagent-webapp-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers.
 - Use `meshagent-webmaster` for explicit route management or public hostname exposure.
