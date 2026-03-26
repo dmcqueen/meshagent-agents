@@ -1,6 +1,6 @@
 # MeshAgent CLI Help
 
-_Packaged CLI help reference for MeshAgent CLI `0.33.3`._
+_Packaged CLI help reference for MeshAgent CLI `0.34.0`._
 
 _Generated from the installed `meshagent` binary with recursive `--help` capture up to depth 1 and timeout 2s per command._
 
@@ -1333,6 +1333,29 @@ $ meshagent room container --help
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
+#### `meshagent room container exec`
+
+```console
+$ meshagent room container exec --help
+                                                                                
+ Usage: meshagent room container exec [OPTIONS]                                 
+                                                                                
+ Execute a command inside a running container.                                  
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│    --project-id                  TEXT  A MeshAgent project id. If empty, the │
+│                                        activated project will be used.       │
+│                                        [default:                             │
+│                                        203b1bf9-72c9-4022-bfaa-55d6f656dfeb] │
+│ *  --room                        TEXT  Room name [required]                  │
+│ *  --container-id                TEXT  container id [required]               │
+│    --command                     TEXT  Command to execute in the container   │
+│                                        (quoted string)                       │
+│    --tty             --no-tty          Allocate a TTY [default: no-tty]      │
+│    --help                              Show this message and exit.           │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
 #### `meshagent room container list`
 
 ```console
@@ -1432,6 +1455,40 @@ $ meshagent room database inspect --help
 │                                Example: -n prod -n analytics                 │
 │    --json                      Output raw schema JSON                        │
 │    --help                      Show this message and exit.                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+#### `meshagent room database search`
+
+```console
+$ meshagent room database search --help
+                                                                                
+ Usage: meshagent room database search [OPTIONS]                                
+                                                                                
+ Search rows in a room database table.                                          
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│    --project-id                      TEXT     A MeshAgent project id. If     │
+│                                               empty, the activated project   │
+│                                               will be used.                  │
+│                                               [default:                      │
+│                                               203b1bf9-72c9-4022-bfaa-55d6f… │
+│ *  --room                            TEXT     Room name [required]           │
+│ *  --table        -t                 TEXT     Table name [required]          │
+│    --namespace    -n                 TEXT     Namespace path segments        │
+│                                               (repeatable). Example: -n prod │
+│                                               -n analytics                   │
+│    --text                            TEXT     Full-text query                │
+│    --vector-json                     TEXT     Vector JSON array              │
+│    --where                           TEXT     SQL WHERE clause               │
+│    --where-json                      TEXT     JSON object converted to       │
+│                                               equality ANDs                  │
+│    --select                          TEXT     Columns to select (repeatable) │
+│    --limit                           INTEGER  Max rows to return             │
+│    --offset                          INTEGER  Rows to skip                   │
+│    --pretty           --no-pretty             Pretty-print JSON              │
+│                                               [default: pretty]              │
+│    --help                                     Show this message and exit.    │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
