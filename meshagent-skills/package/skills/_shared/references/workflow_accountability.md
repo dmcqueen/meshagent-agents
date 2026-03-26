@@ -55,6 +55,13 @@ Skill-specific gates may add stricter requirements such as live runtime proof, q
 - If isolated proof fails, keep the investigation local to that behavior instead of widening the patch into adjacent surfaces.
 - When integration starts, keep the first integration patch narrow and confirm that the previously proven behavior still works in context.
 
+## Artifact integrity discipline
+
+- Before debugging runtime behavior inside a newly changed deployed artifact, prove that the deployed artifact still contains the expected files, paths, and import roots.
+- If a route, handler, or runtime now depends on a new helper file or module, verify that the helper is present in the deployable source tree and loadable from the actual runtime import root before treating later failures as business-logic bugs.
+- Treat missing files, wrong upload paths, wrong app roots, stale mounted files, or module-load errors as artifact-integrity failures first, not as evidence that the downstream database, mail, or business logic is wrong.
+- For a newly mutated deployed artifact, prove load and import integrity before moving on to end-to-end behavior verification.
+
 ## Review discipline
 
 - When responding to review feedback, verify the suggestion against the real implementation, runtime behavior, and current workflow evidence before changing code or configuration.
