@@ -88,7 +88,7 @@ Use this skill when the task is to build or debug a small MeshAgent room website
 - Treat reported "broken" behavior as a possible UX mismatch, not just a code defect.
 - If two UI actions look the same, users will expect them to behave the same.
 - Before shipping, walk the flow from the user's perspective: what they see, what they click, and what label or outcome they expect.
-- If a first fix fails, stop and revisit the assumption instead of stacking speculative changes.
+- If a first UI fix fails, revisit the UX or interaction assumption before changing more code.
 
 ## Live room and service rules
 
@@ -103,7 +103,7 @@ Use this skill when the task is to build or debug a small MeshAgent room website
 ## Implementation rules
 
 - Read before writing. Match the existing site structure and style.
-- Keep the implementation simple and reversible.
+- Apply the shared minimal change discipline from `../_shared/references/workflow_accountability.md`, then keep frontend changes simple and reversible.
 - If a change breaks the site, return to the last known working state before trying a different fix.
 - Prefer rewriting a whole small file over brittle shell substitutions that span several lines when generating frontend assets.
 - After writing or rewriting files, verify the contents and then verify the live behavior.
@@ -111,7 +111,8 @@ Use this skill when the task is to build or debug a small MeshAgent room website
 
 ## Verification rules
 
-- Do not mark the task complete based only on file creation or a successful deploy command.
+- Apply the shared verification discipline from `../_shared/references/workflow_accountability.md`, then use the frontend-specific rules below for what counts as proof here.
+- Apply the shared debugging discipline from `../_shared/references/workflow_accountability.md`, then use the frontend-specific rules below to separate frontend logic, deploy, cache, and public-URL failures.
 - For frontend work, verify both build/deploy success and the live served output.
 - Reproduce the original bug when possible, then confirm the fix on the live site.
 - Use a Build -> Verify -> Build -> Verify loop instead of batching many unverified changes.
@@ -119,7 +120,6 @@ Use this skill when the task is to build or debug a small MeshAgent room website
 ## Anti-patterns
 
 - Do not introduce Vite or bundler complexity for a mini room site unless the requirements clearly need it.
-- Do not stack multiple speculative fixes onto the same bug.
 - Do not assume a user-reported bug is purely technical when the UI model may be the real problem.
 - Do not test the room-hosted website only via container-local `localhost`.
 - Do not deploy frontend changes without accounting for browser caching.
