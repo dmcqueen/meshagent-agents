@@ -34,6 +34,7 @@ Skill-specific gates may add stricter requirements such as live runtime proof, q
 
 - Reproduce the failure on the real workflow surface before proposing a fix.
 - Treat the visible symptom and the root cause as different things until evidence connects them.
+- Do not label a cause as "most likely" or equivalent when the exact traceback, runtime error, or failing artifact boundary is still available to inspect.
 - Narrow the failing stage before editing. Identify whether the break is in load, configuration, runtime behavior, downstream integration, or verification.
 - Do not stack multiple speculative fixes at once when one narrower probe or smaller intervention can identify the cause.
 - After each intervention, verify that the observed symptom actually changed before declaring progress.
@@ -140,3 +141,4 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not turn an obvious end-to-end request into a two-step consent dance by asking the user to approve ordinary prerequisite setup that is already inside the requested workflow.
 - Do not stop at an internal actionable blocker such as a crashing service, wrong hostname suffix, missing toolkit publisher, or failed smoke test and ask "if you want, I'll keep going." Continue the normal fix path until the workflow is complete or a true external blocker remains.
 - Do not blindly retry one-time scheduled-task creation after an uncertain add result. First check whether the task was already created or whether an equivalent near-future task already exists for the same queue and payload.
+- Do not leave a previously working user-visible path in a worse state after adding one new capability and then report that regression as acceptable partial progress. Either repair the working path in the same run or explicitly restore the last known working state before describing the remaining incomplete capability.
