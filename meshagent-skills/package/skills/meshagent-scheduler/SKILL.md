@@ -106,7 +106,6 @@ The scheduler stores cron text only. Treat every stored schedule as UTC/GMT unle
 ## Live room rules
 
 - Apply `../_shared/references/live_room_cli_context.md`.
-- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks.
 - If permissions are unclear, start with `meshagent scheduled-task list --room <ROOM_NAME>` or another narrow room-scoped scheduler probe.
 
 ## Scheduled email payloads
@@ -155,6 +154,8 @@ The scheduler stores cron text only. Treat every stored schedule as UTC/GMT unle
 
 ## Queue checks
 
+- Apply the shared verification discipline from `../_shared/references/workflow_accountability.md`, then use the scheduler-specific rules below for what counts as proof here.
+- Apply the shared debugging discipline from `../_shared/references/workflow_accountability.md`, then use the scheduler-specific rules below to separate schedule-definition, queue-delivery, consumer, and downstream-send failures.
 - Verify queue behavior with `meshagent room queue size --queue <QUEUE_NAME>` and `meshagent room queue receive --queue <QUEUE_NAME>`.
 - If the queue name is unknown, prefer room toolkit invocation or the room queue API over ad hoc SDK code.
 - Do not say queue listing is impossible just because the CLI lacks a dedicated room-queue list subcommand.
@@ -176,14 +177,11 @@ The scheduler stores cron text only. Treat every stored schedule as UTC/GMT unle
 - Do not pass a human-readable `--id`; omit it unless you already have a real UUID.
 - Do not schedule a near-future task until the queue consumer has passed an immediate smoke test.
 - Do not anchor a relative request to the start of a long setup workflow.
-- Do not claim success because the task exists; prove that messages reach the queue.
-- Do not call queue delivery alone end-to-end success when the queued workflow must still send email or do something else externally visible.
 - Treat `update` and `delete` as destructive.
 - Keep this skill focused on scheduling and queue verification, not consumer implementation.
 
 ## Workflow accountability
 
-- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
 - If another skill already owns the workflow, return schedule, queue, and timing evidence to that owner instead of declaring the overall job complete.
 - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
 - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
