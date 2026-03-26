@@ -13,7 +13,9 @@ Use this reference when the user asks for a queue-consuming agent that receives 
 7. If the workflow clearly needs real outbound email and no reusable mailbox exists yet, create one automatically as part of the workflow instead of asking the user whether mailbox creation is allowed.
 8. Reuse the mailbox email address as the sender identity.
 9. In `.life` rooms, prefer mailbox addresses under `@mail.meshagent.life`; in production `.com` environments, prefer `@mail.meshagent.com`. Do not default to `@meshagent.local` for outbound scheduled email workflows.
-10. Verify that toolkit `email` is already published in the room or create the mail channel or equivalent publisher that will publish it. The normal pattern is a mailbox-backed mail path.
+10. Choose and prove one mail path before treating the workflow as viable:
+   - the default pattern is one process runtime with both `--channel=queue:<QUEUE_NAME>` and `--channel=mail:<MAILBOX_ADDRESS>`
+   - use external toolkit `email` publication only when that live publisher was already proven in the room and reusing it is intentional
 11. For a new mailbox-backed mail path, route the mailbox to its own email address as the queue and let the mail runtime consume that same queue.
 12. Do not invent a different mailbox queue or inbox queue name for a new mailbox-backed workflow.
 13. If an existing room already uses different mailbox and inbox queue names, treat that as an explicit exception that must be verified before preserving it.
@@ -56,7 +58,9 @@ Use this reference when the user asks for a queue-consuming agent that receives 
 Do not call the workflow complete until all of the following are true:
 
 - the mailbox exists and its address is the sender identity used by the workflow
-- toolkit `email` is visibly published in the room by a mail runtime or equivalent service
+- the chosen mail path is proven:
+  - either the runtime includes its own `mail:` channel and the live send path works
+  - or the runtime intentionally depends on external toolkit `email` publication and that publisher is visibly present
 - the recipient email address for the real smoke test and scheduled message is known, unless the user explicitly asked for a payload-only template
 - the queue-consuming service exists in the room
 - a live runtime or container is visibly running
@@ -71,8 +75,9 @@ Do not call the workflow complete until all of the following are true:
 ## Failure interpretation
 
 - A created mailbox does not prove outbound mail works.
-- A created mailbox does not create toolkit `email`. If the queue consumer depends on `--require-toolkit=email`, prove that some live room participant publishes toolkit `email`.
+- A created mailbox does not create toolkit `email`. Prove toolkit `email` publication only when the queue consumer actually depends on external `--require-toolkit=email`.
 - A queue-only process that requires toolkit `email` but has no already-proven live email publisher is not a complete scheduled-email design.
+- A process runtime with its own `mail:` channel should be verified through its live mail-send path, not by insisting on a separate external `email` publisher.
 - A mailbox-backed mail runtime can misbehave if the mailbox address, mailbox queue, and inbox queue do not line up. For new workflows, those names should be the same. Any existing override must be treated as an exception that needs explicit verification.
 - A mailbox address under `@meshagent.local` is a bad default for outbound managed-mail workflows. In `.life` or production environments, first suspect the mailbox domain if SMTP rejects send with authorization errors such as `550 5.7.1`.
 - A created service record does not prove the queue-consuming runtime is running.
@@ -97,7 +102,7 @@ Do not call the workflow complete until all of the following are true:
 - If `meshagent scheduled-task list` or `meshagent scheduled-task add` fails with `403` or unexpected `5xx`, treat the scheduler as blocked or unhealthy and do not claim the end-to-end scheduled workflow is complete.
 - If `meshagent scheduled-task add` fails after passing a human-readable `--id`, suspect invalid task-id format first. Scheduled-task ids are UUID-backed; omit `--id` or pass a real UUID.
 - If an unfiltered project-wide `meshagent scheduled-task list` fails with `403`, do not assume the room-scoped create path is blocked. Retry with `--room <ROOM_NAME>` before concluding that scheduling is unavailable for the target room.
-- If the scheduler is blocked or unhealthy, do not silently continue as if only the queue consumer matters. Either stop or clearly mark queue and mail setup as partial preparation pending scheduler recovery.
+- If the scheduler is blocked or unhealthy, do not silently continue as if only the queue consumer matters.
 - If a one-time `scheduled-task add` was retried after an uncertain first result, first inspect for an already-created equivalent task before issuing a second add.
 - Two near-future tasks with the same queue, same payload intent, and same delivery window are usually a duplicate-creation bug, not a valid success case.
 
