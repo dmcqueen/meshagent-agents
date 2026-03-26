@@ -180,10 +180,10 @@ container:
             Service and service-template lifecycle, validation, rendering, and room service operations.
           - `skills/meshagent-storage-operator/`
             Room storage inspection, copy, show, and removal workflows.
-          - `skills/meshagent-webapp-builder/`
-            Build and verify deployable room-hosted web applications, including contact forms, public handlers, and mailbox-backed outbound email workflows.
-          - `skills/meshagent-webapp-react-builder/`
-            Small React-style room websites using Preact + htm.
+          - `skills/meshagent-webapp-backend-builder/`
+            Canonical backend path for deployable room-hosted web applications, including Python handlers, contact forms, room DB integration, and mailbox-backed outbound email workflows.
+          - `skills/meshagent-webapp-frontend-builder/`
+            Canonical frontend path for interactive room websites using Preact + htm on top of the backend path.
           - `skills/meshagent-mail-operator/`
             Mailbox administration, room SMTP behavior, inbound queue inspection, and mailbox-backed sender guidance.
           - `skills/meshagent-participant-token-operator/`
@@ -282,22 +282,22 @@ container:
             Live room runtime inspection and debugging skill.
           - `skills/meshagent-runtime-operator/agents/openai.yaml`
             OpenAI agent metadata for the runtime operator.
-          - `skills/meshagent-webapp-builder/SKILL.md`
-            Deployable room webapp build, verification, and contact-form workflow skill.
-          - `skills/meshagent-webapp-builder/agents/openai.yaml`
-            OpenAI agent metadata for the webapp builder.
-          - `skills/meshagent-webapp-builder/references/contact_form_example.py`
+          - `skills/meshagent-webapp-backend-builder/SKILL.md`
+            Deployable room webapp backend, verification, DB, and contact-form workflow skill.
+          - `skills/meshagent-webapp-backend-builder/agents/openai.yaml`
+            OpenAI agent metadata for the webapp backend builder.
+          - `skills/meshagent-webapp-backend-builder/references/contact_form_example.py`
             Known-good contact-form handler reference using real room SMTP defaults and a mailbox-backed sender placeholder.
-          - `skills/meshagent-webapp-builder/references/mailbox_backed_sender.md`
+          - `skills/meshagent-webapp-backend-builder/references/mailbox_backed_sender.md`
             Mailbox provisioning and sender-identity reference for room-hosted contact forms.
-          - `skills/meshagent-webapp-builder/references/minimal_webserver.yaml`
+          - `skills/meshagent-webapp-backend-builder/references/minimal_webserver.yaml`
             Minimal deployable public webserver YAML example.
-          - `skills/meshagent-webapp-builder/references/verification_checklist.md`
+          - `skills/meshagent-webapp-backend-builder/references/verification_checklist.md`
             Short completion checklist for deployed contact-form sites.
-          - `skills/meshagent-webapp-react-builder/SKILL.md`
-            React-style room webapp skill using Preact + htm.
-          - `skills/meshagent-webapp-react-builder/agents/openai.yaml`
-            OpenAI agent metadata for the React-style webapp builder.
+          - `skills/meshagent-webapp-frontend-builder/SKILL.md`
+            Interactive room-webapp frontend skill using Preact + htm on top of the backend path.
+          - `skills/meshagent-webapp-frontend-builder/agents/openai.yaml`
+            OpenAI agent metadata for the frontend webapp builder.
           - `skills/meshagent-mail-operator/SKILL.md`
             Mailbox, SMTP, queue, and room-hosted outbound mail workflow skill.
           - `skills/meshagent-mail-operator/agents/openai.yaml`
@@ -416,7 +416,7 @@ container:
           1. Identify the target room and runtime type first.
           2. Use the packaged CLI references first when composing join or deploy invocations. Only use live `--help` on the exact runtime command if the packaged help is missing the needed detail or appears stale for the installed CLI.
           3. Reuse existing flags, rules files, skill dirs, and environment wiring when modifying an existing agent command.
-          4. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for contact forms, room-hosted web apps, and web handler implementation.
+          4. Use [SKILL.md](../skills/meshagent-webapp-backend-builder/SKILL.md) for contact forms, room-hosted web apps, and web handler implementation.
           5. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for mailbox-linked delivery flows or inbox-toolkit work.
           6. For contact-form deployments, do not stop after the site is reachable if live submission still fails to send mail.
           7. For webserver-backed deployments, do not stop after deploy until the live route has been smoke-tested.
@@ -516,7 +516,7 @@ container:
           1. Resolve the room name first.
           2. Inspect current room state before changing it.
           3. Use the room-scoped command instead of the project-scoped equivalent when the request is clearly about a single room.
-          4. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for room websites, contact forms, webserver deploys, or public site exposure tied to this room.
+          4. Use [SKILL.md](../skills/meshagent-webapp-backend-builder/SKILL.md) for room websites, contact forms, webserver deploys, or public site exposure tied to this room.
 
       - path: /meshagent-skills/commands/meshagent-service.md
         text: |
@@ -542,7 +542,7 @@ container:
           1. Inspect or validate specs before create or update when possible.
           2. Prefer `validate`, `render-template`, `show`, or `list` before destructive or state-changing commands.
           3. After deploy or update, verify the resulting service state and surface any follow-up steps.
-          4. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for websites, contact forms, `meshagent webserver ...`, and room-hosted webapp deployment.
+          4. Use [SKILL.md](../skills/meshagent-webapp-backend-builder/SKILL.md) for websites, contact forms, `meshagent webserver ...`, and room-hosted webapp deployment.
           5. Use [SKILL.md](../skills/meshagent-webmaster/SKILL.md) for explicit route/domain administration or public hostname diagnostics.
 
       - path: /meshagent-skills/commands/meshagent.md
@@ -559,7 +559,7 @@ container:
           ## Workflow
           
           1. Start with [SKILL.md](../skills/meshagent-cli-operator/SKILL.md).
-          2. Use [SKILL.md](../skills/meshagent-webapp-builder/SKILL.md) for websites, contact forms, web handlers, and room-hosted webapp deployment.
+          2. Use [SKILL.md](../skills/meshagent-webapp-backend-builder/SKILL.md) for websites, contact forms, web handlers, and room-hosted webapp deployment.
           3. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for email delivery, mailboxes, inbox evidence, or MailBot toolkits.
           4. Use [SKILL.md](../skills/meshagent-scheduler/SKILL.md) for scheduled tasks, cron-based dispatch, or queue scheduling.
           5. Use [SKILL.md](../skills/meshagent-webmaster/SKILL.md) for explicit route or domain administration and public hostname diagnostics.
@@ -1669,11 +1669,11 @@ container:
                       + ", ".join(missing)
                   )
               if (
-                  "Use `meshagent-webapp-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers."
+                  "Use `meshagent-webapp-backend-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers."
                   not in command_groups_text
               ):
                   errors.append(
-                      "command_groups.md is missing the required webapp-builder routing rule for websites and meshagent webserver work"
+                      "command_groups.md is missing the required webapp-backend-builder routing rule for websites and meshagent webserver work"
                   )
               if (
                   "Use `meshagent-webmaster` for explicit route management or public hostname exposure."
@@ -2034,7 +2034,7 @@ container:
                 when: The task depends on SDK or server source, not just CLI behavior.
               - skill: meshagent-participant-token-operator
                 when: The task is specifically about participant token discovery, token env wiring, or token generation rather than general command routing.
-              - skill: meshagent-webapp-builder
+              - skill: meshagent-webapp-backend-builder
                 when: A CLI deploy task also requires authoring or debugging the web app itself.
               - skill: meshagent-service-operator
                 when: The main task is service lifecycle semantics rather than command routing.
@@ -2093,7 +2093,7 @@ container:
           - `meshagent-workflow-orchestrator`: Use it when the user's goal spans multiple specialized skills and one owner should keep accountability.
           - `meshagent-sdk-researcher`: Use it when the answer depends on source-level behavior or examples rather than command shape.
           - `meshagent-participant-token-operator`: Use it when the question is about participant token source, injection, delegation, or minting rather than generic CLI routing.
-          - `meshagent-webapp-builder`: Use it when a CLI deploy command is only one part of building or fixing a room website.
+          - `meshagent-webapp-backend-builder`: Use it when a CLI deploy command is only one part of building or fixing a room website.
           - `meshagent-service-operator`: Use it when the task is primarily about service semantics, templates, or room service lifecycle.
           
           ## Live room execution
@@ -2267,7 +2267,7 @@ container:
           - If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
           - Use `meshagent-mail-operator` for mailbox, inbox, process `mail:` channel, or contact-form email workflows.
           - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
-          - Use `meshagent-webapp-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers.
+          - Use `meshagent-webapp-backend-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers.
           - Use `meshagent-webmaster` for explicit route management or public hostname exposure.
           - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
           
@@ -5677,7 +5677,7 @@ container:
                 when: The main task is generic queue inspection or queue injection rather than mailbox behavior.
               - skill: meshagent-queue-worker-builder
                 when: Mail sending is part of a queue consumer or scheduled queue workflow.
-              - skill: meshagent-webapp-builder
+              - skill: meshagent-webapp-backend-builder
                 when: Mail is one part of a room-hosted contact form or website workflow.
               - skill: meshagent-cli-operator
                 when: Managed hostname and general room-scoped CLI rules matter.
@@ -5748,7 +5748,7 @@ container:
           - `meshagent-participant-token-operator`: participant-token sourcing or SMTP code using the in-room token
           - `meshagent-queue-operator`: generic queue work without mailbox logic
           - `meshagent-queue-worker-builder`: queue-backed or scheduled mail senders
-          - `meshagent-webapp-builder`: contact forms and site workflows
+          - `meshagent-webapp-backend-builder`: contact forms and site workflows
           - `meshagent-cli-operator`: room-scoped CLI rules and managed hostname context
           
           ## Live room rules
@@ -6679,7 +6679,7 @@ container:
                 when: The runtime to inspect is a queue consumer and the question is whether it actually dequeues or completes jobs.
               - skill: meshagent-service-operator
                 when: The fix belongs in service definition or room service lifecycle rather than runtime debugging.
-              - skill: meshagent-webapp-builder
+              - skill: meshagent-webapp-backend-builder
                 when: The remaining issue is public web behavior rather than container state.
             scope:
               owns:
@@ -6730,7 +6730,7 @@ container:
           - `meshagent-mail-operator`: mailbox identity, toolkit `email`, and outbound mail behavior
           - `meshagent-scheduler`: scheduler permissions, create/list health, and timing issues
           - `meshagent-service-operator`: service definition and lifecycle fixes
-          - `meshagent-webapp-builder`: public site behavior after runtime checks pass
+          - `meshagent-webapp-backend-builder`: public site behavior after runtime checks pass
           
           ## Live room execution
           
@@ -7163,7 +7163,7 @@ container:
                 when: The main question is token-backed environment injection, participant identity, or service token wiring rather than generic service lifecycle.
               - skill: meshagent-queue-worker-builder
                 when: The main task is authoring queue-consumer YAML.
-              - skill: meshagent-webapp-builder
+              - skill: meshagent-webapp-backend-builder
                 when: The main task is a website or public web application rather than service lifecycle.
               - skill: meshagent-runtime-operator
                 when: The remaining issue is live container behavior rather than service definition.
@@ -7215,7 +7215,7 @@ container:
           - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
           - `meshagent-participant-token-operator`: Use it when the issue is token-backed environment injection or participant-token wiring inside the service manifest.
           - `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-consumer YAML.
-          - `meshagent-webapp-builder`: Use it when the main task is a website or public web application rather than service lifecycle.
+          - `meshagent-webapp-backend-builder`: Use it when the main task is a website or public web application rather than service lifecycle.
           - `meshagent-webmaster`: Use it when the main task is route and hostname management rather than service lifecycle.
           - `meshagent-runtime-operator`: Use it when the remaining problem is live runtime behavior rather than service definition.
           
@@ -7308,7 +7308,7 @@ container:
                 when: Resolve checkout roots before using docs or source references.
               - skill: meshagent-participant-token-operator
                 when: The real issue is whether the runtime or service has a participant token and storage API scope rather than storage path behavior.
-              - skill: meshagent-webapp-builder
+              - skill: meshagent-webapp-backend-builder
                 when: Storage is one part of a website deploy workflow.
               - skill: meshagent-runtime-operator
                 when: The real issue is a mount or live runtime visibility problem.
@@ -7356,7 +7356,7 @@ container:
           - `meshagent-workflow-orchestrator`: Use it when storage work is only one part of a larger end-to-end workflow.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
           - `meshagent-participant-token-operator`: Use it when the blocker is participant-token source, missing storage API grants, or token wiring rather than storage path behavior.
-          - `meshagent-webapp-builder`: Use it when storage is only one part of deploying a website.
+          - `meshagent-webapp-backend-builder`: Use it when storage is only one part of deploying a website.
           - `meshagent-runtime-operator`: Use it when the real issue is a live container mount or runtime visibility problem rather than storage commands themselves.
           
           ## Default workflow
@@ -7407,13 +7407,13 @@ container:
             short_description: "Operate room storage safely"
             default_prompt: "Use $meshagent-storage-operator to inspect room storage paths or copy files safely."
 
-      - path: /meshagent-skills/skills/meshagent-webapp-builder/SKILL.md
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/SKILL.md
         text: |
           ---
-          name: meshagent-webapp-builder
-          description: Build and verify deployable MeshAgent room web applications, including contact forms, public web handlers, and mailbox-backed outbound email flows.
+          name: meshagent-webapp-backend-builder
+          description: Build and verify deployable MeshAgent room web application backends, including Python web handlers, contact forms, room-database integration, and mailbox-backed outbound email flows.
           metadata:
-            short-description: Build, deploy, and verify room-hosted websites and handlers.
+            short-description: Canonical backend path for room-hosted web apps, handlers, DB, and mail.
             references:
               bundled:
                 - references/command_groups.md
@@ -7449,8 +7449,8 @@ container:
                 when: The blocker is mailbox provisioning or room SMTP behavior.
               - skill: meshagent-webmaster
                 when: The main task is route and hostname administration rather than the web app itself.
-              - skill: meshagent-webapp-react-builder
-                when: The site is a small React-style UI built with Preact + htm.
+              - skill: meshagent-webapp-frontend-builder
+                when: The site needs a richer interactive Preact + htm frontend on top of this backend path.
             scope:
               owns:
                 - room website and handler implementation
@@ -7473,15 +7473,16 @@ container:
                 - user_visible_result_or_exact_blocker
           ---
           
-          # MeshAgent Webapp Builder
+          # MeshAgent Webapp Backend Builder
           
-          Use this skill when the task is to build, deploy, or debug a room-hosted website or web handler.
+          Use this skill when the task is to build, deploy, or debug the backend/runtime side of a room-hosted website or web handler.
           
           ## Use this skill when
           
           - The user wants a website, contact form, landing page, or HTTP handler deployed from a room.
           - The task involves `meshagent webserver ...` plus actual application code, not just route administration.
           - The task includes form validation, sanitization, public URL delivery, or post-deploy smoke testing.
+          - The task needs the canonical backend stack for database-backed or email-featured sites.
           - The task includes outbound email from a room-hosted website such as a contact form.
           - The task is to diagnose a live `500`, `502`, or other public-site failure from a deployed room webserver.
           
@@ -7512,7 +7513,7 @@ container:
           - `meshagent-database-operator`: Use it when the site must write to or read from the in-room database.
           - `meshagent-mail-operator`: Use it when the blocker is mailbox provisioning, queue-backed mail intake, or SMTP behavior.
           - `meshagent-webmaster`: Use it when the main task is route and hostname administration rather than the web app itself.
-          - `meshagent-webapp-react-builder`: Use it when the site is a small React-style UI built with Preact + htm.
+          - `meshagent-webapp-frontend-builder`: Use it when the site needs a richer interactive frontend built with Preact + htm on top of this backend path.
           
           ## Live room execution
           
@@ -7522,6 +7523,17 @@ container:
           - For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
           - In a live room shell where `cwd` is `/src`, author deployable webapp files under a subdirectory of `/src`, not directly under `/data`.
           - Do not rely on `meshagent room container exec` into another participant's private container as the default way to inspect a deployed site. Prefer public HTTP checks, service state, developer watch, container logs, and deployed source artifacts first.
+          
+          ## Golden path architecture
+          
+          - This skill is the canonical backend and runtime path for DB-backed or email-featured MeshAgent sites.
+          - Prefer Python `aiohttp` handlers as the backend default when a site needs room database writes, mailbox-backed email, or other live handler behavior.
+          - Prefer a typed helper-module pattern for backend state:
+            - `handlers/<feature>_store.py` or another narrow helper for `room.database.*`
+            - `handlers/<feature>.py` or other route handlers for request validation and response shaping
+          - For straightforward forms, lists, and admin views, prefer server-rendered HTML or small HTML-first interactions over a heavier client app.
+          - If the site needs richer interactivity, canvas-style UI, or component-heavy state, keep this backend path and layer `meshagent-webapp-frontend-builder` on top of it rather than inventing a separate backend stack.
+          - Do not switch backend languages or runtime models without a requirement that the Python golden path clearly cannot satisfy.
           
           ## Implementation rules
           
@@ -7536,6 +7548,7 @@ container:
           - Do not ship raw browser-default form controls, default Arial-on-white layouts, or full-width utility forms unless the user explicitly asked for that austere style.
           - Keep handler modules simple at import time. A module that raises during import can surface to the public site as a generic `500`.
           - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
+          - For DB-backed or email-featured sites, default to the Python backend golden path in this skill before considering other backend approaches.
           - If the site must write submissions into the room database, treat `meshagent-database-operator` as the canonical source for the exact `room.database.*` API shape and schema objects, then copy only that proven pattern into the handler.
           - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
           - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
@@ -7630,26 +7643,26 @@ container:
           - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
           - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
 
-      - path: /meshagent-skills/skills/meshagent-webapp-builder/agents/openai.yaml
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/agents/openai.yaml
         text: |
           interface:
-            display_name: "MeshAgent Webapp Builder"
-            short_description: "Build room-hosted web apps"
-            default_prompt: "Use $meshagent-webapp-builder to build, deploy, or debug a room-hosted web app."
+            display_name: "MeshAgent Webapp Backend Builder"
+            short_description: "Canonical backend path for room web apps"
+            default_prompt: "Use $meshagent-webapp-backend-builder to build, deploy, or debug the backend/runtime side of a room-hosted web app."
 
-      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/command_groups.md
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/command_groups.md
         text: |
-          # MeshAgent Webapp Builder CLI references
+          # MeshAgent Webapp Backend Builder CLI references
           
           The primary packaged CLI routing reference lives at:
           
           - `skills/meshagent-cli-operator/references/command_groups.md`
           
           Open that shared file for the actual command-family routing details. This local wrapper
-          exists so `meshagent-webapp-builder` can point to package-local references without
+          exists so `meshagent-webapp-backend-builder` can point to package-local references without
           sending the model to live `meshagent --help` by default.
 
-      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/contact_form_example.py
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/contact_form_example.py
         text: |
           from __future__ import annotations
           
@@ -8048,7 +8061,7 @@ container:
                   content_type="text/html",
               )
 
-      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/contact_submission_store.py
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/contact_submission_store.py
         text: |
           from __future__ import annotations
           
@@ -8098,7 +8111,7 @@ container:
               await room.database.insert(table=CONTACT_SUBMISSIONS_TABLE, records=[record])
               return record
 
-      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/mailbox_backed_sender.md
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/mailbox_backed_sender.md
         text: |
           # Mailbox-backed sender pattern
           
@@ -8150,18 +8163,18 @@ container:
           - `SMTPDataError`, `550`, `553`, or similar after the form renders successfully usually means sender authorization is still wrong.
           - A live site with this failure is not complete.
 
-      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/meshagent_cli_help.md
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/meshagent_cli_help.md
         text: |
-          # MeshAgent Webapp Builder CLI help reference
+          # MeshAgent Webapp Backend Builder CLI help reference
           
           The primary generated CLI help reference lives at:
           
           - `skills/meshagent-cli-operator/references/meshagent_cli_help.md`
           
           Open that shared file for the actual command syntax and flags. This local wrapper exists
-          so `meshagent-webapp-builder` can cite package-local references directly.
+          so `meshagent-webapp-backend-builder` can cite package-local references directly.
 
-      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/minimal_webserver.yaml
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/minimal_webserver.yaml
         text: |
           kind: WebServer
           version: v1
@@ -8174,7 +8187,7 @@ container:
                 - POST
               python: handlers/contact.py
 
-      - path: /meshagent-skills/skills/meshagent-webapp-builder/references/verification_checklist.md
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/verification_checklist.md
         text: |
           # Verification checklist
           
@@ -8201,13 +8214,13 @@ container:
           - mailbox `409` plus mailbox read `403`: treat that candidate as unavailable and try another one
           - mailbox exists but valid `POST` fails with a runtime exception: inspect the actual send path before blaming mailbox queue creation
 
-      - path: /meshagent-skills/skills/meshagent-webapp-react-builder/SKILL.md
+      - path: /meshagent-skills/skills/meshagent-webapp-frontend-builder/SKILL.md
         text: |
           ---
-          name: meshagent-webapp-react-builder
-          description: Build small MeshAgent room web apps with a React-style UI using Preact + htm, minimal or zero build tooling, and live public-URL verification after deploy.
+          name: meshagent-webapp-frontend-builder
+          description: Build interactive MeshAgent room web app frontends with Preact + htm, minimal tooling, and live public-URL verification on top of the canonical backend path.
           metadata:
-            short-description: Build small React-style room webapps with Preact + htm and live verification.
+            short-description: Canonical frontend path for interactive room web apps using Preact + htm.
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
@@ -8221,8 +8234,8 @@ container:
                 - webserver CLI source
                 - room service command help
             related_skills:
-              - skill: meshagent-webapp-builder
-                when: The task is a broader room webapp workflow, public deploy path, or contact-form implementation.
+              - skill: meshagent-webapp-backend-builder
+                when: The app needs the canonical Python handler, DB, mail, deploy, or verification backend path.
               - skill: meshagent-sdk-researcher
                 when: Checkout roots or codebase references must be resolved first.
               - skill: meshagent-service-operator
@@ -8248,15 +8261,16 @@ container:
                 - user_visible_result_or_exact_blocker
           ---
           
-          # MeshAgent Webapp React Builder
+          # MeshAgent Webapp Frontend Builder
           
-          Use this skill when the task is to build or debug a small MeshAgent room website with a React-style component model, but without a heavy frontend toolchain.
+          Use this skill when the task is to build or debug the frontend layer of an interactive MeshAgent room web app with Preact + htm, but without a heavy frontend toolchain.
           
           ## Use this skill when
           
-          - The user wants a mini site, small dashboard, landing page, or interactive room webapp with React-style components.
+          - The user wants a mini site, small dashboard, landing page, creative UI, or interactive room webapp with component-style frontend state.
           - The site can be served as static assets from `website/dist/` without a complex bundler pipeline.
           - The task is frontend-heavy and benefits from `Preact + htm` rather than plain static HTML.
+          - The app benefits from a richer client-side interaction layer on top of a Python backend path.
           - The current problem is a UI bug, interaction bug, caching issue, or deploy/verification issue on a room-hosted mini site.
           
           ## References
@@ -8267,7 +8281,7 @@ container:
           
           ## Related skills
           
-          - `meshagent-webapp-builder`: Use it for the broader room webapp, deploy, route, and verification workflow around this frontend specialization.
+          - `meshagent-webapp-backend-builder`: Use it for the canonical Python backend, DB, mail, deploy, route, and verification workflow around this frontend specialization.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references outside this skill bundle.
           - `meshagent-service-operator`: Use it when the main task is room service lifecycle rather than frontend implementation.
           
@@ -8285,6 +8299,9 @@ container:
           - Prefer `Preact + htm + esm.sh` imports for mini sites.
           - Prefer plain `<script type="module">` over Vite, webpack, or a custom bundler when the site can stay simple.
           - Put deployable static frontend assets in `website/dist/`.
+          - Treat this skill as the canonical frontend path for interactive or creative room sites, but keep it layered over the backend conventions from `meshagent-webapp-backend-builder`.
+          - For DB-backed or email-featured apps, let the backend skill own Python handlers, `room.database.*`, mail paths, and public-route verification while this skill owns UI composition, state, and interactions.
+          - Prefer thin frontend calls into narrow backend endpoints over duplicating business logic or persistence logic in the browser.
           - If a build step is unavoidable, keep it minimal and justify it from the actual requirements.
           - When deploying frontend changes, add cache-busting query params to script and stylesheet tags so users do not see stale assets.
           
@@ -8309,6 +8326,7 @@ container:
           
           - Read before writing. Match the existing site structure and style.
           - Apply the shared minimal change discipline from `../_shared/references/workflow_accountability.md`, then keep frontend changes simple and reversible.
+          - If the app needs DB, mail, or other server-backed behavior, keep the backend on the `meshagent-webapp-backend-builder` golden path instead of inventing a frontend-only or alternate-backend architecture here.
           - If a change breaks the site, return to the last known working state before trying a different fix.
           - Prefer rewriting a whole small file over brittle shell substitutions that span several lines when generating frontend assets.
           - After writing or rewriting files, verify the contents and then verify the live behavior.
@@ -8339,14 +8357,14 @@ container:
           ## Out of scope
           
           - Large SPA architecture, complex build pipelines, or frontend platform design beyond what a room mini site needs.
-          - General non-React room webapps when the plain `meshagent-webapp-builder` skill is a better fit.
+          - General backend architecture, room-database schema design, or mail-runtime design when `meshagent-webapp-backend-builder` is the better fit.
 
-      - path: /meshagent-skills/skills/meshagent-webapp-react-builder/agents/openai.yaml
+      - path: /meshagent-skills/skills/meshagent-webapp-frontend-builder/agents/openai.yaml
         text: |
           interface:
-            display_name: "MeshAgent Webapp React Builder"
-            short_description: "Build React-style room web apps"
-            default_prompt: "Use $meshagent-webapp-react-builder to build a small React-style room web app with Preact + htm."
+            display_name: "MeshAgent Webapp Frontend Builder"
+            short_description: "Canonical frontend path for interactive room web apps"
+            default_prompt: "Use $meshagent-webapp-frontend-builder to build the interactive Preact + htm frontend layer for a room web app."
 
       - path: /meshagent-skills/skills/meshagent-webmaster/SKILL.md
         text: |
@@ -8377,7 +8395,7 @@ container:
                 when: General room-context and managed-hostname rules matter.
               - skill: meshagent-sdk-researcher
                 when: Checkout roots or the sample static webserver YAML path must be resolved.
-              - skill: meshagent-webapp-builder
+              - skill: meshagent-webapp-backend-builder
                 when: The task is building or debugging the website, not just the route.
               - skill: meshagent-service-operator
                 when: The target service itself must be created or repaired before routing it.
@@ -8426,7 +8444,7 @@ container:
           - `meshagent-workflow-orchestrator`: Use it when route work is only one part of a larger end-to-end workflow.
           - `meshagent-cli-operator`: Reuse its general room-context and managed-hostname rules instead of inventing environment behavior locally.
           - `meshagent-sdk-researcher`: Resolve checkout roots and the sample static webserver YAML path before using codebase references.
-          - `meshagent-webapp-builder`: Use it when the task is building or debugging the website rather than operating the route.
+          - `meshagent-webapp-backend-builder`: Use it when the task is building or debugging the website rather than operating the route.
           - `meshagent-service-operator`: Use it when the target service must be created, validated, or repaired before routing it.
           
           ## Live room execution
@@ -8566,7 +8584,7 @@ container:
                 when: Scheduled-task creation, timing, timezone resolution, or queue-schedule verification is required.
               - skill: meshagent-storage-operator
                 when: Room storage copy, inspection, or path verification is required.
-              - skill: meshagent-webapp-builder
+              - skill: meshagent-webapp-backend-builder
                 when: The workflow includes a room-hosted website, web handler, or public web verification.
               - skill: meshagent-webmaster
                 when: Route or managed-hostname administration is required.
@@ -8624,7 +8642,7 @@ container:
           - `meshagent-runtime-operator`: runtime state, toolkit publication, logs, and containers
           - `meshagent-scheduler`: scheduled-task timing and queue alignment
           - `meshagent-storage-operator`: room storage copy and path verification
-          - `meshagent-webapp-builder`: room-hosted websites and handlers
+          - `meshagent-webapp-backend-builder`: room-hosted websites and handlers
           - `meshagent-webmaster`: routes and managed hostnames
           
           ## Core model
@@ -8662,7 +8680,7 @@ container:
           - Apply the shared minimal change discipline from `../_shared/references/workflow_accountability.md` when the workflow modifies an existing working handler, service, or runtime.
           - Apply the shared isolation-before-integration discipline from `../_shared/references/workflow_accountability.md` before approving a mixed patch to an existing working workflow.
           - When the workflow is reacting to review or external implementation feedback, apply the shared review discipline from `../_shared/references/workflow_accountability.md` before mutating the workflow.
-          - If the workflow adds a new database write path to a live site or handler, route schema and `room.database.*` call-shape decisions to `meshagent-database-operator`, then let `meshagent-webapp-builder` integrate the proven DB path into the live handler.
+          - If the workflow adds a new database write path to a live site or handler, route schema and `room.database.*` call-shape decisions to `meshagent-database-operator`, then let `meshagent-webapp-backend-builder` integrate the proven DB path into the live handler.
           - If the workflow adds a new database write path to a live site or handler, require the DB insert path to be proven before accepting a larger mixed patch as the next step.
           - If the workflow adds one new behavior to an existing handler, prefer helper-based integration with the smallest practical call-site change.
           - If the request clearly includes ordinary prerequisite setup, do not stop to ask permission for that setup unless a real missing input remains.
