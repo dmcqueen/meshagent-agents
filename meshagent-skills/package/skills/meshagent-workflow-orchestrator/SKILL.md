@@ -139,6 +139,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - Apply the shared minimal change discipline from `../_shared/references/workflow_accountability.md` when the workflow modifies an existing working handler, service, or runtime.
 - Apply the shared isolation-before-integration discipline from `../_shared/references/workflow_accountability.md` before approving a mixed patch to an existing working workflow.
 - When the workflow is reacting to review or external implementation feedback, apply the shared review discipline from `../_shared/references/workflow_accountability.md` before mutating the workflow.
+- If the workflow adds a new database write path to a live site or handler, route schema and `room.database.*` call-shape decisions to `meshagent-database-operator`, then let `meshagent-webapp-builder` integrate the proven DB path into the live handler.
 - If the workflow adds a new database write path to a live site or handler, require the DB insert path to be proven before accepting a larger mixed patch as the next step.
 - If the workflow adds one new behavior to an existing handler, prefer helper-based integration with the smallest practical call-site change.
 - If the request clearly includes ordinary prerequisite setup, do not stop to ask permission for that setup unless a real missing input remains.
