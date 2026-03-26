@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Webapp Frontend Builder"
+  short_description: "Canonical frontend path for interactive room web apps"
+  default_prompt: "Use $meshagent-webapp-frontend-builder to build the interactive Preact + htm frontend layer for a room web app."
