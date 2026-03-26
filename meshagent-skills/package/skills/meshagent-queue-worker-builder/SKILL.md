@@ -87,7 +87,7 @@ Use this skill to create or repair queue-backed room service YAML. Default to a 
 - `meshagent-sdk-researcher`: resolve roots and locate the best example
 - `meshagent-participant-token-operator`: token-backed env and delegated shell token issues
 - `meshagent-scheduler`: scheduled-task creation after the consumer is proven
-- `meshagent-mail-operator`: mailbox-backed senders and email-toolkit publication
+- `meshagent-mail-operator`: mailbox-backed senders, process mail paths, and email-toolkit publication when an external publisher is intentional
 - `meshagent-service-operator`: service lifecycle after YAML authoring
 - `meshagent-runtime-operator`: proving the live runtime dequeues and finishes jobs
 
@@ -150,14 +150,14 @@ Use this skill to create or repair queue-backed room service YAML. Default to a 
 
 ## Verification rules
 
-- YAML generation alone is not success.
-- Service creation alone is not success.
-- Success requires:
+- Apply the shared verification discipline from `../_shared/references/workflow_accountability.md`, then use the queue-consumer-specific rules below for what counts as proof here.
+- Apply the shared debugging discipline from `../_shared/references/workflow_accountability.md`, then use the queue-consumer-specific rules below to separate YAML shape, runtime readiness, dequeue behavior, and downstream-send failures.
+- Require all of the following before treating the queue consumer as ready:
   - live room service evidence
   - live runtime evidence
   - successful immediate dequeue smoke test
 - If the runtime requires toolkit `email`, verify that toolkit is visible before assuming the consumer is healthy.
-- If the queued job sends email, do not call the workflow complete until runtime evidence shows a successful send or the exact blocker.
+- If the queued job sends email, require runtime send evidence or the exact blocker.
 - If the smoke test fails, do not create the scheduled task yet.
 
 ## Operating rules
