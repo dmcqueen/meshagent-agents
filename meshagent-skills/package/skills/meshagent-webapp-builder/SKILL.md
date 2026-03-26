@@ -129,6 +129,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
 - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
 - For existing handlers, prefer extracting new DB behavior into a separate helper module and changing the live handler by an import plus one narrow call site whenever that is practical.
+- If a live handler already has a working GET or submit path, adding one new capability must not leave that existing path worse at the end of the run. Repair it before stopping, or explicitly restore the last known working handler state and report the new capability as still incomplete.
 - If a handler starts importing a new helper module, verify that the helper file lives under the same deployable source tree and will be importable from the actual webserver `--app-dir` before treating later failures as DB, mail, or response bugs.
 - Do not improvise `create_table_with_schema` schema entries inside a web handler. If DB-backed handler code needs types or schema shape, copy the exact proven `DataType`-based pattern from `meshagent-database-operator` and the resolved repo examples.
 - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
@@ -155,17 +156,18 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 6. If the form persists submissions, route the DB API shape to `meshagent-database-operator`, then use that proven direct `room.database.*` pattern instead of inventing a handler-local CLI workflow or ad hoc schema objects.
 7. Prefer implementing the DB write in a helper module first, then wire it into the live handler with the smallest practical import-and-call change.
 8. Prove the DB insert path with a read-back before combining it with mail-send and response-handling changes.
-9. If the form sends outbound email from the room, inspect existing room mailboxes first.
-10. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
-11. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
-12. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
-13. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
-14. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
-15. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
-16. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
-17. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
-18. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-19. Verify the live site with actual GET and POST requests after deploy.
+9. If the DB change breaks a previously working submit path, fix that regression first or roll back to the last working handler before continuing DB debugging.
+10. If the form sends outbound email from the room, inspect existing room mailboxes first.
+11. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
+12. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
+13. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
+14. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+15. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
+16. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+17. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
+18. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
+19. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
+20. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
@@ -197,10 +199,12 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
 - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
 - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
+- Do not report a speculative "most likely cause" for a live `500` when the exact traceback, import error, or route-load failure can still be retrieved from logs or other room-visible evidence.
 - If the first diagnosis attempt hits a private-container exec denial, do not keep retrying container exec. Switch to logs, service definition, room-visible source, or public behavior.
 - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
 - If the service is crashing or failing liveness checks, diagnose the service/runtime before continuing public-site verification.
 - If repeated site patches fail to improve the same symptom, stop widening the handler patch and reassess the deploy shape, integration boundary, or send path.
+- If a DB integration patch turns a previously working submit path into a `500`, repair or roll back that regression before summarizing the DB work as partial progress.
 - If a contact-form task asks for emailed submissions, do not report success while live submission still fails to send mail.
 - If a generated contact-form handler uses direct SMTP and `SMTP_HOSTNAME` is null, add an explicit fallback from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
 - If a contact-form handler still cannot prove a usable SMTP hostname after that environment fallback, treat it as a blocker and switch back to the mailbox-backed room mail path or report the exact mail-configuration blocker.
