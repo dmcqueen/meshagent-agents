@@ -106,7 +106,6 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 ## Live room execution
 
 - Apply `../_shared/references/live_room_cli_context.md` for room context reuse, room-scoped command handling, and local-vs-room path rules.
-- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped webapp deploy or verification work.
 - Do not enable room messaging as part of a normal site or contact-form workflow unless the user explicitly asked for room messaging behavior.
 - Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
 - For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
@@ -115,6 +114,9 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 
 ## Implementation rules
 
+- Apply the shared minimal change discipline from `../_shared/references/workflow_accountability.md`, then use the web-specific modularity rules below for live handler changes.
+- Apply the shared isolation-before-integration discipline from `../_shared/references/workflow_accountability.md` before blending DB, mail, and response changes into an existing live handler.
+- When a live webapp change is driven by review or external implementation feedback, apply the shared review discipline from `../_shared/references/workflow_accountability.md` before accepting the suggested patch shape.
 - Use relative route sources like `handlers/contact.py` and `public` so the deploy stays portable.
 - For public webserver configs, set `host: 0.0.0.0` unless there is a concrete reason not to.
 - Treat a public site as designed output, not just working markup.
@@ -125,17 +127,16 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - If the site must write submissions into the room database, reuse the proven repo pattern from `contact_form_route.py`: create the table with `room.database.create_table_with_schema(..., mode="create_if_not_exists")`, then insert rows with `room.database.insert(table=..., records=[...])`.
 - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
 - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
-- For existing working handlers, add new functionality with the fewest lines possible before attempting any broader cleanup or structural rewrite.
 - For existing handlers, prefer extracting new DB behavior into a separate helper module and changing the live handler by an import plus one narrow call site whenever that is practical.
 - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
-- Prove the DB insert path in isolation before integrating it into an existing handler that already sends email or renders user-visible success/error states.
 - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
 - A mailbox-backed sender address alone is not proof that the form has a working outbound mail path.
 - Do not synthesize sender identities from the participant name or mail domain. In particular, do not invent `FROM_ADDRESS`, `MAIL_FROM`, `SMTP_FROM`, or `MESHAGENT_PARTICIPANT_NAME`.
 - Do not default a contact form to ad hoc direct SMTP when a mailbox-backed room mail path is the real workflow.
 - If the handler uses direct SMTP, use only the real room SMTP defaults documented in `mail_common.py`: `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_HOSTNAME`, and `SMTP_PORT`.
 - Treat direct SMTP as an explicit fallback path, not the normal contact-form mail path. Use it only when the user asked for it or the runtime has already proven that SMTP configuration exists.
-- If direct SMTP is used and `SMTP_HOSTNAME` is null, fill it from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+- Room containers do expose `MESHAGENT_API_URL`, but raw SMTP code must add its own hostname fallback if it wants to derive `SMTP_HOSTNAME` from that environment.
+- If generated direct-SMTP code needs a hostname fallback because `SMTP_HOSTNAME` is null, derive it explicitly from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
 - For Python handlers that render inline HTML, avoid `str.format()` across raw HTML, CSS, or regex-heavy strings unless every literal brace is escaped. CSS blocks and patterns like `{1,80}` otherwise break rendering at runtime.
 - Prefer safer rendering approaches for generated handlers: placeholder replacement, `string.Template`, or another approach that does not reinterpret every `{...}` in the whole document.
 - Validate on both client and server when the task includes user input, but treat server-side validation as authoritative.
@@ -150,7 +151,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 5. Re-validate all submitted fields on the server.
 6. If the form persists submissions, use the direct `room.database.*` pattern from the resolved repo examples instead of inventing a handler-local CLI workflow.
 7. Prefer implementing the DB write in a helper module first, then wire it into the live handler with the smallest practical import-and-call change.
-8. Prove the DB insert path with that minimal isolated change and a read-back before combining it with mail-send and response-handling changes.
+8. Prove the DB insert path with a read-back before combining it with mail-send and response-handling changes.
 9. If the form sends outbound email from the room, inspect existing room mailboxes first.
 10. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
 11. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
@@ -159,7 +160,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 14. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
 15. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
 16. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
-17. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, set `SMTP_HOSTNAME` from `MESHAGENT_API_URL` when it is null, and use the mailbox-backed sender address from the CLI result.
+17. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
 18. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
 19. Verify the live site with actual GET and POST requests after deploy.
 
@@ -174,7 +175,8 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 
 ## Verification rules
 
-- Do not treat `meshagent webserver check`, local file generation, or deploy success alone as completion.
+- Apply the shared verification discipline from `../_shared/references/workflow_accountability.md`, then use the web-specific rules below for what counts as proof here.
+- Apply the shared debugging discipline from `../_shared/references/workflow_accountability.md`, then use the web-specific rules below to isolate where the site is failing.
 - For every website task, perform at least one live HTTP GET against the public URL and confirm that the final response is the expected successful page.
 - For a normal HTML page or contact form, the final GET must succeed with the expected final status, normally `200`, after following any expected redirect.
 - Confirm that the final page content matches the intended site, not just that some page responded.
@@ -183,23 +185,17 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
 - For contact forms that send mail, the valid POST must reach the success path or the exact mail blocker. A rendered form plus a failing submission is not a completed site.
 - If a contact form claims to store submissions but the follow-up read path stays empty, treat that as a still-broken database workflow even if mail send succeeds.
-- If DB write works but email or response handling still fails, report those as separate remaining bugs instead of collapsing them back into “the DB integration is broken.”
 - If the current deployed handler already works for other behavior, do not replace large working sections just to add one new capability unless the small additive change has already been proven insufficient.
-- Do not present a public URL as the achieved site outcome until DNS resolution and the required live HTTP checks succeed.
-- If route creation or deploy succeeds but public verification has not succeeded yet, report the URL only as an unverified candidate and keep the workflow in partial-preparation state.
-- Do not open the response with "done", "deployed", or equivalent completion language while the site is still in partial-preparation state.
-- Do not summarize the site as "created" or "deployed in the room" when the user-visible public site is still not working.
-- If the remaining blocker is an internal service or route problem you can act on, such as a crashing container, wrong hostname suffix, failed DNS, or failing HTTP smoke test, continue fixing it instead of stopping with "if you want, I'll keep going."
-- Do not foreground an unverified candidate URL when the real user-visible outcome is still blocked on the service staying up.
 - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
 - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
 - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
 - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
 - If the first diagnosis attempt hits a private-container exec denial, do not keep retrying container exec. Switch to logs, service definition, room-visible source, or public behavior.
 - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
-- If the service is crashing or failing liveness checks, treat the site workflow as still in active repair, not as a finished deploy with a caveat.
+- If the service is crashing or failing liveness checks, diagnose the service/runtime before continuing public-site verification.
+- If repeated site patches fail to improve the same symptom, stop widening the handler patch and reassess the deploy shape, integration boundary, or send path.
 - If a contact-form task asks for emailed submissions, do not report success while live submission still fails to send mail.
-- If a contact-form handler uses direct SMTP and `SMTP_HOSTNAME` is null, set it from `MESHAGENT_API_URL` first: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+- If a generated contact-form handler uses direct SMTP and `SMTP_HOSTNAME` is null, add an explicit fallback from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
 - If a contact-form handler still cannot prove a usable SMTP hostname after that environment fallback, treat it as a blocker and switch back to the mailbox-backed room mail path or report the exact mail-configuration blocker.
 - Distinguish SMTP transport from sender authorization. A form that renders but fails with `SMTPDataError`, `550`, `553`, or similar on valid submission is not complete.
 - If outbound mail fails with an authorization error such as `550 5.7.1 Permission denied`, switch to mailbox-backed sender provisioning if permissions allow, then re-test.
@@ -208,7 +204,6 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 
 ## Workflow accountability
 
-- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
 - If another skill already owns the workflow, return deploy, HTTP, and mail evidence to that owner instead of declaring the overall job complete.
 - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
 - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
