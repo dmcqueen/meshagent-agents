@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Webapp Backend Builder"
+  short_description: "Canonical backend path for room web apps"
+  default_prompt: "Use $meshagent-webapp-backend-builder to build, deploy, or debug the backend/runtime side of a room-hosted web app."
