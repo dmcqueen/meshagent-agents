@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Mail Operator"
+  short_description: "Operate room mail, SMTP, and mailboxes"
+  default_prompt: "Use $meshagent-mail-operator to choose the right room mail path, send or debug room email, and provision a mailbox only when the workflow actually needs one."
