@@ -116,6 +116,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 
 - Apply the shared minimal change discipline from `../_shared/references/workflow_accountability.md`, then use the web-specific modularity rules below for live handler changes.
 - Apply the shared isolation-before-integration discipline from `../_shared/references/workflow_accountability.md` before blending DB, mail, and response changes into an existing live handler.
+- Apply the shared artifact-integrity discipline from `../_shared/references/workflow_accountability.md` before debugging behavior inside a newly changed deployed site.
 - When a live webapp change is driven by review or external implementation feedback, apply the shared review discipline from `../_shared/references/workflow_accountability.md` before accepting the suggested patch shape.
 - Use relative route sources like `handlers/contact.py` and `public` so the deploy stays portable.
 - For public webserver configs, set `host: 0.0.0.0` unless there is a concrete reason not to.
@@ -128,6 +129,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
 - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
 - For existing handlers, prefer extracting new DB behavior into a separate helper module and changing the live handler by an import plus one narrow call site whenever that is practical.
+- If a handler starts importing a new helper module, verify that the helper file lives under the same deployable source tree and will be importable from the actual webserver `--app-dir` before treating later failures as DB, mail, or response bugs.
 - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
 - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
 - A mailbox-backed sender address alone is not proof that the form has a working outbound mail path.
@@ -182,6 +184,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - Confirm that the final page content matches the intended site, not just that some page responded.
 - For form-backed sites, also exercise representative POST paths after deploy.
 - For contact forms that write to the room database, verify the write with a follow-up `room.database.search(...)`, `meshagent room database search`, or a live list/read route that uses the same table.
+- If a deploy starts failing with `ModuleNotFoundError`, `ImportError`, stale-file-handle errors, or route-load errors, treat that first as a deploy tree, app-dir, or mounted-file integrity problem before debugging DB or mail behavior.
 - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
 - For contact forms that send mail, the valid POST must reach the success path or the exact mail blocker. A rendered form plus a failing submission is not a completed site.
 - If a contact form claims to store submissions but the follow-up read path stays empty, treat that as a still-broken database workflow even if mail send succeeds.
