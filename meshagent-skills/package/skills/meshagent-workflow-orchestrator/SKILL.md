@@ -156,6 +156,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - For mail workflows, do not let queue drain or object creation stand in for delivery evidence.
 - For public-site workflows, do not let route creation, deploy success, DNS resolution, or redirects stand in for a verified working site.
 - For a public site-to-email workflow, require all of the following before declaring success:
+  - the active API environment is resolved clearly enough to state the expected managed hostname suffix
   - the managed hostname suffix matches the active API environment
   - the public URL reaches the intended page with the expected final success status, normally `200`
   - representative form submission paths behave as expected
