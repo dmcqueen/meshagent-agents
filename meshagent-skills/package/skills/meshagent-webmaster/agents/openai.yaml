@@ -1,4 +1,0 @@
-interface:
-  display_name: "MeshAgent Webmaster"
-  short_description: "Operate routes and hostnames"
-  default_prompt: "Use $meshagent-webmaster to inspect or change MeshAgent routes and managed hostnames."

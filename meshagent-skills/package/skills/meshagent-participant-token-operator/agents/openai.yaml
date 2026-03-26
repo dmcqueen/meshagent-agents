@@ -1,4 +1,0 @@
-interface:
-  display_name: "MeshAgent Participant Token Operator"
-  short_description: "Resolve participant token sources and injection paths"
-  default_prompt: "Use $meshagent-participant-token-operator to inspect, mint, or verify MeshAgent participant tokens."

@@ -1,4 +1,0 @@
-interface:
-  display_name: "MeshAgent CLI Operator"
-  short_description: "Run MeshAgent CLI workflows"
-  default_prompt: "Use $meshagent-cli-operator to choose the right meshagent command and verify the result."

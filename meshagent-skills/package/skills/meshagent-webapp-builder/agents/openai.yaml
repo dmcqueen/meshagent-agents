@@ -1,4 +1,0 @@
-interface:
-  display_name: "MeshAgent Webapp Builder"
-  short_description: "Build room-hosted web apps"
-  default_prompt: "Use $meshagent-webapp-builder to build, deploy, or debug a room-hosted web app."
