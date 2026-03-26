@@ -90,7 +90,10 @@ Use this skill when the task is primarily about MeshAgent services or service te
 
 1. Determine whether the task is about a raw `Service`, a `ServiceTemplate`, or a live room service already running in a room.
 2. Read the existing YAML or list the current services before mutating anything.
-3. When the asset is being authored, prefer a generated starting point such as `meshagent worker spec`, `meshagent mailbot spec`, or `meshagent service spec` instead of building the YAML from scratch.
+3. When the asset is being authored, prefer a generated starting point instead of building the YAML from scratch:
+   - `meshagent process spec` first for new authored agent services
+   - `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly wants that runtime shape
+   - `meshagent service spec` when the narrower runtime-specific specs are not the right fit
 4. Validate or render the spec/template before create or update when a file is involved.
 5. If validation fails, inspect the exact error, repair the asset, and rerun validation. Keep that fix-and-revalidate loop local to the service YAML until it passes or the remaining blocker is no longer a YAML problem.
 6. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
