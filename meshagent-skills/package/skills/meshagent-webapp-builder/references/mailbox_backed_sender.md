@@ -35,7 +35,8 @@ When the handler uses direct SMTP, use only the runtime defaults that exist in `
 - `SMTP_PORT`
 
 The mailbox address is still the sender identity. SMTP username and password do not define the `From` address.
-If `SMTP_HOSTNAME` is null, fill it from `MESHAGENT_API_URL` before giving up:
+Room containers do provide `MESHAGENT_API_URL`, but generic raw SMTP code must add its own hostname fallback if it wants to use it.
+If generated raw SMTP code leaves `SMTP_HOSTNAME` null, fill it from `MESHAGENT_API_URL` before giving up:
 
 - `.life` -> `mail.meshagent.life`
 - `.com` -> `mail.meshagent.com`
