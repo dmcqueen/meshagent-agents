@@ -125,11 +125,12 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 - Do not ship raw browser-default form controls, default Arial-on-white layouts, or full-width utility forms unless the user explicitly asked for that austere style.
 - Keep handler modules simple at import time. A module that raises during import can surface to the public site as a generic `500`.
 - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
-- If the site must write submissions into the room database, reuse the proven repo pattern from `contact_form_route.py`: create the table with `room.database.create_table_with_schema(..., mode="create_if_not_exists")`, then insert rows with `room.database.insert(table=..., records=[...])`.
+- If the site must write submissions into the room database, treat `meshagent-database-operator` as the canonical source for the exact `room.database.*` API shape and schema objects, then copy only that proven pattern into the handler.
 - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
 - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
 - For existing handlers, prefer extracting new DB behavior into a separate helper module and changing the live handler by an import plus one narrow call site whenever that is practical.
 - If a handler starts importing a new helper module, verify that the helper file lives under the same deployable source tree and will be importable from the actual webserver `--app-dir` before treating later failures as DB, mail, or response bugs.
+- Do not improvise `create_table_with_schema` schema entries inside a web handler. If DB-backed handler code needs types or schema shape, copy the exact proven `DataType`-based pattern from `meshagent-database-operator` and the resolved repo examples.
 - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
 - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
 - A mailbox-backed sender address alone is not proof that the form has a working outbound mail path.
@@ -151,7 +152,7 @@ Use this skill when the task is to build, deploy, or debug a room-hosted website
 3. Give the page a deliberate layout and visual identity before deploy; a plain stack of unlabeled browser-default controls is not enough.
 4. Restrict email and phone fields with browser-side input types and patterns when helpful.
 5. Re-validate all submitted fields on the server.
-6. If the form persists submissions, use the direct `room.database.*` pattern from the resolved repo examples instead of inventing a handler-local CLI workflow.
+6. If the form persists submissions, route the DB API shape to `meshagent-database-operator`, then use that proven direct `room.database.*` pattern instead of inventing a handler-local CLI workflow or ad hoc schema objects.
 7. Prefer implementing the DB write in a helper module first, then wire it into the live handler with the smallest practical import-and-call change.
 8. Prove the DB insert path with a read-back before combining it with mail-send and response-handling changes.
 9. If the form sends outbound email from the room, inspect existing room mailboxes first.
