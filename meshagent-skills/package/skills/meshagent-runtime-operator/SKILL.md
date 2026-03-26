@@ -83,7 +83,6 @@ Use this skill when the task is about the live runtime state inside a room rathe
 ## Live room execution
 
 - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
-- Do not use `meshagent auth whoami`, `meshagent project list`, or unfiltered `meshagent rooms list` as prerequisite checks for room-scoped runtime debugging.
 - If permissions are uncertain, start with a narrow room-scoped read such as `meshagent room service list`, `meshagent room developer watch`, or `meshagent room container list` before claiming runtime access is blocked.
 
 ## Core workflow
@@ -93,7 +92,6 @@ Use this skill when the task is about the live runtime state inside a room rathe
 3. For queue workflows, check in order: service state, required toolkits, runtime logs, immediate smoke test, then scheduler or external-action proof.
 4. Use `exec`, `run`, `stop`, or image operations only after the live state is clear.
 5. If local inspection is needed, use port forwarding with an explicit target container and port.
-6. After any intervention, verify that the observed symptom actually changed.
 
 ## Operating rules
 
@@ -113,31 +111,41 @@ Use this skill when the task is about the live runtime state inside a room rathe
 - Distinguish “service exists” from “runtime is ready.”
 - If a runtime uses `--require-toolkit=<NAME>`, verify that toolkit is visibly published in the room.
 - Do not assume mailbox, service, or queue creation also publishes a toolkit.
-- For email workflows, separate mailbox existence from toolkit `email` publication.
+- For email workflows, separate three cases:
+  - mailbox existence
+  - a runtime with its own `mail:` channel
+  - a queue-only runtime that depends on external toolkit `email`
+- A process runtime with `--channel=mail:<MAILBOX_ADDRESS>` does not need a separate external toolkit `email` publisher to be viable.
+- Only insist on visible toolkit `email` publication when the runtime actually depends on external `--require-toolkit=email`.
 - Prefer an immediate smoke-test message over waiting for a future scheduled task when you need to prove dequeue behavior.
 - A queue size of `0` is not enough by itself. Confirm whether the message was consumed successfully, failed during handling, or never arrived.
-- If a smoke-test message remains queued, check toolkit publication, startup logs, and service/container restart state before changing the queue or payload.
+- If a smoke-test message remains queued, first match the investigation to the actual runtime design:
+  - for `mail:` channel runtimes, check startup logs, service/container restart state, and live mail-send behavior
+  - for queue-only `--require-toolkit=email` runtimes, check toolkit publication, startup logs, and restart state
 
 ## Cross-surface rules
 
-- For queue-backed mail workflows, use this order: service list, toolkit list, developer watch, container list/logs, immediate smoke test, then mail-send evidence.
+- For queue-backed mail workflows with a process `mail:` channel, use this order: service list, developer watch, container list/logs, immediate smoke test, then mail-send evidence.
+- For queue-backed mail workflows that intentionally use external `--require-toolkit=email`, use this order: service list, toolkit list, developer watch, container list/logs, immediate smoke test, then mail-send evidence.
 - If the runtime path is healthy but scheduled runs fail, hand off to `meshagent-scheduler`.
 - If scheduler create or list fails with `403` or `5xx`, report a scheduler blocker even when the runtime is healthy.
 - If the runtime path is unhealthy, fix service state, required toolkits, or runtime readiness before spending time on scheduler diagnosis.
 
 ## Verification rules
 
+- Apply the shared verification discipline from `../_shared/references/workflow_accountability.md`, then use runtime-specific evidence such as service state, toolkit visibility, logs, and processed test work.
+- Apply the shared debugging discipline from `../_shared/references/workflow_accountability.md`, then use runtime-specific evidence to separate unhealthy service state, startup failure, toolkit absence, and post-start processing failures.
 - Do not conclude that the runtime is healthy based only on service metadata.
 - Use logs, running container state, toolkit visibility, and port-forwarded behavior to confirm what is actually happening.
 - For queue-backed runtimes, do not conclude success until you have evidence that a test message was actually processed.
 - For runtimes with required toolkits, do not conclude readiness until those toolkits are visibly present.
+- For queue-backed mail runtimes with their own `mail:` channel, do not require a separate visible external `email` publisher unless the runtime also explicitly depends on one.
 - If a container-local check passes but the public behavior is still broken, hand off to the appropriate website or route skill rather than stopping at the runtime layer.
 - If a runtime issue persists after restart or stop/start behavior, inspect the declarative service definition before repeating the same action.
 - For website debugging, do not use repeated `container exec` attempts against another private container as the main path to inspect handler code or env vars.
 
 ## Workflow accountability
 
-- This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
 - If another skill already owns the workflow, return runtime evidence and observed state to that owner instead of declaring the overall job complete.
 - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
 - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
