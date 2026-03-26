@@ -1,8 +1,0 @@
-{
-  "name": "meshagent-skills",
-  "version": "0.1.0",
-  "description": "MeshAgent operator skill pack for CLI routing, room operations, runtime debugging, queues, services, storage, databases, memory, scheduling, and room-hosted web workflows.",
-  "author": {
-    "name": "Codex"
-  }
-}

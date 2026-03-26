@@ -1,4 +1,0 @@
-interface:
-  display_name: "MeshAgent Scheduler"
-  short_description: "Manage scheduled tasks and queues"
-  default_prompt: "Use $meshagent-scheduler to add or verify a scheduled task and its queue delivery."
