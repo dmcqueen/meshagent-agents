@@ -22,6 +22,46 @@ Minimum gates for any workflow:
 
 Skill-specific gates may add stricter requirements such as live runtime proof, queue dequeue proof, mailbox identity proof, HTTP smoke tests, or log evidence.
 
+## Verification discipline
+
+- Do not claim completion without fresh verification evidence from the actual workflow surface.
+- Verify on the real user-facing or workflow-facing surface, not just on an internal precursor such as object creation, route creation, queue growth, or local file generation.
+- If one stage is proven and a later stage fails, report them separately. Do not collapse a verified DB write, queue enqueue, or deploy into a vague “still broken” status when the remaining bug is later in the flow.
+- If only part of the workflow is proven, label it as partial. Do not present partial success as completed work.
+- After a new mutation, redeploy, or retry, use fresh evidence. Earlier proof does not automatically carry forward to the new state.
+
+## Debugging discipline
+
+- Reproduce the failure on the real workflow surface before proposing a fix.
+- Treat the visible symptom and the root cause as different things until evidence connects them.
+- Narrow the failing stage before editing. Identify whether the break is in load, configuration, runtime behavior, downstream integration, or verification.
+- Do not stack multiple speculative fixes at once when one narrower probe or smaller intervention can identify the cause.
+- After each intervention, verify that the observed symptom actually changed before declaring progress.
+- If two or three attempted fixes on the same problem fail, stop stacking more patches. Summarize what changed, what evidence moved, and whether the current design or execution path should be reconsidered.
+- After repeated failed fixes, prefer a simpler path, a different integration boundary, or an architectural rethink over a fourth speculative patch.
+
+## Minimal change discipline
+
+- Prove a new behavior or hypothesis with the smallest safe code or configuration change before attempting broader cleanup or rewrite.
+- Change one thing at a time. Do not bundle refactors, cleanup, or "while I'm here" improvements into the first proving patch.
+- If the narrow change works, keep the scope narrow unless a broader cleanup is clearly needed next.
+- If the narrow change fails, use what you learned to choose the next smallest change rather than widening the patch speculatively.
+- Prefer existing patterns and local abstractions over introducing a new configuration model, helper stack, or architecture for a small change.
+
+## Isolation before integration
+
+- Prove a new behavior in isolation before blending it into an existing working flow.
+- Verify the isolated behavior on its own surface first, then integrate it into the larger workflow.
+- If isolated proof fails, keep the investigation local to that behavior instead of widening the patch into adjacent surfaces.
+- When integration starts, keep the first integration patch narrow and confirm that the previously proven behavior still works in context.
+
+## Review discipline
+
+- When responding to review feedback, verify the suggestion against the real implementation, runtime behavior, and current workflow evidence before changing code or configuration.
+- Do not treat reviewer confidence, tone, or repetition as evidence. Inspect the actual code, command behavior, or live state first.
+- If review feedback conflicts with observed evidence, explicit user direction, or a proven platform constraint, say so clearly and explain the conflict technically instead of blindly applying the suggestion.
+- When practical, implement accepted review items one at a time and verify each accepted item on the relevant surface before stacking the next one.
+
 ## Evidence rules
 
 The workflow owner must collect concrete evidence for each gate, such as:
@@ -54,7 +94,6 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not front-load broad environment surveys, project-wide discovery, or admin-style checks when one narrow task-matching room or runtime action would answer the question faster.
 - Defer deeper preflights until the chosen execution path actually depends on that surface, the first narrow path fails, or the workflow is about to cross a mutation boundary that makes the extra check necessary.
 - For simple requests, prefer one direct task-matching action first and expand only if that action fails or reveals ambiguity.
-- For new behavior added to an already-running handler, service, or workflow, prefer the smallest safe code change that can prove the new behavior before attempting a broader cleanup or rewrite.
 
 ## Preflight rules
 
@@ -94,4 +133,3 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not turn an obvious end-to-end request into a two-step consent dance by asking the user to approve ordinary prerequisite setup that is already inside the requested workflow.
 - Do not stop at an internal actionable blocker such as a crashing service, wrong hostname suffix, missing toolkit publisher, or failed smoke test and ask "if you want, I'll keep going." Continue the normal fix path until the workflow is complete or a true external blocker remains.
 - Do not blindly retry one-time scheduled-task creation after an uncertain add result. First check whether the task was already created or whether an equivalent near-future task already exists for the same queue and payload.
-- Do not answer a live integration request by rewriting large parts of an existing working handler when a small additive change could prove the new functionality first.
