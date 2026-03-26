@@ -156,10 +156,15 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 
 ## Operating rules
 
+- Apply the shared verification discipline from `../_shared/references/workflow_accountability.md`, then use this skill's DB-specific rules for what counts as proof here.
+- Apply the shared debugging discipline from `../_shared/references/workflow_accountability.md`, then use this skill's DB-specific rules to separate schema, permission, deployed-artifact, and read-back failures.
+- Apply the shared minimal change discipline from `../_shared/references/workflow_accountability.md`, then use the DB-specific modular integration rules below for live handler work.
+- Apply the shared isolation-before-integration discipline from `../_shared/references/workflow_accountability.md` when the DB write is only one new part of a larger live workflow.
+- When database changes are driven by review or external implementation feedback, apply the shared review discipline from `../_shared/references/workflow_accountability.md` before accepting the suggested DB shape or API usage.
 - Do not assume an external database; this skill is for the MeshAgent room database.
 - Do not claim a table exists until you list or inspect it.
 - Do not describe handler-side room-database writes as speculative when the repo already has working `create_table_with_schema`, `insert`, and `search` patterns.
-- Do not treat integrated handler success as the first proof that the DB write works. Prove insert plus read-back first, then integrate.
+- Prove insert plus read-back before treating the integrated handler as the first proof that the DB write works.
 - Do not use SQL when `search` is enough.
 - Do not use `search` for joins or aggregate reporting that clearly requires SQL.
 - Do not invent namespace paths, index names, or schema annotations.
