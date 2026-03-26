@@ -65,6 +65,7 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 - The user wants to run SQL against one or more room database tables.
 - The task involves indexes, table versions, namespaces, or `RequiredTable` installation.
 - The user needs code or CLI examples for `room.database.*` behavior grounded in the actual MeshAgent implementation.
+- The task needs the exact SDK schema or `DataType` shape for in-room database code inside a handler, agent, or service.
 
 ## References
 
@@ -79,6 +80,7 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
   - `meshagent-docs/examples/python/webserver/contact_list_route.py` for a working read path that verifies writes with `room.database.search(...)`.
   - `meshagent-docs/examples/python/getting-started/agent-with-custom-tools/main.py` for the minimal `context.room.database.insert(table=..., records=[...])` pattern inside tool code.
   - `meshagent-api/meshagent/api/room_server_client.py` for the exact `create_table_with_schema`, `insert`, and `search` signatures.
+- Treat this skill as the canonical source for `room.database.*` API shape, schema construction, and `DataType` usage when other skills need DB-backed code.
 
 ## Related skills
 
@@ -121,6 +123,7 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 - For form-style row capture, the grounded repo pattern is:
   - `await room.database.create_table_with_schema(name=..., schema={...}, mode="create_if_not_exists", data=None)`
   - then `await room.database.insert(table=..., records=[{...}])`
+- For SDK code, copy the real `DataType` object shape from the API and repo examples. Do not invent handler-local schema entries like `"text"` or `{"type": "text"}` when the implementation expects `TextDataType()`, `TimestampDataType()`, or another concrete database type object.
 - For live handler work, keep the DB path modular:
   - one function or code block that validates and shapes the record
   - one function or code block that performs the DB write
@@ -162,6 +165,7 @@ Use this skill when the task is to inspect, create, change, or query the MeshAge
 - Apply the shared isolation-before-integration discipline from `../_shared/references/workflow_accountability.md` when the DB write is only one new part of a larger live workflow.
 - When database changes are driven by review or external implementation feedback, apply the shared review discipline from `../_shared/references/workflow_accountability.md` before accepting the suggested DB shape or API usage.
 - Apply the shared artifact-integrity discipline from `../_shared/references/workflow_accountability.md` before treating a module-load or deploy-tree failure as evidence against the DB call shape.
+- This skill is the canonical source for in-room database API shape. If a site, handler, or workflow needs DB-backed code, route schema and `room.database.*` call-shape decisions here before another skill integrates that code.
 - Do not assume an external database; this skill is for the MeshAgent room database.
 - Do not claim a table exists until you list or inspect it.
 - Do not describe handler-side room-database writes as speculative when the repo already has working `create_table_with_schema`, `insert`, and `search` patterns.
