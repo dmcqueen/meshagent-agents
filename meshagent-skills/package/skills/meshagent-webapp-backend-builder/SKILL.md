@@ -144,6 +144,8 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
 - For DB-backed or email-featured sites, default to the Python backend golden path in this skill before considering other backend approaches.
 - In `dev` mode, a file-backed preview deploy can be acceptable when the user is iterating on behavior and has not asked for release semantics.
+- For Python handler development, the preferred dev loop is `meshagent webserver join --watch` so handler edits actually reload. Do not treat `meshagent webserver deploy` as a hot-reload path for Python code.
+- If the user needs a public dev URL while preserving Python hot reload, prefer a separate dev-only runtime whose command explicitly runs `meshagent webserver join --watch` against room-mounted source, rather than assuming the normal deployed service will reload handler imports.
 - In `candidate` or `release` mode, the deployable backend code should be image-backed. The image should contain the code, `webserver.yaml`, and supporting assets rather than relying on a room-storage code mount.
 - A release-candidate deploy should default to a separate candidate service and separate candidate hostname. Do not replace the existing dev or stable site unless the user explicitly asked for promotion or in-place replacement.
 - If the user did not specify candidate names, derive them deterministically from the current site:
@@ -156,6 +158,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
   - room build source: `/<site-dir>` such as `/contact-david-site`
   - shell-visible mount path: `/data/<site-dir>`
   - for image builds, use the room subpath form as the source and do not pass `/data/...` as the room-storage source path
+- Before an image build, stage a clean release context under room storage that contains exactly the files the image needs, especially `webserver.yaml` and `Containerfile`. Do not point the image build at an ad hoc site directory and hope the build root happens to line up.
 - If the site must write submissions into the room database, treat `meshagent-database-operator` as the canonical source for the exact `room.database.*` API shape and schema objects, then copy only that proven pattern into the handler.
 - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
 - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
@@ -201,8 +204,9 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 20. In `dev` mode, `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...` is acceptable for a preview if the user did not ask for release-ready packaging.
 21. In `candidate` mode, build an image that already contains the code and `webserver.yaml`, deploy it on a separate candidate service and candidate hostname by default, and verify the real deployed behavior there.
 22. If the user did not specify naming, keep the candidate naming deterministic: `<base-service>-rc`, `<base-host>-rc`, and the next `x.y-rcN` image tag in the active release line.
-23. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
-24. Verify the live site with actual GET and POST requests after deploy.
+23. Before calling `meshagent room container image build`, prove that the staged release context root contains `webserver.yaml`, `Containerfile`, and the route-referenced files the build actually needs.
+24. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
+25. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
@@ -220,6 +224,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Apply the shared verification discipline from `../_shared/references/workflow_accountability.md`, then use the web-specific rules below for what counts as proof here.
 - Apply the shared debugging discipline from `../_shared/references/workflow_accountability.md`, then use the web-specific rules below to isolate where the site is failing.
 - For every website task, perform at least one live HTTP GET against the public URL and confirm that the final response is the expected successful page.
+- For Python handler changes in `dev` mode, do not assume a successful `meshagent webserver deploy` proves the new handler code is live. Prove reload by using `meshagent webserver join --watch`, or by explicitly restarting/replacing the dev runtime before retesting.
 - For a normal HTML page or contact form, the final GET must succeed with the expected final status, normally `200`, after following any expected redirect.
 - Confirm that the final page content matches the intended site, not just that some page responded.
 - For form-backed sites, also exercise representative POST paths after deploy.
@@ -235,6 +240,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
 - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
 - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
+- If a deployed file-backed site keeps serving old Python handler behavior after file sync, treat that as a dev-loop/runtime-reload issue first. `webserver deploy` syncs files and updates the service record, but it is not the same thing as `join --watch` hot reload.
 - Do not report a speculative "most likely cause" for a live `500` when the exact traceback, import error, or route-load failure can still be retrieved from logs or other room-visible evidence.
 - If the first diagnosis attempt hits a private-container exec denial, do not keep retrying container exec. Switch to logs, service definition, room-visible source, or public behavior.
 - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
