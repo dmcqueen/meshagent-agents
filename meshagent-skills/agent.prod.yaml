@@ -1919,6 +1919,7 @@ container:
           
           - When a workflow mutates a deployed runtime, classify the intended deployment mode before choosing the mutation path: `dev`, `candidate`, or `release`.
           - `dev` means fast iteration on behavior. File-backed previews and non-rollback-ready runtime changes are acceptable if they are labeled as development state rather than release state.
+          - For Python handler development, `dev` should preserve a real hot-reload loop when the workflow depends on rapid code iteration. Do not assume a file sync into a deployed service gives Python hot reload.
           - `candidate` means image-backed deploy testing. Use versioned candidate tags such as `4.2-rc1`, `4.2-rc2`, and verify the real deployed behavior before calling the image releaseable.
           - By default, `candidate` means a side-by-side testable deploy. Unless the user explicitly asks to replace the current dev or stable runtime, keep the existing user-facing service and route intact and stand up the candidate on a separate service identity and candidate URL.
           - If the user asks for a release candidate without specifying names, use deterministic defaults rather than inventing arbitrary naming:
@@ -1930,6 +1931,7 @@ container:
           - If the user asks to release, ship, version, cut a candidate, or preserve rollback readiness, do not stay in `dev` mode silently.
           - If the user is iterating on behavior without asking for release semantics, `dev` is the default unless the chosen workflow explicitly requires image-backed candidate testing.
           - Never switch between `dev`, `candidate`, and `release` implicitly. State the chosen mode in the reasoning and keep the packaging, verification, and reporting rules consistent with that mode.
+          - Do not promise hot reload in `candidate` or `release` mode. Hot reload belongs to the development loop, not the release artifact.
           
           ## Completion gates
           
@@ -7306,6 +7308,7 @@ container:
           - Apply the shared deployment-mode discipline from `../_shared/references/workflow_accountability.md` before choosing a mutation path.
           - Match the container image family to the actual MeshAgent environment. Do not copy a production docs image into a `.life` room unless the environment already proves that image family is correct there.
           - In `dev` mode, a non-release runtime update may be acceptable if the workflow does not require rollback readiness.
+          - If the workflow explicitly needs Python hot reload in `dev` mode, a dev runtime may intentionally run `meshagent webserver join --watch` against room-mounted source. Do not assume the normal deployed service update path provides the same reload behavior.
           - In `candidate` or `release` mode, prefer image-backed iteration with versioned tags over editing live runtime files in place.
           - In `candidate` mode, default to a separate candidate service record rather than replacing the current dev or stable service in place. Only replace the existing service when the user explicitly asked for promotion, replacement, or rollback.
           - If the user did not specify candidate naming, derive it deterministically from the current service:
@@ -7629,6 +7632,8 @@ container:
           - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
           - For DB-backed or email-featured sites, default to the Python backend golden path in this skill before considering other backend approaches.
           - In `dev` mode, a file-backed preview deploy can be acceptable when the user is iterating on behavior and has not asked for release semantics.
+          - For Python handler development, the preferred dev loop is `meshagent webserver join --watch` so handler edits actually reload. Do not treat `meshagent webserver deploy` as a hot-reload path for Python code.
+          - If the user needs a public dev URL while preserving Python hot reload, prefer a separate dev-only runtime whose command explicitly runs `meshagent webserver join --watch` against room-mounted source, rather than assuming the normal deployed service will reload handler imports.
           - In `candidate` or `release` mode, the deployable backend code should be image-backed. The image should contain the code, `webserver.yaml`, and supporting assets rather than relying on a room-storage code mount.
           - A release-candidate deploy should default to a separate candidate service and separate candidate hostname. Do not replace the existing dev or stable site unless the user explicitly asked for promotion or in-place replacement.
           - If the user did not specify candidate names, derive them deterministically from the current site:
@@ -7641,6 +7646,7 @@ container:
             - room build source: `/<site-dir>` such as `/contact-david-site`
             - shell-visible mount path: `/data/<site-dir>`
             - for image builds, use the room subpath form as the source and do not pass `/data/...` as the room-storage source path
+          - Before an image build, stage a clean release context under room storage that contains exactly the files the image needs, especially `webserver.yaml` and `Containerfile`. Do not point the image build at an ad hoc site directory and hope the build root happens to line up.
           - If the site must write submissions into the room database, treat `meshagent-database-operator` as the canonical source for the exact `room.database.*` API shape and schema objects, then copy only that proven pattern into the handler.
           - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
           - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
@@ -7686,8 +7692,9 @@ container:
           20. In `dev` mode, `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...` is acceptable for a preview if the user did not ask for release-ready packaging.
           21. In `candidate` mode, build an image that already contains the code and `webserver.yaml`, deploy it on a separate candidate service and candidate hostname by default, and verify the real deployed behavior there.
           22. If the user did not specify naming, keep the candidate naming deterministic: `<base-service>-rc`, `<base-host>-rc`, and the next `x.y-rcN` image tag in the active release line.
-          23. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
-          24. Verify the live site with actual GET and POST requests after deploy.
+          23. Before calling `meshagent room container image build`, prove that the staged release context root contains `webserver.yaml`, `Containerfile`, and the route-referenced files the build actually needs.
+          24. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
+          25. Verify the live site with actual GET and POST requests after deploy.
           
           ## Managed hostname selection
           
@@ -7705,6 +7712,7 @@ container:
           - Apply the shared verification discipline from `../_shared/references/workflow_accountability.md`, then use the web-specific rules below for what counts as proof here.
           - Apply the shared debugging discipline from `../_shared/references/workflow_accountability.md`, then use the web-specific rules below to isolate where the site is failing.
           - For every website task, perform at least one live HTTP GET against the public URL and confirm that the final response is the expected successful page.
+          - For Python handler changes in `dev` mode, do not assume a successful `meshagent webserver deploy` proves the new handler code is live. Prove reload by using `meshagent webserver join --watch`, or by explicitly restarting/replacing the dev runtime before retesting.
           - For a normal HTML page or contact form, the final GET must succeed with the expected final status, normally `200`, after following any expected redirect.
           - Confirm that the final page content matches the intended site, not just that some page responded.
           - For form-backed sites, also exercise representative POST paths after deploy.
@@ -7720,6 +7728,7 @@ container:
           - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
           - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
           - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
+          - If a deployed file-backed site keeps serving old Python handler behavior after file sync, treat that as a dev-loop/runtime-reload issue first. `webserver deploy` syncs files and updates the service record, but it is not the same thing as `join --watch` hot reload.
           - Do not report a speculative "most likely cause" for a live `500` when the exact traceback, import error, or route-load failure can still be retrieved from logs or other room-visible evidence.
           - If the first diagnosis attempt hits a private-container exec denial, do not keep retrying container exec. Switch to logs, service definition, room-visible source, or public behavior.
           - If a public request returns `502` or another upstream-style error, inspect the deployed bind host, service port, and public route configuration before concluding the room is unhealthy.
@@ -8219,14 +8228,14 @@ container:
           
           Usage:
             image_release_pipeline.sh \
-              --room-source /contact-site \
+              --site-source /contact-site \
               --service-file ./service.yaml \
               --image-repo contact-site \
               --release 4.2 \
               --rc 1
           
           Required:
-            --room-source PATH   Absolute room-storage source path containing the release context.
+            --site-source PATH   Absolute room-storage source path for the current site source.
                                  Use the room subpath form such as /contact-site.
                                  Do not pass the shell-visible mount path under /data.
             --service-file PATH  Local Service YAML used for `meshagent service update`.
@@ -8238,6 +8247,12 @@ container:
           Optional:
             --room NAME               Room name. Defaults to $MESHAGENT_ROOM.
             --project-id ID           Explicit project id if needed.
+            --release-context PATH    Absolute room-storage path to stage the candidate
+                                      build context into. Default:
+                                      /build-context/<image-repo>-<release>-rc<rc>
+            --containerfile-source    Local or shell-visible path to a Containerfile or
+                                      Dockerfile to copy into the release context if the
+                                      site source does not already contain one.
             --dockerfile-name NAME    Dockerfile/Containerfile name inside the release context.
                                       Default: Containerfile
             --mount-target PATH       Absolute build-container mount target.
@@ -8245,12 +8260,13 @@ container:
             --create                  Pass --create to `meshagent service update`.
           
           Notes:
-            - The room source path can be named anything. The script always mounts it into
-              a fixed build path inside the build container.
+            - The site source path can be named anything. The script stages a clean
+              release context under room storage, then mounts that staged context into a
+              fixed build path inside the build container.
             - In a live room shell, room storage may be visible at /data/<name>, but
-              --room-source must still use the room subpath form /<name>.
-            - The release context should already contain the application code,
-              webserver.yaml, and Dockerfile/Containerfile.
+              --site-source and --release-context must still use room subpath form /<name>.
+            - The staged release context must contain the application code,
+              webserver.yaml, and Dockerfile/Containerfile before the build starts.
             - This script builds and deploys a candidate tag like `contact-site:4.2-rc1`.
               Promotion to the plain stable tag `4.2` should happen only after verification.
             - The service YAML must describe an image-backed runtime. Candidate/release
@@ -8265,6 +8281,18 @@ container:
           
           require_cmd() {
             command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
+          }
+          
+          assert_room_subpath() {
+            local value="$1"
+            local flag_name="$2"
+            [[ "$value" == /* ]] || fail "${flag_name} must be an absolute room-storage path"
+            [[ "$value" != /data/* ]] || fail "${flag_name} must use a room subpath like /contact-david-site, not a shell mount path under /data"
+          }
+          
+          shell_visible_room_path() {
+            local room_path="$1"
+            printf '/data%s' "$room_path"
           }
           
           assert_release_context_shape() {
@@ -8282,9 +8310,43 @@ container:
             fi
           }
           
+          prepare_release_context() {
+            local site_source_room="$1"
+            local release_context_room="$2"
+            local dockerfile_name="$3"
+            local containerfile_source="${4:-}"
+          
+            local site_source_shell
+            local release_context_shell
+            site_source_shell="$(shell_visible_room_path "$site_source_room")"
+            release_context_shell="$(shell_visible_room_path "$release_context_room")"
+          
+            [[ -d /data ]] || fail "this script expects room storage to be mounted at /data in the current shell"
+            [[ -d "$site_source_shell" ]] || fail "site source directory not found under room storage mount: $site_source_shell"
+          
+            mkdir -p "$(dirname "$release_context_shell")"
+            rm -rf "$release_context_shell"
+            mkdir -p "$release_context_shell"
+          
+            cp -R "${site_source_shell}/." "$release_context_shell/"
+          
+            if [[ ! -f "${release_context_shell}/${dockerfile_name}" ]]; then
+              if [[ -n "$containerfile_source" ]]; then
+                [[ -f "$containerfile_source" ]] || fail "--containerfile-source file not found: $containerfile_source"
+                cp "$containerfile_source" "${release_context_shell}/${dockerfile_name}"
+              else
+                fail "release context is missing ${dockerfile_name}; add it to the site source or pass --containerfile-source"
+              fi
+            fi
+          
+            [[ -f "${release_context_shell}/webserver.yaml" ]] || fail "release context is missing webserver.yaml after staging: ${release_context_shell}/webserver.yaml"
+          }
+          
           meshagent_args=()
           room="${MESHAGENT_ROOM:-}"
-          room_source=""
+          site_source=""
+          release_context=""
+          containerfile_source=""
           service_file=""
           image_repo=""
           release_line=""
@@ -8303,8 +8365,16 @@ container:
                 meshagent_args+=(--project-id "${2:-}")
                 shift 2
                 ;;
-              --room-source)
-                room_source="${2:-}"
+              --site-source)
+                site_source="${2:-}"
+                shift 2
+                ;;
+              --release-context)
+                release_context="${2:-}"
+                shift 2
+                ;;
+              --containerfile-source)
+                containerfile_source="${2:-}"
                 shift 2
                 ;;
               --service-file)
@@ -8351,19 +8421,22 @@ container:
           require_cmd mktemp
           
           [[ -n "$room" ]] || fail "--room is required unless MESHAGENT_ROOM is already set"
-          [[ -n "$room_source" ]] || fail "--room-source is required"
+          [[ -n "$site_source" ]] || fail "--site-source is required"
           [[ -n "$service_file" ]] || fail "--service-file is required"
           [[ -n "$image_repo" ]] || fail "--image-repo is required"
           [[ -n "$release_line" ]] || fail "--release is required"
           [[ -n "$rc_number" ]] || fail "--rc is required"
           [[ -f "$service_file" ]] || fail "service file not found: $service_file"
-          [[ "$room_source" == /* ]] || fail "--room-source must be an absolute room-storage path"
           [[ "$mount_target" == /* ]] || fail "--mount-target must be an absolute path"
-          [[ "$room_source" != /data/* ]] || fail "--room-source must be a room subpath like /contact-david-site, not a shell mount path under /data"
+          assert_room_subpath "$site_source" "--site-source"
           
           assert_release_context_shape "$service_file"
           
           candidate_tag="${image_repo}:${release_line}-rc${rc_number}"
+          if [[ -z "$release_context" ]]; then
+            release_context="/build-context/${image_repo}-${release_line}-rc${rc_number}"
+          fi
+          assert_room_subpath "$release_context" "--release-context"
           dockerfile_path="${mount_target}/${dockerfile_name}"
           tmp_service="$(mktemp "${TMPDIR:-/tmp}/meshagent-service.XXXXXX.yaml")"
           cleanup() {
@@ -8371,12 +8444,15 @@ container:
           }
           trap cleanup EXIT
           
+          echo "Preparing staged release context: ${release_context}"
+          prepare_release_context "$site_source" "$release_context" "$dockerfile_name" "$containerfile_source"
+          
           echo "Building candidate image: ${candidate_tag}"
           meshagent room container image build \
             "${meshagent_args[@]}" \
             --room "$room" \
             --tag "$candidate_tag" \
-            --mount-room-path "${room_source}:${mount_target}:ro" \
+            --mount-room-path "${release_context}:${mount_target}:ro" \
             --context-path "$mount_target" \
             --dockerfile-path "$dockerfile_path"
           
@@ -8418,6 +8494,7 @@ container:
           
           cat <<EOF
           Candidate deployed: ${candidate_tag}
+          Staged release context: ${release_context}
           
           Next steps:
             1. Verify service health and the real user-facing surface.
