@@ -1708,17 +1708,30 @@ container:
           
           Use these rules when iterating on a MeshAgent service whose runtime should be packaged into a container image instead of being edited live in room storage.
           
-          - This pattern is for service-style runtime changes, not the default for `meshagent webserver deploy` file-backed sites.
+          - This pattern is for `candidate` and `release` deployment modes on service-style runtimes, not the default for `dev` file-backed previews.
+          - In `dev` mode, the priority is fast iteration on behavior. A file-backed preview can be acceptable if the user has not asked for rollback-ready or release-ready packaging.
+          - In `candidate` mode, the runtime under test must already be image-backed. Build, tag, deploy, and verify a specific `-rcN` image.
+          - Unless the user explicitly asked to replace the existing runtime, a `candidate` deploy should use a separate service identity and separate candidate route so the current dev or stable site keeps serving its existing URL.
+          - If the user does not specify release-candidate names, derive them deterministically from the current dev or stable runtime:
+            - image tag: start at `1.0-rc1` for the first release line, then increment the `rc` number within the active line
+            - candidate service: `<base-service>-rc`
+            - candidate hostname label: `<base-host>-rc`
+          - In `release` mode, promote a previously verified candidate to the plain stable tag. Do not treat an unverified `-rcN` image as the release.
           - Prefer image-backed iteration when the service has non-trivial runtime dependencies, repeated code changes, or a meaningful need to contain changes and revert them quickly.
           - Build images inside the room with `meshagent room container image build ...` when the source context is already in room or mounted storage.
           - Use explicit, versioned image tags for every candidate build. Prefer release-candidate tags such as `4.2-rc1`, `4.2-rc2`, `4.2-rc3`, and reserve the plain release tag `4.2` for the image that has passed verification.
           - Do not overwrite a single floating tag and call that rollback-ready.
+          - A meaningful shift in the user's primary iteration goal starts a new release line. The last verified plain release tag from the previous goal remains the rollback target while the new goal proceeds through fresh `-rcN` candidates.
+          - For a continued release line, increment `rc` numbers instead of inventing a new service or hostname family. Keep the candidate service and candidate hostname stable while the image tag advances from `-rc1` to `-rc2`, `-rc3`, and so on unless the user explicitly wants a different naming scheme.
           - Keep the last known good plain release tag available. There is no native service rollback command; rollback means updating the service spec back to the previous known-good release tag.
           - If the runtime has cheap unit or smoke tests that can run during image build, bake them into the image build path so a broken candidate image never becomes deployable.
           - After building an image, verify it exists with `meshagent room container image list ...` before updating the service to reference it.
           - Update the service declaratively so `container.image` points at the new candidate image tag first.
+          - For candidate testing, update or create the candidate service, not the current dev or stable service, unless the user explicitly asked for in-place replacement.
           - After the service update, verify both service/runtime health and the actual user-facing surface. A successful image build and service update are not enough.
+          - A candidate route should be treated as a test URL, not as the main release URL.
           - Only add or move the plain release tag after the corresponding `-rcN` candidate image has passed the required verification.
+          - Candidate testing is the deploy-in-room verification path. Do not call a candidate a release just because it was built and deployed into the room.
           - Do not roll back automatically just because a candidate image failed verification. Leave the rollback as an explicit user-controlled action unless the user asked for automatic rollback behavior.
           - If the user asks to roll back, update the service back to the previous known-good plain release tag instead of guessing among unverified candidate tags.
           - Use `meshagent room container image save ...` only when you need to archive or export a built image. It is not the normal rollback mechanism.
@@ -1765,6 +1778,8 @@ container:
           - Treat a mismatched managed suffix as invalid, not as an acceptable variant. In a `.life` environment, do not deploy, return, or accept any managed hostname outside `.meshagent.dev`. In a `.com` environment, do not deploy, return, or accept any managed hostname outside `.meshagent.app`.
           - If a deploy command warns that the hostname suffix is wrong for the current environment, treat that deploy result as failed for public-hostname purposes and fix the hostname before reporting success.
           - If a candidate hostname collides, keep the same environment-specific suffix family and try additional candidates before asking the user to choose one.
+          - When a workflow is creating a release candidate rather than promoting the main release, choose a separate candidate hostname in the same managed suffix family and leave the current dev or stable hostname unchanged unless the user explicitly asked to replace it.
+          - If the user did not specify a candidate hostname, derive it from the current dev or stable hostname label by appending `-rc` before the environment-correct managed suffix, for example `contact-david` -> `contact-david-rc.meshagent.dev`.
           - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and a follow-up route read is forbidden, treat that hostname as unavailable and try a different candidate before reporting a generic permissions blocker.
           - If a mailbox domain, API environment, and managed public hostname disagree about whether the room is `.life` or `.com`, treat that as unresolved environment evidence and do not report the public URL as valid yet.
           - Do not report a managed URL whose suffix contradicts the active API environment. Nothing else will work.
@@ -1899,6 +1914,22 @@ container:
           - The workflow owner is the skill currently responsible for the user-visible outcome.
           - Supporting skills may execute part of the work, but they do not get to declare the overall workflow complete unless ownership is explicitly transferred.
           - Ownership may transfer to a narrower or more appropriate skill, but the transfer must be explicit in the reasoning and the new owner must continue tracking completion gates and evidence.
+          
+          ## Deployment mode discipline
+          
+          - When a workflow mutates a deployed runtime, classify the intended deployment mode before choosing the mutation path: `dev`, `candidate`, or `release`.
+          - `dev` means fast iteration on behavior. File-backed previews and non-rollback-ready runtime changes are acceptable if they are labeled as development state rather than release state.
+          - `candidate` means image-backed deploy testing. Use versioned candidate tags such as `4.2-rc1`, `4.2-rc2`, and verify the real deployed behavior before calling the image releaseable.
+          - By default, `candidate` means a side-by-side testable deploy. Unless the user explicitly asks to replace the current dev or stable runtime, keep the existing user-facing service and route intact and stand up the candidate on a separate service identity and candidate URL.
+          - If the user asks for a release candidate without specifying names, use deterministic defaults rather than inventing arbitrary naming:
+            - image tag: start a new line at `1.0-rc1` when no release line exists yet, otherwise continue the current release line with the next `-rcN`
+            - candidate service: `<base-service>-rc`
+            - candidate hostname label: `<base-host>-rc`
+          - `release` means the current stable image-backed runtime. A release should be a previously verified candidate promoted to the plain stable tag such as `4.2`.
+          - Promotion from `candidate` to `release` is an explicit step. Do not silently turn a candidate deploy into the main user-facing runtime just because the candidate worked.
+          - If the user asks to release, ship, version, cut a candidate, or preserve rollback readiness, do not stay in `dev` mode silently.
+          - If the user is iterating on behavior without asking for release semantics, `dev` is the default unless the chosen workflow explicitly requires image-backed candidate testing.
+          - Never switch between `dev`, `candidate`, and `release` implicitly. State the chosen mode in the reasoning and keep the packaging, verification, and reporting rules consistent with that mode.
           
           ## Completion gates
           
@@ -7256,9 +7287,10 @@ container:
           4. Validate or render the spec/template before create or update when a file is involved.
           5. If validation fails, inspect the exact error, repair the asset, and rerun validation. Keep that fix-and-revalidate loop local to the service YAML until it passes or the remaining blocker is no longer a YAML problem.
           6. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
-          7. If the service should be iterated through container images, build a versioned candidate image first, verify the image exists, then update the service spec to that exact candidate tag.
-          8. After mutation, verify the service record and, when relevant, the live room service state.
-          9. If the service is a queue consumer or other background runtime, hand off to runtime inspection before calling the deployment successful.
+          7. Classify the intended deployment mode before mutating the service: `dev`, `candidate`, or `release`.
+          8. If the service should be iterated through container images, build a versioned candidate image first, verify the image exists, then update the service spec to that exact candidate tag.
+          9. After mutation, verify the service record and, when relevant, the live room service state.
+          10. If the service is a queue consumer or other background runtime, hand off to runtime inspection before calling the deployment successful.
           
           ## Live room execution
           
@@ -7271,8 +7303,14 @@ container:
           
           - Distinguish project/global services from room-scoped services before acting.
           - Distinguish declarative service CRUD (`meshagent service ...`) from runtime room-service state (`meshagent room service ...`).
+          - Apply the shared deployment-mode discipline from `../_shared/references/workflow_accountability.md` before choosing a mutation path.
           - Match the container image family to the actual MeshAgent environment. Do not copy a production docs image into a `.life` room unless the environment already proves that image family is correct there.
-          - When a service is under active iteration and changes should be containable, prefer image-backed iteration with versioned tags over editing live runtime files in place.
+          - In `dev` mode, a non-release runtime update may be acceptable if the workflow does not require rollback readiness.
+          - In `candidate` or `release` mode, prefer image-backed iteration with versioned tags over editing live runtime files in place.
+          - In `candidate` mode, default to a separate candidate service record rather than replacing the current dev or stable service in place. Only replace the existing service when the user explicitly asked for promotion, replacement, or rollback.
+          - If the user did not specify candidate naming, derive it deterministically from the current service:
+            - candidate service: `<base-service>-rc`
+            - candidate image tag: start at `1.0-rc1` for a new release line, otherwise keep incrementing the active line
           - Validate service YAML for workflow correctness, not just schema shape. Check command flags, mailbox identity, queue wiring, and whether the declared roles actually match the intended behavior.
           - Prefer `validate` or `validate-template` before deployment when the source YAML is being authored or changed.
           - If `validate` or `validate-template` fails, repair the YAML and rerun validation before moving on. Do not treat validation as a one-time gate or blindly retry without making a fix.
@@ -7281,11 +7319,14 @@ container:
           - Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
           - There is no native rollback command for services. If rollback readiness matters, keep the previous known-good plain release tag and be prepared to `meshagent service update ...` the service back to that image only when the user asks for rollback.
           - Prefer a tag model that separates candidates from proven-good releases, for example `4.2-rc1`, `4.2-rc2`, then `4.2`; later `4.3-rc1`, `4.3-rc2`, then `4.3`.
+          - If the user changes the primary iteration goal materially, treat that as a new release line. Keep the last verified plain tag from the previous goal as the rollback target while the new goal advances through fresh `-rcN` candidates.
           
           ## Verification rules
           
           - Do not claim a service is deployed correctly based only on YAML generation.
           - After create or update, verify with `meshagent service show`, `meshagent service list`, or `meshagent room service list` as appropriate.
+          - State whether the current mutation was `dev`, `candidate`, or `release`. Do not report a candidate deploy as if it were already the stable release.
+          - If the current mutation was `candidate`, report the candidate service identity and candidate image tag separately from the current dev or stable service.
           - If the service was updated to a newly built image, verify the image tag you intended is actually the one the service now references.
           - If a candidate image passes verification, the next release action is to promote that exact image to the plain release tag rather than treating any `-rcN` candidate tag as the rollback target.
           - When the question is simply "what services are running in this room?", `meshagent room service list` is the default answer path.
@@ -7453,9 +7494,11 @@ container:
                 - references/meshagent_cli_help.md
                 - references/contact_form_example.py
                 - references/contact_submission_store.py
+                - references/image_release_pipeline.sh
                 - references/mailbox_backed_sender.md
                 - references/minimal_webserver.yaml
                 - references/verification_checklist.md
+                - references/webserver_image_Containerfile.example
                 - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/managed_hostname_rules.md
                 - ../_shared/references/workflow_accountability.md
@@ -7525,9 +7568,11 @@ container:
           - Reuse the packaged implementation assets in this skill before inventing a fresh pattern:
             - `references/contact_form_example.py`
             - `references/contact_submission_store.py`
+            - `references/image_release_pipeline.sh`
             - `references/mailbox_backed_sender.md`
             - `references/minimal_webserver.yaml`
             - `references/verification_checklist.md`
+            - `references/webserver_image_Containerfile.example`
           - Use `../_shared/references/live_room_cli_context.md` for shared room-context, path, and deploy workspace rules.
           - Use `../_shared/references/managed_hostname_rules.md` for shared managed-hostname selection and validation rules.
           - After root resolution, inspect the resolved webserver CLI source for actual runtime behavior.
@@ -7551,6 +7596,7 @@ container:
           ## Live room execution
           
           - Apply `../_shared/references/live_room_cli_context.md` for room context reuse, room-scoped command handling, and local-vs-room path rules.
+          - Apply the shared deployment-mode discipline from `../_shared/references/workflow_accountability.md` before choosing between preview-style iteration and image-backed release work.
           - Do not enable room messaging as part of a normal site or contact-form workflow unless the user explicitly asked for room messaging behavior.
           - Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
           - For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
@@ -7582,6 +7628,19 @@ container:
           - Keep handler modules simple at import time. A module that raises during import can surface to the public site as a generic `500`.
           - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
           - For DB-backed or email-featured sites, default to the Python backend golden path in this skill before considering other backend approaches.
+          - In `dev` mode, a file-backed preview deploy can be acceptable when the user is iterating on behavior and has not asked for release semantics.
+          - In `candidate` or `release` mode, the deployable backend code should be image-backed. The image should contain the code, `webserver.yaml`, and supporting assets rather than relying on a room-storage code mount.
+          - A release-candidate deploy should default to a separate candidate service and separate candidate hostname. Do not replace the existing dev or stable site unless the user explicitly asked for promotion or in-place replacement.
+          - If the user did not specify candidate names, derive them deterministically from the current site:
+            - image tag defaults to `1.0-rc1` for the first release line, then advances within the active line
+            - candidate service defaults to `<base-service>-rc`
+            - candidate hostname defaults to `<base-host>-rc` in the correct managed suffix family
+          - Use `references/image_release_pipeline.sh` as the starting point for an in-room candidate-release pipeline when the user wants a releaseable service image instead of a preview deploy.
+          - Use `references/webserver_image_Containerfile.example` as the base image pattern for a webserver-backed site image, then add only the files and runtime dependencies the app actually needs.
+          - When building from room storage in a live shell, distinguish room subpaths from shell mount paths:
+            - room build source: `/<site-dir>` such as `/contact-david-site`
+            - shell-visible mount path: `/data/<site-dir>`
+            - for image builds, use the room subpath form as the source and do not pass `/data/...` as the room-storage source path
           - If the site must write submissions into the room database, treat `meshagent-database-operator` as the canonical source for the exact `room.database.*` API shape and schema objects, then copy only that proven pattern into the handler.
           - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
           - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
@@ -7623,8 +7682,12 @@ container:
           16. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
           17. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
           18. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
-          19. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-          20. Verify the live site with actual GET and POST requests after deploy.
+          19. Classify the deployment mode before deploy: `dev` for quick iteration, `candidate` for image-backed deploy testing, `release` for stable image promotion.
+          20. In `dev` mode, `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...` is acceptable for a preview if the user did not ask for release-ready packaging.
+          21. In `candidate` mode, build an image that already contains the code and `webserver.yaml`, deploy it on a separate candidate service and candidate hostname by default, and verify the real deployed behavior there.
+          22. If the user did not specify naming, keep the candidate naming deterministic: `<base-service>-rc`, `<base-host>-rc`, and the next `x.y-rcN` image tag in the active release line.
+          23. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
+          24. Verify the live site with actual GET and POST requests after deploy.
           
           ## Managed hostname selection
           
@@ -7653,6 +7716,7 @@ container:
           - If the current deployed handler already works for other behavior, do not replace large working sections just to add one new capability unless the small additive change has already been proven insufficient.
           - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
           - If the agent cannot state the resolved environment and its matching managed suffix before reporting the URL, the public-site verification is incomplete.
+          - If the task is in `candidate` or `release` mode, do not treat a file-backed `webserver deploy` preview as the final deployed runtime. It can be a development aid, but not the release artifact.
           - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
           - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
           - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
@@ -8144,6 +8208,225 @@ container:
               await room.database.insert(table=CONTACT_SUBMISSIONS_TABLE, records=[record])
               return record
 
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/image_release_pipeline.sh
+        text: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          
+          usage() {
+            cat <<'EOF'
+          Build and deploy an image-backed webserver candidate from room storage.
+          
+          Usage:
+            image_release_pipeline.sh \
+              --room-source /contact-site \
+              --service-file ./service.yaml \
+              --image-repo contact-site \
+              --release 4.2 \
+              --rc 1
+          
+          Required:
+            --room-source PATH   Absolute room-storage source path containing the release context.
+                                 Use the room subpath form such as /contact-site.
+                                 Do not pass the shell-visible mount path under /data.
+            --service-file PATH  Local Service YAML used for `meshagent service update`.
+                                 Prefer a template with __IMAGE_TAG__.
+            --image-repo NAME    Image repo/name prefix, for example `contact-site`.
+            --release VERSION    Stable release line, for example `4.2`.
+            --rc N               Candidate number within the release line, for example `1`.
+          
+          Optional:
+            --room NAME               Room name. Defaults to $MESHAGENT_ROOM.
+            --project-id ID           Explicit project id if needed.
+            --dockerfile-name NAME    Dockerfile/Containerfile name inside the release context.
+                                      Default: Containerfile
+            --mount-target PATH       Absolute build-container mount target.
+                                      Default: /workspace/site
+            --create                  Pass --create to `meshagent service update`.
+          
+          Notes:
+            - The room source path can be named anything. The script always mounts it into
+              a fixed build path inside the build container.
+            - In a live room shell, room storage may be visible at /data/<name>, but
+              --room-source must still use the room subpath form /<name>.
+            - The release context should already contain the application code,
+              webserver.yaml, and Dockerfile/Containerfile.
+            - This script builds and deploys a candidate tag like `contact-site:4.2-rc1`.
+              Promotion to the plain stable tag `4.2` should happen only after verification.
+            - The service YAML must describe an image-backed runtime. Candidate/release
+              deploys must not keep running app code from a room-storage code mount.
+          EOF
+          }
+          
+          fail() {
+            echo "error: $*" >&2
+            exit 1
+          }
+          
+          require_cmd() {
+            command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
+          }
+          
+          assert_release_context_shape() {
+            local service_path="$1"
+          
+            grep -Eq '^[[:space:]]*image:[[:space:]]*' "$service_path" \
+              || fail "service file must contain an image: field or __IMAGE_TAG__ placeholder"
+          
+            if grep -Eq '^[[:space:]]*subpath:[[:space:]]*/' "$service_path"; then
+              fail "service file still contains a room-storage subpath mount; candidate/release runtimes must keep app code in the image"
+            fi
+          
+            if grep -Fq 'meshagent webserver join' "$service_path" && ! grep -Fq 'webserver.yaml' "$service_path"; then
+              fail "service file runs meshagent webserver join but does not reference webserver.yaml"
+            fi
+          }
+          
+          meshagent_args=()
+          room="${MESHAGENT_ROOM:-}"
+          room_source=""
+          service_file=""
+          image_repo=""
+          release_line=""
+          rc_number=""
+          dockerfile_name="Containerfile"
+          mount_target="/workspace/site"
+          create_service=0
+          
+          while [[ $# -gt 0 ]]; do
+            case "$1" in
+              --room)
+                room="${2:-}"
+                shift 2
+                ;;
+              --project-id)
+                meshagent_args+=(--project-id "${2:-}")
+                shift 2
+                ;;
+              --room-source)
+                room_source="${2:-}"
+                shift 2
+                ;;
+              --service-file)
+                service_file="${2:-}"
+                shift 2
+                ;;
+              --image-repo)
+                image_repo="${2:-}"
+                shift 2
+                ;;
+              --release)
+                release_line="${2:-}"
+                shift 2
+                ;;
+              --rc)
+                rc_number="${2:-}"
+                shift 2
+                ;;
+              --dockerfile-name)
+                dockerfile_name="${2:-}"
+                shift 2
+                ;;
+              --mount-target)
+                mount_target="${2:-}"
+                shift 2
+                ;;
+              --create)
+                create_service=1
+                shift
+                ;;
+              --help|-h)
+                usage
+                exit 0
+                ;;
+              *)
+                fail "unknown argument: $1"
+                ;;
+            esac
+          done
+          
+          require_cmd meshagent
+          require_cmd awk
+          require_cmd grep
+          require_cmd mktemp
+          
+          [[ -n "$room" ]] || fail "--room is required unless MESHAGENT_ROOM is already set"
+          [[ -n "$room_source" ]] || fail "--room-source is required"
+          [[ -n "$service_file" ]] || fail "--service-file is required"
+          [[ -n "$image_repo" ]] || fail "--image-repo is required"
+          [[ -n "$release_line" ]] || fail "--release is required"
+          [[ -n "$rc_number" ]] || fail "--rc is required"
+          [[ -f "$service_file" ]] || fail "service file not found: $service_file"
+          [[ "$room_source" == /* ]] || fail "--room-source must be an absolute room-storage path"
+          [[ "$mount_target" == /* ]] || fail "--mount-target must be an absolute path"
+          [[ "$room_source" != /data/* ]] || fail "--room-source must be a room subpath like /contact-david-site, not a shell mount path under /data"
+          
+          assert_release_context_shape "$service_file"
+          
+          candidate_tag="${image_repo}:${release_line}-rc${rc_number}"
+          dockerfile_path="${mount_target}/${dockerfile_name}"
+          tmp_service="$(mktemp "${TMPDIR:-/tmp}/meshagent-service.XXXXXX.yaml")"
+          cleanup() {
+            rm -f "$tmp_service"
+          }
+          trap cleanup EXIT
+          
+          echo "Building candidate image: ${candidate_tag}"
+          meshagent room container image build \
+            "${meshagent_args[@]}" \
+            --room "$room" \
+            --tag "$candidate_tag" \
+            --mount-room-path "${room_source}:${mount_target}:ro" \
+            --context-path "$mount_target" \
+            --dockerfile-path "$dockerfile_path"
+          
+          echo "Verifying built image exists in room: ${candidate_tag}"
+          if ! meshagent room container image list "${meshagent_args[@]}" --room "$room" | grep -Fq "$candidate_tag"; then
+            fail "built image tag not found in room image list: ${candidate_tag}"
+          fi
+          
+          if grep -Fq "__IMAGE_TAG__" "$service_file"; then
+            sed "s|__IMAGE_TAG__|${candidate_tag}|g" "$service_file" >"$tmp_service"
+          else
+            awk -v image_tag="$candidate_tag" '
+              !done && $0 ~ /^[[:space:]]*image:[[:space:]]*/ {
+                sub(/image:[[:space:]].*/, "image: " image_tag)
+                done = 1
+              }
+              { print }
+              END {
+                if (!done) {
+                  exit 41
+                }
+              }
+            ' "$service_file" >"$tmp_service" || fail "service file must contain __IMAGE_TAG__ or at least one image: line"
+          fi
+          
+          assert_release_context_shape "$tmp_service"
+          
+          echo "Updating service to candidate image: ${candidate_tag}"
+          service_update_args=(
+            service update
+            "${meshagent_args[@]}"
+            --room "$room"
+            --file "$tmp_service"
+          )
+          if [[ "$create_service" -eq 1 ]]; then
+            service_update_args+=(--create)
+          fi
+          meshagent "${service_update_args[@]}"
+          
+          cat <<EOF
+          Candidate deployed: ${candidate_tag}
+          
+          Next steps:
+            1. Verify service health and the real user-facing surface.
+            2. If the candidate passes, promote the exact image to the plain stable tag:
+                 ${image_repo}:${release_line}
+            3. If the user later asks for rollback, roll back to the previous plain stable tag,
+               not to a release-candidate tag.
+          EOF
+
       - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/mailbox_backed_sender.md
         text: |
           # Mailbox-backed sender pattern
@@ -8246,6 +8529,18 @@ container:
           - `502` first: inspect `host`, bind port, and route-to-service wiring
           - mailbox `409` plus mailbox read `403`: treat that candidate as unavailable and try another one
           - mailbox exists but valid `POST` fails with a runtime exception: inspect the actual send path before blaming mailbox queue creation
+
+      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/webserver_image_Containerfile.example
+        text: |
+          FROM meshagent/cli:default
+          
+          WORKDIR /app
+          
+          COPY webserver.yaml ./webserver.yaml
+          COPY handlers ./handlers
+          COPY public ./public
+          
+          CMD ["meshagent", "webserver", "join", "-f", "webserver.yaml"]
 
       - path: /meshagent-skills/skills/meshagent-webapp-frontend-builder/SKILL.md
         text: |
@@ -8707,6 +9002,8 @@ container:
           - If the workflow depends on authored service YAML, prefer generated specs and require valid flags, roles, and wiring before treating the asset as deployable.
           - If the workflow must choose a service image, derive the image family from the actual environment before copying an example.
           - If a service runtime is under active iteration and changes should be containable, prefer a versioned image-build -> service-update -> verify -> rollback-if-needed loop over mutating the live runtime in place.
+          - If the user asks for a release candidate and does not explicitly ask to replace the current site, treat the candidate as a side-by-side deploy: separate service identity, separate candidate URL, and unchanged dev/stable URL.
+          - If the user asks for a release candidate without naming details, derive deterministic defaults from the current site or service instead of inventing arbitrary names: `<base>-rc` for candidate service and hostname, and the next `x.y-rcN` image tag in the active release line.
           - If the workflow includes relative scheduling, make schedule creation the last mutation after the runtime path is proven.
           - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
           - If the workflow returns a managed public URL, require the hostname suffix to match the active API environment before treating that URL as valid output.
