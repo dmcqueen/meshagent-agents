@@ -133,6 +133,8 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - If the workflow depends on authored service YAML, prefer generated specs and require valid flags, roles, and wiring before treating the asset as deployable.
 - If the workflow must choose a service image, derive the image family from the actual environment before copying an example.
 - If a service runtime is under active iteration and changes should be containable, prefer a versioned image-build -> service-update -> verify -> rollback-if-needed loop over mutating the live runtime in place.
+- If the user asks for a release candidate and does not explicitly ask to replace the current site, treat the candidate as a side-by-side deploy: separate service identity, separate candidate URL, and unchanged dev/stable URL.
+- If the user asks for a release candidate without naming details, derive deterministic defaults from the current site or service instead of inventing arbitrary names: `<base>-rc` for candidate service and hostname, and the next `x.y-rcN` image tag in the active release line.
 - If the workflow includes relative scheduling, make schedule creation the last mutation after the runtime path is proven.
 - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
 - If the workflow returns a managed public URL, require the hostname suffix to match the active API environment before treating that URL as valid output.
