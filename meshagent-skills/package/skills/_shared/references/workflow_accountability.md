@@ -10,6 +10,22 @@ Every workflow must have exactly one current workflow owner.
 - Supporting skills may execute part of the work, but they do not get to declare the overall workflow complete unless ownership is explicitly transferred.
 - Ownership may transfer to a narrower or more appropriate skill, but the transfer must be explicit in the reasoning and the new owner must continue tracking completion gates and evidence.
 
+## Deployment mode discipline
+
+- When a workflow mutates a deployed runtime, classify the intended deployment mode before choosing the mutation path: `dev`, `candidate`, or `release`.
+- `dev` means fast iteration on behavior. File-backed previews and non-rollback-ready runtime changes are acceptable if they are labeled as development state rather than release state.
+- `candidate` means image-backed deploy testing. Use versioned candidate tags such as `4.2-rc1`, `4.2-rc2`, and verify the real deployed behavior before calling the image releaseable.
+- By default, `candidate` means a side-by-side testable deploy. Unless the user explicitly asks to replace the current dev or stable runtime, keep the existing user-facing service and route intact and stand up the candidate on a separate service identity and candidate URL.
+- If the user asks for a release candidate without specifying names, use deterministic defaults rather than inventing arbitrary naming:
+  - image tag: start a new line at `1.0-rc1` when no release line exists yet, otherwise continue the current release line with the next `-rcN`
+  - candidate service: `<base-service>-rc`
+  - candidate hostname label: `<base-host>-rc`
+- `release` means the current stable image-backed runtime. A release should be a previously verified candidate promoted to the plain stable tag such as `4.2`.
+- Promotion from `candidate` to `release` is an explicit step. Do not silently turn a candidate deploy into the main user-facing runtime just because the candidate worked.
+- If the user asks to release, ship, version, cut a candidate, or preserve rollback readiness, do not stay in `dev` mode silently.
+- If the user is iterating on behavior without asking for release semantics, `dev` is the default unless the chosen workflow explicitly requires image-backed candidate testing.
+- Never switch between `dev`, `candidate`, and `release` implicitly. State the chosen mode in the reasoning and keep the packaging, verification, and reporting rules consistent with that mode.
+
 ## Completion gates
 
 Do not say "done" until all relevant gates have passed.
