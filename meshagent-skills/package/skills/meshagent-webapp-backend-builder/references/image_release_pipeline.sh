@@ -7,14 +7,14 @@ Build and deploy an image-backed webserver candidate from room storage.
 
 Usage:
   image_release_pipeline.sh \
-    --room-source /contact-site \
+    --site-source /contact-site \
     --service-file ./service.yaml \
     --image-repo contact-site \
     --release 4.2 \
     --rc 1
 
 Required:
-  --room-source PATH   Absolute room-storage source path containing the release context.
+  --site-source PATH   Absolute room-storage source path for the current site source.
                        Use the room subpath form such as /contact-site.
                        Do not pass the shell-visible mount path under /data.
   --service-file PATH  Local Service YAML used for `meshagent service update`.
@@ -26,6 +26,12 @@ Required:
 Optional:
   --room NAME               Room name. Defaults to $MESHAGENT_ROOM.
   --project-id ID           Explicit project id if needed.
+  --release-context PATH    Absolute room-storage path to stage the candidate
+                            build context into. Default:
+                            /build-context/<image-repo>-<release>-rc<rc>
+  --containerfile-source    Local or shell-visible path to a Containerfile or
+                            Dockerfile to copy into the release context if the
+                            site source does not already contain one.
   --dockerfile-name NAME    Dockerfile/Containerfile name inside the release context.
                             Default: Containerfile
   --mount-target PATH       Absolute build-container mount target.
@@ -33,12 +39,13 @@ Optional:
   --create                  Pass --create to `meshagent service update`.
 
 Notes:
-  - The room source path can be named anything. The script always mounts it into
-    a fixed build path inside the build container.
+  - The site source path can be named anything. The script stages a clean
+    release context under room storage, then mounts that staged context into a
+    fixed build path inside the build container.
   - In a live room shell, room storage may be visible at /data/<name>, but
-    --room-source must still use the room subpath form /<name>.
-  - The release context should already contain the application code,
-    webserver.yaml, and Dockerfile/Containerfile.
+    --site-source and --release-context must still use room subpath form /<name>.
+  - The staged release context must contain the application code,
+    webserver.yaml, and Dockerfile/Containerfile before the build starts.
   - This script builds and deploys a candidate tag like `contact-site:4.2-rc1`.
     Promotion to the plain stable tag `4.2` should happen only after verification.
   - The service YAML must describe an image-backed runtime. Candidate/release
@@ -53,6 +60,18 @@ fail() {
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
+}
+
+assert_room_subpath() {
+  local value="$1"
+  local flag_name="$2"
+  [[ "$value" == /* ]] || fail "${flag_name} must be an absolute room-storage path"
+  [[ "$value" != /data/* ]] || fail "${flag_name} must use a room subpath like /contact-david-site, not a shell mount path under /data"
+}
+
+shell_visible_room_path() {
+  local room_path="$1"
+  printf '/data%s' "$room_path"
 }
 
 assert_release_context_shape() {
@@ -70,9 +89,43 @@ assert_release_context_shape() {
   fi
 }
 
+prepare_release_context() {
+  local site_source_room="$1"
+  local release_context_room="$2"
+  local dockerfile_name="$3"
+  local containerfile_source="${4:-}"
+
+  local site_source_shell
+  local release_context_shell
+  site_source_shell="$(shell_visible_room_path "$site_source_room")"
+  release_context_shell="$(shell_visible_room_path "$release_context_room")"
+
+  [[ -d /data ]] || fail "this script expects room storage to be mounted at /data in the current shell"
+  [[ -d "$site_source_shell" ]] || fail "site source directory not found under room storage mount: $site_source_shell"
+
+  mkdir -p "$(dirname "$release_context_shell")"
+  rm -rf "$release_context_shell"
+  mkdir -p "$release_context_shell"
+
+  cp -R "${site_source_shell}/." "$release_context_shell/"
+
+  if [[ ! -f "${release_context_shell}/${dockerfile_name}" ]]; then
+    if [[ -n "$containerfile_source" ]]; then
+      [[ -f "$containerfile_source" ]] || fail "--containerfile-source file not found: $containerfile_source"
+      cp "$containerfile_source" "${release_context_shell}/${dockerfile_name}"
+    else
+      fail "release context is missing ${dockerfile_name}; add it to the site source or pass --containerfile-source"
+    fi
+  fi
+
+  [[ -f "${release_context_shell}/webserver.yaml" ]] || fail "release context is missing webserver.yaml after staging: ${release_context_shell}/webserver.yaml"
+}
+
 meshagent_args=()
 room="${MESHAGENT_ROOM:-}"
-room_source=""
+site_source=""
+release_context=""
+containerfile_source=""
 service_file=""
 image_repo=""
 release_line=""
@@ -91,8 +144,16 @@ while [[ $# -gt 0 ]]; do
       meshagent_args+=(--project-id "${2:-}")
       shift 2
       ;;
-    --room-source)
-      room_source="${2:-}"
+    --site-source)
+      site_source="${2:-}"
+      shift 2
+      ;;
+    --release-context)
+      release_context="${2:-}"
+      shift 2
+      ;;
+    --containerfile-source)
+      containerfile_source="${2:-}"
       shift 2
       ;;
     --service-file)
@@ -139,19 +200,22 @@ require_cmd grep
 require_cmd mktemp
 
 [[ -n "$room" ]] || fail "--room is required unless MESHAGENT_ROOM is already set"
-[[ -n "$room_source" ]] || fail "--room-source is required"
+[[ -n "$site_source" ]] || fail "--site-source is required"
 [[ -n "$service_file" ]] || fail "--service-file is required"
 [[ -n "$image_repo" ]] || fail "--image-repo is required"
 [[ -n "$release_line" ]] || fail "--release is required"
 [[ -n "$rc_number" ]] || fail "--rc is required"
 [[ -f "$service_file" ]] || fail "service file not found: $service_file"
-[[ "$room_source" == /* ]] || fail "--room-source must be an absolute room-storage path"
 [[ "$mount_target" == /* ]] || fail "--mount-target must be an absolute path"
-[[ "$room_source" != /data/* ]] || fail "--room-source must be a room subpath like /contact-david-site, not a shell mount path under /data"
+assert_room_subpath "$site_source" "--site-source"
 
 assert_release_context_shape "$service_file"
 
 candidate_tag="${image_repo}:${release_line}-rc${rc_number}"
+if [[ -z "$release_context" ]]; then
+  release_context="/build-context/${image_repo}-${release_line}-rc${rc_number}"
+fi
+assert_room_subpath "$release_context" "--release-context"
 dockerfile_path="${mount_target}/${dockerfile_name}"
 tmp_service="$(mktemp "${TMPDIR:-/tmp}/meshagent-service.XXXXXX.yaml")"
 cleanup() {
@@ -159,12 +223,15 @@ cleanup() {
 }
 trap cleanup EXIT
 
+echo "Preparing staged release context: ${release_context}"
+prepare_release_context "$site_source" "$release_context" "$dockerfile_name" "$containerfile_source"
+
 echo "Building candidate image: ${candidate_tag}"
 meshagent room container image build \
   "${meshagent_args[@]}" \
   --room "$room" \
   --tag "$candidate_tag" \
-  --mount-room-path "${room_source}:${mount_target}:ro" \
+  --mount-room-path "${release_context}:${mount_target}:ro" \
   --context-path "$mount_target" \
   --dockerfile-path "$dockerfile_path"
 
@@ -206,6 +273,7 @@ meshagent "${service_update_args[@]}"
 
 cat <<EOF
 Candidate deployed: ${candidate_tag}
+Staged release context: ${release_context}
 
 Next steps:
   1. Verify service health and the real user-facing surface.
