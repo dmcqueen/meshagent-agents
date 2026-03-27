@@ -133,6 +133,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
   - inbox queue
   all aligned to the same email address.
 - Do not invent a different mailbox queue name for a new mailbox-backed workflow.
+- For new mailbox-backed site and contact-form workflows, a generic queue name such as `inbound-mail`, `mail`, `inbox`, or similar is invalid unless the room already proves that exact queue wiring as an existing exception.
 - Treat any existing room that already uses different mailbox and inbox queue names as an explicit exception that must be verified, not as a design choice to repeat by default.
 
 ## Outbound send model
@@ -142,6 +143,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - For a one-off send, prefer reusing an already-proven mailbox-backed sender or other already-proven room mail path before inventing a new send mechanism.
 - If no usable sender exists and real outbound email is still the goal, provision or reuse the mailbox path automatically unless the user explicitly wants to choose the sender.
 - If a mailbox already exists for the workflow, reuse its address and queue.
+- If provisioning a new mailbox for a site or contact form, the returned mailbox queue should normally equal the mailbox address. If it does not, stop and treat that as a wiring problem unless an existing verified room design explicitly requires the override.
 - If another agent or runtime will call toolkit `email`, verify that toolkit `email` is actually published in the room before treating that as the chosen send path.
 - Do not treat a mailbox record by itself as proof that a contact form or site can already send mail.
 - For managed mailbox addresses:
@@ -183,6 +185,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - Apply the shared verification discipline from `../_shared/references/workflow_accountability.md`, then use the mail-specific rules below for what counts as proof here.
 - Apply the shared debugging discipline from `../_shared/references/workflow_accountability.md`, then use the mail-specific rules below to distinguish sender, toolkit, queue, and SMTP failures.
 - Prove inbound mail with mailbox mapping plus target queue behavior.
+- Do not treat mailbox creation or update as valid if the mailbox now points at an invented or unverified queue name. For new site workflows, mailbox queue divergence from the mailbox address is a blocker, not a benign detail.
 - Prove outbound mail with SMTP or provider acceptance, not just local message construction.
 - For simple test-email requests, do not add mailbox provisioning as hidden scope creep unless the direct-send path actually needs it.
 - For simple test-email requests, do not route to toolkit `email` or raw SMTP just because those sound lightweight. Reuse the actual proven room mail path first.
@@ -190,6 +193,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - For queue-backed mail senders, require both a consumed test message and runtime send evidence or the exact SMTP/provider blocker.
 - If a runtime uses `--require-toolkit=email`, a mailbox is not proof that the toolkit exists. Verify a live publisher.
 - If mailbox-backed behavior is inconsistent, check whether mailbox address, mailbox queue, and the consuming inbox queue diverged.
+- If a new mailbox-backed workflow ends up with mailbox address and mailbox queue diverging, repair that wiring before continuing. Do not leave a newly created mailbox attached to an unverified generic queue.
 - If a site or contact form fails on valid submission, identify the actual send path first. A mailbox queue problem, a missing toolkit publisher, and a broken raw-SMTP path are different failures.
 - If the mailbox address is outside the expected managed domain family for the environment, treat that as a likely sender-authorization problem.
 - Do not ask for generic SMTP credentials first when the room SMTP path is in use. Check the room defaults and observed failure first.
