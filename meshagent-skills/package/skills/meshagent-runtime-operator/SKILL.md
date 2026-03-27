@@ -105,6 +105,7 @@ Use this skill when the task is about the live runtime state inside a room rathe
 - Do not assume `container exec` will work against another participant's private container.
 - If `container exec` fails with a private-container ownership or isolation error, stop using exec for that target and switch to logs, developer watch, service state, public HTTP probes, or deployed artifacts.
 - Use image build/pull/push/load/save only when the runtime problem actually requires image operations.
+- For service-style iteration, image operations are primarily for versioned candidate builds and artifact checks. Rollback still happens at the service layer by updating the service back to a previous image tag.
 
 ## Queue and toolkit diagnosis
 
