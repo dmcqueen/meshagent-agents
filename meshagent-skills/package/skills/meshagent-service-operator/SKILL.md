@@ -119,6 +119,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - Apply the shared deployment-mode discipline from `../_shared/references/workflow_accountability.md` before choosing a mutation path.
 - Match the container image family to the actual MeshAgent environment. Do not copy a production docs image into a `.life` room unless the environment already proves that image family is correct there.
 - In `dev` mode, a non-release runtime update may be acceptable if the workflow does not require rollback readiness.
+- If the workflow explicitly needs Python hot reload in `dev` mode, a dev runtime may intentionally run `meshagent webserver join --watch` against room-mounted source. Do not assume the normal deployed service update path provides the same reload behavior.
 - In `candidate` or `release` mode, prefer image-backed iteration with versioned tags over editing live runtime files in place.
 - In `candidate` mode, default to a separate candidate service record rather than replacing the current dev or stable service in place. Only replace the existing service when the user explicitly asked for promotion, replacement, or rollback.
 - If the user did not specify candidate naming, derive it deterministically from the current service:
