@@ -171,6 +171,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Do not improvise `create_table_with_schema` schema entries inside a web handler. If DB-backed handler code needs types or schema shape, copy the exact proven `DataType`-based pattern from `meshagent-database-operator` and the resolved repo examples.
 - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
 - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
+- For a new mailbox provisioned for a contact form, do not accept a generic mailbox queue name such as `inbound-mail`, `mail`, or `inbox`. The mailbox queue should normally match the mailbox address unless the room already proves an intentional exception.
 - A mailbox-backed sender address alone is not proof that the form has a working outbound mail path.
 - Do not synthesize sender identities from the participant name or mail domain. In particular, do not invent `FROM_ADDRESS`, `MAIL_FROM`, `SMTP_FROM`, or `MESHAGENT_PARTICIPANT_NAME`.
 - Do not default a contact form to ad hoc direct SMTP when a mailbox-backed room mail path is the real workflow.
@@ -197,19 +198,20 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 10. If the form sends outbound email from the room, inspect existing room mailboxes first.
 11. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
 12. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
-13. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
-14. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
-15. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
-16. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
-17. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
-18. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
-19. Classify the deployment mode before deploy: `dev` for quick iteration, `candidate` for image-backed deploy testing, `release` for stable image promotion.
-20. In `dev` mode, `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...` is acceptable for a preview if the user did not ask for release-ready packaging.
-21. In `candidate` mode, build an image that already contains the code and `webserver.yaml`, deploy it on a separate candidate service and candidate hostname by default, and verify the real deployed behavior there.
-22. If the user did not specify naming, keep the candidate naming deterministic: `<base-service>-rc`, `<base-host>-rc`, and the next `x.y-rcN` image tag in the active release line.
-23. Before calling `meshagent room container image build`, prove that the staged release context root contains `webserver.yaml`, `Containerfile`, and the route-referenced files the build actually needs.
-24. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
-25. Verify the live site with actual GET and POST requests after deploy.
+13. After mailbox provisioning, verify that the mailbox queue wiring is valid for a new workflow. If the returned mailbox points at an invented or unverified generic queue name, treat that as a blocker and repair it before continuing.
+14. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
+15. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+16. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
+17. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+18. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
+19. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
+20. Classify the deployment mode before deploy: `dev` for quick iteration, `candidate` for image-backed deploy testing, `release` for stable image promotion.
+21. In `dev` mode, `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...` is acceptable for a preview if the user did not ask for release-ready packaging.
+22. In `candidate` mode, build an image that already contains the code and `webserver.yaml`, deploy it on a separate candidate service and candidate hostname by default, and verify the real deployed behavior there.
+23. If the user did not specify naming, keep the candidate naming deterministic: `<base-service>-rc`, `<base-host>-rc`, and the next `x.y-rcN` image tag in the active release line.
+24. Before calling `meshagent room container image build`, prove that the staged release context root contains `webserver.yaml`, `Containerfile`, and the route-referenced files the build actually needs.
+25. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
+26. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
@@ -221,6 +223,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
 - If the mailbox domain or other room evidence suggests `.life` but the chosen public hostname is `.meshagent.app`, or vice versa, treat that as an environment-resolution failure and stop before reporting the URL as valid.
 - If a deploy command warns that the hostname uses the wrong managed suffix, treat that as a blocker and correct the hostname before reporting a deployed public site.
+- If a `.life` room has a `.meshagent.app` hostname, or a `.com` room has a `.meshagent.dev` hostname, stop immediately. Do not continue with route debugging, edge debugging, DNS debugging, or app debugging behind that invalid hostname.
 
 ## Verification rules
 
@@ -239,6 +242,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - If the current deployed handler already works for other behavior, do not replace large working sections just to add one new capability unless the small additive change has already been proven insufficient.
 - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
 - If the agent cannot state the resolved environment and its matching managed suffix before reporting the URL, the public-site verification is incomplete.
+- A wrong-suffix managed hostname is not partial success and not useful evidence. It is an immediate hard failure of the public-site workflow.
 - If the task is in `candidate` or `release` mode, do not treat a file-backed `webserver deploy` preview as the final deployed runtime. It can be a development aid, but not the release artifact.
 - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
 - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
