@@ -9,9 +9,11 @@ metadata:
       - references/meshagent_cli_help.md
       - references/contact_form_example.py
       - references/contact_submission_store.py
+      - references/image_release_pipeline.sh
       - references/mailbox_backed_sender.md
       - references/minimal_webserver.yaml
       - references/verification_checklist.md
+      - references/webserver_image_Containerfile.example
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/managed_hostname_rules.md
       - ../_shared/references/workflow_accountability.md
@@ -81,9 +83,11 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Reuse the packaged implementation assets in this skill before inventing a fresh pattern:
   - `references/contact_form_example.py`
   - `references/contact_submission_store.py`
+  - `references/image_release_pipeline.sh`
   - `references/mailbox_backed_sender.md`
   - `references/minimal_webserver.yaml`
   - `references/verification_checklist.md`
+  - `references/webserver_image_Containerfile.example`
 - Use `../_shared/references/live_room_cli_context.md` for shared room-context, path, and deploy workspace rules.
 - Use `../_shared/references/managed_hostname_rules.md` for shared managed-hostname selection and validation rules.
 - After root resolution, inspect the resolved webserver CLI source for actual runtime behavior.
@@ -107,6 +111,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 ## Live room execution
 
 - Apply `../_shared/references/live_room_cli_context.md` for room context reuse, room-scoped command handling, and local-vs-room path rules.
+- Apply the shared deployment-mode discipline from `../_shared/references/workflow_accountability.md` before choosing between preview-style iteration and image-backed release work.
 - Do not enable room messaging as part of a normal site or contact-form workflow unless the user explicitly asked for room messaging behavior.
 - Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
 - For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
@@ -138,6 +143,19 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Keep handler modules simple at import time. A module that raises during import can surface to the public site as a generic `500`.
 - Do not invent runtime environment variables. Use the actual implementation and currently configured environment. If a sender or SMTP env var is not documented in the implementation, do not assume it exists.
 - For DB-backed or email-featured sites, default to the Python backend golden path in this skill before considering other backend approaches.
+- In `dev` mode, a file-backed preview deploy can be acceptable when the user is iterating on behavior and has not asked for release semantics.
+- In `candidate` or `release` mode, the deployable backend code should be image-backed. The image should contain the code, `webserver.yaml`, and supporting assets rather than relying on a room-storage code mount.
+- A release-candidate deploy should default to a separate candidate service and separate candidate hostname. Do not replace the existing dev or stable site unless the user explicitly asked for promotion or in-place replacement.
+- If the user did not specify candidate names, derive them deterministically from the current site:
+  - image tag defaults to `1.0-rc1` for the first release line, then advances within the active line
+  - candidate service defaults to `<base-service>-rc`
+  - candidate hostname defaults to `<base-host>-rc` in the correct managed suffix family
+- Use `references/image_release_pipeline.sh` as the starting point for an in-room candidate-release pipeline when the user wants a releaseable service image instead of a preview deploy.
+- Use `references/webserver_image_Containerfile.example` as the base image pattern for a webserver-backed site image, then add only the files and runtime dependencies the app actually needs.
+- When building from room storage in a live shell, distinguish room subpaths from shell mount paths:
+  - room build source: `/<site-dir>` such as `/contact-david-site`
+  - shell-visible mount path: `/data/<site-dir>`
+  - for image builds, use the room subpath form as the source and do not pass `/data/...` as the room-storage source path
 - If the site must write submissions into the room database, treat `meshagent-database-operator` as the canonical source for the exact `room.database.*` API shape and schema objects, then copy only that proven pattern into the handler.
 - If the site must show stored submissions, reuse the proven repo read path from `contact_list_route.py`: `await room.database.search(table=...)`.
 - For live sites with multiple side effects, keep the handler modular: validation, DB write, email send, and user response should be separate steps or helper functions rather than one mixed block.
@@ -179,8 +197,12 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 16. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
 17. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
 18. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
-19. Deploy with `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...`.
-20. Verify the live site with actual GET and POST requests after deploy.
+19. Classify the deployment mode before deploy: `dev` for quick iteration, `candidate` for image-backed deploy testing, `release` for stable image promotion.
+20. In `dev` mode, `meshagent webserver deploy --room "$MESHAGENT_ROOM" --website-path /<site-subpath> ...` is acceptable for a preview if the user did not ask for release-ready packaging.
+21. In `candidate` mode, build an image that already contains the code and `webserver.yaml`, deploy it on a separate candidate service and candidate hostname by default, and verify the real deployed behavior there.
+22. If the user did not specify naming, keep the candidate naming deterministic: `<base-service>-rc`, `<base-host>-rc`, and the next `x.y-rcN` image tag in the active release line.
+23. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
+24. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
@@ -209,6 +231,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - If the current deployed handler already works for other behavior, do not replace large working sections just to add one new capability unless the small additive change has already been proven insufficient.
 - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
 - If the agent cannot state the resolved environment and its matching managed suffix before reporting the URL, the public-site verification is incomplete.
+- If the task is in `candidate` or `release` mode, do not treat a file-backed `webserver deploy` preview as the final deployed runtime. It can be a development aid, but not the release artifact.
 - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
 - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
 - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
