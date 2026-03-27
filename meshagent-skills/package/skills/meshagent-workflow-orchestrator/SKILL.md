@@ -138,6 +138,7 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - If the workflow includes relative scheduling, make schedule creation the last mutation after the runtime path is proven.
 - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
 - If the workflow returns a managed public URL, require the hostname suffix to match the active API environment before treating that URL as valid output.
+- If the workflow produces a wrong-suffix managed hostname for the active environment, stop immediately and repair the hostname. Do not spend time debugging downstream route, edge, or application behavior behind that invalid URL.
 - If the workflow is a public site that sends email, inherit the webapp and mail completion rules together rather than relaxing either one at the orchestration layer.
 - Apply the shared minimal change discipline from `../_shared/references/workflow_accountability.md` when the workflow modifies an existing working handler, service, or runtime.
 - Apply the shared isolation-before-integration discipline from `../_shared/references/workflow_accountability.md` before approving a mixed patch to an existing working workflow.
