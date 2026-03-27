@@ -9,6 +9,7 @@ metadata:
       - references/meshagent_cli_help.md
       - references/contact_form_example.py
       - references/contact_submission_store.py
+      - references/dev_hot_reload_loop.sh
       - references/image_release_pipeline.sh
       - references/mailbox_backed_sender.md
       - references/minimal_webserver.yaml
@@ -83,6 +84,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Reuse the packaged implementation assets in this skill before inventing a fresh pattern:
   - `references/contact_form_example.py`
   - `references/contact_submission_store.py`
+  - `references/dev_hot_reload_loop.sh`
   - `references/image_release_pipeline.sh`
   - `references/mailbox_backed_sender.md`
   - `references/minimal_webserver.yaml`
@@ -145,6 +147,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - For DB-backed or email-featured sites, default to the Python backend golden path in this skill before considering other backend approaches.
 - In `dev` mode, a file-backed preview deploy can be acceptable when the user is iterating on behavior and has not asked for release semantics.
 - For Python handler development, the preferred dev loop is `meshagent webserver join --watch` so handler edits actually reload. Do not treat `meshagent webserver deploy` as a hot-reload path for Python code.
+- Use `references/dev_hot_reload_loop.sh` as the default live-room dev loop when iterating on Python handlers from room storage.
 - If the user needs a public dev URL while preserving Python hot reload, prefer a separate dev-only runtime whose command explicitly runs `meshagent webserver join --watch` against room-mounted source, rather than assuming the normal deployed service will reload handler imports.
 - In `candidate` or `release` mode, the deployable backend code should be image-backed. The image should contain the code, `webserver.yaml`, and supporting assets rather than relying on a room-storage code mount.
 - A release-candidate deploy should default to a separate candidate service and separate candidate hostname. Do not replace the existing dev or stable site unless the user explicitly asked for promotion or in-place replacement.
