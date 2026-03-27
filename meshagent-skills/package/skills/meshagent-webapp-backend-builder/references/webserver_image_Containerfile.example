@@ -1,0 +1,9 @@
+FROM meshagent/cli:default
+
+WORKDIR /app
+
+COPY webserver.yaml ./webserver.yaml
+COPY handlers ./handlers
+COPY public ./public
+
+CMD ["meshagent", "webserver", "join", "-f", "webserver.yaml"]
