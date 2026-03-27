@@ -119,6 +119,7 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 - Follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL or retrying a colliding hostname.
 - Managed hostname suffix is absolute: `.life` means only `.meshagent.dev`; `.com` means only `.meshagent.app`.
 - Treat a managed hostname with the wrong environment suffix as invalid output, even if the route record exists.
+- A wrong-suffix managed hostname is a hard stop. Do not continue route investigation or public verification behind it until the hostname itself is corrected.
 - Do not present a route hostname as a usable public URL unless the workflow has verified the level of reachability it claims, such as DNS or live HTTP.
 - If the route exists but public reachability is still unverified, report it as route state only, not as a proven public result.
 - If route creation or update produced a hostname that fails suffix validation or DNS verification, do not summarize the route workflow as complete.
