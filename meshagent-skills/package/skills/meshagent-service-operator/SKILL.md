@@ -117,7 +117,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - Distinguish project/global services from room-scoped services before acting.
 - Distinguish declarative service CRUD (`meshagent service ...`) from runtime room-service state (`meshagent room service ...`).
 - Apply the shared deployment-mode discipline from `../_shared/references/workflow_accountability.md` before choosing a mutation path.
-- Match the container image family to the actual MeshAgent environment. Do not copy a production docs image into a `.life` room unless the environment already proves that image family is correct there.
+- Match the container image family to the actual MeshAgent environment. Do not copy one environment profile's registry-backed image family into a different environment unless the runtime already proves that image family is correct there.
 - In `dev` mode, a non-release runtime update may be acceptable if the workflow does not require rollback readiness.
 - If the workflow explicitly needs Python hot reload in `dev` mode, a dev runtime may intentionally run `meshagent webserver join --watch` against room-mounted source. Do not assume the normal deployed service update path provides the same reload behavior.
 - In `candidate` or `release` mode, prefer image-backed iteration with versioned tags over editing live runtime files in place.
