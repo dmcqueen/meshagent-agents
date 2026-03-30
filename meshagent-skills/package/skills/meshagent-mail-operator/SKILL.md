@@ -7,6 +7,7 @@ metadata:
     bundled:
       - ../meshagent-cli-operator/references/command_groups.md
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
+      - ../_shared/references/environment_profile_rules.md
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/managed_hostname_rules.md
       - ../_shared/references/service_yaml_correctness.md
@@ -146,9 +147,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - If provisioning a new mailbox for a site or contact form, the returned mailbox queue should normally equal the mailbox address. If it does not, stop and treat that as a wiring problem unless an existing verified room design explicitly requires the override.
 - If another agent or runtime will call toolkit `email`, verify that toolkit `email` is actually published in the room before treating that as the chosen send path.
 - Do not treat a mailbox record by itself as proof that a contact form or site can already send mail.
-- For managed mailbox addresses:
-  - `.life` environments should use `@mail.meshagent.life`
-  - production `.com` environments should use `@mail.meshagent.com`
+- For managed mailbox addresses, use the environment-appropriate mailbox domain family from `../_shared/references/environment_profile_rules.md`.
 - Treat addresses like `...@meshagent.local` as suspect for outbound delivery unless the environment proves they are authorized.
 - If mailbox creation returns `409` and mailbox inspection returns `403`, treat that candidate as unavailable and try another address.
 - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox address.
@@ -165,7 +164,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
   - `SMTP_PORT` else `587`
 - Room containers do provide `MESHAGENT_API_URL` and forward `MESHAGENT_MAIL_DOMAIN`.
 - The built-in mail runtimes default their mail domain from `MESHAGENT_MAIL_DOMAIN`, but generic raw SMTP code does not automatically derive `SMTP_HOSTNAME` from it.
-- For generated raw SMTP code, it is acceptable to add a narrow fallback from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+- For generated raw SMTP code, it is acceptable to add a narrow fallback from `MESHAGENT_API_URL` using the environment-appropriate mail host from `../_shared/references/environment_profile_rules.md`.
 - `room.protocol.token` is the room client’s participant token. It is the same room credential carried through `MESHAGENT_TOKEN` or passed to `WebSocketClientProtocol(token=...)`.
 - Keep this path narrow:
   - use the existing `RoomClient`
@@ -202,7 +201,7 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - `550 5.7.1 Permission denied` means the current runtime is not authorized to send from the mailbox or sender identity it attempted to use.
 - `550 5.7.1 Relaying denied` strongly suggests the attempted `From` address did not match the provisioned mailbox email address.
 - If the task uses raw SMTP code with a live `RoomClient`, report the exact sender, host, port, and SMTP/provider response used.
-- If generated raw SMTP code needs a hostname fallback because `SMTP_HOSTNAME` is unset, derive it explicitly from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+- If generated raw SMTP code needs a hostname fallback because `SMTP_HOSTNAME` is unset, derive it explicitly from `MESHAGENT_API_URL` using the environment-appropriate mail host from `../_shared/references/environment_profile_rules.md`.
 - Do not stop at “the CLI is not logged in” unless an actual mailbox, queue, or related command failed with auth or authz.
 
 ## Workflow accountability
