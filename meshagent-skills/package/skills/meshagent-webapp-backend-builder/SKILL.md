@@ -221,12 +221,15 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Follow `../_shared/references/managed_hostname_rules.md` for suffix selection, collision handling, and validity checks.
 - Managed hostname suffix is absolute: use only the environment-appropriate managed suffix from `../_shared/references/environment_profile_rules.md`.
 - Before choosing, deploying, or reporting a managed hostname, resolve the active environment from `MESHAGENT_API_URL` and state the expected public suffix from `../_shared/references/environment_profile_rules.md`.
+- In a `.life` room, `api.meshagent.life` and `mail.meshagent.life` still mean the public minisite suffix is `.meshagent.dev`. Do not reinterpret that mapping into `.meshagent.life`.
+- Do not derive the public hostname from the mailbox address, mailbox domain, SMTP host, or API domain. Managed minisites use the managed public suffix, not the mail domain.
 - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
 - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
 - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
 - If the mailbox domain or other room evidence points at one environment profile but the chosen public hostname uses a different managed suffix family, treat that as an environment-resolution failure and stop before reporting the URL as valid.
 - If a deploy command warns that the hostname uses the wrong managed suffix, treat that as a blocker and correct the hostname before reporting a deployed public site.
 - If the room has a managed hostname whose suffix does not match the active environment profile, stop immediately. Do not continue with route debugging, edge debugging, DNS debugging, or app debugging behind that invalid hostname.
+- If the chosen public hostname falls under a mail-domain family such as `mail.meshagent.life` or `mail.meshagent.com`, treat that as a hard construction error, not as a variant to test.
 
 ## Verification rules
 
@@ -248,6 +251,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - A wrong-suffix managed hostname is not partial success and not useful evidence. It is an immediate hard failure of the public-site workflow.
 - If the task is in `candidate` or `release` mode, do not treat a file-backed `webserver deploy` preview as the final deployed runtime. It can be a development aid, but not the release artifact.
 - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
+- If DNS or live HTTP reachability is still unproven, do not summarize the site as `Done`, `deployment complete`, or `public URL created successfully`. Report the deploy state as incomplete pending public verification.
 - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
 - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
 - If a deployed file-backed site keeps serving old Python handler behavior after file sync, treat that as a dev-loop/runtime-reload issue first. `webserver deploy` syncs files and updates the service record, but it is not the same thing as `join --watch` hot reload.
