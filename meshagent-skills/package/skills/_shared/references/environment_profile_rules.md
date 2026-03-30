@@ -23,4 +23,7 @@ Use this reference as the single source of truth for environment-specific MeshAg
 
 - Treat this file as environment configuration, not as permission to hardcode one environment's values throughout unrelated skills.
 - Downstream references should normally say "use the environment-appropriate managed suffix/mail domain/runtime image family from `environment_profile_rules.md`."
+- Do not infer the managed public hostname suffix from the API hostname suffix or mailbox domain suffix. The mapping is explicit in this file and can differ across surfaces.
+- Example: `MESHAGENT_API_URL=https://api.meshagent.life` plus `MESHAGENT_MAIL_DOMAIN=mail.meshagent.life` still means the managed public minisite suffix is `.meshagent.dev`, not `.meshagent.life`.
+- Example: a `.com` API or mailbox environment still maps to managed public minisites under `.meshagent.app`, not `.meshagent.com`.
 - Keep executable examples or generated code environment-aware only when they genuinely need runtime branching logic.
