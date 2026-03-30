@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Webapp Dev Operator"
+  short_description: "Hot-reload dev loop for room webapp backends"
+  default_prompt: "Use $meshagent-webapp-dev-operator to run or debug the hot-reload development loop for a room-hosted webapp backend."
