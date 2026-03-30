@@ -121,6 +121,7 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 - Managed hostname suffix is absolute: use only the environment-appropriate managed suffix from `../_shared/references/environment_profile_rules.md`.
 - Treat a managed hostname with the wrong environment suffix as invalid output, even if the route record exists.
 - A wrong-suffix managed hostname is a hard stop. Do not continue route investigation or public verification behind it until the hostname itself is corrected.
+- Treat mail-domain hostnames or API-domain hostnames as invalid output for a managed minisite route, even if a route record exists for them.
 - Do not present a route hostname as a usable public URL unless the workflow has verified the level of reachability it claims, such as DNS or live HTTP.
 - If the route exists but public reachability is still unverified, report it as route state only, not as a proven public result.
 - If route creation or update produced a hostname that fails suffix validation or DNS verification, do not summarize the route workflow as complete.
