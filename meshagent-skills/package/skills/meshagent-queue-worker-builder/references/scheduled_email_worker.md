@@ -12,14 +12,14 @@ Use this reference when the user asks for a queue-consuming agent that receives 
 6. Inspect or provision the mailbox first.
 7. If the workflow clearly needs real outbound email and no reusable mailbox exists yet, create one automatically as part of the workflow instead of asking the user whether mailbox creation is allowed.
 8. Reuse the mailbox email address as the sender identity.
-9. In `.life` rooms, prefer mailbox addresses under `@mail.meshagent.life`; in production `.com` environments, prefer `@mail.meshagent.com`. Do not default to `@meshagent.local` for outbound scheduled email workflows.
+9. Prefer mailbox addresses under the environment-appropriate managed mail domain. Do not default to `@meshagent.local` for outbound scheduled email workflows.
 10. Choose and prove one mail path before treating the workflow as viable:
    - the default pattern is one process runtime with both `--channel=queue:<QUEUE_NAME>` and `--channel=mail:<MAILBOX_ADDRESS>`
    - use external toolkit `email` publication only when that live publisher was already proven in the room and reusing it is intentional
 11. For a new mailbox-backed mail path, route the mailbox to its own email address as the queue and let the mail runtime consume that same queue.
 12. Do not invent a different mailbox queue or inbox queue name for a new mailbox-backed workflow.
 13. If an existing room already uses different mailbox and inbox queue names, treat that as an explicit exception that must be verified before preserving it.
-14. Choose the queue-consumer and mail-runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
+14. Choose the queue-consumer and mail-runtime image family from the actual MeshAgent environment. Do not copy one environment profile's docs image into a different environment without checking the environment first.
 15. Generate the initial service asset from the real CLI when possible:
    - for new authored YAML, use `meshagent process spec`
    - use `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly wants that split runtime shape
@@ -79,9 +79,9 @@ Do not call the workflow complete until all of the following are true:
 - A queue-only process that requires toolkit `email` but has no already-proven live email publisher is not a complete scheduled-email design.
 - A process runtime with its own `mail:` channel should be verified through its live mail-send path, not by insisting on a separate external `email` publisher.
 - A mailbox-backed mail runtime can misbehave if the mailbox address, mailbox queue, and inbox queue do not line up. For new workflows, those names should be the same. Any existing override must be treated as an exception that needs explicit verification.
-- A mailbox address under `@meshagent.local` is a bad default for outbound managed-mail workflows. In `.life` or production environments, first suspect the mailbox domain if SMTP rejects send with authorization errors such as `550 5.7.1`.
+- A mailbox address under `@meshagent.local` is a bad default for outbound managed-mail workflows. In managed environments, first suspect the mailbox domain if SMTP rejects send with authorization errors such as `550 5.7.1`.
 - A created service record does not prove the queue-consuming runtime is running.
-- A copied docs image does not prove the runtime image matches the current MeshAgent environment. A `.life` room may need a different runtime image family than the production docs examples.
+- A copied docs image does not prove the runtime image matches the current MeshAgent environment. One environment profile may need a different runtime image family than the docs examples for another profile.
 - A mail runtime by itself does not satisfy a scheduled email workflow. The mail path publishes or owns the sender identity; the queue-consuming runtime must handle the scheduled job queue.
 - A manifest that declares multiple roles but starts only one runtime path is incorrect even if the YAML shape validates.
 - A new scheduled email workflow should not default to separate mail and Worker YAMLs when one process design would express the queue-plus-mail behavior more directly.
