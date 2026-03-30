@@ -157,6 +157,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
   - candidate hostname defaults to `<base-host>-rc` in the correct managed suffix family
 - Use `references/image_release_pipeline.sh` as the starting point for an in-room candidate-release pipeline when the user wants a releaseable service image instead of a preview deploy.
 - Use `references/webserver_image_Containerfile.example` as the base image pattern for a webserver-backed site image, then add only the files and runtime dependencies the app actually needs.
+- For image-backed webserver candidates, do not hand-author the candidate `Service` YAML from memory. Derive it from `meshagent webserver spec ...` or from an existing valid live service spec, then mutate only the candidate-specific fields.
 - When building from room storage in a live shell, distinguish room subpaths from shell mount paths:
   - room build source: `/<site-dir>` such as `/contact-david-site`
   - shell-visible mount path: `/data/<site-dir>`
@@ -210,8 +211,9 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 22. In `candidate` mode, build an image that already contains the code and `webserver.yaml`, deploy it on a separate candidate service and candidate hostname by default, and verify the real deployed behavior there.
 23. If the user did not specify naming, keep the candidate naming deterministic: `<base-service>-rc`, `<base-host>-rc`, and the next `x.y-rcN` image tag in the active release line.
 24. Before calling `meshagent room container image build`, prove that the staged release context root contains `webserver.yaml`, `Containerfile`, and the route-referenced files the build actually needs.
-25. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
-26. Verify the live site with actual GET and POST requests after deploy.
+25. For a webserver-backed release candidate, derive the candidate service manifest from `meshagent webserver spec` or an existing valid live service spec. Preserve the generated `ports`, `agents`, and other validated structure instead of rewriting them by hand.
+26. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
+27. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
