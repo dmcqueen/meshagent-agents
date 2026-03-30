@@ -41,6 +41,10 @@ The package now has one general CLI skill plus a larger specialized operator bun
   Room storage inspection, copy, show, and removal workflows.
 - `skills/meshagent-webapp-backend-builder/`
   Canonical backend path for deployable room-hosted web applications, including Python handlers, contact forms, room DB integration, and mailbox-backed outbound email workflows.
+- `skills/meshagent-webapp-dev-operator/`
+  Hot-reload development loop for room-hosted webapp backends, including `meshagent webserver join --watch` workflows.
+- `skills/meshagent-webapp-release-operator/`
+  Image-backed candidate and release workflow for room-hosted webapps, including staged release contexts and side-by-side candidate deploys.
 - `skills/meshagent-webapp-frontend-builder/`
   Canonical frontend path for interactive room websites using Preact + htm on top of the backend path.
 - `skills/meshagent-mail-operator/`
@@ -153,6 +157,14 @@ Key files and directories in this package:
   Minimal deployable public webserver YAML example.
 - `skills/meshagent-webapp-backend-builder/references/verification_checklist.md`
   Short completion checklist for deployed contact-form sites.
+- `skills/meshagent-webapp-dev-operator/SKILL.md`
+  Hot-reload development-loop skill for room-hosted webapp backends.
+- `skills/meshagent-webapp-dev-operator/agents/openai.yaml`
+  OpenAI agent metadata for the webapp dev operator.
+- `skills/meshagent-webapp-release-operator/SKILL.md`
+  Image-backed candidate and release workflow skill for room-hosted webapps.
+- `skills/meshagent-webapp-release-operator/agents/openai.yaml`
+  OpenAI agent metadata for the webapp release operator.
 - `skills/meshagent-webapp-frontend-builder/SKILL.md`
   Interactive room-webapp frontend skill using Preact + htm on top of the backend path.
 - `skills/meshagent-webapp-frontend-builder/agents/openai.yaml`
