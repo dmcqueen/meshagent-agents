@@ -130,6 +130,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - If `validate` or `validate-template` fails, repair the YAML and rerun validation before moving on. Do not treat validation as a one-time gate or blindly retry without making a fix.
 - Prefer `render-template` when the user needs to inspect the concrete resolved template output.
 - Prefer generated specs or rendered templates over handwritten YAML when the runtime shape already has a CLI spec command.
+- For image-backed webserver release candidates, derive the candidate `Service` YAML from `meshagent webserver spec` or an existing valid live service spec. Do not hand-author the candidate manifest from memory.
 - Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
 - There is no native rollback command for services. If rollback readiness matters, keep the previous known-good plain release tag and be prepared to `meshagent service update ...` the service back to that image only when the user asks for rollback.
 - Prefer a tag model that separates candidates from proven-good releases, for example `4.2-rc1`, `4.2-rc2`, then `4.2`; later `4.3-rc1`, `4.3-rc2`, then `4.3`.
