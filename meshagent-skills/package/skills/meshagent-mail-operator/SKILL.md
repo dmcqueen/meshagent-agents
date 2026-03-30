@@ -127,6 +127,8 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - Creating a mailbox does not publish toolkit `email`.
 - If another runtime depends on toolkit `email`, require a proven live publisher. Do not assume mailbox creation alone provides one.
 - For mailbox-backed outbound workflows, the mailbox email address is the sender identity. Do not synthesize one from participant name or mail domain.
+- For contact-form or site-to-external-email workflows, keep sender identity separate from the destination recipient by default. The requested recipient address is the `To` target, not the mailbox to provision as the sender.
+- Do not create or reuse a room mailbox whose address equals the external destination recipient unless the user explicitly asked for that exact sender identity and the runtime has already proven it is authorized and intended.
 - Do not use `MESHAGENT_MAIL_DOMAIN` alone to invent mailbox addresses.
 - For new mailbox-backed inbound-mail runtimes, use this naming convention:
   - mailbox address
@@ -189,6 +191,11 @@ Use this skill for mailbox administration, room SMTP behavior, outbound send deb
 - For simple test-email requests, do not add mailbox provisioning as hidden scope creep unless the direct-send path actually needs it.
 - For simple test-email requests, do not route to toolkit `email` or raw SMTP just because those sound lightweight. Reuse the actual proven room mail path first.
 - For simple test-email requests, do not satisfy the ask with room messaging or chat.
+- For contact forms that should deliver to an external address, the default pattern is:
+  - `From`: a MeshAgent-managed mailbox sender
+  - `To`: the requested external recipient
+  - `Reply-To`: the visitor email when present
+- Do not collapse `From` and `To` to the same external destination address as a default contact-form pattern.
 - For queue-backed mail senders, require both a consumed test message and runtime send evidence or the exact SMTP/provider blocker.
 - If a runtime uses `--require-toolkit=email`, a mailbox is not proof that the toolkit exists. Verify a live publisher.
 - If mailbox-backed behavior is inconsistent, check whether mailbox address, mailbox queue, and the consuming inbox queue diverged.
