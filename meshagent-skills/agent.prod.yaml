@@ -1716,6 +1716,35 @@ container:
           if __name__ == "__main__":
               raise SystemExit(main())
 
+      - path: /meshagent-skills/skills/_shared/references/environment_profile_rules.md
+        text: |
+          # Environment Profile Rules
+          
+          Use this reference as the single source of truth for environment-specific MeshAgent values that vary between `.life` and `.com` runtimes.
+          
+          - Shared skill logic should stay environment-neutral whenever possible.
+          - When a skill needs a concrete public suffix, mailbox domain, SMTP fallback host, or runtime image family, resolve the active environment first and then use the mapping in this file.
+          - If the published environment mapping changes later, update this file first and keep downstream skills phrased in terms of the environment-appropriate value instead of restating old literals.
+          
+          ## Current mapping
+          
+          - `.life` API environments
+            - managed public hostname suffix: `.meshagent.dev`
+            - managed mailbox domain: `mail.meshagent.life`
+            - direct-SMTP fallback host: `mail.meshagent.life`
+            - preferred registry-backed CLI runtime image family: `us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz`
+          - `.com` API environments
+            - managed public hostname suffix: `.meshagent.app`
+            - managed mailbox domain: `mail.meshagent.com`
+            - direct-SMTP fallback host: `mail.meshagent.com`
+            - preferred registry-backed CLI runtime image family: `us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz`
+          
+          ## Usage rules
+          
+          - Treat this file as environment configuration, not as permission to hardcode one environment's values throughout unrelated skills.
+          - Downstream references should normally say "use the environment-appropriate managed suffix/mail domain/runtime image family from `environment_profile_rules.md`."
+          - Keep executable examples or generated code environment-aware only when they genuinely need runtime branching logic.
+
       - path: /meshagent-skills/skills/_shared/references/image_backed_service_iteration.md
         text: |
           # Image-Backed Service Iteration
@@ -1784,17 +1813,18 @@ container:
           
           Use these rules whenever a skill needs to choose, validate, or report a MeshAgent-managed public hostname for a room webserver, site, or public route.
           
-          - If `MESHAGENT_API_URL` is present, the managed suffix is fixed by that API environment: `.com` environments must use `*.meshagent.app` and `.life` environments must use `*.meshagent.dev`.
-          - Resolve the active API environment explicitly before choosing or reporting a managed hostname. The agent should be able to state both sides of the mapping, for example: `MESHAGENT_API_URL` is a `.life` environment, so the only valid managed public suffix is `.meshagent.dev`.
+          - Resolve the active API environment explicitly before choosing or reporting a managed hostname.
+          - The only valid managed public suffix is the environment-appropriate managed suffix from `environment_profile_rules.md`.
+          - The agent should be able to state the mapping it resolved before using or reporting a hostname.
           - If `MESHAGENT_API_URL` is absent or does not clearly identify the environment, inspect an existing route in the current project or ask before inventing a managed public hostname.
           - Packaged help or example text that shows `.meshagent.app` is illustrative only. Do not copy that suffix blindly when the active runtime indicates a different environment.
           - Before running a deploy with `--domain` or reporting a managed public URL, verify that the chosen hostname suffix matches `MESHAGENT_API_URL` and state the expected suffix to yourself first.
-          - Treat a mismatched managed suffix as invalid, not as an acceptable variant. In a `.life` environment, do not deploy, return, or accept any managed hostname outside `.meshagent.dev`. In a `.com` environment, do not deploy, return, or accept any managed hostname outside `.meshagent.app`.
+          - Treat a mismatched managed suffix as invalid, not as an acceptable variant. Do not deploy, return, or accept any managed hostname outside the environment-appropriate suffix from `environment_profile_rules.md`.
           - A managed hostname with the wrong environment suffix is a hard error, not a debugging lead. Stop the public-site workflow immediately and correct the hostname before inspecting any edge, DNS, route, or application behavior behind that invalid hostname.
           - If a deploy command warns that the hostname suffix is wrong for the current environment, treat that deploy result as failed for public-hostname purposes and fix the hostname before reporting success.
           - If a candidate hostname collides, keep the same environment-specific suffix family and try additional candidates before asking the user to choose one.
           - When a workflow is creating a release candidate rather than promoting the main release, choose a separate candidate hostname in the same managed suffix family and leave the current dev or stable hostname unchanged unless the user explicitly asked to replace it.
-          - If the user did not specify a candidate hostname, derive it from the current dev or stable hostname label by appending `-rc` before the environment-correct managed suffix, for example `contact-david` -> `contact-david-rc.meshagent.dev`.
+          - If the user did not specify a candidate hostname, derive it from the current dev or stable hostname label by appending `-rc` before the environment-correct managed suffix.
           - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and a follow-up route read is forbidden, treat that hostname as unavailable and try a different candidate before reporting a generic permissions blocker.
           - If a mailbox domain, API environment, and managed public hostname disagree about whether the room is `.life` or `.com`, treat that as unresolved environment evidence and do not report the public URL as valid yet.
           - Do not report, test, or keep debugging a managed URL whose suffix contradicts the active API environment. Nothing behind that URL counts as valid workflow evidence until the hostname itself is corrected.
@@ -1848,12 +1878,11 @@ container:
           Use these rules whenever a skill needs to choose a MeshAgent runtime image for a `Service` or `ServiceTemplate`.
           
           - If `MESHAGENT_API_URL` is present, derive the runtime image family from that environment before copying an example image.
-          - For `.com` environments, the standard CLI runtime example image family is `us-central1-docker.pkg.dev/meshagent-public/images/cli:{SERVER_VERSION}-esgz`.
-          - For `.life` environments, prefer the corresponding `.life` runtime image family instead of the production one, for example `us-central1-docker.pkg.dev/meshagent-life/meshagent-public/cli:{SERVER_VERSION}-esgz`.
+          - Use the environment-appropriate registry-backed CLI runtime image family from `environment_profile_rules.md`.
           - Do not copy a docs example image blindly just because it appears in `meshagent-docs`. Most docs examples use the production image family as illustrative defaults.
           - If the environment is unclear, inspect an existing working room service or ask before inventing an image registry path.
           - When reusing or repairing an existing room workflow, prefer the same image family already used by healthy services in that room or project.
-          - Keep the image family and the API environment aligned. Do not generate a `.life` room service that points at the production `meshagent-public/images/...` runtime image family unless you have explicit evidence that this environment expects it.
+          - Keep the image family and the API environment aligned. Do not generate a service that points at the wrong environment's registry-backed runtime image family unless you have explicit evidence that this environment expects it.
           - Generic images such as `meshagent/cli:default` or `meshagent/shell-codex:default` are separate defaults with their own behavior. Do not silently switch between those and the environment-specific registry-backed runtime images without a reason grounded in the workflow.
 
       - path: /meshagent-skills/skills/_shared/references/service_yaml_correctness.md
@@ -1897,9 +1926,7 @@ container:
           - Do not reuse the scheduled Worker queue as the MailBot inbox queue for new scheduled email workflows unless you have explicit evidence that the mailbox routing was designed that way. Keep the mailbox/MailBot inbox path separate from the scheduled job queue by default.
           - Do not author new scheduled email YAML as separate MailBot and Worker services by default. Use that split shape only when the user explicitly asked for it.
           - Do not use invented sender identities such as `something@meshagent.local` for room email workflows. Use a real mailbox-backed address from the current project and room.
-          - For managed MeshAgent mailbox-backed senders, prefer the environment-appropriate mailbox domain family:
-            - `.life` environments: `@mail.meshagent.life`
-            - production `.com` environments: `@mail.meshagent.com`
+          - For managed MeshAgent mailbox-backed senders, prefer the environment-appropriate mailbox domain family from `environment_profile_rules.md`.
           - Treat `@meshagent.local` sender identities as invalid by default for outbound managed-mail workflows unless the current environment explicitly proves otherwise.
           - If the YAML embeds room rules files or startup scripts, make sure the files are actually mounted or written into the container before the command references them.
           - Match the scheduled payload shape to the queue consumer design:
@@ -2227,9 +2254,9 @@ container:
           If the user asks to create or write a room-visible file and does not give a more specific path, default to `/data/<filename>`.
           For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
           For this skill, the current room is the value of `MESHAGENT_ROOM`.
-          For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL`: `.com` environments must use `*.meshagent.app` and `.life` environments must use `*.meshagent.dev`. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
+          For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL` and the shared environment profile rules. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
           The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
-          Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL`. For `https://api.meshagent.life`, managed public hostnames must end in `.meshagent.dev`. For `https://api.meshagent.com`, managed public hostnames must end in `.meshagent.app`.
+          Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL` and the environment-appropriate managed suffix.
           
           ## Top-level command policy
           
@@ -2334,7 +2361,7 @@ container:
           - For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
           - If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
           - If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
-          - Managed hostname suffix is absolute, not advisory: never return anything except `.meshagent.dev` from a `.life` environment or `.meshagent.app` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
+          - Managed hostname suffix is absolute, not advisory: never return anything except the environment-appropriate managed suffix, even if packaged examples or previous failed attempts used the wrong suffix.
           - If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
           - Use `meshagent-mail-operator` for mailbox, inbox, process `mail:` channel, or contact-form email workflows.
           - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
@@ -5727,6 +5754,7 @@ container:
               bundled:
                 - ../meshagent-cli-operator/references/command_groups.md
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
+                - ../_shared/references/environment_profile_rules.md
                 - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/managed_hostname_rules.md
                 - ../_shared/references/service_yaml_correctness.md
@@ -5866,9 +5894,7 @@ container:
           - If provisioning a new mailbox for a site or contact form, the returned mailbox queue should normally equal the mailbox address. If it does not, stop and treat that as a wiring problem unless an existing verified room design explicitly requires the override.
           - If another agent or runtime will call toolkit `email`, verify that toolkit `email` is actually published in the room before treating that as the chosen send path.
           - Do not treat a mailbox record by itself as proof that a contact form or site can already send mail.
-          - For managed mailbox addresses:
-            - `.life` environments should use `@mail.meshagent.life`
-            - production `.com` environments should use `@mail.meshagent.com`
+          - For managed mailbox addresses, use the environment-appropriate mailbox domain family from `../_shared/references/environment_profile_rules.md`.
           - Treat addresses like `...@meshagent.local` as suspect for outbound delivery unless the environment proves they are authorized.
           - If mailbox creation returns `409` and mailbox inspection returns `403`, treat that candidate as unavailable and try another address.
           - Do not construct `From` as `<participant-name>@<mail-domain>`. Use the provisioned mailbox address.
@@ -5885,7 +5911,7 @@ container:
             - `SMTP_PORT` else `587`
           - Room containers do provide `MESHAGENT_API_URL` and forward `MESHAGENT_MAIL_DOMAIN`.
           - The built-in mail runtimes default their mail domain from `MESHAGENT_MAIL_DOMAIN`, but generic raw SMTP code does not automatically derive `SMTP_HOSTNAME` from it.
-          - For generated raw SMTP code, it is acceptable to add a narrow fallback from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+          - For generated raw SMTP code, it is acceptable to add a narrow fallback from `MESHAGENT_API_URL` using the environment-appropriate mail host from `../_shared/references/environment_profile_rules.md`.
           - `room.protocol.token` is the room client’s participant token. It is the same room credential carried through `MESHAGENT_TOKEN` or passed to `WebSocketClientProtocol(token=...)`.
           - Keep this path narrow:
             - use the existing `RoomClient`
@@ -5922,7 +5948,7 @@ container:
           - `550 5.7.1 Permission denied` means the current runtime is not authorized to send from the mailbox or sender identity it attempted to use.
           - `550 5.7.1 Relaying denied` strongly suggests the attempted `From` address did not match the provisioned mailbox email address.
           - If the task uses raw SMTP code with a live `RoomClient`, report the exact sender, host, port, and SMTP/provider response used.
-          - If generated raw SMTP code needs a hostname fallback because `SMTP_HOSTNAME` is unset, derive it explicitly from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+          - If generated raw SMTP code needs a hostname fallback because `SMTP_HOSTNAME` is unset, derive it explicitly from `MESHAGENT_API_URL` using the environment-appropriate mail host from `../_shared/references/environment_profile_rules.md`.
           - Do not stop at “the CLI is not logged in” unless an actual mailbox, queue, or related command failed with auth or authz.
           
           ## Workflow accountability
@@ -6607,14 +6633,14 @@ container:
           6. Inspect or provision the mailbox first.
           7. If the workflow clearly needs real outbound email and no reusable mailbox exists yet, create one automatically as part of the workflow instead of asking the user whether mailbox creation is allowed.
           8. Reuse the mailbox email address as the sender identity.
-          9. In `.life` rooms, prefer mailbox addresses under `@mail.meshagent.life`; in production `.com` environments, prefer `@mail.meshagent.com`. Do not default to `@meshagent.local` for outbound scheduled email workflows.
+          9. Prefer mailbox addresses under the environment-appropriate managed mail domain. Do not default to `@meshagent.local` for outbound scheduled email workflows.
           10. Choose and prove one mail path before treating the workflow as viable:
              - the default pattern is one process runtime with both `--channel=queue:<QUEUE_NAME>` and `--channel=mail:<MAILBOX_ADDRESS>`
              - use external toolkit `email` publication only when that live publisher was already proven in the room and reusing it is intentional
           11. For a new mailbox-backed mail path, route the mailbox to its own email address as the queue and let the mail runtime consume that same queue.
           12. Do not invent a different mailbox queue or inbox queue name for a new mailbox-backed workflow.
           13. If an existing room already uses different mailbox and inbox queue names, treat that as an explicit exception that must be verified before preserving it.
-          14. Choose the queue-consumer and mail-runtime image family from the actual MeshAgent environment. Do not copy a production docs image into a `.life` room without checking the environment first.
+          14. Choose the queue-consumer and mail-runtime image family from the actual MeshAgent environment. Do not copy one environment profile's docs image into a different environment without checking the environment first.
           15. Generate the initial service asset from the real CLI when possible:
              - for new authored YAML, use `meshagent process spec`
              - use `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly wants that split runtime shape
@@ -6674,9 +6700,9 @@ container:
           - A queue-only process that requires toolkit `email` but has no already-proven live email publisher is not a complete scheduled-email design.
           - A process runtime with its own `mail:` channel should be verified through its live mail-send path, not by insisting on a separate external `email` publisher.
           - A mailbox-backed mail runtime can misbehave if the mailbox address, mailbox queue, and inbox queue do not line up. For new workflows, those names should be the same. Any existing override must be treated as an exception that needs explicit verification.
-          - A mailbox address under `@meshagent.local` is a bad default for outbound managed-mail workflows. In `.life` or production environments, first suspect the mailbox domain if SMTP rejects send with authorization errors such as `550 5.7.1`.
+          - A mailbox address under `@meshagent.local` is a bad default for outbound managed-mail workflows. In managed environments, first suspect the mailbox domain if SMTP rejects send with authorization errors such as `550 5.7.1`.
           - A created service record does not prove the queue-consuming runtime is running.
-          - A copied docs image does not prove the runtime image matches the current MeshAgent environment. A `.life` room may need a different runtime image family than the production docs examples.
+          - A copied docs image does not prove the runtime image matches the current MeshAgent environment. One environment profile may need a different runtime image family than the docs examples for another profile.
           - A mail runtime by itself does not satisfy a scheduled email workflow. The mail path publishes or owns the sender identity; the queue-consuming runtime must handle the scheduled job queue.
           - A manifest that declares multiple roles but starts only one runtime path is incorrect even if the YAML shape validates.
           - A new scheduled email workflow should not default to separate mail and Worker YAMLs when one process design would express the queue-plus-mail behavior more directly.
@@ -7326,7 +7352,7 @@ container:
           - Distinguish project/global services from room-scoped services before acting.
           - Distinguish declarative service CRUD (`meshagent service ...`) from runtime room-service state (`meshagent room service ...`).
           - Apply the shared deployment-mode discipline from `../_shared/references/workflow_accountability.md` before choosing a mutation path.
-          - Match the container image family to the actual MeshAgent environment. Do not copy a production docs image into a `.life` room unless the environment already proves that image family is correct there.
+          - Match the container image family to the actual MeshAgent environment. Do not copy one environment profile's registry-backed image family into a different environment unless the runtime already proves that image family is correct there.
           - In `dev` mode, a non-release runtime update may be acceptable if the workflow does not require rollback readiness.
           - If the workflow explicitly needs Python hot reload in `dev` mode, a dev runtime may intentionally run `meshagent webserver join --watch` against room-mounted source. Do not assume the normal deployed service update path provides the same reload behavior.
           - In `candidate` or `release` mode, prefer image-backed iteration with versioned tags over editing live runtime files in place.
@@ -7524,6 +7550,7 @@ container:
                 - references/minimal_webserver.yaml
                 - references/verification_checklist.md
                 - references/webserver_image_Containerfile.example
+                - ../_shared/references/environment_profile_rules.md
                 - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/managed_hostname_rules.md
                 - ../_shared/references/workflow_accountability.md
@@ -7688,7 +7715,7 @@ container:
           - If the handler uses direct SMTP, use only the real room SMTP defaults documented in `mail_common.py`: `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_HOSTNAME`, and `SMTP_PORT`.
           - Treat direct SMTP as an explicit fallback path, not the normal contact-form mail path. Use it only when the user asked for it or the runtime has already proven that SMTP configuration exists.
           - Room containers do expose `MESHAGENT_API_URL`, but raw SMTP code must add its own hostname fallback if it wants to derive `SMTP_HOSTNAME` from that environment.
-          - If generated direct-SMTP code needs a hostname fallback because `SMTP_HOSTNAME` is null, derive it explicitly from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+          - If generated direct-SMTP code needs a hostname fallback because `SMTP_HOSTNAME` is null, derive it explicitly from `MESHAGENT_API_URL` using the environment-appropriate mail host from `../_shared/references/environment_profile_rules.md`.
           - For Python handlers that render inline HTML, avoid `str.format()` across raw HTML, CSS, or regex-heavy strings unless every literal brace is escaped. CSS blocks and patterns like `{1,80}` otherwise break rendering at runtime.
           - Prefer safer rendering approaches for generated handlers: placeholder replacement, `string.Template`, or another approach that does not reinterpret every `{...}` in the whole document.
           - Validate on both client and server when the task includes user input, but treat server-side validation as authoritative.
@@ -7727,14 +7754,14 @@ container:
           ## Managed hostname selection
           
           - Follow `../_shared/references/managed_hostname_rules.md` for suffix selection, collision handling, and validity checks.
-          - Managed hostname suffix is absolute: `.life` means only `.meshagent.dev`; `.com` means only `.meshagent.app`.
-          - Before choosing, deploying, or reporting a managed hostname, resolve the active environment from `MESHAGENT_API_URL` and state the expected public suffix: `.life` -> `.meshagent.dev`, `.com` -> `.meshagent.app`.
+          - Managed hostname suffix is absolute: use only the environment-appropriate managed suffix from `../_shared/references/environment_profile_rules.md`.
+          - Before choosing, deploying, or reporting a managed hostname, resolve the active environment from `MESHAGENT_API_URL` and state the expected public suffix from `../_shared/references/environment_profile_rules.md`.
           - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
           - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
           - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
-          - If the mailbox domain or other room evidence suggests `.life` but the chosen public hostname is `.meshagent.app`, or vice versa, treat that as an environment-resolution failure and stop before reporting the URL as valid.
+          - If the mailbox domain or other room evidence points at one environment profile but the chosen public hostname uses a different managed suffix family, treat that as an environment-resolution failure and stop before reporting the URL as valid.
           - If a deploy command warns that the hostname uses the wrong managed suffix, treat that as a blocker and correct the hostname before reporting a deployed public site.
-          - If a `.life` room has a `.meshagent.app` hostname, or a `.com` room has a `.meshagent.dev` hostname, stop immediately. Do not continue with route debugging, edge debugging, DNS debugging, or app debugging behind that invalid hostname.
+          - If the room has a managed hostname whose suffix does not match the active environment profile, stop immediately. Do not continue with route debugging, edge debugging, DNS debugging, or app debugging behind that invalid hostname.
           
           ## Verification rules
           
@@ -7766,7 +7793,7 @@ container:
           - If repeated site patches fail to improve the same symptom, stop widening the handler patch and reassess the deploy shape, integration boundary, or send path.
           - If a DB integration patch turns a previously working submit path into a `500`, repair or roll back that regression before summarizing the DB work as partial progress.
           - If a contact-form task asks for emailed submissions, do not report success while live submission still fails to send mail.
-          - If a generated contact-form handler uses direct SMTP and `SMTP_HOSTNAME` is null, add an explicit fallback from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+          - If a generated contact-form handler uses direct SMTP and `SMTP_HOSTNAME` is null, add an explicit fallback from `MESHAGENT_API_URL` using the environment-appropriate mail host from `../_shared/references/environment_profile_rules.md`.
           - If a contact-form handler still cannot prove a usable SMTP hostname after that environment fallback, treat it as a blocker and switch back to the mailbox-backed room mail path or report the exact mail-configuration blocker.
           - Distinguish SMTP transport from sender authorization. A form that renders but fails with `SMTPDataError`, `550`, `553`, or similar on valid submission is not complete.
           - If outbound mail fails with an authorization error such as `550 5.7.1 Permission denied`, switch to mailbox-backed sender provisioning if permissions allow, then re-test.
@@ -8714,10 +8741,7 @@ container:
           
           The mailbox address is still the sender identity. SMTP username and password do not define the `From` address.
           Room containers do provide `MESHAGENT_API_URL`, but generic raw SMTP code must add its own hostname fallback if it wants to use it.
-          If generated raw SMTP code leaves `SMTP_HOSTNAME` null, fill it from `MESHAGENT_API_URL` before giving up:
-          
-          - `.life` -> `mail.meshagent.life`
-          - `.com` -> `mail.meshagent.com`
+          If generated raw SMTP code leaves `SMTP_HOSTNAME` null, fill it from `MESHAGENT_API_URL` using the environment-appropriate mail host before giving up.
           
           If those runtime defaults are not actually present, do not keep the contact form on a direct-SMTP design just because the mailbox exists.
           
@@ -8953,6 +8977,7 @@ container:
                 - ../meshagent-cli-operator/references/command_groups.md
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
                 - references/static_webserver_example.yaml
+                - ../_shared/references/environment_profile_rules.md
                 - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/managed_hostname_rules.md
                 - ../_shared/references/workflow_accountability.md
@@ -9062,7 +9087,7 @@ container:
           ## Verification rules
           
           - Follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL or retrying a colliding hostname.
-          - Managed hostname suffix is absolute: `.life` means only `.meshagent.dev`; `.com` means only `.meshagent.app`.
+          - Managed hostname suffix is absolute: use only the environment-appropriate managed suffix from `../_shared/references/environment_profile_rules.md`.
           - Treat a managed hostname with the wrong environment suffix as invalid output, even if the route record exists.
           - A wrong-suffix managed hostname is a hard stop. Do not continue route investigation or public verification behind it until the hostname itself is corrected.
           - Do not present a route hostname as a usable public URL unless the workflow has verified the level of reachability it claims, such as DNS or live HTTP.
@@ -9123,6 +9148,7 @@ container:
             references:
               bundled:
                 - ../_shared/references/live_room_cli_context.md
+                - ../_shared/references/environment_profile_rules.md
                 - ../_shared/references/runtime_image_environment_rules.md
                 - ../_shared/references/service_yaml_correctness.md
                 - ../_shared/references/workflow_accountability.md
