@@ -162,6 +162,8 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Do not improvise `create_table_with_schema` schema entries inside a web handler. If DB-backed handler code needs types or schema shape, copy the exact proven `DataType`-based pattern from `meshagent-database-operator` and the resolved repo examples.
 - Do not switch a handler to CLI-backed database writes when direct `room.database.*` calls are available in the runtime.
 - For room-hosted contact forms, the sender address must come from a successful `meshagent mailbox list`, `meshagent mailbox show`, or `meshagent mailbox create` result in the current project.
+- For a contact form that should email an external destination, the requested destination address is the `To` target, not the sender mailbox identity to provision.
+- Do not provision or reuse a sender mailbox whose address equals the destination recipient by default. Only do that when the user explicitly asked for that exact sender identity and the runtime already proves it is authorized and intended.
 - For a new mailbox provisioned for a contact form, do not accept a generic mailbox queue name such as `inbound-mail`, `mail`, or `inbox`. The mailbox queue should normally match the mailbox address unless the room already proves an intentional exception.
 - A mailbox-backed sender address alone is not proof that the form has a working outbound mail path.
 - Do not synthesize sender identities from the participant name or mail domain. In particular, do not invent `FROM_ADDRESS`, `MAIL_FROM`, `SMTP_FROM`, or `MESHAGENT_PARTICIPANT_NAME`.
@@ -190,15 +192,20 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 11. If no suitable mailbox exists, create collision-resistant mailbox candidates derived from the room and workflow purpose.
 12. If mailbox creation returns `409` and mailbox inspection is forbidden, treat that candidate as unavailable and try another candidate before asking for help.
 13. After mailbox provisioning, verify that the mailbox queue wiring is valid for a new workflow. If the returned mailbox points at an invented or unverified generic queue name, treat that as a blocker and repair it before continuing.
-14. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
-15. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
-16. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
-17. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
-18. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
-19. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
-20. If the user needs a hot-reload dev loop for Python handlers, hand the runtime loop to `meshagent-webapp-dev-operator` once the backend shape is clear.
-21. If the user asks for a release candidate, release, promotion, or rollback-ready artifact, hand packaging and release lifecycle to `meshagent-webapp-release-operator` after the backend behavior is ready.
-22. Verify the live site with actual GET and POST requests after deploy.
+14. For contact-form delivery to an external recipient, keep the addresses separate by default:
+  - `From`: the MeshAgent-managed mailbox sender
+  - `To`: the requested external recipient
+  - `Reply-To`: the visitor email when present
+15. Do not default a contact form to `From == To` when the `To` address is the user's external inbox.
+16. Use the exact mailbox address returned by the CLI as the `From` address and use the visitor email only as `Reply-To` when present.
+17. Prefer the room mail path and real mailbox-backed sender identity over ad hoc SMTP guesses.
+18. Do not treat mailbox creation as proof that direct SMTP is configured or that a mailbox queue is visible in generic queue inspection.
+19. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
+20. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
+21. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
+22. If the user needs a hot-reload dev loop for Python handlers, hand the runtime loop to `meshagent-webapp-dev-operator` once the backend shape is clear.
+23. If the user asks for a release candidate, release, promotion, or rollback-ready artifact, hand packaging and release lifecycle to `meshagent-webapp-release-operator` after the backend behavior is ready.
+24. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
@@ -227,6 +234,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - If a deploy starts failing with `ModuleNotFoundError`, `ImportError`, stale-file-handle errors, or route-load errors, treat that first as a deploy tree, app-dir, or mounted-file integrity problem before debugging DB or mail behavior.
 - For contact forms that send mail, include one invalid POST and one valid POST in the verification flow.
 - For contact forms that send mail, the valid POST must reach the success path or the exact mail blocker. A rendered form plus a failing submission is not a completed site.
+- If a contact form used the external destination recipient as the sender mailbox or `From` address by default, treat that as a mail-path construction bug and repair it before reporting success.
 - If a contact form claims to store submissions but the follow-up read path stays empty, treat that as a still-broken database workflow even if mail send succeeds.
 - If the current deployed handler already works for other behavior, do not replace large working sections just to add one new capability unless the small additive change has already been proven insufficient.
 - If the resulting public hostname uses the wrong managed suffix for the current environment, treat that as a failed deploy output and fix the hostname before reporting success.
