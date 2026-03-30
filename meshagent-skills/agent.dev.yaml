@@ -1743,6 +1743,9 @@ container:
           
           - Treat this file as environment configuration, not as permission to hardcode one environment's values throughout unrelated skills.
           - Downstream references should normally say "use the environment-appropriate managed suffix/mail domain/runtime image family from `environment_profile_rules.md`."
+          - Do not infer the managed public hostname suffix from the API hostname suffix or mailbox domain suffix. The mapping is explicit in this file and can differ across surfaces.
+          - Example: `MESHAGENT_API_URL=https://api.meshagent.life` plus `MESHAGENT_MAIL_DOMAIN=mail.meshagent.life` still means the managed public minisite suffix is `.meshagent.dev`, not `.meshagent.life`.
+          - Example: a `.com` API or mailbox environment still maps to managed public minisites under `.meshagent.app`, not `.meshagent.com`.
           - Keep executable examples or generated code environment-aware only when they genuinely need runtime branching logic.
 
       - path: /meshagent-skills/skills/_shared/references/image_backed_service_iteration.md
@@ -1816,11 +1819,15 @@ container:
           - Resolve the active API environment explicitly before choosing or reporting a managed hostname.
           - The only valid managed public suffix is the environment-appropriate managed suffix from `environment_profile_rules.md`.
           - The agent should be able to state the mapping it resolved before using or reporting a hostname.
+          - Managed public hostnames and managed mailbox domains are different surfaces. Do not derive a public site hostname from the mailbox domain, SMTP host, or mailbox address.
+          - Treat domains such as `mail.meshagent.life`, `mail.meshagent.com`, `.meshagent.life`, or `.meshagent.com` as mail or API evidence, not as valid managed minisite suffixes.
+          - The mapping in `environment_profile_rules.md` is explicit and overrides suffix guessing. Example: `api.meshagent.life` plus `mail.meshagent.life` still maps managed public minisites to `.meshagent.dev`.
           - If `MESHAGENT_API_URL` is absent or does not clearly identify the environment, inspect an existing route in the current project or ask before inventing a managed public hostname.
           - Packaged help or example text that shows `.meshagent.app` is illustrative only. Do not copy that suffix blindly when the active runtime indicates a different environment.
           - Before running a deploy with `--domain` or reporting a managed public URL, verify that the chosen hostname suffix matches `MESHAGENT_API_URL` and state the expected suffix to yourself first.
           - Treat a mismatched managed suffix as invalid, not as an acceptable variant. Do not deploy, return, or accept any managed hostname outside the environment-appropriate suffix from `environment_profile_rules.md`.
           - A managed hostname with the wrong environment suffix is a hard error, not a debugging lead. Stop the public-site workflow immediately and correct the hostname before inspecting any edge, DNS, route, or application behavior behind that invalid hostname.
+          - A public hostname under the mail domain family or API domain family is a hard error for a managed minisite workflow. Stop immediately and correct the hostname before treating the deploy as meaningful.
           - If a deploy command warns that the hostname suffix is wrong for the current environment, treat that deploy result as failed for public-hostname purposes and fix the hostname before reporting success.
           - If a candidate hostname collides, keep the same environment-specific suffix family and try additional candidates before asking the user to choose one.
           - When a workflow is creating a release candidate rather than promoting the main release, choose a separate candidate hostname in the same managed suffix family and leave the current dev or stable hostname unchanged unless the user explicitly asked to replace it.
@@ -2255,6 +2262,8 @@ container:
           For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
           For this skill, the current room is the value of `MESHAGENT_ROOM`.
           For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL` and the shared environment profile rules. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
+          Do not derive a public minisite hostname from the mailbox domain, SMTP hostname, or API hostname. A mail domain such as `mail.meshagent.life` is not a public site suffix.
+          Example: `api.meshagent.life` and `mail.meshagent.life` still map public minisites to `.meshagent.dev`, not `.meshagent.life`.
           The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
           Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL` and the environment-appropriate managed suffix.
           
@@ -7756,12 +7765,15 @@ container:
           - Follow `../_shared/references/managed_hostname_rules.md` for suffix selection, collision handling, and validity checks.
           - Managed hostname suffix is absolute: use only the environment-appropriate managed suffix from `../_shared/references/environment_profile_rules.md`.
           - Before choosing, deploying, or reporting a managed hostname, resolve the active environment from `MESHAGENT_API_URL` and state the expected public suffix from `../_shared/references/environment_profile_rules.md`.
+          - In a `.life` room, `api.meshagent.life` and `mail.meshagent.life` still mean the public minisite suffix is `.meshagent.dev`. Do not reinterpret that mapping into `.meshagent.life`.
+          - Do not derive the public hostname from the mailbox address, mailbox domain, SMTP host, or API domain. Managed minisites use the managed public suffix, not the mail domain.
           - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
           - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
           - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
           - If the mailbox domain or other room evidence points at one environment profile but the chosen public hostname uses a different managed suffix family, treat that as an environment-resolution failure and stop before reporting the URL as valid.
           - If a deploy command warns that the hostname uses the wrong managed suffix, treat that as a blocker and correct the hostname before reporting a deployed public site.
           - If the room has a managed hostname whose suffix does not match the active environment profile, stop immediately. Do not continue with route debugging, edge debugging, DNS debugging, or app debugging behind that invalid hostname.
+          - If the chosen public hostname falls under a mail-domain family such as `mail.meshagent.life` or `mail.meshagent.com`, treat that as a hard construction error, not as a variant to test.
           
           ## Verification rules
           
@@ -7783,6 +7795,7 @@ container:
           - A wrong-suffix managed hostname is not partial success and not useful evidence. It is an immediate hard failure of the public-site workflow.
           - If the task is in `candidate` or `release` mode, do not treat a file-backed `webserver deploy` preview as the final deployed runtime. It can be a development aid, but not the release artifact.
           - If DNS lookup fails for the public hostname, treat the public-site workflow as still blocked. Do not report the URL as working or deployed for user-visible purposes.
+          - If DNS or live HTTP reachability is still unproven, do not summarize the site as `Done`, `deployment complete`, or `public URL created successfully`. Report the deploy state as incomplete pending public verification.
           - If the live GET does not reach the intended page with the expected final success status, normally `200`, treat the public-site workflow as still blocked even if DNS or an HTTP redirect works.
           - If a live GET or POST returns `500`, inspect handler import/render/runtime failures before blaming room routing or platform infrastructure.
           - If a deployed file-backed site keeps serving old Python handler behavior after file sync, treat that as a dev-loop/runtime-reload issue first. `webserver deploy` syncs files and updates the service record, but it is not the same thing as `join --watch` hot reload.
@@ -9090,6 +9103,7 @@ container:
           - Managed hostname suffix is absolute: use only the environment-appropriate managed suffix from `../_shared/references/environment_profile_rules.md`.
           - Treat a managed hostname with the wrong environment suffix as invalid output, even if the route record exists.
           - A wrong-suffix managed hostname is a hard stop. Do not continue route investigation or public verification behind it until the hostname itself is corrected.
+          - Treat mail-domain hostnames or API-domain hostnames as invalid output for a managed minisite route, even if a route record exists for them.
           - Do not present a route hostname as a usable public URL unless the workflow has verified the level of reachability it claims, such as DNS or live HTTP.
           - If the route exists but public reachability is still unverified, report it as route state only, not as a proven public result.
           - If route creation or update produced a hostname that fails suffix validation or DNS verification, do not summarize the route workflow as complete.
