@@ -18,6 +18,10 @@ metadata:
   related_skills:
     - skill: meshagent-webapp-backend-builder
       when: The app needs the canonical Python handler, DB, mail, deploy, or verification backend path.
+    - skill: meshagent-webapp-dev-operator
+      when: The frontend work depends on a hot-reload backend dev loop while Python handlers are still changing.
+    - skill: meshagent-webapp-release-operator
+      when: The frontend work must be delivered through an image-backed candidate or release of the room webapp.
     - skill: meshagent-sdk-researcher
       when: Checkout roots or codebase references must be resolved first.
     - skill: meshagent-service-operator
@@ -64,6 +68,8 @@ Use this skill when the task is to build or debug the frontend layer of an inter
 ## Related skills
 
 - `meshagent-webapp-backend-builder`: Use it for the canonical Python backend, DB, mail, deploy, route, and verification workflow around this frontend specialization.
+- `meshagent-webapp-dev-operator`: Use it when the backend side of the app must stay in a hot-reload dev loop while frontend work is still changing.
+- `meshagent-webapp-release-operator`: Use it when the combined app is moving into an image-backed candidate or release workflow.
 - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references outside this skill bundle.
 - `meshagent-service-operator`: Use it when the main task is room service lifecycle rather than frontend implementation.
 
@@ -82,7 +88,9 @@ Use this skill when the task is to build or debug the frontend layer of an inter
 - Prefer plain `<script type="module">` over Vite, webpack, or a custom bundler when the site can stay simple.
 - Put deployable static frontend assets in `website/dist/`.
 - Treat this skill as the canonical frontend path for interactive or creative room sites, but keep it layered over the backend conventions from `meshagent-webapp-backend-builder`.
-- For DB-backed or email-featured apps, let the backend skill own Python handlers, `room.database.*`, mail paths, and public-route verification while this skill owns UI composition, state, and interactions.
+- For DB-backed or email-featured apps, let the backend skill own Python handlers, `room.database.*`, and mail paths while this skill owns UI composition, state, and interactions.
+- If the backend side of the app is actively iterating in a hot-reload loop, keep that runtime loop on `meshagent-webapp-dev-operator`.
+- If the app is moving into an image-backed candidate or release flow, keep that packaging and deploy lifecycle on `meshagent-webapp-release-operator`.
 - Prefer thin frontend calls into narrow backend endpoints over duplicating business logic or persistence logic in the browser.
 - If a build step is unavoidable, keep it minimal and justify it from the actual requirements.
 - When deploying frontend changes, add cache-busting query params to script and stylesheet tags so users do not see stale assets.
