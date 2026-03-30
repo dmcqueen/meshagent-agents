@@ -18,7 +18,10 @@ Required:
                        Use the room subpath form such as /contact-site.
                        Do not pass the shell-visible mount path under /data.
   --service-file PATH  Local Service YAML used for `meshagent service update`.
-                       Prefer a template with __IMAGE_TAG__.
+                       This should be derived from a valid generated service spec
+                       such as `meshagent webserver spec ...`, or from an
+                       existing known-good service spec. Prefer a template with
+                       __IMAGE_TAG__.
   --image-repo NAME    Image repo/name prefix, for example `contact-site`.
   --release VERSION    Stable release line, for example `4.2`.
   --rc N               Candidate number within the release line, for example `1`.
@@ -50,6 +53,9 @@ Notes:
     Promotion to the plain stable tag `4.2` should happen only after verification.
   - The service YAML must describe an image-backed runtime. Candidate/release
     deploys must not keep running app code from a room-storage code mount.
+  - Do not hand-author the candidate service manifest from memory. Start from
+    `meshagent webserver spec ...` or an existing valid service spec, then
+    mutate only the candidate-specific fields.
 EOF
 }
 
@@ -77,8 +83,24 @@ shell_visible_room_path() {
 assert_release_context_shape() {
   local service_path="$1"
 
+  grep -Eq '^[[:space:]]*kind:[[:space:]]*Service[[:space:]]*$' "$service_path" \
+    || fail "service file must be a concrete Service document"
+
+  for required_field in metadata agents ports container; do
+    grep -Eq "^[[:space:]]*${required_field}:[[:space:]]*$" "$service_path" \
+      || fail "service file must contain top-level ${required_field}: from a valid generated or existing service spec"
+  done
+
   grep -Eq '^[[:space:]]*image:[[:space:]]*' "$service_path" \
     || fail "service file must contain an image: field or __IMAGE_TAG__ placeholder"
+
+  if grep -Eq '^[[:space:]]*spec:[[:space:]]*$' "$service_path"; then
+    fail "service file contains a nested spec: block; derive the candidate service from meshagent webserver spec or an existing valid Service YAML instead"
+  fi
+
+  if grep -Eq '^[[:space:]]*-[[:space:]]*port:[[:space:]]*' "$service_path"; then
+    fail "service file uses ports entries with port: ...; preserve the exact generated PortSpec shape from meshagent webserver spec or an existing valid service"
+  fi
 
   if grep -Eq '^[[:space:]]*subpath:[[:space:]]*/' "$service_path"; then
     fail "service file still contains a room-storage subpath mount; candidate/release runtimes must keep app code in the image"
