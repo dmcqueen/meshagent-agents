@@ -122,6 +122,8 @@ Use the following status values exactly:
 - Use `meshagent-mail-operator` for mailbox, inbox, process `mail:` channel, or contact-form email workflows.
 - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
 - Use `meshagent-webapp-backend-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers.
+- Use `meshagent-webapp-dev-operator` when the main need is a hot-reload dev loop for a room-hosted webapp backend.
+- Use `meshagent-webapp-release-operator` when the main need is an image-backed candidate or release for a room-hosted webapp.
 - Use `meshagent-webmaster` for explicit route management or public hostname exposure.
 - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
 
