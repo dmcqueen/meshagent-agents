@@ -6,6 +6,7 @@ metadata:
   references:
     bundled:
       - ../_shared/references/live_room_cli_context.md
+      - ../_shared/references/environment_profile_rules.md
       - ../_shared/references/runtime_image_environment_rules.md
       - ../_shared/references/service_yaml_correctness.md
       - ../_shared/references/workflow_accountability.md
