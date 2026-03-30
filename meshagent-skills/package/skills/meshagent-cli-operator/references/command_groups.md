@@ -8,9 +8,9 @@ For room-visible runtime data, use `/data`.
 If the user asks to create or write a room-visible file and does not give a more specific path, default to `/data/<filename>`.
 For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
 For this skill, the current room is the value of `MESHAGENT_ROOM`.
-For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL`: `.com` environments must use `*.meshagent.app` and `.life` environments must use `*.meshagent.dev`. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
+For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL` and the shared environment profile rules. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
 The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
-Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL`. For `https://api.meshagent.life`, managed public hostnames must end in `.meshagent.dev`. For `https://api.meshagent.com`, managed public hostnames must end in `.meshagent.app`.
+Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL` and the environment-appropriate managed suffix.
 
 ## Top-level command policy
 
@@ -115,7 +115,7 @@ Use the following status values exactly:
 - For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
 - If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
 - If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
-- Managed hostname suffix is absolute, not advisory: never return anything except `.meshagent.dev` from a `.life` environment or `.meshagent.app` from a `.com` environment, even if packaged examples or previous failed attempts used the wrong suffix.
+- Managed hostname suffix is absolute, not advisory: never return anything except the environment-appropriate managed suffix, even if packaged examples or previous failed attempts used the wrong suffix.
 - If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
 - Use `meshagent-mail-operator` for mailbox, inbox, process `mail:` channel, or contact-form email workflows.
 - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
