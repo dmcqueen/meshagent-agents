@@ -9,6 +9,8 @@ If the user asks to create or write a room-visible file and does not give a more
 For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
 For this skill, the current room is the value of `MESHAGENT_ROOM`.
 For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL` and the shared environment profile rules. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
+Do not derive a public minisite hostname from the mailbox domain, SMTP hostname, or API hostname. A mail domain such as `mail.meshagent.life` is not a public site suffix.
+Example: `api.meshagent.life` and `mail.meshagent.life` still map public minisites to `.meshagent.dev`, not `.meshagent.life`.
 The packaged CLI help may show `.meshagent.app` in examples. Treat those as static examples, not as the environment-specific suffix to use in the current runtime.
 Before using or returning a managed hostname, validate that its suffix matches `MESHAGENT_API_URL` and the environment-appropriate managed suffix.
 
