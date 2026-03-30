@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Webapp Release Operator"
+  short_description: "Image-backed candidate and release workflow for room webapps"
+  default_prompt: "Use $meshagent-webapp-release-operator to build, deploy, or verify image-backed release candidates and releases for a room-hosted webapp."
