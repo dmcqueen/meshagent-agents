@@ -106,6 +106,13 @@ container:
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
               --skill-dir /data/skills/meshagent-skills/skills \
+              --rule='Operate as a disciplined technical collaborator.' \
+              --rule='Drive ideas toward correct, maintainable systems through structured iteration.' \
+              --rule='Design, build, debug, and refine with responsibility for structural integrity.' \
+              --rule='Prefer implementation over speculation, but make assumptions explicit and ask when risk is material.' \
+              --rule='Maintain modular architecture, clear boundaries, and consistent patterns.' \
+              --rule='Communicate with precise, neutral, structured output that surfaces reasoning, risk, and blockers.' \
+              --rule='Fix root causes, stabilize before expanding, and advance work toward safe completion.' \
               --rule='Use the installed skills from the configured skill directory to solve the user request. Each skill is specialized for a different domain (CLI operations, email, scheduling, web deployment, etc.). Read the skill documentation and choose the best-fit skill for the task. Coordinate between skills when a task requires multiple domains.'
           else
             exec /usr/bin/meshagent process join \
@@ -123,6 +130,13 @@ container:
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
               --skill-dir /data/skills/meshagent-skills/skills \
+              --rule='Operate as a disciplined technical collaborator.' \
+              --rule='Drive ideas toward correct, maintainable systems through structured iteration.' \
+              --rule='Design, build, debug, and refine with responsibility for structural integrity.' \
+              --rule='Prefer implementation over speculation, but make assumptions explicit and ask when risk is material.' \
+              --rule='Maintain modular architecture, clear boundaries, and consistent patterns.' \
+              --rule='Communicate with precise, neutral, structured output that surfaces reasoning, risk, and blockers.' \
+              --rule='Fix root causes, stabilize before expanding, and advance work toward safe completion.' \
               --rule='Use the installed skills from the configured skill directory to solve the user request. Each skill is specialized for a different domain (CLI operations, email, scheduling, web deployment, etc.). Read the skill documentation and choose the best-fit skill for the task. Coordinate between skills when a task requires multiple domains (e.g., website creation with email integration uses both web and mail skills).'
           fi
 
@@ -1850,6 +1864,7 @@ container:
           
           - Prefer generated specs over handwritten YAML when the CLI already has a generator for the runtime shape you need. For new authored agent services, start from `meshagent process spec` first. Use `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly asked for those runtime shapes. Use `meshagent service spec` only when the agent-specific specs are not the right fit.
           - If you must hand-author YAML, start from the nearest working example or a rendered/generated spec. Do not invent a manifest structure from memory.
+          - For image-backed webserver release candidates, use `meshagent webserver spec` or an existing valid live `Service` spec as the source manifest. Preserve the generated `ports`, `agents`, and other validated structure, then mutate only the candidate-specific fields such as service name, service id annotation, and container image.
           - Treat the container `command` as code that must match the real CLI. Validate agent command flags against the packaged CLI help or the actual CLI source before treating the YAML as deployable.
           - Do not invent flags that the target command does not support. For example, `meshagent worker join` uses `--rule` and `--room-rules`; do not substitute unsupported flags such as `--prompt`.
           - Make the declared agent roles match the runtime command. If the manifest says it contains a `Worker`, the command must actually start a worker path. If it says it contains a `MailBot`, the command must start a mailbot path. Do not declare two roles and only start one of them.
@@ -7324,6 +7339,7 @@ container:
           - If `validate` or `validate-template` fails, repair the YAML and rerun validation before moving on. Do not treat validation as a one-time gate or blindly retry without making a fix.
           - Prefer `render-template` when the user needs to inspect the concrete resolved template output.
           - Prefer generated specs or rendered templates over handwritten YAML when the runtime shape already has a CLI spec command.
+          - For image-backed webserver release candidates, derive the candidate `Service` YAML from `meshagent webserver spec` or an existing valid live service spec. Do not hand-author the candidate manifest from memory.
           - Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
           - There is no native rollback command for services. If rollback readiness matters, keep the previous known-good plain release tag and be prepared to `meshagent service update ...` the service back to that image only when the user asks for rollback.
           - Prefer a tag model that separates candidates from proven-good releases, for example `4.2-rc1`, `4.2-rc2`, then `4.2`; later `4.3-rc1`, `4.3-rc2`, then `4.3`.
@@ -7650,6 +7666,7 @@ container:
             - candidate hostname defaults to `<base-host>-rc` in the correct managed suffix family
           - Use `references/image_release_pipeline.sh` as the starting point for an in-room candidate-release pipeline when the user wants a releaseable service image instead of a preview deploy.
           - Use `references/webserver_image_Containerfile.example` as the base image pattern for a webserver-backed site image, then add only the files and runtime dependencies the app actually needs.
+          - For image-backed webserver candidates, do not hand-author the candidate `Service` YAML from memory. Derive it from `meshagent webserver spec ...` or from an existing valid live service spec, then mutate only the candidate-specific fields.
           - When building from room storage in a live shell, distinguish room subpaths from shell mount paths:
             - room build source: `/<site-dir>` such as `/contact-david-site`
             - shell-visible mount path: `/data/<site-dir>`
@@ -7703,8 +7720,9 @@ container:
           22. In `candidate` mode, build an image that already contains the code and `webserver.yaml`, deploy it on a separate candidate service and candidate hostname by default, and verify the real deployed behavior there.
           23. If the user did not specify naming, keep the candidate naming deterministic: `<base-service>-rc`, `<base-host>-rc`, and the next `x.y-rcN` image tag in the active release line.
           24. Before calling `meshagent room container image build`, prove that the staged release context root contains `webserver.yaml`, `Containerfile`, and the route-referenced files the build actually needs.
-          25. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
-          26. Verify the live site with actual GET and POST requests after deploy.
+          25. For a webserver-backed release candidate, derive the candidate service manifest from `meshagent webserver spec` or an existing valid live service spec. Preserve the generated `ports`, `agents`, and other validated structure instead of rewriting them by hand.
+          26. In `release` mode, promote a previously verified candidate to the plain stable tag and only then replace or confirm the main release service and route.
+          27. Verify the live site with actual GET and POST requests after deploy.
           
           ## Managed hostname selection
           
@@ -8369,7 +8387,10 @@ container:
                                  Use the room subpath form such as /contact-site.
                                  Do not pass the shell-visible mount path under /data.
             --service-file PATH  Local Service YAML used for `meshagent service update`.
-                                 Prefer a template with __IMAGE_TAG__.
+                                 This should be derived from a valid generated service spec
+                                 such as `meshagent webserver spec ...`, or from an
+                                 existing known-good service spec. Prefer a template with
+                                 __IMAGE_TAG__.
             --image-repo NAME    Image repo/name prefix, for example `contact-site`.
             --release VERSION    Stable release line, for example `4.2`.
             --rc N               Candidate number within the release line, for example `1`.
@@ -8401,6 +8422,9 @@ container:
               Promotion to the plain stable tag `4.2` should happen only after verification.
             - The service YAML must describe an image-backed runtime. Candidate/release
               deploys must not keep running app code from a room-storage code mount.
+            - Do not hand-author the candidate service manifest from memory. Start from
+              `meshagent webserver spec ...` or an existing valid service spec, then
+              mutate only the candidate-specific fields.
           EOF
           }
           
@@ -8428,8 +8452,24 @@ container:
           assert_release_context_shape() {
             local service_path="$1"
           
+            grep -Eq '^[[:space:]]*kind:[[:space:]]*Service[[:space:]]*$' "$service_path" \
+              || fail "service file must be a concrete Service document"
+          
+            for required_field in metadata agents ports container; do
+              grep -Eq "^[[:space:]]*${required_field}:[[:space:]]*$" "$service_path" \
+                || fail "service file must contain top-level ${required_field}: from a valid generated or existing service spec"
+            done
+          
             grep -Eq '^[[:space:]]*image:[[:space:]]*' "$service_path" \
               || fail "service file must contain an image: field or __IMAGE_TAG__ placeholder"
+          
+            if grep -Eq '^[[:space:]]*spec:[[:space:]]*$' "$service_path"; then
+              fail "service file contains a nested spec: block; derive the candidate service from meshagent webserver spec or an existing valid Service YAML instead"
+            fi
+          
+            if grep -Eq '^[[:space:]]*-[[:space:]]*port:[[:space:]]*' "$service_path"; then
+              fail "service file uses ports entries with port: ...; preserve the exact generated PortSpec shape from meshagent webserver spec or an existing valid service"
+            fi
           
             if grep -Eq '^[[:space:]]*subpath:[[:space:]]*/' "$service_path"; then
               fail "service file still contains a room-storage subpath mount; candidate/release runtimes must keep app code in the image"
