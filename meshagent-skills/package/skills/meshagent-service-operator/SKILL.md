@@ -33,7 +33,9 @@ metadata:
     - skill: meshagent-queue-worker-builder
       when: The main task is authoring queue-consumer YAML.
     - skill: meshagent-webapp-backend-builder
-      when: The main task is a website or public web application rather than service lifecycle.
+      when: The main task is website implementation rather than service lifecycle.
+    - skill: meshagent-webapp-release-operator
+      when: The main task is an image-backed candidate or release workflow for a room-hosted website.
     - skill: meshagent-runtime-operator
       when: The remaining issue is live container behavior rather than service definition.
   scope:
@@ -85,7 +87,8 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - `meshagent-sdk-researcher`: Resolve checkout roots before using docs or source references.
 - `meshagent-participant-token-operator`: Use it when the issue is token-backed environment injection or participant-token wiring inside the service manifest.
 - `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-consumer YAML.
-- `meshagent-webapp-backend-builder`: Use it when the main task is a website or public web application rather than service lifecycle.
+- `meshagent-webapp-backend-builder`: Use it when the main task is website implementation rather than service lifecycle.
+- `meshagent-webapp-release-operator`: Use it when the service work is specifically an image-backed candidate or release workflow for a room-hosted website.
 - `meshagent-webmaster`: Use it when the main task is route and hostname management rather than service lifecycle.
 - `meshagent-runtime-operator`: Use it when the remaining problem is live runtime behavior rather than service definition.
 
@@ -121,6 +124,7 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - In `dev` mode, a non-release runtime update may be acceptable if the workflow does not require rollback readiness.
 - If the workflow explicitly needs Python hot reload in `dev` mode, a dev runtime may intentionally run `meshagent webserver join --watch` against room-mounted source. Do not assume the normal deployed service update path provides the same reload behavior.
 - In `candidate` or `release` mode, prefer image-backed iteration with versioned tags over editing live runtime files in place.
+- For room-webapp candidate or release work, prefer `meshagent-webapp-release-operator` as the owner of the website-specific release flow while this skill stays focused on generic service lifecycle mechanics.
 - In `candidate` mode, default to a separate candidate service record rather than replacing the current dev or stable service in place. Only replace the existing service when the user explicitly asked for promotion, replacement, or rollback.
 - If the user did not specify candidate naming, derive it deterministically from the current service:
   - candidate service: `<base-service>-rc`
