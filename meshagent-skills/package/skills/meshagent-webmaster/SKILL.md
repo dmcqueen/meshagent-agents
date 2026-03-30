@@ -8,6 +8,7 @@ metadata:
       - ../meshagent-cli-operator/references/command_groups.md
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
       - references/static_webserver_example.yaml
+      - ../_shared/references/environment_profile_rules.md
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/managed_hostname_rules.md
       - ../_shared/references/workflow_accountability.md
@@ -117,7 +118,7 @@ This example is for serving static HTML, CSS, JavaScript, and similar assets. It
 ## Verification rules
 
 - Follow `../_shared/references/managed_hostname_rules.md` before reporting a managed URL or retrying a colliding hostname.
-- Managed hostname suffix is absolute: `.life` means only `.meshagent.dev`; `.com` means only `.meshagent.app`.
+- Managed hostname suffix is absolute: use only the environment-appropriate managed suffix from `../_shared/references/environment_profile_rules.md`.
 - Treat a managed hostname with the wrong environment suffix as invalid output, even if the route record exists.
 - A wrong-suffix managed hostname is a hard stop. Do not continue route investigation or public verification behind it until the hostname itself is corrected.
 - Do not present a route hostname as a usable public URL unless the workflow has verified the level of reachability it claims, such as DNS or live HTTP.
