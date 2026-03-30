@@ -15,6 +15,7 @@ metadata:
       - references/minimal_webserver.yaml
       - references/verification_checklist.md
       - references/webserver_image_Containerfile.example
+      - ../_shared/references/environment_profile_rules.md
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/managed_hostname_rules.md
       - ../_shared/references/workflow_accountability.md
@@ -179,7 +180,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - If the handler uses direct SMTP, use only the real room SMTP defaults documented in `mail_common.py`: `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_HOSTNAME`, and `SMTP_PORT`.
 - Treat direct SMTP as an explicit fallback path, not the normal contact-form mail path. Use it only when the user asked for it or the runtime has already proven that SMTP configuration exists.
 - Room containers do expose `MESHAGENT_API_URL`, but raw SMTP code must add its own hostname fallback if it wants to derive `SMTP_HOSTNAME` from that environment.
-- If generated direct-SMTP code needs a hostname fallback because `SMTP_HOSTNAME` is null, derive it explicitly from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+- If generated direct-SMTP code needs a hostname fallback because `SMTP_HOSTNAME` is null, derive it explicitly from `MESHAGENT_API_URL` using the environment-appropriate mail host from `../_shared/references/environment_profile_rules.md`.
 - For Python handlers that render inline HTML, avoid `str.format()` across raw HTML, CSS, or regex-heavy strings unless every literal brace is escaped. CSS blocks and patterns like `{1,80}` otherwise break rendering at runtime.
 - Prefer safer rendering approaches for generated handlers: placeholder replacement, `string.Template`, or another approach that does not reinterpret every `{...}` in the whole document.
 - Validate on both client and server when the task includes user input, but treat server-side validation as authoritative.
@@ -218,14 +219,14 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 ## Managed hostname selection
 
 - Follow `../_shared/references/managed_hostname_rules.md` for suffix selection, collision handling, and validity checks.
-- Managed hostname suffix is absolute: `.life` means only `.meshagent.dev`; `.com` means only `.meshagent.app`.
-- Before choosing, deploying, or reporting a managed hostname, resolve the active environment from `MESHAGENT_API_URL` and state the expected public suffix: `.life` -> `.meshagent.dev`, `.com` -> `.meshagent.app`.
+- Managed hostname suffix is absolute: use only the environment-appropriate managed suffix from `../_shared/references/environment_profile_rules.md`.
+- Before choosing, deploying, or reporting a managed hostname, resolve the active environment from `MESHAGENT_API_URL` and state the expected public suffix from `../_shared/references/environment_profile_rules.md`.
 - Prefer collision-resistant hostname candidates derived from the room name plus the site purpose.
 - If the user did not request a specific hostname, automatically try a small set of candidates before asking for naming input.
 - Do not deploy with, report, or accept a managed hostname whose suffix does not match the active API environment.
-- If the mailbox domain or other room evidence suggests `.life` but the chosen public hostname is `.meshagent.app`, or vice versa, treat that as an environment-resolution failure and stop before reporting the URL as valid.
+- If the mailbox domain or other room evidence points at one environment profile but the chosen public hostname uses a different managed suffix family, treat that as an environment-resolution failure and stop before reporting the URL as valid.
 - If a deploy command warns that the hostname uses the wrong managed suffix, treat that as a blocker and correct the hostname before reporting a deployed public site.
-- If a `.life` room has a `.meshagent.app` hostname, or a `.com` room has a `.meshagent.dev` hostname, stop immediately. Do not continue with route debugging, edge debugging, DNS debugging, or app debugging behind that invalid hostname.
+- If the room has a managed hostname whose suffix does not match the active environment profile, stop immediately. Do not continue with route debugging, edge debugging, DNS debugging, or app debugging behind that invalid hostname.
 
 ## Verification rules
 
@@ -257,7 +258,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - If repeated site patches fail to improve the same symptom, stop widening the handler patch and reassess the deploy shape, integration boundary, or send path.
 - If a DB integration patch turns a previously working submit path into a `500`, repair or roll back that regression before summarizing the DB work as partial progress.
 - If a contact-form task asks for emailed submissions, do not report success while live submission still fails to send mail.
-- If a generated contact-form handler uses direct SMTP and `SMTP_HOSTNAME` is null, add an explicit fallback from `MESHAGENT_API_URL`: `.life` -> `mail.meshagent.life`, `.com` -> `mail.meshagent.com`.
+- If a generated contact-form handler uses direct SMTP and `SMTP_HOSTNAME` is null, add an explicit fallback from `MESHAGENT_API_URL` using the environment-appropriate mail host from `../_shared/references/environment_profile_rules.md`.
 - If a contact-form handler still cannot prove a usable SMTP hostname after that environment fallback, treat it as a blocker and switch back to the mailbox-backed room mail path or report the exact mail-configuration blocker.
 - Distinguish SMTP transport from sender authorization. A form that renders but fails with `SMTPDataError`, `550`, `553`, or similar on valid submission is not complete.
 - If outbound mail fails with an authorization error such as `550 5.7.1 Permission denied`, switch to mailbox-backed sender provisioning if permissions allow, then re-test.
