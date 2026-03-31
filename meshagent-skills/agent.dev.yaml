@@ -106,7 +106,7 @@ container:
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
               --skill-dir /data/skills/meshagent-skills/skills/meshagent-webapp-backend-builder \
-              --skill-dir /data/skills/meshagent-skills/skills/meshagent-webapp-frontend-builder \
+              --skill-dir /data/skills/meshagent-skills/skills/meshagent-webmaster \
               --skill-dir /data/skills/meshagent-skills/skills/meshagent-database-operator
           else
             exec /usr/bin/meshagent process join \
@@ -124,7 +124,7 @@ container:
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
               --skill-dir /data/skills/meshagent-skills/skills/meshagent-webapp-backend-builder \
-              --skill-dir /data/skills/meshagent-skills/skills/meshagent-webapp-frontend-builder \
+              --skill-dir /data/skills/meshagent-skills/skills/meshagent-webmaster \
               --skill-dir /data/skills/meshagent-skills/skills/meshagent-database-operator
           fi
 
@@ -160,6 +160,8 @@ container:
           
           The package now has one general CLI skill plus a larger specialized operator bundle:
           
+          - `skills/meshagent-core/`
+            Bare-minimum high-signal routing and verification rules for live room work before choosing a narrower specialist skill.
           - `skills/meshagent-cli-operator/`
             General MeshAgent CLI routing, command composition, live-room execution rules, and packaged CLI reference material.
           - `skills/meshagent-sdk-researcher/`
@@ -244,6 +246,10 @@ container:
             Package validator.
           - `scripts/audit_meshagent_skill_commands.py`
             Command-reference audit against the live CLI tree.
+          - `skills/meshagent-core/SKILL.md`
+            Minimal live-room routing and verification skill for reducing decision confusion before specialist handoff.
+          - `skills/meshagent-core/agents/openai.yaml`
+            OpenAI agent metadata for the core skill.
           - `skills/meshagent-cli-operator/SKILL.md`
             Core CLI execution and command-routing skill.
           - `skills/meshagent-cli-operator/agents/openai.yaml`
@@ -323,7 +329,7 @@ container:
           - `skills/meshagent-storage-operator/agents/openai.yaml`
             OpenAI agent metadata for the storage operator.
           - `skills/meshagent-webmaster/SKILL.md`
-            Route/domain mapping and static webserver reference skill.
+            Route/domain mapping, published hostname, and legacy static-webserver reference skill.
           - `skills/meshagent-webmaster/agents/openai.yaml`
             OpenAI agent metadata for the webmaster.
           - `skills/meshagent-webmaster/references/static_webserver_example.yaml`
@@ -348,7 +354,9 @@ container:
           - `MESHAGENT_ROOM` identifies the current room when a command needs `--room`
           - `MESHAGENT_API_URL` can be used to derive the managed public hostname family for routes and published sites
           - room-owned runtime artifacts should live under `/data`
-          - deployable `meshagent webserver` source trees should live under the current working directory for that runtime, with `--website-path` used as the room-storage destination
+          - production website hosting should normally use `meshagent image build --pack ... --tag room.meshagent.com/... --deploy`
+          - `--domain` should only be added to image-backed website deploys when the deployed service has exactly one published port
+          - Python-handler dev loops should normally use `meshagent webserver join --watch`
           - website tasks are only complete after a live HTTP smoke test, not merely after file generation or deploy success
           - when a MeshAgent SDK checkout is preloaded into the runtime, it is commonly mounted at `/src/meshagent-sdk`, but skills should still use `meshagent-sdk-researcher` to resolve the actual checkout root before relying on that path
           
@@ -586,7 +594,7 @@ container:
       - path: /meshagent-skills/compat.json
         text: |
           {
-            "meshagent_cli_version": "0.34.0"
+            "meshagent_cli_version": "0.35.0"
           }
 
       - path: /meshagent-skills/scripts/audit_meshagent_skill_commands.py
@@ -2043,7 +2051,7 @@ container:
           - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
           - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
           - Do not leave an obviously required user input such as the recipient email unasked in a workflow whose purpose is to send a real email.
-          - Do not wait until the final step to discover that a required backend surface such as scheduled-task create is blocked when a cheap preflight could have shown that earlier.
+          - Do not wait until the final step to discover that a required backend surface such as scheduled-task add is blocked when a cheap preflight could have shown that earlier.
           - Do not use broad auth or project-listing failures as proof that a room-scoped workflow cannot proceed when a narrower room-scoped probe was available.
           - Do not use `meshagent auth whoami` as a prerequisite gatekeeper for a known-room workflow.
           - Do not treat room messaging enablement as a setup task for workflows that do not actually require room messaging. If a command reports that messaging is already enabled, treat that as non-blocking room state rather than a failure to repair.
@@ -2201,7 +2209,7 @@ container:
           Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...`.
           For room-visible runtime data, use `/data`.
           If the user asks to create or write a room-visible file and does not give a more specific path, default to `/data/<filename>`.
-          For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
+          For room website deploys, keep the local source tree under the current working directory. Prefer `meshagent image build --pack ... --tag room.meshagent.com/... --deploy` for public hosting, and add `--domain` only when the image-backed service exposes exactly one published port. Keep `meshagent webserver join --watch` for Python-handler dev loops and specialized handler workflows.
           For this skill, the current room is the value of `MESHAGENT_ROOM`.
           For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL` and the shared environment profile rules. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
           Do not derive a public minisite hostname from the mailbox domain, SMTP hostname, or API hostname. A mail domain such as `mail.meshagent.life` is not a public site suffix.
@@ -2235,8 +2243,10 @@ container:
             Use for transcriber runtime flows when the task is clearly about deploying or operating that runtime.
           - `meshagent port`
             Use for room port inspection and exposure work tied to the current room. If a `--room` flag is used, it must match the current room.
+          - `meshagent image`
+            Use for Dockerfile-based room website and container deploys, especially when packing a local source tree into room storage and deploying a service from the built image. If a `--room` flag is used, it must match the current room.
           - `meshagent webserver`
-            Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer the managed hostname suffix derived from `MESHAGENT_API_URL` by default in this environment.
+            Use for Python-handler dev loops, specialized room web handlers, and `join --watch` workflows. If a `--room` flag is used, it must match the current room. Do not treat it as the default production website deploy path when `meshagent image build --pack ... --deploy` can satisfy the request.
           - `meshagent codex`
             Use for Codex-backed runtime operations that stay within room scope.
           - `meshagent voicebot`
@@ -2298,12 +2308,13 @@ container:
           
           - For room-scoped tasks, start with `meshagent room ...`.
           - When the task is room service discovery, prefer `meshagent room service list` over generic `meshagent room agent invoke-tool` calls.
-          - For runtime deployment tasks, prefer the specific runtime family such as `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, or `meshagent webserver ...`.
+          - For runtime deployment tasks, prefer the specific runtime family such as `meshagent image ...`, `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, or `meshagent webserver ...`.
           - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
           - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
           - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
           - For room-site requests, deploy in the current room and return the public URL only after live verification succeeds. Do not treat local example-app edits, local build output, route creation, deploy success, DNS resolution, or a redirect alone as completion of a room deployment request.
-          - For room-site requests that use `meshagent webserver deploy`, create the local app under the current working directory, keep route sources relative to the routes file when possible, and upload to room storage with `--website-path`.
+          - For room-site requests, prefer `meshagent image build --pack <local-dir> --tag room.meshagent.com/<path> --deploy` for production hosting. Keep the local app under the current working directory, include the Dockerfile in that tree, and use a collision-resistant `room.meshagent.com/...` tag path.
+          - Add `--domain` to `meshagent image build` only when the workflow wants public exposure and the deployed service has exactly one published port inferred from the local packed Dockerfile.
           - If `MESHAGENT_ROOM` is already available, do not block on `meshagent rooms list` before attempting the room-scoped deploy.
           - Do not add room-messaging enablement to a site, contact-form, mail, or runtime workflow unless the user explicitly asked for room messaging itself.
           - For deployed websites, verify the live URL with a real HTTP GET and confirm the final response is the intended page with the expected final success status, normally `200`, before replying with success.
@@ -2311,12 +2322,13 @@ container:
           - For deployed sites, do not use repeated `meshagent room container exec` attempts against another participant's private container as the primary debug path. Prefer service list, developer watch, container logs, public HTTP checks, and deployed artifacts first.
           - For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
           - If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
-          - If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
+          - If `meshagent image build --pack ... --deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
           - Managed hostname suffix is absolute, not advisory: never return anything except the environment-appropriate managed suffix, even if packaged examples or previous failed attempts used the wrong suffix.
-          - If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
+          - If an image-backed deployed site returns 500 or fails health checks, inspect the Dockerfile, exposed ports, service state, container logs, and runtime assumptions before declaring a room or platform routing issue.
           - Use `meshagent-mail-operator` for mailbox, inbox, process `mail:` channel, or contact-form email workflows.
           - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
           - Use `meshagent-webapp-backend-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers.
+          - For current production website hosting, that skill should normally prefer `meshagent image build ...` while keeping `meshagent webserver ...` for Python-handler dev loops and specialized handler workflows.
           - Use `meshagent-webmaster` for explicit route management or public hostname exposure.
           - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
           
@@ -2330,7 +2342,7 @@ container:
         text: |
           # MeshAgent CLI Help
           
-          _Packaged CLI help reference for MeshAgent CLI `0.34.0`._
+          _Packaged CLI help reference for MeshAgent CLI `0.35.0`._
           
           _Generated from the installed `meshagent` binary with recursive `--help` capture up to depth 1 and timeout 2s per command._
           
@@ -2377,6 +2389,7 @@ container:
           │ task-runner          Join a taskrunner to a room                             │
           │ worker               Join a worker agent to a room                           │
           │ room                 Operate within a room                                   │
+          │ image                Build and pack OCI images                               │
           ╰──────────────────────────────────────────────────────────────────────────────╯
           ```
           
@@ -4950,6 +4963,59 @@ container:
           ╰──────────────────────────────────────────────────────────────────────────────╯
           ```
           
+          ### `meshagent webserver join`
+          
+          ```console
+          $ meshagent webserver join --help
+                                                                                          
+           Usage: meshagent webserver join [OPTIONS]                                      
+                                                                                          
+           Join a room and run the configured webserver routes locally with optional hot  
+           reload.                                                                        
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │    --project-id              TEXT     A MeshAgent project id. If empty, the  │
+          │                                       activated project will be used.        │
+          │                                       [default:                              │
+          │                                       203b1bf9-72c9-4022-bfaa-55d6f656dfeb]  │
+          │ *  --room                    TEXT     Room name [required]                   │
+          │    --role                    TEXT     [default: agent]                       │
+          │    --agent-name              TEXT     Name of the agent to call              │
+          │    --token-from-env          TEXT     Name of environment variable           │
+          │                                       containing a MeshAgent token           │
+          │    --key                     TEXT     an api key to sign the token with      │
+          │                      -f      TEXT     Path to routes file (default:          │
+          │                                       webserver.yaml). YAML format: kind:    │
+          │                                       WebServer, version: v1, host?, port?,  │
+          │                                       routes: [{path, methods?,              │
+          │                                       python?|static?}]. Route source        │
+          │                                       resolution: '/x' -> '{cwd}/x'; 'x' ->  │
+          │                                       relative to routes file. 'static'      │
+          │                                       supports files and directories. Use    │
+          │                                       --app-dir to control Python import     │
+          │                                       root (defaults to routes file          │
+          │                                       directory). When --host/--port (or     │
+          │                                       --web-host/--web-port) are not         │
+          │                                       explicitly set, host/port from the     │
+          │                                       routes file are used. Python handler   │
+          │                                       signature: handler(*, room:            │
+          │                                       RoomClient, req: web.Request) ->       │
+          │                                       web.StreamResponse. Do not define      │
+          │                                       METHOD/METHODS in handler files.       │
+          │                                       [default: webserver.yaml]              │
+          │    --app-dir                 TEXT     Python import root for route handlers  │
+          │                                       (similar to uvicorn --app-dir).        │
+          │                                       Defaults to the routes file directory. │
+          │    --host                    TEXT     Host to bind the server                │
+          │                                       [default: 127.0.0.1]                   │
+          │    --port                    INTEGER  Port to bind the server                │
+          │                                       [default: 8000]                        │
+          │    --watch                            Reload routes when the routes file or  │
+          │                                       python handlers change                 │
+          │    --help                             Show this message and exit.            │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
+          
           ## `meshagent worker`
           
           ```console
@@ -5494,28 +5560,62 @@ container:
           │ join     Run multiple join commands together in one process.                 │
           ╰──────────────────────────────────────────────────────────────────────────────╯
           ```
+          
+          ## `meshagent image`
+          
+          ```console
+          $ meshagent image --help
+                                                                                          
+           Usage: meshagent image [OPTIONS] COMMAND [ARGS]...                             
+                                                                                          
+           Build and pack OCI images                                                      
+                                                                                          
+          ╭─ Options ────────────────────────────────────────────────────────────────────╮
+          │ --help          Show this message and exit.                                  │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ╭─ Commands ───────────────────────────────────────────────────────────────────╮
+          │ build  Build a container image inside a room.                                │
+          │ pack   Pack a local directory into an OCI image archive.                     │
+          ╰──────────────────────────────────────────────────────────────────────────────╯
+          ```
 
       - path: /meshagent-skills/skills/meshagent-core/SKILL.md
         text: |
           ---
-          name: meshagent-core-operator
-          description: Core rules for MeshAgent room work. Use this skill to choose safe command paths, ground behavior in the code repo, and verify real user-visible outcomes.
+          name: meshagent-core
+          description: Bare-minimum routing and verification rules for live MeshAgent room work. Use this skill to reduce decision confusion before choosing a narrower specialist skill.
           metadata:
-            short-description: Standalone highest-signal rules for live room work.
+            short-description: Minimal high-signal rules for live room work.
+            references:
+              bundled:
+                - ../_shared/references/workflow_accountability.md
+            workflow:
+              can_be_owner: true
+              handoff_policy: retain_accountability_until_owner_transfer
+              completion_gates:
+                - mutation_target_confirmed_when_relevant
+                - observed_state_matches_claim
+                - user_visible_result_verified_or_exact_blocker_reported
+              evidence:
+                - exact_commands_or_artifacts_used
+                - observed_room_or_runtime_state
+                - user_visible_result_or_exact_blocker
           ---
           
-          # MeshAgent Core Operator
+          # MeshAgent Core
+          
+          Use this skill for the smallest set of MeshAgent room rules that prevent obvious decision mistakes before deeper skill selection.
           
           ## Use this skill when
           
           - The task touches the MeshAgent CLI, a live room, or anything running inside it.
           - The user wants a real outcome, not just a command suggestion.
-          - The workflow involves websites, mail, queues, services, runtime, scheduling, database, storage, or routes.
+          - The task spans multiple possible specialist areas and needs a minimal routing rule first.
           
           ## Highest-priority rules
           
           - Do not guess implementation behavior. When exact behavior matters, inspect the code repo directly first.
-          - Use the current room/runtime context first. If `MESHAGENT_ROOM` is already known, prefer room-scoped commands over broad discovery.
+          - If `MESHAGENT_ROOM` is already known, prefer room-scoped commands over broad discovery.
           - Prefer the narrowest command path that matches the task.
           - Prefer inspection before mutation.
           - After any mutation, verify on the matching read surface: `show`, `list`, logs, queue receive, live HTTP, or real delivery evidence.
@@ -5530,14 +5630,12 @@ container:
           ## Real-surface verification
           
           - Verify on the real surface, not on a precursor.
-          - Object creation is not success.
-          - YAML generation is not deployment.
           - Route creation is not a working site.
-          - Queue growth is not email delivery.
           - Service creation is not runtime health.
+          - Queue growth is not email delivery.
           - For public sites, require live HTTP verification.
           - For contact forms, require GET plus representative POST verification.
-          - If public DNS or live HTTP is unproven, report partial/incomplete state, not completion.
+          - If public DNS or live HTTP is unproven, report partial state, not completion.
           
           ## Managed hostname rules
           
@@ -5546,34 +5644,23 @@ container:
           - Managed public hostnames and managed mailbox domains are different surfaces.
           - Do not derive a public hostname from the mailbox domain, SMTP hostname, or API hostname.
           - In `.life`, managed minisites are still `.meshagent.dev`.
-          - Treat wrong-suffix hostnames as hard errors, not debugging leads.
-          - If the hostname suffix is wrong for the environment, stop immediately and fix that first.
+          - Treat wrong-suffix hostnames as hard errors and fix them first.
           
           ## Webapp rules
           
-          - Default backend path: Python `aiohttp` handlers with `meshagent webserver`.
+          - Default production website hosting path: `meshagent image build --pack ... --deploy`.
+          - Add `--domain` only when the deployed image-backed service has exactly one published port.
           - For active Python iteration, the preferred dev loop is `meshagent webserver join --watch`.
-          - Do not treat `meshagent webserver deploy` as Python hot reload.
           - Use room-storage source paths like `/<site-dir>`; in the live shell they appear under `/data/<site-dir>`.
           - For live handler work, keep changes narrow and verify that the changed behavior is actually live.
           
           ## Mail rules
           
           - Treat “send an email” as real outbound email by default.
-          - Do not treat mailbox creation, queue creation, or queue enqueue as success for an email-send request.
-          - `MESHAGENT_TOKEN` should be used as the `SMTP_PASSWORD`.
+          - Mailbox creation, queue creation, or queue enqueue is not email delivery.
           - Use the environment-correct managed mailbox domain for MeshAgent mailbox-backed senders.
-          - Mailbox addresses MUST be derived from the room name and `MESHAGENT_MAIL_DOMAIN`.
-          - Default contact-form pattern:
-            - `From`: MeshAgent-managed mailbox sender
-            - `To`: requested external recipient
-            - `Reply-To`: visitor email when present
-          - Do not default `From == To` when `To` is the user’s external inbox.
-          - Do not invent sender identities from participant names or mail domains.
-          - For new mailboxes, mailbox address and mailbox queue MUST be a full match.
-          - Treat sender addresses outside the expected managed mailbox domain family as suspect unless the runtime already proves they are authorized.
+          - Do not invent sender identities or default `From == To` when `To` is the user’s external inbox.
           - Treat `550`, `553`, and similar SMTP failures first as sender identity or authorization problems.
-          - `550 5.7.1 Permission denied` means the runtime is not authorized to send from that sender identity.
           
           ## Service/runtime rules
           
@@ -5581,20 +5668,32 @@ container:
           - Validate YAML before deploy when a file is involved.
           - Use runtime inspection for live state: service list, developer watch, container list/logs, toolkit visibility.
           - Do not rely on repeated `container exec` into another private container.
-          - If a runtime issue is really a webapp behavior issue, move back to the webapp path instead of treating it as generic container debugging.
           
           ## Queue/database/storage/scheduler rules
           
-          - Queue: prove real dequeue/processing, not just queue size movement.
-          - Database: inspect the real `room.database.*` implementation in the repo; do not invent schema/API forms.
+          - Queue: prove real dequeue or processing, not just queue size movement.
+          - Database: inspect the real `room.database.*` implementation in the repo; do not invent schema or API forms.
           - Storage: verify the exact room path before assuming files are present or deployed.
-          - Scheduler: timezone and future-run correctness matter; a scheduled-task record alone is not workflow success.
+          - Scheduler: a scheduled-task record alone is not workflow success.
           
           ## Code-grounding rules
           
           - When exact API shape or implementation behavior matters, inspect the code repo directly before guessing.
           - Prefer implementation over memory for CLI flags, token behavior, runtime env vars, API shapes, and mail/runtime behavior.
           - If the code still does not answer the question clearly, report the uncertainty instead of inventing behavior.
+          
+          ## Workflow accountability
+          
+          - This skill may own the workflow outcome when the user's goal is primarily to choose the correct MeshAgent execution path and avoid cross-surface mistakes.
+          - If a narrower specialist skill is needed, transfer execution there and keep accountability until that skill returns evidence or ownership is explicitly transferred.
+          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
+
+      - path: /meshagent-skills/skills/meshagent-core/agents/openai.yaml
+        text: |
+          interface:
+            display_name: "MeshAgent Core"
+            short_description: "Minimal high-signal rules for live room work"
+            default_prompt: "Use $meshagent-core for the minimum high-signal MeshAgent room rules before choosing a narrower specialist skill."
 
       - path: /meshagent-skills/skills/meshagent-database-operator/SKILL.md
         text: |
@@ -6729,8 +6828,8 @@ container:
           33. Before creating the scheduled task, check whether an equivalent near-future one-time task already exists for the same queue and payload so you do not create duplicates after an uncertain retry.
           34. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
           35. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-          36. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-          37. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+          36. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the `meshagent scheduled-task add` command, not from the start of the larger setup workflow.
+          37. Right before the add command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
           38. After creation, verify that the stored cron or UI-visible GMT schedule matches the computed UTC time rather than the user's local wall-clock time.
           
           ## Success criteria
@@ -6749,7 +6848,7 @@ container:
           - the scheduled payload explicitly maps to the Worker's email-sending behavior rather than relying on an implied side effect
           - the scheduled time was computed from the requesting user's known timezone, not just the room or server timezone
           - the stored cron or UI-visible GMT schedule matches that computed UTC time rather than repeating the user's local clock fields
-          - scheduler preflight showed that scheduled-task create and verification were actually available in this environment
+          - scheduler preflight showed that scheduled-task add and verification were actually available in this environment
           - the scheduled task is set for a future absolute time with enough safety margin to avoid already being in the past
           
           ## Failure interpretation
@@ -7645,11 +7744,11 @@ container:
           ## Use this skill when
           
           - The user wants a website, contact form, landing page, or HTTP handler deployed from a room.
-          - The task involves `meshagent webserver ...` plus actual application code, not just route administration.
+          - The task involves `meshagent image build ...` or `meshagent webserver join --watch` plus actual application code, not just route administration.
           - The task includes form validation, sanitization, public URL delivery, or post-deploy smoke testing.
           - The task needs the canonical backend stack for database-backed or email-featured sites.
           - The task includes outbound email from a room-hosted website such as a contact form.
-          - The task is to diagnose a live `500`, `502`, or other public-site failure from a deployed room webserver.
+          - The task is to diagnose a live `500`, `502`, or other public-site failure from an image-backed room site or deployed room webserver.
           
           ## References
           
@@ -7663,7 +7762,8 @@ container:
             - `references/verification_checklist.md`
           - Use `../_shared/references/live_room_cli_context.md` for shared room-context, path, and deploy workspace rules.
           - Use `../_shared/references/managed_hostname_rules.md` for shared managed-hostname selection and validation rules.
-          - After root resolution, inspect the resolved webserver CLI source for actual runtime behavior.
+          - After root resolution, inspect the resolved image CLI source for actual build, deploy, and `--domain` behavior.
+          - After root resolution, inspect the resolved webserver CLI source for Python-handler dev-loop and specialized handler behavior.
           - After root resolution, inspect the resolved room mail implementation for SMTP defaults and sender behavior.
           - After root resolution, use these resolved database examples when the site must persist submissions:
             - `meshagent-docs/examples/python/webserver/contact_form_route.py`
@@ -7686,14 +7786,17 @@ container:
           - Apply `../_shared/references/live_room_cli_context.md` for room context reuse, room-scoped command handling, and local-vs-room path rules.
           - Do not enable room messaging as part of a normal site or contact-form workflow unless the user explicitly asked for room messaging behavior.
           - Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
-          - For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
+          - For production website deploys, prefer `meshagent image build --pack <local-dir> --tag room.meshagent.com/<path> --deploy`. Keep the local source tree and Dockerfile under the current working directory.
+          - Add `--domain` only when the workflow wants public exposure and the image-backed service exposes exactly one published port.
           - In a live room shell where `cwd` is `/src`, author deployable webapp files under a subdirectory of `/src`, not directly under `/data`.
           - Do not rely on `meshagent room container exec` into another participant's private container as the default way to inspect a deployed site. Prefer public HTTP checks, service state, developer watch, container logs, and deployed source artifacts first.
           
           ## Golden path architecture
           
           - This skill is the canonical backend and runtime path for DB-backed or email-featured MeshAgent sites.
+          - For production hosting, prefer a Dockerfile-based deploy path built with `meshagent image build --pack ... --deploy`.
           - Prefer Python `aiohttp` handlers as the backend default when a site needs room database writes, mailbox-backed email, or other live handler behavior.
+          - When using the Python handler path, treat `meshagent webserver join --watch` as the preferred dev loop rather than the default production deploy command.
           - Prefer a typed helper-module pattern for backend state:
             - `handlers/<feature>_store.py` or another narrow helper for `room.database.*`
             - `handlers/<feature>.py` or other route handlers for request validation and response shaping
@@ -7704,10 +7807,11 @@ container:
           ## Dev loop routing
           
           - Keep this skill focused on backend implementation, handler behavior, DB integration, mail integration, and the preferred hot-reload dev loop for Python handlers.
+          - The preferred production deploy path is `meshagent image build --pack ... --deploy`.
           - The preferred Python-handler dev loop is `meshagent webserver join --watch`.
           - Use `references/dev_hot_reload_loop.sh` when the room source lives under room storage and the runtime should watch that source directly.
           - Distinguish room-storage source paths such as `/<site-dir>` from shell-visible mount paths such as `/data/<site-dir>`.
-          - Do not treat `meshagent webserver deploy` as a hot-reload path for Python code.
+          - Do not treat `meshagent image build --deploy` as a hot-reload path for Python code.
           - If a public dev URL is needed while preserving hot reload, prefer a separate dev-only runtime whose command explicitly runs `meshagent webserver join --watch` against room-mounted source.
           
           ## Implementation rules
@@ -7774,8 +7878,9 @@ container:
           19. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
           20. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
           21. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
-          22. If the user needs a hot-reload dev loop for Python handlers, use `references/dev_hot_reload_loop.sh` or an equivalent `meshagent webserver join --watch` command once the backend shape is clear.
-          23. Verify the live site with actual GET and POST requests after deploy.
+          22. When the site is ready for production hosting, prefer `meshagent image build --pack <local-dir> --tag room.meshagent.com/<path> --deploy`, and add `--domain` only when exactly one published port is available for public routing.
+          23. If the user needs a hot-reload dev loop for Python handlers, use `references/dev_hot_reload_loop.sh` or an equivalent `meshagent webserver join --watch` command once the backend shape is clear.
+          24. Verify the live site with actual GET and POST requests after deploy.
           
           ## Managed hostname selection
           
@@ -8677,7 +8782,7 @@ container:
         text: |
           ---
           name: meshagent-webmaster
-          description: Manage MeshAgent domain mappings and use the sample MeshAgent static webserver YAML as a reference example.
+          description: Manage MeshAgent domain mappings, published room-service hostnames, and legacy static webserver references.
           metadata:
             short-description: Operate routes and managed hostnames for published room services.
             references:
@@ -8730,11 +8835,12 @@ container:
           
           # MeshAgent Webmaster
           
-          Use this skill for domain mappings, what they do, and the sample static webserver YAML example.
+          Use this skill for domain mappings, public hostname routing, and legacy static webserver example lookup.
           
           ## Use this skill when
           
           - The task involves `meshagent route ...` creation, inspection, update, or deletion.
+          - The task involves public hostname exposure through `meshagent image build --pack ... --deploy --domain ...` and the main concern is where that hostname routes.
           - The user needs to understand what a domain mapping does.
           - The user needs the sample MeshAgent webserver YAML as an example of serving raw HTML and JavaScript statically.
           - The user wants to verify which room and port a public hostname points to.
@@ -8769,11 +8875,14 @@ container:
           - `meshagent route show`
           - `meshagent route list`
           - `meshagent route delete`
+          - `meshagent image build --pack ... --deploy --domain ...` when route creation or update is part of an image-backed deploy
           
           ## Domain mapping model
           
           - A route maps a public hostname to a published service port.
           - Creating a route publishes an existing service; it does not build a website for you.
+          - `meshagent image build --pack ... --deploy --domain ...` creates or updates the backing route as part of the deploy workflow.
+          - `--domain` on `meshagent image build` requires `--deploy` and exactly one published service port from the deployed image-backed service.
           - Updating a route changes where the hostname points.
           - Deleting a route removes public exposure for that hostname.
           - Always verify the target room and port before mutating a route.
@@ -8782,13 +8891,13 @@ container:
           
           See `references/static_webserver_example.yaml` for the bundled static webserver YAML example.
           
-          This example is for serving static HTML, CSS, JavaScript, and similar assets. It is only a reference example, not a website-building guide.
+          This example is for serving static HTML, CSS, JavaScript, and similar assets. It is a legacy or specialized reference example, not the default production hosting path.
           
           ## Route workflow
           
           1. Inspect existing routes with `meshagent route list` or `meshagent route show`.
           2. Confirm the exact hostname, room, and published port.
-          3. Create, update, or delete the route.
+          3. Create, update, or delete the route, or use `meshagent image build --pack ... --deploy --domain ...` when the route mutation is part of deploying an image-backed site.
           4. Verify that the hostname points to the intended room and service port.
           5. If the hostname is MeshAgent-managed, verify that its suffix matches the active API environment before reporting it as valid.
           
