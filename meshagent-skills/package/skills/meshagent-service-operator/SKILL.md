@@ -6,7 +6,6 @@ metadata:
   references:
     bundled:
       - ../meshagent-cli-operator/references/meshagent_cli_help.md
-      - ../_shared/references/image_backed_service_iteration.md
       - ../_shared/references/live_room_cli_context.md
       - ../_shared/references/runtime_image_environment_rules.md
       - ../_shared/references/service_yaml_correctness.md
@@ -17,7 +16,6 @@ metadata:
       - server_root
     resolved_targets:
       - shared live-room CLI context rules
-      - shared image-backed service iteration rules
       - shared runtime image environment rules
       - shared service YAML correctness rules
       - services CLI source
@@ -34,8 +32,6 @@ metadata:
       when: The main task is authoring queue-consumer YAML.
     - skill: meshagent-webapp-backend-builder
       when: The main task is website implementation rather than service lifecycle.
-    - skill: meshagent-webapp-release-operator
-      when: The main task is an image-backed candidate or release workflow for a room-hosted website.
     - skill: meshagent-runtime-operator
       when: The remaining issue is live container behavior rather than service definition.
   scope:
@@ -74,7 +70,6 @@ Use this skill when the task is primarily about MeshAgent services or service te
 ## References
 
 - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
-- Use `../_shared/references/image_backed_service_iteration.md` when a service should be iterated through versioned image builds instead of live file mutation.
 - Use `../_shared/references/live_room_cli_context.md` when the service workflow runs in or targets a known live room.
 - Use `../_shared/references/runtime_image_environment_rules.md` when choosing or reviewing a service container image.
 - Use `../_shared/references/service_yaml_correctness.md` when validating authored service YAML beyond basic shape.
@@ -88,7 +83,6 @@ Use this skill when the task is primarily about MeshAgent services or service te
 - `meshagent-participant-token-operator`: Use it when the issue is token-backed environment injection or participant-token wiring inside the service manifest.
 - `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-consumer YAML.
 - `meshagent-webapp-backend-builder`: Use it when the main task is website implementation rather than service lifecycle.
-- `meshagent-webapp-release-operator`: Use it when the service work is specifically an image-backed candidate or release workflow for a room-hosted website.
 - `meshagent-webmaster`: Use it when the main task is route and hostname management rather than service lifecycle.
 - `meshagent-runtime-operator`: Use it when the remaining problem is live runtime behavior rather than service definition.
 
@@ -103,10 +97,9 @@ Use this skill when the task is primarily about MeshAgent services or service te
 4. Validate or render the spec/template before create or update when a file is involved.
 5. If validation fails, inspect the exact error, repair the asset, and rerun validation. Keep that fix-and-revalidate loop local to the service YAML until it passes or the remaining blocker is no longer a YAML problem.
 6. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
-7. Classify the intended deployment mode before mutating the service: `dev`, `candidate`, or `release`.
-8. If the service should be iterated through container images, build a versioned candidate image first, verify the image exists, then update the service spec to that exact candidate tag.
-9. After mutation, verify the service record and, when relevant, the live room service state.
-10. If the service is a queue consumer or other background runtime, hand off to runtime inspection before calling the deployment successful.
+7. Classify whether the mutation is an active development update or an ordinary deployed-state update before changing the service.
+8. After mutation, verify the service record and, when relevant, the live room service state.
+9. If the service is a queue consumer or other background runtime, hand off to runtime inspection before calling the deployment successful.
 
 ## Live room execution
 
@@ -119,40 +112,25 @@ Use this skill when the task is primarily about MeshAgent services or service te
 
 - Distinguish project/global services from room-scoped services before acting.
 - Distinguish declarative service CRUD (`meshagent service ...`) from runtime room-service state (`meshagent room service ...`).
-- Apply the shared deployment-mode discipline from `../_shared/references/workflow_accountability.md` before choosing a mutation path.
+- Apply the shared development-mode discipline from `../_shared/references/workflow_accountability.md` before choosing a mutation path.
 - Match the container image family to the actual MeshAgent environment. Do not copy one environment profile's registry-backed image family into a different environment unless the runtime already proves that image family is correct there.
-- In `dev` mode, a non-release runtime update may be acceptable if the workflow does not require rollback readiness.
+- In active development mode, a non-stable runtime update may be acceptable if the workflow is explicitly iterating on behavior.
 - If the workflow explicitly needs Python hot reload in `dev` mode, a dev runtime may intentionally run `meshagent webserver join --watch` against room-mounted source. Do not assume the normal deployed service update path provides the same reload behavior.
-- In `candidate` or `release` mode, prefer image-backed iteration with versioned tags over editing live runtime files in place.
-- For room-webapp candidate or release work, prefer `meshagent-webapp-release-operator` as the owner of the website-specific release flow while this skill stays focused on generic service lifecycle mechanics.
-- In `candidate` mode, default to a separate candidate service record rather than replacing the current dev or stable service in place. Only replace the existing service when the user explicitly asked for promotion, replacement, or rollback.
-- If the user did not specify candidate naming, derive it deterministically from the current service:
-  - candidate service: `<base-service>-rc`
-  - candidate image tag: start at `1.0-rc1` for a new release line, otherwise keep incrementing the active line
 - Validate service YAML for workflow correctness, not just schema shape. Check command flags, mailbox identity, queue wiring, and whether the declared roles actually match the intended behavior.
 - Prefer `validate` or `validate-template` before deployment when the source YAML is being authored or changed.
 - If `validate` or `validate-template` fails, repair the YAML and rerun validation before moving on. Do not treat validation as a one-time gate or blindly retry without making a fix.
 - Prefer `render-template` when the user needs to inspect the concrete resolved template output.
 - Prefer generated specs or rendered templates over handwritten YAML when the runtime shape already has a CLI spec command.
-- For image-backed webserver release candidates, derive the candidate `Service` YAML from `meshagent webserver spec` or an existing valid live service spec. Do not hand-author the candidate manifest from memory.
 - Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
-- There is no native rollback command for services. If rollback readiness matters, keep the previous known-good plain release tag and be prepared to `meshagent service update ...` the service back to that image only when the user asks for rollback.
-- Prefer a tag model that separates candidates from proven-good releases, for example `4.2-rc1`, `4.2-rc2`, then `4.2`; later `4.3-rc1`, `4.3-rc2`, then `4.3`.
-- If the user changes the primary iteration goal materially, treat that as a new release line. Keep the last verified plain tag from the previous goal as the rollback target while the new goal advances through fresh `-rcN` candidates.
 
 ## Verification rules
 
 - Do not claim a service is deployed correctly based only on YAML generation.
 - After create or update, verify with `meshagent service show`, `meshagent service list`, or `meshagent room service list` as appropriate.
-- State whether the current mutation was `dev`, `candidate`, or `release`. Do not report a candidate deploy as if it were already the stable release.
-- If the current mutation was `candidate`, report the candidate service identity and candidate image tag separately from the current dev or stable service.
-- If the service was updated to a newly built image, verify the image tag you intended is actually the one the service now references.
-- If a candidate image passes verification, the next release action is to promote that exact image to the plain release tag rather than treating any `-rcN` candidate tag as the rollback target.
 - When the question is simply "what services are running in this room?", `meshagent room service list` is the default answer path.
 - For queue consumers, a visible service record is not enough. Confirm that the room service is present and then use runtime inspection to prove that a live runtime or container is actually running.
 - If a room service is unhealthy, use room-service state and runtime inspection before rewriting the spec.
 - If restart is requested, confirm the target by `--id` or `--name` before issuing it.
-- If a newly built image fails verification, report the exact failure against that candidate tag. Do not roll back automatically unless the user asked for rollback or explicitly wanted the last known working image restored.
 
 ## Workflow accountability
 
