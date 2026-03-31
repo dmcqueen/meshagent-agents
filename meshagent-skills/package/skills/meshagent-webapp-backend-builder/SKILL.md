@@ -70,11 +70,11 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 ## Use this skill when
 
 - The user wants a website, contact form, landing page, or HTTP handler deployed from a room.
-- The task involves `meshagent webserver ...` plus actual application code, not just route administration.
+- The task involves `meshagent image build ...` or `meshagent webserver join --watch` plus actual application code, not just route administration.
 - The task includes form validation, sanitization, public URL delivery, or post-deploy smoke testing.
 - The task needs the canonical backend stack for database-backed or email-featured sites.
 - The task includes outbound email from a room-hosted website such as a contact form.
-- The task is to diagnose a live `500`, `502`, or other public-site failure from a deployed room webserver.
+- The task is to diagnose a live `500`, `502`, or other public-site failure from an image-backed room site or deployed room webserver.
 
 ## References
 
@@ -88,7 +88,8 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
   - `references/verification_checklist.md`
 - Use `../_shared/references/live_room_cli_context.md` for shared room-context, path, and deploy workspace rules.
 - Use `../_shared/references/managed_hostname_rules.md` for shared managed-hostname selection and validation rules.
-- After root resolution, inspect the resolved webserver CLI source for actual runtime behavior.
+- After root resolution, inspect the resolved image CLI source for actual build, deploy, and `--domain` behavior.
+- After root resolution, inspect the resolved webserver CLI source for Python-handler dev-loop and specialized handler behavior.
 - After root resolution, inspect the resolved room mail implementation for SMTP defaults and sender behavior.
 - After root resolution, use these resolved database examples when the site must persist submissions:
   - `meshagent-docs/examples/python/webserver/contact_form_route.py`
@@ -111,14 +112,17 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Apply `../_shared/references/live_room_cli_context.md` for room context reuse, room-scoped command handling, and local-vs-room path rules.
 - Do not enable room messaging as part of a normal site or contact-form workflow unless the user explicitly asked for room messaging behavior.
 - Apply `../_shared/references/managed_hostname_rules.md` for managed hostname suffix selection and collision handling.
-- For `meshagent webserver deploy`, the local source tree must live under the current working directory. Use `--website-path` as the room-storage destination for deployed files.
+- For production website deploys, prefer `meshagent image build --pack <local-dir> --tag room.meshagent.com/<path> --deploy`. Keep the local source tree and Dockerfile under the current working directory.
+- Add `--domain` only when the workflow wants public exposure and the image-backed service exposes exactly one published port.
 - In a live room shell where `cwd` is `/src`, author deployable webapp files under a subdirectory of `/src`, not directly under `/data`.
 - Do not rely on `meshagent room container exec` into another participant's private container as the default way to inspect a deployed site. Prefer public HTTP checks, service state, developer watch, container logs, and deployed source artifacts first.
 
 ## Golden path architecture
 
 - This skill is the canonical backend and runtime path for DB-backed or email-featured MeshAgent sites.
+- For production hosting, prefer a Dockerfile-based deploy path built with `meshagent image build --pack ... --deploy`.
 - Prefer Python `aiohttp` handlers as the backend default when a site needs room database writes, mailbox-backed email, or other live handler behavior.
+- When using the Python handler path, treat `meshagent webserver join --watch` as the preferred dev loop rather than the default production deploy command.
 - Prefer a typed helper-module pattern for backend state:
   - `handlers/<feature>_store.py` or another narrow helper for `room.database.*`
   - `handlers/<feature>.py` or other route handlers for request validation and response shaping
@@ -129,10 +133,11 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 ## Dev loop routing
 
 - Keep this skill focused on backend implementation, handler behavior, DB integration, mail integration, and the preferred hot-reload dev loop for Python handlers.
+- The preferred production deploy path is `meshagent image build --pack ... --deploy`.
 - The preferred Python-handler dev loop is `meshagent webserver join --watch`.
 - Use `references/dev_hot_reload_loop.sh` when the room source lives under room storage and the runtime should watch that source directly.
 - Distinguish room-storage source paths such as `/<site-dir>` from shell-visible mount paths such as `/data/<site-dir>`.
-- Do not treat `meshagent webserver deploy` as a hot-reload path for Python code.
+- Do not treat `meshagent image build --deploy` as a hot-reload path for Python code.
 - If a public dev URL is needed while preserving hot reload, prefer a separate dev-only runtime whose command explicitly runs `meshagent webserver join --watch` against room-mounted source.
 
 ## Implementation rules
@@ -199,8 +204,9 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 19. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
 20. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
 21. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
-22. If the user needs a hot-reload dev loop for Python handlers, use `references/dev_hot_reload_loop.sh` or an equivalent `meshagent webserver join --watch` command once the backend shape is clear.
-23. Verify the live site with actual GET and POST requests after deploy.
+22. When the site is ready for production hosting, prefer `meshagent image build --pack <local-dir> --tag room.meshagent.com/<path> --deploy`, and add `--domain` only when exactly one published port is available for public routing.
+23. If the user needs a hot-reload dev loop for Python handlers, use `references/dev_hot_reload_loop.sh` or an equivalent `meshagent webserver join --watch` command once the backend shape is clear.
+24. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
