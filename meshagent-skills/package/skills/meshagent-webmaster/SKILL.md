@@ -28,8 +28,6 @@ metadata:
       when: Checkout roots or the sample static webserver YAML path must be resolved.
     - skill: meshagent-webapp-backend-builder
       when: The task is building or debugging the website, not just the route.
-    - skill: meshagent-webapp-release-operator
-      when: The route work is part of a release-candidate or release workflow for a room-hosted website.
     - skill: meshagent-service-operator
       when: The target service itself must be created or repaired before routing it.
   scope:
@@ -78,7 +76,6 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 - `meshagent-cli-operator`: Reuse its general room-context and managed-hostname rules instead of inventing environment behavior locally.
 - `meshagent-sdk-researcher`: Resolve checkout roots and the sample static webserver YAML path before using codebase references.
 - `meshagent-webapp-backend-builder`: Use it when the task is building or debugging the website rather than operating the route.
-- `meshagent-webapp-release-operator`: Use it when the route work belongs to a release-candidate or release workflow for a room-hosted website.
 - `meshagent-service-operator`: Use it when the target service must be created, validated, or repaired before routing it.
 
 ## Live room execution
