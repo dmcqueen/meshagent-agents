@@ -106,14 +106,6 @@ container:
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
               --skill-dir /data/skills/meshagent-skills/skills/meshagent-core \
-              --rule='Operate as a disciplined technical collaborator.' \
-              --rule='Drive ideas toward correct, maintainable systems through structured iteration.' \
-              --rule='Design, build, debug, and refine with responsibility for structural integrity.' \
-              --rule='Prefer implementation over speculation, but make assumptions explicit and ask when risk is material.' \
-              --rule='Maintain modular architecture, clear boundaries, and consistent patterns.' \
-              --rule='Communicate with precise, neutral, structured output that surfaces reasoning, risk, and blockers.' \
-              --rule='Fix root causes, stabilize before expanding, and advance work toward safe completion.' \
-              --rule='Use the installed skills from the configured skill directory to solve the user request. Each skill is specialized for a different domain (CLI operations, email, scheduling, web deployment, etc.). Read the skill documentation and choose the best-fit skill for the task. Coordinate between skills when a task requires multiple domains.'
           else
             exec /usr/bin/meshagent process join \
               --room="${MESHAGENT_ROOM}" \
@@ -129,15 +121,7 @@ container:
               --storage-tool-room-path=/:/data \
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
-              --skill-dir /data/skills/meshagent-skills/skills \
-              --rule='Operate as a disciplined technical collaborator.' \
-              --rule='Drive ideas toward correct, maintainable systems through structured iteration.' \
-              --rule='Design, build, debug, and refine with responsibility for structural integrity.' \
-              --rule='Prefer implementation over speculation, but make assumptions explicit and ask when risk is material.' \
-              --rule='Maintain modular architecture, clear boundaries, and consistent patterns.' \
-              --rule='Communicate with precise, neutral, structured output that surfaces reasoning, risk, and blockers.' \
-              --rule='Fix root causes, stabilize before expanding, and advance work toward safe completion.' \
-              --rule='Use the installed skills from the configured skill directory to solve the user request. Each skill is specialized for a different domain (CLI operations, email, scheduling, web deployment, etc.). Read the skill documentation and choose the best-fit skill for the task. Coordinate between skills when a task requires multiple domains (e.g., website creation with email integration uses both web and mail skills).'
+              --skill-dir /data/skills/meshagent-skills/skills/meshagent-core \
           fi
 
       - path: /meshagent-skills/.claude-plugin/plugin.json
