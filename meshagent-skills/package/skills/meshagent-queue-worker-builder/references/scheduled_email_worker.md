@@ -49,8 +49,8 @@ Use this reference when the user asks for a queue-consuming agent that receives 
 33. Before creating the scheduled task, check whether an equivalent near-future one-time task already exists for the same queue and payload so you do not create duplicates after an uncertain retry.
 34. Do not pass a custom scheduled-task id unless it is already a real UUID. Otherwise omit `--id` and let the server generate it.
 35. Before creating the scheduled task, make sure the requesting user's timezone is known from user-specific context or from direct user confirmation.
-36. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the scheduled-task create command, not from the start of the larger setup workflow.
-37. Right before the create command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
+36. If the user asked for a relative time such as "one minute from now," calculate that relative time from the moment you are actually ready to run the `meshagent scheduled-task add` command, not from the start of the larger setup workflow.
+37. Right before the add command, recompute the final absolute time and make sure it is still safely in the future instead of effectively at or before the current minute.
 38. After creation, verify that the stored cron or UI-visible GMT schedule matches the computed UTC time rather than the user's local wall-clock time.
 
 ## Success criteria
@@ -69,7 +69,7 @@ Do not call the workflow complete until all of the following are true:
 - the scheduled payload explicitly maps to the Worker's email-sending behavior rather than relying on an implied side effect
 - the scheduled time was computed from the requesting user's known timezone, not just the room or server timezone
 - the stored cron or UI-visible GMT schedule matches that computed UTC time rather than repeating the user's local clock fields
-- scheduler preflight showed that scheduled-task create and verification were actually available in this environment
+- scheduler preflight showed that scheduled-task add and verification were actually available in this environment
 - the scheduled task is set for a future absolute time with enough safety margin to avoid already being in the past
 
 ## Failure interpretation
