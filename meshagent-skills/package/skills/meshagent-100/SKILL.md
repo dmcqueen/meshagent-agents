@@ -60,6 +60,11 @@ metadata:
 
 ## Mail rules
 
+- Treat “send an email” as real outbound email by default.
+- Do not treat mailbox creation, queue creation, or queue enqueue as success for an email-send request.
+- Do not use a queue-backed path as the default way to send one email unless a proven mail-processing runtime already exists for that queue.
+- For a simple email-send request, prefer the lightest real outbound path that already works in the current room/runtime.
+- If no proven outbound path exists yet, establish one and keep going until SMTP/provider acceptance or the exact send blocker is proven.
 - Use the environment-correct managed mailbox domain for MeshAgent mailbox-backed senders.
 - Managed mailbox domains and managed public hostname suffixes are not interchangeable.
 - Do not invent mailbox addresses from `MESHAGENT_MAIL_DOMAIN` alone.
@@ -75,6 +80,7 @@ metadata:
 - Treat `550`, `553`, and similar SMTP failures first as sender identity or authorization problems.
 - `550 5.7.1 Permission denied` means the runtime is not authorized to send from that sender identity.
 - If a new mailbox-backed workflow gets wired to an invented generic queue, treat that as a real bug and repair it before continuing.
+- If queued mail has no proven consumer or outbound mail runtime behind it, report that as incomplete mail setup, not as a sent email.
 
 ## Service/runtime rules
 
