@@ -17,6 +17,8 @@ The package is designed so a live room agent can answer MeshAgent workflow reque
 
 The package now has one general CLI skill plus a larger specialized operator bundle:
 
+- `skills/meshagent-core/`
+  Bare-minimum high-signal routing and verification rules for live room work before choosing a narrower specialist skill.
 - `skills/meshagent-cli-operator/`
   General MeshAgent CLI routing, command composition, live-room execution rules, and packaged CLI reference material.
 - `skills/meshagent-sdk-researcher/`
@@ -101,6 +103,10 @@ Key files and directories in this package:
   Package validator.
 - `scripts/audit_meshagent_skill_commands.py`
   Command-reference audit against the live CLI tree.
+- `skills/meshagent-core/SKILL.md`
+  Minimal live-room routing and verification skill for reducing decision confusion before specialist handoff.
+- `skills/meshagent-core/agents/openai.yaml`
+  OpenAI agent metadata for the core skill.
 - `skills/meshagent-cli-operator/SKILL.md`
   Core CLI execution and command-routing skill.
 - `skills/meshagent-cli-operator/agents/openai.yaml`
@@ -180,7 +186,7 @@ Key files and directories in this package:
 - `skills/meshagent-storage-operator/agents/openai.yaml`
   OpenAI agent metadata for the storage operator.
 - `skills/meshagent-webmaster/SKILL.md`
-  Route/domain mapping and static webserver reference skill.
+  Route/domain mapping, published hostname, and legacy static-webserver reference skill.
 - `skills/meshagent-webmaster/agents/openai.yaml`
   OpenAI agent metadata for the webmaster.
 - `skills/meshagent-webmaster/references/static_webserver_example.yaml`
@@ -205,7 +211,9 @@ The current skills assume the following when they are installed into a live room
 - `MESHAGENT_ROOM` identifies the current room when a command needs `--room`
 - `MESHAGENT_API_URL` can be used to derive the managed public hostname family for routes and published sites
 - room-owned runtime artifacts should live under `/data`
-- deployable `meshagent webserver` source trees should live under the current working directory for that runtime, with `--website-path` used as the room-storage destination
+- production website hosting should normally use `meshagent image build --pack ... --tag room.meshagent.com/... --deploy`
+- `--domain` should only be added to image-backed website deploys when the deployed service has exactly one published port
+- Python-handler dev loops should normally use `meshagent webserver join --watch`
 - website tasks are only complete after a live HTTP smoke test, not merely after file generation or deploy success
 - when a MeshAgent SDK checkout is preloaded into the runtime, it is commonly mounted at `/src/meshagent-sdk`, but skills should still use `meshagent-sdk-researcher` to resolve the actual checkout root before relying on that path
 
