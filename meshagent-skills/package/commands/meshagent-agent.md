@@ -24,8 +24,6 @@ Use this command for agent runtime orchestration.
 2. Use the packaged CLI references first when composing join or deploy invocations. Only use live `--help` on the exact runtime command if the packaged help is missing the needed detail or appears stale for the installed CLI.
 3. Reuse existing flags, rules files, skill dirs, and environment wiring when modifying an existing agent command.
 4. Use [SKILL.md](../skills/meshagent-webapp-backend-builder/SKILL.md) for contact forms, room-hosted web apps, and web handler implementation.
-5. Use [SKILL.md](../skills/meshagent-webapp-dev-operator/SKILL.md) when a room-hosted webapp backend must hot-reload during development.
-6. Use [SKILL.md](../skills/meshagent-webapp-release-operator/SKILL.md) when a room-hosted webapp should become an image-backed release candidate or release.
-7. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for mailbox-linked delivery flows or inbox-toolkit work.
-8. For contact-form deployments, do not stop after the site is reachable if live submission still fails to send mail.
-9. For webserver-backed deployments, do not stop after deploy until the live route has been smoke-tested.
+5. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for mailbox-linked delivery flows or inbox-toolkit work.
+6. For contact-form deployments, do not stop after the site is reachable if live submission still fails to send mail.
+7. For webserver-backed deployments, do not stop after deploy until the live route has been smoke-tested.
