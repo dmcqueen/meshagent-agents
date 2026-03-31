@@ -29,8 +29,6 @@ metadata:
       when: The fix belongs in service definition or room service lifecycle rather than runtime debugging.
     - skill: meshagent-webapp-backend-builder
       when: The remaining issue is public web behavior rather than container state.
-    - skill: meshagent-webapp-dev-operator
-      when: The remaining issue is whether a room-webapp dev loop is hot-reloading Python handler changes correctly.
   scope:
     owns:
       - live runtime inspection
@@ -81,8 +79,6 @@ Use this skill when the task is about the live runtime state inside a room rathe
 - `meshagent-scheduler`: scheduler permissions, create/list health, and timing issues
 - `meshagent-service-operator`: service definition and lifecycle fixes
 - `meshagent-webapp-backend-builder`: public site behavior after runtime checks pass
-- `meshagent-webapp-dev-operator`: dev-loop and hot-reload behavior for room-hosted webapp backends
-
 ## Live room execution
 
 - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
@@ -108,8 +104,7 @@ Use this skill when the task is about the live runtime state inside a room rathe
 - Do not assume `container exec` will work against another participant's private container.
 - If `container exec` fails with a private-container ownership or isolation error, stop using exec for that target and switch to logs, developer watch, service state, public HTTP probes, or deployed artifacts.
 - Use image build/pull/push/load/save only when the runtime problem actually requires image operations.
-- For service-style iteration, image operations are primarily for versioned candidate builds and artifact checks. Rollback still happens at the service layer by updating the service back to a previous image tag.
-- If the remaining problem is that a Python web handler change is not taking effect in a live dev loop, prefer `meshagent-webapp-dev-operator` over treating that as a generic runtime debugging problem.
+- If the remaining problem is that a Python web handler change is not taking effect in a live dev loop, prefer `meshagent-webapp-backend-builder` over treating that as a generic runtime debugging problem.
 
 ## Queue and toolkit diagnosis
 
