@@ -1,6 +1,6 @@
 # MeshAgent CLI Help
 
-_Packaged CLI help reference for MeshAgent CLI `0.34.0`._
+_Packaged CLI help reference for MeshAgent CLI `0.35.0`._
 
 _Generated from the installed `meshagent` binary with recursive `--help` capture up to depth 1 and timeout 2s per command._
 
@@ -47,6 +47,7 @@ $ meshagent --help
 │ task-runner          Join a taskrunner to a room                             │
 │ worker               Join a worker agent to a room                           │
 │ room                 Operate within a room                                   │
+│ image                Build and pack OCI images                               │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
@@ -2620,6 +2621,59 @@ $ meshagent webserver deploy --help
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
+### `meshagent webserver join`
+
+```console
+$ meshagent webserver join --help
+                                                                                
+ Usage: meshagent webserver join [OPTIONS]                                      
+                                                                                
+ Join a room and run the configured webserver routes locally with optional hot  
+ reload.                                                                        
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│    --project-id              TEXT     A MeshAgent project id. If empty, the  │
+│                                       activated project will be used.        │
+│                                       [default:                              │
+│                                       203b1bf9-72c9-4022-bfaa-55d6f656dfeb]  │
+│ *  --room                    TEXT     Room name [required]                   │
+│    --role                    TEXT     [default: agent]                       │
+│    --agent-name              TEXT     Name of the agent to call              │
+│    --token-from-env          TEXT     Name of environment variable           │
+│                                       containing a MeshAgent token           │
+│    --key                     TEXT     an api key to sign the token with      │
+│                      -f      TEXT     Path to routes file (default:          │
+│                                       webserver.yaml). YAML format: kind:    │
+│                                       WebServer, version: v1, host?, port?,  │
+│                                       routes: [{path, methods?,              │
+│                                       python?|static?}]. Route source        │
+│                                       resolution: '/x' -> '{cwd}/x'; 'x' ->  │
+│                                       relative to routes file. 'static'      │
+│                                       supports files and directories. Use    │
+│                                       --app-dir to control Python import     │
+│                                       root (defaults to routes file          │
+│                                       directory). When --host/--port (or     │
+│                                       --web-host/--web-port) are not         │
+│                                       explicitly set, host/port from the     │
+│                                       routes file are used. Python handler   │
+│                                       signature: handler(*, room:            │
+│                                       RoomClient, req: web.Request) ->       │
+│                                       web.StreamResponse. Do not define      │
+│                                       METHOD/METHODS in handler files.       │
+│                                       [default: webserver.yaml]              │
+│    --app-dir                 TEXT     Python import root for route handlers  │
+│                                       (similar to uvicorn --app-dir).        │
+│                                       Defaults to the routes file directory. │
+│    --host                    TEXT     Host to bind the server                │
+│                                       [default: 127.0.0.1]                   │
+│    --port                    INTEGER  Port to bind the server                │
+│                                       [default: 8000]                        │
+│    --watch                            Reload routes when the routes file or  │
+│                                       python handlers change                 │
+│    --help                             Show this message and exit.            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
 ## `meshagent worker`
 
 ```console
@@ -3162,5 +3216,23 @@ $ meshagent multi --help
 │ deploy   Deploy a combined service from multiple subcommands.                │
 │ service                                                                      │
 │ join     Run multiple join commands together in one process.                 │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+## `meshagent image`
+
+```console
+$ meshagent image --help
+                                                                                
+ Usage: meshagent image [OPTIONS] COMMAND [ARGS]...                             
+                                                                                
+ Build and pack OCI images                                                      
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ build  Build a container image inside a room.                                │
+│ pack   Pack a local directory into an OCI image archive.                     │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
