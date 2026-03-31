@@ -136,7 +136,7 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not anchor a relative scheduling request such as "one minute from now" to the start of a longer setup workflow when the user intent is relative to the actual task-creation moment.
 - Do not hand the user an unresolved truncation, noise, or parsing problem for a simple inspection task. Rerun the narrow command and return the exact result.
 - Do not leave an obviously required user input such as the recipient email unasked in a workflow whose purpose is to send a real email.
-- Do not wait until the final step to discover that a required backend surface such as scheduled-task create is blocked when a cheap preflight could have shown that earlier.
+- Do not wait until the final step to discover that a required backend surface such as scheduled-task add is blocked when a cheap preflight could have shown that earlier.
 - Do not use broad auth or project-listing failures as proof that a room-scoped workflow cannot proceed when a narrower room-scoped probe was available.
 - Do not use `meshagent auth whoami` as a prerequisite gatekeeper for a known-room workflow.
 - Do not treat room messaging enablement as a setup task for workflows that do not actually require room messaging. If a command reports that messaging is already enabled, treat that as non-blocking room state rather than a failure to repair.
