@@ -105,7 +105,7 @@ container:
               --storage-tool-room-path=/:/data \
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
-              --skill-dir /data/skills/meshagent-skills/skills/meshagent-core \
+              --skill-dir /data/skills/meshagent-skills/skills/meshagent-core 
           else
             exec /usr/bin/meshagent process join \
               --room="${MESHAGENT_ROOM}" \
@@ -121,7 +121,7 @@ container:
               --storage-tool-room-path=/:/data \
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
-              --skill-dir /data/skills/meshagent-skills/skills/meshagent-core \
+              --skill-dir /data/skills/meshagent-skills/skills/meshagent-core 
           fi
 
       - path: /meshagent-skills/.claude-plugin/plugin.json
