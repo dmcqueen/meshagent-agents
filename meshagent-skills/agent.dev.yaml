@@ -105,10 +105,7 @@ container:
               --storage-tool-room-path=/:/data \
               --shell-image=meshagent/shell-codex:default \
               --delegate-shell-token \
-              --skill-dir /data/skills/meshagent-skills/skills/meshagent-webapp-backend-builder \
-              --skill-dir /data/skills/meshagent-skills/skills/meshagent-webapp-dev-operator \
-              --skill-dir /data/skills/meshagent-skills/skills/meshagent-webapp-release-operator \
-              --skill-dir /data/skills/meshagent-skills/skills/meshagent-mail-operator \
+              --skill-dir /data/skills/meshagent-skills/skills/meshagent-100 \
               --rule='Operate as a disciplined technical collaborator.' \
               --rule='Drive ideas toward correct, maintainable systems through structured iteration.' \
               --rule='Design, build, debug, and refine with responsibility for structural integrity.' \
@@ -199,10 +196,6 @@ container:
             Room storage inspection, copy, show, and removal workflows.
           - `skills/meshagent-webapp-backend-builder/`
             Canonical backend path for deployable room-hosted web applications, including Python handlers, contact forms, room DB integration, and mailbox-backed outbound email workflows.
-          - `skills/meshagent-webapp-dev-operator/`
-            Hot-reload development loop for room-hosted webapp backends, including `meshagent webserver join --watch` workflows.
-          - `skills/meshagent-webapp-release-operator/`
-            Image-backed candidate and release workflow for room-hosted webapps, including staged release contexts and side-by-side candidate deploys.
           - `skills/meshagent-webapp-frontend-builder/`
             Canonical frontend path for interactive room websites using Preact + htm on top of the backend path.
           - `skills/meshagent-mail-operator/`
@@ -309,20 +302,14 @@ container:
             OpenAI agent metadata for the webapp backend builder.
           - `skills/meshagent-webapp-backend-builder/references/contact_form_example.py`
             Known-good contact-form handler reference using real room SMTP defaults and a mailbox-backed sender placeholder.
+          - `skills/meshagent-webapp-backend-builder/references/dev_hot_reload_loop.sh`
+            Preferred `meshagent webserver join --watch` launcher for room-hosted backend dev loops.
           - `skills/meshagent-webapp-backend-builder/references/mailbox_backed_sender.md`
             Mailbox provisioning and sender-identity reference for room-hosted contact forms.
           - `skills/meshagent-webapp-backend-builder/references/minimal_webserver.yaml`
             Minimal deployable public webserver YAML example.
           - `skills/meshagent-webapp-backend-builder/references/verification_checklist.md`
             Short completion checklist for deployed contact-form sites.
-          - `skills/meshagent-webapp-dev-operator/SKILL.md`
-            Hot-reload development-loop skill for room-hosted webapp backends.
-          - `skills/meshagent-webapp-dev-operator/agents/openai.yaml`
-            OpenAI agent metadata for the webapp dev operator.
-          - `skills/meshagent-webapp-release-operator/SKILL.md`
-            Image-backed candidate and release workflow skill for room-hosted webapps.
-          - `skills/meshagent-webapp-release-operator/agents/openai.yaml`
-            OpenAI agent metadata for the webapp release operator.
           - `skills/meshagent-webapp-frontend-builder/SKILL.md`
             Interactive room-webapp frontend skill using Preact + htm on top of the backend path.
           - `skills/meshagent-webapp-frontend-builder/agents/openai.yaml`
@@ -446,11 +433,9 @@ container:
           2. Use the packaged CLI references first when composing join or deploy invocations. Only use live `--help` on the exact runtime command if the packaged help is missing the needed detail or appears stale for the installed CLI.
           3. Reuse existing flags, rules files, skill dirs, and environment wiring when modifying an existing agent command.
           4. Use [SKILL.md](../skills/meshagent-webapp-backend-builder/SKILL.md) for contact forms, room-hosted web apps, and web handler implementation.
-          5. Use [SKILL.md](../skills/meshagent-webapp-dev-operator/SKILL.md) when a room-hosted webapp backend must hot-reload during development.
-          6. Use [SKILL.md](../skills/meshagent-webapp-release-operator/SKILL.md) when a room-hosted webapp should become an image-backed release candidate or release.
-          7. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for mailbox-linked delivery flows or inbox-toolkit work.
-          8. For contact-form deployments, do not stop after the site is reachable if live submission still fails to send mail.
-          9. For webserver-backed deployments, do not stop after deploy until the live route has been smoke-tested.
+          5. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for mailbox-linked delivery flows or inbox-toolkit work.
+          6. For contact-form deployments, do not stop after the site is reachable if live submission still fails to send mail.
+          7. For webserver-backed deployments, do not stop after deploy until the live route has been smoke-tested.
 
       - path: /meshagent-skills/commands/meshagent-inspect.md
         text: |
@@ -548,8 +533,6 @@ container:
           2. Inspect current room state before changing it.
           3. Use the room-scoped command instead of the project-scoped equivalent when the request is clearly about a single room.
           4. Use [SKILL.md](../skills/meshagent-webapp-backend-builder/SKILL.md) for room website and handler implementation.
-          5. Use [SKILL.md](../skills/meshagent-webapp-dev-operator/SKILL.md) for hot-reload dev loops on room-hosted webapp backends.
-          6. Use [SKILL.md](../skills/meshagent-webapp-release-operator/SKILL.md) for image-backed candidate and release workflows tied to this room.
 
       - path: /meshagent-skills/commands/meshagent-service.md
         text: |
@@ -576,8 +559,7 @@ container:
           2. Prefer `validate`, `render-template`, `show`, or `list` before destructive or state-changing commands.
           3. After deploy or update, verify the resulting service state and surface any follow-up steps.
           4. Use [SKILL.md](../skills/meshagent-webapp-backend-builder/SKILL.md) for website and handler implementation around `meshagent webserver ...`.
-          5. Use [SKILL.md](../skills/meshagent-webapp-release-operator/SKILL.md) for image-backed candidate and release workflows for room-hosted webapps.
-          6. Use [SKILL.md](../skills/meshagent-webmaster/SKILL.md) for explicit route/domain administration or public hostname diagnostics.
+          5. Use [SKILL.md](../skills/meshagent-webmaster/SKILL.md) for explicit route/domain administration or public hostname diagnostics.
 
       - path: /meshagent-skills/commands/meshagent.md
         text: |
@@ -594,17 +576,15 @@ container:
           
           1. Start with [SKILL.md](../skills/meshagent-cli-operator/SKILL.md).
           2. Use [SKILL.md](../skills/meshagent-webapp-backend-builder/SKILL.md) for website and handler implementation, DB-backed contact forms, and mailbox-backed webapp backends.
-          3. Use [SKILL.md](../skills/meshagent-webapp-dev-operator/SKILL.md) when a room-hosted webapp backend must hot-reload in a dev loop.
-          4. Use [SKILL.md](../skills/meshagent-webapp-release-operator/SKILL.md) when a room-hosted webapp should become an image-backed release candidate or release.
-          5. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for email delivery, mailboxes, inbox evidence, or MailBot toolkits.
-          6. Use [SKILL.md](../skills/meshagent-scheduler/SKILL.md) for scheduled tasks, cron-based dispatch, or queue scheduling.
-          7. Use [SKILL.md](../skills/meshagent-webmaster/SKILL.md) for explicit route or domain administration and public hostname diagnostics.
-          8. Pick the narrowest MeshAgent command path that fits the request.
-          9. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) first. Only run live `meshagent <path> --help` when the packaged reference is missing the needed detail or appears stale for the installed CLI.
-          10. Prefer inspection before mutation.
-          11. After any change, verify with the corresponding `show`, `list`, or read command.
-          12. For contact-form website requests, do not treat a live site with failing outbound email as complete. Follow the mailbox-backed sender workflow before replying unless an actual permission blocker stops it.
-          13. For website requests, require at least one live HTTP smoke test after deploy before replying with success.
+          3. Use [SKILL.md](../skills/meshagent-mail-operator/SKILL.md) for email delivery, mailboxes, inbox evidence, or MailBot toolkits.
+          4. Use [SKILL.md](../skills/meshagent-scheduler/SKILL.md) for scheduled tasks, cron-based dispatch, or queue scheduling.
+          5. Use [SKILL.md](../skills/meshagent-webmaster/SKILL.md) for explicit route or domain administration and public hostname diagnostics.
+          6. Pick the narrowest MeshAgent command path that fits the request.
+          7. If flags or subcommands are unclear, check [meshagent_cli_help.md](../skills/meshagent-cli-operator/references/meshagent_cli_help.md) first. Only run live `meshagent <path> --help` when the packaged reference is missing the needed detail or appears stale for the installed CLI.
+          8. Prefer inspection before mutation.
+          9. After any change, verify with the corresponding `show`, `list`, or read command.
+          10. For contact-form website requests, do not treat a live site with failing outbound email as complete. Follow the mailbox-backed sender workflow before replying unless an actual permission blocker stops it.
+          11. For website requests, require at least one live HTTP smoke test after deploy before replying with success.
           
           ## Coverage
           
@@ -1770,41 +1750,6 @@ container:
           - Example: a `.com` API or mailbox environment still maps to managed public minisites under `.meshagent.app`, not `.meshagent.com`.
           - Keep executable examples or generated code environment-aware only when they genuinely need runtime branching logic.
 
-      - path: /meshagent-skills/skills/_shared/references/image_backed_service_iteration.md
-        text: |
-          # Image-Backed Service Iteration
-          
-          Use these rules when iterating on a MeshAgent service whose runtime should be packaged into a container image instead of being edited live in room storage.
-          
-          - This pattern is for `candidate` and `release` deployment modes on service-style runtimes, not the default for `dev` file-backed previews.
-          - In `dev` mode, the priority is fast iteration on behavior. A file-backed preview can be acceptable if the user has not asked for rollback-ready or release-ready packaging.
-          - In `candidate` mode, the runtime under test must already be image-backed. Build, tag, deploy, and verify a specific `-rcN` image.
-          - Unless the user explicitly asked to replace the existing runtime, a `candidate` deploy should use a separate service identity and separate candidate route so the current dev or stable site keeps serving its existing URL.
-          - If the user does not specify release-candidate names, derive them deterministically from the current dev or stable runtime:
-            - image tag: start at `1.0-rc1` for the first release line, then increment the `rc` number within the active line
-            - candidate service: `<base-service>-rc`
-            - candidate hostname label: `<base-host>-rc`
-          - In `release` mode, promote a previously verified candidate to the plain stable tag. Do not treat an unverified `-rcN` image as the release.
-          - Prefer image-backed iteration when the service has non-trivial runtime dependencies, repeated code changes, or a meaningful need to contain changes and revert them quickly.
-          - Build images inside the room with `meshagent room container image build ...` when the source context is already in room or mounted storage.
-          - Use explicit, versioned image tags for every candidate build. Prefer release-candidate tags such as `4.2-rc1`, `4.2-rc2`, `4.2-rc3`, and reserve the plain release tag `4.2` for the image that has passed verification.
-          - Do not overwrite a single floating tag and call that rollback-ready.
-          - A meaningful shift in the user's primary iteration goal starts a new release line. The last verified plain release tag from the previous goal remains the rollback target while the new goal proceeds through fresh `-rcN` candidates.
-          - For a continued release line, increment `rc` numbers instead of inventing a new service or hostname family. Keep the candidate service and candidate hostname stable while the image tag advances from `-rc1` to `-rc2`, `-rc3`, and so on unless the user explicitly wants a different naming scheme.
-          - Keep the last known good plain release tag available. There is no native service rollback command; rollback means updating the service spec back to the previous known-good release tag.
-          - If the runtime has cheap unit or smoke tests that can run during image build, bake them into the image build path so a broken candidate image never becomes deployable.
-          - After building an image, verify it exists with `meshagent room container image list ...` before updating the service to reference it.
-          - Update the service declaratively so `container.image` points at the new candidate image tag first.
-          - For candidate testing, update or create the candidate service, not the current dev or stable service, unless the user explicitly asked for in-place replacement.
-          - After the service update, verify both service/runtime health and the actual user-facing surface. A successful image build and service update are not enough.
-          - A candidate route should be treated as a test URL, not as the main release URL.
-          - Only add or move the plain release tag after the corresponding `-rcN` candidate image has passed the required verification.
-          - Candidate testing is the deploy-in-room verification path. Do not call a candidate a release just because it was built and deployed into the room.
-          - Do not roll back automatically just because a candidate image failed verification. Leave the rollback as an explicit user-controlled action unless the user asked for automatic rollback behavior.
-          - If the user asks to roll back, update the service back to the previous known-good plain release tag instead of guessing among unverified candidate tags.
-          - Use `meshagent room container image save ...` only when you need to archive or export a built image. It is not the normal rollback mechanism.
-          - When image-backed iteration is the chosen path, avoid mixing it with ad hoc live-file edits to the same service runtime in the same pass.
-
       - path: /meshagent-skills/skills/_shared/references/live_room_cli_context.md
         text: |
           # Live Room CLI Context
@@ -1851,9 +1796,7 @@ container:
           - A managed hostname with the wrong environment suffix is a hard error, not a debugging lead. Stop the public-site workflow immediately and correct the hostname before inspecting any edge, DNS, route, or application behavior behind that invalid hostname.
           - A public hostname under the mail domain family or API domain family is a hard error for a managed minisite workflow. Stop immediately and correct the hostname before treating the deploy as meaningful.
           - If a deploy command warns that the hostname suffix is wrong for the current environment, treat that deploy result as failed for public-hostname purposes and fix the hostname before reporting success.
-          - If a candidate hostname collides, keep the same environment-specific suffix family and try additional candidates before asking the user to choose one.
-          - When a workflow is creating a release candidate rather than promoting the main release, choose a separate candidate hostname in the same managed suffix family and leave the current dev or stable hostname unchanged unless the user explicitly asked to replace it.
-          - If the user did not specify a candidate hostname, derive it from the current dev or stable hostname label by appending `-rc` before the environment-correct managed suffix.
+          - If a hostname collides, keep the same environment-specific suffix family and try additional alternatives before asking the user to choose one.
           - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and a follow-up route read is forbidden, treat that hostname as unavailable and try a different candidate before reporting a generic permissions blocker.
           - If a mailbox domain, API environment, and managed public hostname disagree about whether the room is `.life` or `.com`, treat that as unresolved environment evidence and do not report the public URL as valid yet.
           - Do not report, test, or keep debugging a managed URL whose suffix contradicts the active API environment. Nothing behind that URL counts as valid workflow evidence until the hostname itself is corrected.
@@ -1922,7 +1865,6 @@ container:
           
           - Prefer generated specs over handwritten YAML when the CLI already has a generator for the runtime shape you need. For new authored agent services, start from `meshagent process spec` first. Use `meshagent worker spec` or `meshagent mailbot spec` only when the user explicitly asked for those runtime shapes. Use `meshagent service spec` only when the agent-specific specs are not the right fit.
           - If you must hand-author YAML, start from the nearest working example or a rendered/generated spec. Do not invent a manifest structure from memory.
-          - For image-backed webserver release candidates, use `meshagent webserver spec` or an existing valid live `Service` spec as the source manifest. Preserve the generated `ports`, `agents`, and other validated structure, then mutate only the candidate-specific fields such as service name, service id annotation, and container image.
           - Treat the container `command` as code that must match the real CLI. Validate agent command flags against the packaged CLI help or the actual CLI source before treating the YAML as deployable.
           - Do not invent flags that the target command does not support. For example, `meshagent worker join` uses `--rule` and `--room-rules`; do not substitute unsupported flags such as `--prompt`.
           - Make the declared agent roles match the runtime command. If the manifest says it contains a `Worker`, the command must actually start a worker path. If it says it contains a `MailBot`, the command must start a mailbot path. Do not declare two roles and only start one of them.
@@ -1987,23 +1929,13 @@ container:
           - Supporting skills may execute part of the work, but they do not get to declare the overall workflow complete unless ownership is explicitly transferred.
           - Ownership may transfer to a narrower or more appropriate skill, but the transfer must be explicit in the reasoning and the new owner must continue tracking completion gates and evidence.
           
-          ## Deployment mode discipline
+          ## Development-mode discipline
           
-          - When a workflow mutates a deployed runtime, classify the intended deployment mode before choosing the mutation path: `dev`, `candidate`, or `release`.
-          - `dev` means fast iteration on behavior. File-backed previews and non-rollback-ready runtime changes are acceptable if they are labeled as development state rather than release state.
+          - When a workflow mutates a deployed runtime, classify whether it is active development iteration or a normal deployed-state update.
+          - `dev` means fast iteration on behavior. File-backed previews and non-stable runtime changes are acceptable if they are labeled as development state rather than stable deployed state.
           - For Python handler development, `dev` should preserve a real hot-reload loop when the workflow depends on rapid code iteration. Do not assume a file sync into a deployed service gives Python hot reload.
-          - `candidate` means image-backed deploy testing. Use versioned candidate tags such as `4.2-rc1`, `4.2-rc2`, and verify the real deployed behavior before calling the image releaseable.
-          - By default, `candidate` means a side-by-side testable deploy. Unless the user explicitly asks to replace the current dev or stable runtime, keep the existing user-facing service and route intact and stand up the candidate on a separate service identity and candidate URL.
-          - If the user asks for a release candidate without specifying names, use deterministic defaults rather than inventing arbitrary naming:
-            - image tag: start a new line at `1.0-rc1` when no release line exists yet, otherwise continue the current release line with the next `-rcN`
-            - candidate service: `<base-service>-rc`
-            - candidate hostname label: `<base-host>-rc`
-          - `release` means the current stable image-backed runtime. A release should be a previously verified candidate promoted to the plain stable tag such as `4.2`.
-          - Promotion from `candidate` to `release` is an explicit step. Do not silently turn a candidate deploy into the main user-facing runtime just because the candidate worked.
-          - If the user asks to release, ship, version, cut a candidate, or preserve rollback readiness, do not stay in `dev` mode silently.
-          - If the user is iterating on behavior without asking for release semantics, `dev` is the default unless the chosen workflow explicitly requires image-backed candidate testing.
-          - Never switch between `dev`, `candidate`, and `release` implicitly. State the chosen mode in the reasoning and keep the packaging, verification, and reporting rules consistent with that mode.
-          - Do not promise hot reload in `candidate` or `release` mode. Hot reload belongs to the development loop, not the release artifact.
+          - If the user is iterating on behavior without asking for special packaging semantics, `dev` is the default.
+          - Never promise hot reload unless the runtime path actually supports it. Hot reload belongs to the development loop, not to an ordinary deployed service update.
           
           ## Completion gates
           
@@ -2116,7 +2048,7 @@ container:
           - Do not treat a scheduled task record alone as proof that the future workflow will work.
           - Do not present a created route record, deploy result, or hostname string as the achieved public URL until DNS and the required live HTTP checks have passed.
           - For a normal public website or contact form, do not treat DNS resolution, a TCP connection, or a redirect alone as sufficient verification. The live GET must reach the intended page with the expected final success status, normally `200`.
-          - If a public URL has not been verified yet, label it explicitly as an unverified candidate or partial preparation, not as the finished output.
+          - If a public URL has not been verified yet, label it explicitly as an unverified URL or partial preparation, not as the finished output.
           - Do not lead with "done", "deployed", "created route", or similar completion language when the public-site outcome is still blocked on DNS or live HTTP verification.
           - Do not summarize a site request as "built", "deployed", or "created in the room" when the actual requested outcome is still a non-working public site.
           - Do not use the room, server, or runtime timezone as a substitute for the requesting user's timezone when the workflow is about scheduling in the user's local time.
@@ -2137,6 +2069,102 @@ container:
           - Do not stop at an internal actionable blocker such as a crashing service, wrong hostname suffix, missing toolkit publisher, or failed smoke test and ask "if you want, I'll keep going." Continue the normal fix path until the workflow is complete or a true external blocker remains.
           - Do not blindly retry one-time scheduled-task creation after an uncertain add result. First check whether the task was already created or whether an equivalent near-future task already exists for the same queue and payload.
           - Do not leave a previously working user-visible path in a worse state after adding one new capability and then report that regression as acceptable partial progress. Either repair the working path in the same run or explicitly restore the last known working state before describing the remaining incomplete capability.
+
+      - path: /meshagent-skills/skills/meshagent-100/SKILL.md
+        text: |
+          ---
+          name: meshagent-core-operator
+          description: Run MeshAgent room workflows safely: choose the right CLI path, use the current room context, build/debug room webapps, operate mail/queues/services/storage/database, and verify real user-visible outcomes.
+          metadata:
+            short-description: Highest-signal MeshAgent rules for live room work.
+          ---
+          
+          # MeshAgent Core Operator
+          
+          ## Use this skill when
+          
+          - The task touches the MeshAgent CLI, a live room, or anything running inside it.
+          - The user wants an end-to-end outcome, not just one command.
+          - The workflow involves websites, mail, queues, services, runtime, scheduling, database, storage, or routes.
+          
+          ## Core rules
+          
+          - Prefer the current live room context. Use `MESHAGENT_ROOM` when it already exists.
+          - For room-scoped work, prefer `meshagent room ...` over broader project-scoped commands.
+          - Do not start with `meshagent auth whoami`, `meshagent project list`, or broad room discovery for a known-room task.
+          - Use packaged CLI references first; only use live `--help` when needed.
+          - Prefer the narrowest command path that matches the task.
+          - Prefer inspection before mutation.
+          - After any mutation, verify with the matching read surface: `show`, `list`, logs, queue receive, live HTTP, or real delivery evidence.
+          
+          ## Workflow ownership
+          
+          - Keep exactly one owner for the user-visible outcome.
+          - Supporting skills return evidence, not “done”.
+          - Do not stop at an internal actionable blocker if the normal next fix is still available.
+          - Do not say “done” until the user-visible result is verified or the exact blocker is proven.
+          
+          ## Verification rules
+          
+          - Verify on the real surface, not on a precursor.
+          - Object creation is not success.
+          - YAML generation is not deployment.
+          - Route creation is not a working site.
+          - Queue growth is not email delivery.
+          - For public sites, require live HTTP verification.
+          - For contact forms, require GET plus representative POST verification.
+          - If public DNS or live HTTP is unproven, report partial/incomplete state, not completion.
+          - If the managed hostname suffix is wrong for the environment, stop immediately and fix that first.
+          
+          ## Managed hostname rules
+          
+          - Resolve the active environment from `MESHAGENT_API_URL`.
+          - Use only the environment-correct managed public suffix.
+          - Do not derive a public hostname from the mailbox domain, SMTP hostname, or API hostname.
+          - In `.life`, managed minisites are still `.meshagent.dev`.
+          - Treat wrong-suffix hostnames as hard errors, not debugging leads.
+          
+          ## Webapp rules
+          
+          - Default backend path: Python `aiohttp` handlers with `meshagent webserver`.
+          - Use the backend skill for handlers, DB integration, mail integration, deploy shape, and public verification.
+          - Use the frontend skill only for richer interactive UI on top of that backend path.
+          - For active Python iteration, the preferred dev loop is `meshagent webserver join --watch`.
+          - Do not treat `meshagent webserver deploy` as Python hot reload.
+          - Use room-storage source paths like `/<site-dir>`; in the live shell they appear under `/data/<site-dir>`.
+          
+          ## Mail rules
+          
+          - Default contact-form pattern:
+            - `From`: MeshAgent-managed mailbox sender
+            - `To`: requested external recipient
+            - `Reply-To`: visitor email when present
+          - Do not default `From == To` when `To` is the user’s external inbox.
+          - Do not invent sender identities from participant names or mail domains.
+          - Use mailbox-backed sender addresses returned by real mailbox commands.
+          - For new mailbox-backed workflows, mailbox address and mailbox queue should normally match.
+          - Treat `550`, `553`, and similar SMTP failures first as sender identity or authorization problems.
+          - `550 5.7.1 Permission denied` means the runtime is not authorized to send from that sender identity.
+          
+          ## Service/runtime rules
+          
+          - Use generated specs over handwritten YAML whenever the CLI can generate the runtime shape.
+          - Validate YAML before deploy when a file is involved.
+          - Use runtime inspection for live state: service list, developer watch, container list/logs, toolkit visibility.
+          - Do not rely on repeated `container exec` into another private container.
+          - If a runtime issue is really a webapp behavior issue, move back to the webapp path instead of treating it as generic container debugging.
+          
+          ## Queue/database/storage/scheduler rules
+          
+          - Queue: prove real dequeue/processing, not just queue size movement.
+          - Database: use the proven `room.database.*` shape from docs/examples; do not invent schema/API forms.
+          - Storage: verify the exact room path before assuming files are present or deployed.
+          - Scheduler: timezone and future-run correctness matter; a scheduled-task record alone is not workflow success.
+          
+          ## Research rules
+          
+          - When exact API shape or implementation behavior matters, resolve the checkout roots first and inspect docs/examples/source.
+          - Do not guess SDK shapes, CLI flags, token behavior, or runtime environment variables when the repo already contains the answer.
 
       - path: /meshagent-skills/skills/meshagent-cli-operator/SKILL.md
         text: |
@@ -2397,8 +2425,6 @@ container:
           - Use `meshagent-mail-operator` for mailbox, inbox, process `mail:` channel, or contact-form email workflows.
           - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
           - Use `meshagent-webapp-backend-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers.
-          - Use `meshagent-webapp-dev-operator` when the main need is a hot-reload dev loop for a room-hosted webapp backend.
-          - Use `meshagent-webapp-release-operator` when the main need is an image-backed candidate or release for a room-hosted webapp.
           - Use `meshagent-webmaster` for explicit route management or public hostname exposure.
           - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
           
@@ -6822,8 +6848,6 @@ container:
                 when: The fix belongs in service definition or room service lifecycle rather than runtime debugging.
               - skill: meshagent-webapp-backend-builder
                 when: The remaining issue is public web behavior rather than container state.
-              - skill: meshagent-webapp-dev-operator
-                when: The remaining issue is whether a room-webapp dev loop is hot-reloading Python handler changes correctly.
             scope:
               owns:
                 - live runtime inspection
@@ -6874,8 +6898,6 @@ container:
           - `meshagent-scheduler`: scheduler permissions, create/list health, and timing issues
           - `meshagent-service-operator`: service definition and lifecycle fixes
           - `meshagent-webapp-backend-builder`: public site behavior after runtime checks pass
-          - `meshagent-webapp-dev-operator`: dev-loop and hot-reload behavior for room-hosted webapp backends
-          
           ## Live room execution
           
           - Apply `../_shared/references/live_room_cli_context.md` when the room is already known from runtime context or the user's request.
@@ -6901,8 +6923,7 @@ container:
           - Do not assume `container exec` will work against another participant's private container.
           - If `container exec` fails with a private-container ownership or isolation error, stop using exec for that target and switch to logs, developer watch, service state, public HTTP probes, or deployed artifacts.
           - Use image build/pull/push/load/save only when the runtime problem actually requires image operations.
-          - For service-style iteration, image operations are primarily for versioned candidate builds and artifact checks. Rollback still happens at the service layer by updating the service back to a previous image tag.
-          - If the remaining problem is that a Python web handler change is not taking effect in a live dev loop, prefer `meshagent-webapp-dev-operator` over treating that as a generic runtime debugging problem.
+          - If the remaining problem is that a Python web handler change is not taking effect in a live dev loop, prefer `meshagent-webapp-backend-builder` over treating that as a generic runtime debugging problem.
           
           ## Queue and toolkit diagnosis
           
@@ -7285,7 +7306,6 @@ container:
             references:
               bundled:
                 - ../meshagent-cli-operator/references/meshagent_cli_help.md
-                - ../_shared/references/image_backed_service_iteration.md
                 - ../_shared/references/live_room_cli_context.md
                 - ../_shared/references/runtime_image_environment_rules.md
                 - ../_shared/references/service_yaml_correctness.md
@@ -7296,7 +7316,6 @@ container:
                 - server_root
               resolved_targets:
                 - shared live-room CLI context rules
-                - shared image-backed service iteration rules
                 - shared runtime image environment rules
                 - shared service YAML correctness rules
                 - services CLI source
@@ -7313,8 +7332,6 @@ container:
                 when: The main task is authoring queue-consumer YAML.
               - skill: meshagent-webapp-backend-builder
                 when: The main task is website implementation rather than service lifecycle.
-              - skill: meshagent-webapp-release-operator
-                when: The main task is an image-backed candidate or release workflow for a room-hosted website.
               - skill: meshagent-runtime-operator
                 when: The remaining issue is live container behavior rather than service definition.
             scope:
@@ -7353,7 +7370,6 @@ container:
           ## References
           
           - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
-          - Use `../_shared/references/image_backed_service_iteration.md` when a service should be iterated through versioned image builds instead of live file mutation.
           - Use `../_shared/references/live_room_cli_context.md` when the service workflow runs in or targets a known live room.
           - Use `../_shared/references/runtime_image_environment_rules.md` when choosing or reviewing a service container image.
           - Use `../_shared/references/service_yaml_correctness.md` when validating authored service YAML beyond basic shape.
@@ -7367,7 +7383,6 @@ container:
           - `meshagent-participant-token-operator`: Use it when the issue is token-backed environment injection or participant-token wiring inside the service manifest.
           - `meshagent-queue-worker-builder`: Use it when the main task is authoring queue-consumer YAML.
           - `meshagent-webapp-backend-builder`: Use it when the main task is website implementation rather than service lifecycle.
-          - `meshagent-webapp-release-operator`: Use it when the service work is specifically an image-backed candidate or release workflow for a room-hosted website.
           - `meshagent-webmaster`: Use it when the main task is route and hostname management rather than service lifecycle.
           - `meshagent-runtime-operator`: Use it when the remaining problem is live runtime behavior rather than service definition.
           
@@ -7382,10 +7397,9 @@ container:
           4. Validate or render the spec/template before create or update when a file is involved.
           5. If validation fails, inspect the exact error, repair the asset, and rerun validation. Keep that fix-and-revalidate loop local to the service YAML until it passes or the remaining blocker is no longer a YAML problem.
           6. Use the narrowest command path: `spec`, `validate`, `render-template`, `create`, `update`, `show`, `list`, `delete`, or room-service `restart`.
-          7. Classify the intended deployment mode before mutating the service: `dev`, `candidate`, or `release`.
-          8. If the service should be iterated through container images, build a versioned candidate image first, verify the image exists, then update the service spec to that exact candidate tag.
-          9. After mutation, verify the service record and, when relevant, the live room service state.
-          10. If the service is a queue consumer or other background runtime, hand off to runtime inspection before calling the deployment successful.
+          7. Classify whether the mutation is an active development update or an ordinary deployed-state update before changing the service.
+          8. After mutation, verify the service record and, when relevant, the live room service state.
+          9. If the service is a queue consumer or other background runtime, hand off to runtime inspection before calling the deployment successful.
           
           ## Live room execution
           
@@ -7398,40 +7412,25 @@ container:
           
           - Distinguish project/global services from room-scoped services before acting.
           - Distinguish declarative service CRUD (`meshagent service ...`) from runtime room-service state (`meshagent room service ...`).
-          - Apply the shared deployment-mode discipline from `../_shared/references/workflow_accountability.md` before choosing a mutation path.
+          - Apply the shared development-mode discipline from `../_shared/references/workflow_accountability.md` before choosing a mutation path.
           - Match the container image family to the actual MeshAgent environment. Do not copy one environment profile's registry-backed image family into a different environment unless the runtime already proves that image family is correct there.
-          - In `dev` mode, a non-release runtime update may be acceptable if the workflow does not require rollback readiness.
+          - In active development mode, a non-stable runtime update may be acceptable if the workflow is explicitly iterating on behavior.
           - If the workflow explicitly needs Python hot reload in `dev` mode, a dev runtime may intentionally run `meshagent webserver join --watch` against room-mounted source. Do not assume the normal deployed service update path provides the same reload behavior.
-          - In `candidate` or `release` mode, prefer image-backed iteration with versioned tags over editing live runtime files in place.
-          - For room-webapp candidate or release work, prefer `meshagent-webapp-release-operator` as the owner of the website-specific release flow while this skill stays focused on generic service lifecycle mechanics.
-          - In `candidate` mode, default to a separate candidate service record rather than replacing the current dev or stable service in place. Only replace the existing service when the user explicitly asked for promotion, replacement, or rollback.
-          - If the user did not specify candidate naming, derive it deterministically from the current service:
-            - candidate service: `<base-service>-rc`
-            - candidate image tag: start at `1.0-rc1` for a new release line, otherwise keep incrementing the active line
           - Validate service YAML for workflow correctness, not just schema shape. Check command flags, mailbox identity, queue wiring, and whether the declared roles actually match the intended behavior.
           - Prefer `validate` or `validate-template` before deployment when the source YAML is being authored or changed.
           - If `validate` or `validate-template` fails, repair the YAML and rerun validation before moving on. Do not treat validation as a one-time gate or blindly retry without making a fix.
           - Prefer `render-template` when the user needs to inspect the concrete resolved template output.
           - Prefer generated specs or rendered templates over handwritten YAML when the runtime shape already has a CLI spec command.
-          - For image-backed webserver release candidates, derive the candidate `Service` YAML from `meshagent webserver spec` or an existing valid live service spec. Do not hand-author the candidate manifest from memory.
           - Treat `force` and `replace` as potentially destructive because they can redirect an existing service identity.
-          - There is no native rollback command for services. If rollback readiness matters, keep the previous known-good plain release tag and be prepared to `meshagent service update ...` the service back to that image only when the user asks for rollback.
-          - Prefer a tag model that separates candidates from proven-good releases, for example `4.2-rc1`, `4.2-rc2`, then `4.2`; later `4.3-rc1`, `4.3-rc2`, then `4.3`.
-          - If the user changes the primary iteration goal materially, treat that as a new release line. Keep the last verified plain tag from the previous goal as the rollback target while the new goal advances through fresh `-rcN` candidates.
           
           ## Verification rules
           
           - Do not claim a service is deployed correctly based only on YAML generation.
           - After create or update, verify with `meshagent service show`, `meshagent service list`, or `meshagent room service list` as appropriate.
-          - State whether the current mutation was `dev`, `candidate`, or `release`. Do not report a candidate deploy as if it were already the stable release.
-          - If the current mutation was `candidate`, report the candidate service identity and candidate image tag separately from the current dev or stable service.
-          - If the service was updated to a newly built image, verify the image tag you intended is actually the one the service now references.
-          - If a candidate image passes verification, the next release action is to promote that exact image to the plain release tag rather than treating any `-rcN` candidate tag as the rollback target.
           - When the question is simply "what services are running in this room?", `meshagent room service list` is the default answer path.
           - For queue consumers, a visible service record is not enough. Confirm that the room service is present and then use runtime inspection to prove that a live runtime or container is actually running.
           - If a room service is unhealthy, use room-service state and runtime inspection before rewriting the spec.
           - If restart is requested, confirm the target by `--id` or `--name` before issuing it.
-          - If a newly built image fails verification, report the exact failure against that candidate tag. Do not roll back automatically unless the user asked for rollback or explicitly wanted the last known working image restored.
           
           ## Workflow accountability
           
@@ -7592,6 +7591,7 @@ container:
                 - references/meshagent_cli_help.md
                 - references/contact_form_example.py
                 - references/contact_submission_store.py
+                - references/dev_hot_reload_loop.sh
                 - references/mailbox_backed_sender.md
                 - references/minimal_webserver.yaml
                 - references/verification_checklist.md
@@ -7620,10 +7620,6 @@ container:
                 when: The site must persist form submissions or query the in-room database from handler code.
               - skill: meshagent-mail-operator
                 when: The blocker is mailbox provisioning or room SMTP behavior.
-              - skill: meshagent-webapp-dev-operator
-                when: The task is active Python-handler iteration and the runtime must hot-reload backend changes.
-              - skill: meshagent-webapp-release-operator
-                when: The task is to cut, verify, promote, or roll back an image-backed release candidate for the webapp.
               - skill: meshagent-webmaster
                 when: The main task is route and hostname administration rather than the web app itself.
               - skill: meshagent-webapp-frontend-builder
@@ -7635,8 +7631,6 @@ container:
                 - post-deploy HTTP verification
               excludes:
                 - generic route administration
-                - hot-reload dev-loop operation
-                - image-backed release-candidate lifecycle
                 - deep frontend platform design beyond room webapps
             workflow:
               can_be_owner: true
@@ -7670,6 +7664,7 @@ container:
           - Reuse the packaged implementation assets in this skill before inventing a fresh pattern:
             - `references/contact_form_example.py`
             - `references/contact_submission_store.py`
+            - `references/dev_hot_reload_loop.sh`
             - `references/mailbox_backed_sender.md`
             - `references/minimal_webserver.yaml`
             - `references/verification_checklist.md`
@@ -7690,8 +7685,6 @@ container:
           - `meshagent-participant-token-operator`: Use it when the blocker is service token injection, participant-token discovery, or direct room API auth inside the handler runtime.
           - `meshagent-database-operator`: Use it when the site must write to or read from the in-room database.
           - `meshagent-mail-operator`: Use it when the blocker is mailbox provisioning, queue-backed mail intake, or SMTP behavior.
-          - `meshagent-webapp-dev-operator`: Use it when the task is active backend iteration and the runtime must hot-reload Python handler changes.
-          - `meshagent-webapp-release-operator`: Use it when the task is an image-backed candidate, release, promotion, or rollback-ready webapp deploy.
           - `meshagent-webmaster`: Use it when the main task is route and hostname administration rather than the web app itself.
           - `meshagent-webapp-frontend-builder`: Use it when the site needs a richer interactive frontend built with Preact + htm on top of this backend path.
           
@@ -7715,12 +7708,14 @@ container:
           - If the site needs richer interactivity, canvas-style UI, or component-heavy state, keep this backend path and layer `meshagent-webapp-frontend-builder` on top of it rather than inventing a separate backend stack.
           - Do not switch backend languages or runtime models without a requirement that the Python golden path clearly cannot satisfy.
           
-          ## Mode routing
+          ## Dev loop routing
           
-          - Keep this skill focused on backend implementation, handler behavior, DB integration, and mail integration.
-          - If the main need is a hot-reload dev loop for Python handlers, hand the runtime loop to `meshagent-webapp-dev-operator`.
-          - If the main need is an image-backed candidate, release, promotion, or rollback-ready artifact, hand the packaging and deploy lifecycle to `meshagent-webapp-release-operator`.
-          - If a website request spans backend implementation plus dev or release mechanics, keep backend behavior work here and use the narrower dev or release skill for that mode-specific part.
+          - Keep this skill focused on backend implementation, handler behavior, DB integration, mail integration, and the preferred hot-reload dev loop for Python handlers.
+          - The preferred Python-handler dev loop is `meshagent webserver join --watch`.
+          - Use `references/dev_hot_reload_loop.sh` when the room source lives under room storage and the runtime should watch that source directly.
+          - Distinguish room-storage source paths such as `/<site-dir>` from shell-visible mount paths such as `/data/<site-dir>`.
+          - Do not treat `meshagent webserver deploy` as a hot-reload path for Python code.
+          - If a public dev URL is needed while preserving hot reload, prefer a separate dev-only runtime whose command explicitly runs `meshagent webserver join --watch` against room-mounted source.
           
           ## Implementation rules
           
@@ -7786,9 +7781,8 @@ container:
           19. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
           20. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
           21. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
-          22. If the user needs a hot-reload dev loop for Python handlers, hand the runtime loop to `meshagent-webapp-dev-operator` once the backend shape is clear.
-          23. If the user asks for a release candidate, release, promotion, or rollback-ready artifact, hand packaging and release lifecycle to `meshagent-webapp-release-operator` after the backend behavior is ready.
-          24. Verify the live site with actual GET and POST requests after deploy.
+          22. If the user needs a hot-reload dev loop for Python handlers, use `references/dev_hot_reload_loop.sh` or an equivalent `meshagent webserver join --watch` command once the backend shape is clear.
+          23. Verify the live site with actual GET and POST requests after deploy.
           
           ## Managed hostname selection
           
@@ -8433,315 +8427,6 @@ container:
           echo "Command: ${cmd[*]}"
           exec "${cmd[@]}"
 
-      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/image_release_pipeline.sh
-        text: |
-          #!/usr/bin/env bash
-          set -euo pipefail
-          
-          usage() {
-            cat <<'EOF'
-          Build and deploy an image-backed webserver candidate from room storage.
-          
-          Usage:
-            image_release_pipeline.sh \
-              --site-source /contact-site \
-              --service-file ./service.yaml \
-              --image-repo contact-site \
-              --release 4.2 \
-              --rc 1
-          
-          Required:
-            --site-source PATH   Absolute room-storage source path for the current site source.
-                                 Use the room subpath form such as /contact-site.
-                                 Do not pass the shell-visible mount path under /data.
-            --service-file PATH  Local Service YAML used for `meshagent service update`.
-                                 This should be derived from a valid generated service spec
-                                 such as `meshagent webserver spec ...`, or from an
-                                 existing known-good service spec. Prefer a template with
-                                 __IMAGE_TAG__.
-            --image-repo NAME    Image repo/name prefix, for example `contact-site`.
-            --release VERSION    Stable release line, for example `4.2`.
-            --rc N               Candidate number within the release line, for example `1`.
-          
-          Optional:
-            --room NAME               Room name. Defaults to $MESHAGENT_ROOM.
-            --project-id ID           Explicit project id if needed.
-            --release-context PATH    Absolute room-storage path to stage the candidate
-                                      build context into. Default:
-                                      /build-context/<image-repo>-<release>-rc<rc>
-            --containerfile-source    Local or shell-visible path to a Containerfile or
-                                      Dockerfile to copy into the release context if the
-                                      site source does not already contain one.
-            --dockerfile-name NAME    Dockerfile/Containerfile name inside the release context.
-                                      Default: Containerfile
-            --mount-target PATH       Absolute build-container mount target.
-                                      Default: /workspace/site
-            --create                  Pass --create to `meshagent service update`.
-          
-          Notes:
-            - The site source path can be named anything. The script stages a clean
-              release context under room storage, then mounts that staged context into a
-              fixed build path inside the build container.
-            - In a live room shell, room storage may be visible at /data/<name>, but
-              --site-source and --release-context must still use room subpath form /<name>.
-            - The staged release context must contain the application code,
-              webserver.yaml, and Dockerfile/Containerfile before the build starts.
-            - This script builds and deploys a candidate tag like `contact-site:4.2-rc1`.
-              Promotion to the plain stable tag `4.2` should happen only after verification.
-            - The service YAML must describe an image-backed runtime. Candidate/release
-              deploys must not keep running app code from a room-storage code mount.
-            - Do not hand-author the candidate service manifest from memory. Start from
-              `meshagent webserver spec ...` or an existing valid service spec, then
-              mutate only the candidate-specific fields.
-          EOF
-          }
-          
-          fail() {
-            echo "error: $*" >&2
-            exit 1
-          }
-          
-          require_cmd() {
-            command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
-          }
-          
-          assert_room_subpath() {
-            local value="$1"
-            local flag_name="$2"
-            [[ "$value" == /* ]] || fail "${flag_name} must be an absolute room-storage path"
-            [[ "$value" != /data/* ]] || fail "${flag_name} must use a room subpath like /contact-david-site, not a shell mount path under /data"
-          }
-          
-          shell_visible_room_path() {
-            local room_path="$1"
-            printf '/data%s' "$room_path"
-          }
-          
-          assert_release_context_shape() {
-            local service_path="$1"
-          
-            grep -Eq '^[[:space:]]*kind:[[:space:]]*Service[[:space:]]*$' "$service_path" \
-              || fail "service file must be a concrete Service document"
-          
-            for required_field in metadata agents ports container; do
-              grep -Eq "^[[:space:]]*${required_field}:[[:space:]]*$" "$service_path" \
-                || fail "service file must contain top-level ${required_field}: from a valid generated or existing service spec"
-            done
-          
-            grep -Eq '^[[:space:]]*image:[[:space:]]*' "$service_path" \
-              || fail "service file must contain an image: field or __IMAGE_TAG__ placeholder"
-          
-            if grep -Eq '^[[:space:]]*spec:[[:space:]]*$' "$service_path"; then
-              fail "service file contains a nested spec: block; derive the candidate service from meshagent webserver spec or an existing valid Service YAML instead"
-            fi
-          
-            if grep -Eq '^[[:space:]]*-[[:space:]]*port:[[:space:]]*' "$service_path"; then
-              fail "service file uses ports entries with port: ...; preserve the exact generated PortSpec shape from meshagent webserver spec or an existing valid service"
-            fi
-          
-            if grep -Eq '^[[:space:]]*subpath:[[:space:]]*/' "$service_path"; then
-              fail "service file still contains a room-storage subpath mount; candidate/release runtimes must keep app code in the image"
-            fi
-          
-            if grep -Fq 'meshagent webserver join' "$service_path" && ! grep -Fq 'webserver.yaml' "$service_path"; then
-              fail "service file runs meshagent webserver join but does not reference webserver.yaml"
-            fi
-          }
-          
-          prepare_release_context() {
-            local site_source_room="$1"
-            local release_context_room="$2"
-            local dockerfile_name="$3"
-            local containerfile_source="${4:-}"
-          
-            local site_source_shell
-            local release_context_shell
-            site_source_shell="$(shell_visible_room_path "$site_source_room")"
-            release_context_shell="$(shell_visible_room_path "$release_context_room")"
-          
-            [[ -d /data ]] || fail "this script expects room storage to be mounted at /data in the current shell"
-            [[ -d "$site_source_shell" ]] || fail "site source directory not found under room storage mount: $site_source_shell"
-          
-            mkdir -p "$(dirname "$release_context_shell")"
-            rm -rf "$release_context_shell"
-            mkdir -p "$release_context_shell"
-          
-            cp -R "${site_source_shell}/." "$release_context_shell/"
-          
-            if [[ ! -f "${release_context_shell}/${dockerfile_name}" ]]; then
-              if [[ -n "$containerfile_source" ]]; then
-                [[ -f "$containerfile_source" ]] || fail "--containerfile-source file not found: $containerfile_source"
-                cp "$containerfile_source" "${release_context_shell}/${dockerfile_name}"
-              else
-                fail "release context is missing ${dockerfile_name}; add it to the site source or pass --containerfile-source"
-              fi
-            fi
-          
-            [[ -f "${release_context_shell}/webserver.yaml" ]] || fail "release context is missing webserver.yaml after staging: ${release_context_shell}/webserver.yaml"
-          }
-          
-          meshagent_args=()
-          room="${MESHAGENT_ROOM:-}"
-          site_source=""
-          release_context=""
-          containerfile_source=""
-          service_file=""
-          image_repo=""
-          release_line=""
-          rc_number=""
-          dockerfile_name="Containerfile"
-          mount_target="/workspace/site"
-          create_service=0
-          
-          while [[ $# -gt 0 ]]; do
-            case "$1" in
-              --room)
-                room="${2:-}"
-                shift 2
-                ;;
-              --project-id)
-                meshagent_args+=(--project-id "${2:-}")
-                shift 2
-                ;;
-              --site-source)
-                site_source="${2:-}"
-                shift 2
-                ;;
-              --release-context)
-                release_context="${2:-}"
-                shift 2
-                ;;
-              --containerfile-source)
-                containerfile_source="${2:-}"
-                shift 2
-                ;;
-              --service-file)
-                service_file="${2:-}"
-                shift 2
-                ;;
-              --image-repo)
-                image_repo="${2:-}"
-                shift 2
-                ;;
-              --release)
-                release_line="${2:-}"
-                shift 2
-                ;;
-              --rc)
-                rc_number="${2:-}"
-                shift 2
-                ;;
-              --dockerfile-name)
-                dockerfile_name="${2:-}"
-                shift 2
-                ;;
-              --mount-target)
-                mount_target="${2:-}"
-                shift 2
-                ;;
-              --create)
-                create_service=1
-                shift
-                ;;
-              --help|-h)
-                usage
-                exit 0
-                ;;
-              *)
-                fail "unknown argument: $1"
-                ;;
-            esac
-          done
-          
-          require_cmd meshagent
-          require_cmd awk
-          require_cmd grep
-          require_cmd mktemp
-          
-          [[ -n "$room" ]] || fail "--room is required unless MESHAGENT_ROOM is already set"
-          [[ -n "$site_source" ]] || fail "--site-source is required"
-          [[ -n "$service_file" ]] || fail "--service-file is required"
-          [[ -n "$image_repo" ]] || fail "--image-repo is required"
-          [[ -n "$release_line" ]] || fail "--release is required"
-          [[ -n "$rc_number" ]] || fail "--rc is required"
-          [[ -f "$service_file" ]] || fail "service file not found: $service_file"
-          [[ "$mount_target" == /* ]] || fail "--mount-target must be an absolute path"
-          assert_room_subpath "$site_source" "--site-source"
-          
-          assert_release_context_shape "$service_file"
-          
-          candidate_tag="${image_repo}:${release_line}-rc${rc_number}"
-          if [[ -z "$release_context" ]]; then
-            release_context="/build-context/${image_repo}-${release_line}-rc${rc_number}"
-          fi
-          assert_room_subpath "$release_context" "--release-context"
-          dockerfile_path="${mount_target}/${dockerfile_name}"
-          tmp_service="$(mktemp "${TMPDIR:-/tmp}/meshagent-service.XXXXXX.yaml")"
-          cleanup() {
-            rm -f "$tmp_service"
-          }
-          trap cleanup EXIT
-          
-          echo "Preparing staged release context: ${release_context}"
-          prepare_release_context "$site_source" "$release_context" "$dockerfile_name" "$containerfile_source"
-          
-          echo "Building candidate image: ${candidate_tag}"
-          meshagent room container image build \
-            "${meshagent_args[@]}" \
-            --room "$room" \
-            --tag "$candidate_tag" \
-            --mount-room-path "${release_context}:${mount_target}:ro" \
-            --context-path "$mount_target" \
-            --dockerfile-path "$dockerfile_path"
-          
-          echo "Verifying built image exists in room: ${candidate_tag}"
-          if ! meshagent room container image list "${meshagent_args[@]}" --room "$room" | grep -Fq "$candidate_tag"; then
-            fail "built image tag not found in room image list: ${candidate_tag}"
-          fi
-          
-          if grep -Fq "__IMAGE_TAG__" "$service_file"; then
-            sed "s|__IMAGE_TAG__|${candidate_tag}|g" "$service_file" >"$tmp_service"
-          else
-            awk -v image_tag="$candidate_tag" '
-              !done && $0 ~ /^[[:space:]]*image:[[:space:]]*/ {
-                sub(/image:[[:space:]].*/, "image: " image_tag)
-                done = 1
-              }
-              { print }
-              END {
-                if (!done) {
-                  exit 41
-                }
-              }
-            ' "$service_file" >"$tmp_service" || fail "service file must contain __IMAGE_TAG__ or at least one image: line"
-          fi
-          
-          assert_release_context_shape "$tmp_service"
-          
-          echo "Updating service to candidate image: ${candidate_tag}"
-          service_update_args=(
-            service update
-            "${meshagent_args[@]}"
-            --room "$room"
-            --file "$tmp_service"
-          )
-          if [[ "$create_service" -eq 1 ]]; then
-            service_update_args+=(--create)
-          fi
-          meshagent "${service_update_args[@]}"
-          
-          cat <<EOF
-          Candidate deployed: ${candidate_tag}
-          Staged release context: ${release_context}
-          
-          Next steps:
-            1. Verify service health and the real user-facing surface.
-            2. If the candidate passes, promote the exact image to the plain stable tag:
-                 ${image_repo}:${release_line}
-            3. If the user later asks for rollback, roll back to the previous plain stable tag,
-               not to a release-candidate tag.
-          EOF
-
       - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/mailbox_backed_sender.md
         text: |
           # Mailbox-backed sender pattern
@@ -8842,148 +8527,6 @@ container:
           - mailbox `409` plus mailbox read `403`: treat that candidate as unavailable and try another one
           - mailbox exists but valid `POST` fails with a runtime exception: inspect the actual send path before blaming mailbox queue creation
 
-      - path: /meshagent-skills/skills/meshagent-webapp-backend-builder/references/webserver_image_Containerfile.example
-        text: |
-          FROM meshagent/cli:default
-          
-          WORKDIR /app
-          
-          COPY webserver.yaml ./webserver.yaml
-          COPY handlers ./handlers
-          COPY public ./public
-          
-          CMD ["meshagent", "webserver", "join", "-f", "webserver.yaml"]
-
-      - path: /meshagent-skills/skills/meshagent-webapp-dev-operator/SKILL.md
-        text: |
-          ---
-          name: meshagent-webapp-dev-operator
-          description: Run and debug the development loop for MeshAgent room webapp backends. Use this skill for Python handler hot reload, preview-style room webserver iteration, and proving that live dev changes are actually taking effect.
-          metadata:
-            short-description: Hot-reload dev loop for room-hosted webapp backends.
-            references:
-              bundled:
-                - ../meshagent-cli-operator/references/meshagent_cli_help.md
-                - ../meshagent-webapp-backend-builder/references/dev_hot_reload_loop.sh
-                - ../meshagent-webapp-backend-builder/references/verification_checklist.md
-                - ../_shared/references/live_room_cli_context.md
-                - ../_shared/references/managed_hostname_rules.md
-                - ../_shared/references/workflow_accountability.md
-              requires_roots:
-                - cli_root
-                - server_root
-              resolved_targets:
-                - webserver CLI source
-                - developer CLI source
-                - shared live-room CLI context rules
-                - shared managed-hostname rules
-                - shared workflow accountability rules
-            related_skills:
-              - skill: meshagent-workflow-orchestrator
-                when: The dev loop is one piece of a larger end-to-end workflow.
-              - skill: meshagent-webapp-backend-builder
-                when: The task also needs backend code changes, DB integration, or mail integration.
-              - skill: meshagent-runtime-operator
-                when: The remaining issue is container state, logs, or runtime visibility rather than the dev loop shape.
-              - skill: meshagent-webapp-release-operator
-                when: The task changes from development iteration to image-backed candidate or release work.
-              - skill: meshagent-webmaster
-                when: The main task is route administration or managed-hostname diagnostics rather than the dev loop itself.
-            scope:
-              owns:
-                - Python handler hot-reload dev loops
-                - preview-style room webserver iteration
-                - proof that dev changes are actually live
-              excludes:
-                - image-backed candidate and release packaging
-                - backend feature implementation by itself
-                - generic route administration
-            workflow:
-              can_be_owner: true
-              handoff_policy: retain_accountability_until_owner_transfer
-              completion_gates:
-                - mutation_target_confirmed_when_relevant
-                - observed_state_matches_claim
-                - user_visible_result_verified_or_exact_blocker_reported
-              evidence:
-                - exact_commands_or_artifacts_used
-                - observed_room_or_runtime_state
-                - user_visible_result_or_exact_blocker
-          ---
-          
-          # MeshAgent Webapp Dev Operator
-          
-          Use this skill when the task is to iterate on a room-hosted webapp backend in development mode and the key question is whether code changes are actually taking effect in a hot-reload loop.
-          
-          ## Use this skill when
-          
-          - The user is actively iterating on a Python handler and needs hot reload.
-          - The task is to keep a dev-only room webserver loop responsive while changing backend code.
-          - The current problem is that synced file edits do not seem to change live Python handler behavior.
-          - The user wants a preview or dev-only public URL without turning that runtime into a release artifact.
-          
-          ## References
-          
-          - Use `../meshagent-webapp-backend-builder/references/dev_hot_reload_loop.sh` as the default live-room dev loop asset.
-          - Use `../meshagent-webapp-backend-builder/references/verification_checklist.md` for short HTTP verification after the loop is up.
-          - Use `../meshagent-cli-operator/references/meshagent_cli_help.md` for exact command shapes.
-          - Use `../_shared/references/live_room_cli_context.md` for room context, path handling, and room-scoped command rules.
-          - Use `../_shared/references/managed_hostname_rules.md` if the dev loop also needs a managed public hostname.
-          
-          ## Related skills
-          
-          - `meshagent-workflow-orchestrator`: dev iteration is only one part of a larger workflow
-          - `meshagent-webapp-backend-builder`: backend code shape, DB integration, mail integration, and handler implementation
-          - `meshagent-runtime-operator`: live container state, logs, or runtime visibility debugging
-          - `meshagent-webapp-release-operator`: release-candidate or release packaging
-          - `meshagent-webmaster`: route administration and hostname diagnostics
-          
-          ## Default workflow
-          
-          1. Confirm that the task is `dev` mode rather than candidate or release work.
-          2. Inspect the current runtime and source-tree layout before changing the loop.
-          3. Prefer `meshagent webserver join --watch` for Python handler iteration.
-          4. Verify that the source path and the watched runtime path actually line up.
-          5. After changes, prove the new behavior with a visible marker or other direct evidence.
-          
-          ## Dev-loop rules
-          
-          - `meshagent webserver join --watch` is the preferred Python handler dev loop.
-          - Do not treat `meshagent webserver deploy` as a hot-reload path for Python code.
-          - Use `../meshagent-webapp-backend-builder/references/dev_hot_reload_loop.sh` when the room source lives under room storage and the runtime should watch that source directly.
-          - Distinguish room-storage source paths such as `/<site-dir>` from shell-visible mount paths such as `/data/<site-dir>`.
-          - If a public dev URL is needed while preserving hot reload, prefer a separate dev-only runtime whose command explicitly runs `meshagent webserver join --watch` against room-mounted source.
-          - A dev preview runtime is not a release artifact and is not a rollback-ready candidate.
-          - If the task becomes image-backed candidate or release work, hand off to `meshagent-webapp-release-operator`.
-          
-          ## Verification rules
-          
-          - Do not claim a Python handler change is live until a request proves the changed behavior, not just a file sync or deploy command.
-          - If a file-backed dev site keeps serving old Python behavior after file sync, treat that as a dev-loop/runtime-reload issue before debugging DB, mail, or routing.
-          - If the dev loop has a public URL, still verify the live page with a real HTTP GET and any relevant POST path.
-          - If the current managed hostname uses the wrong suffix for the active environment, stop and correct the hostname before treating the dev URL as meaningful evidence.
-          - If live HTTP reachability is still unproven, report the dev loop as incomplete rather than summarizing it as done.
-          
-          ## Workflow accountability
-          
-          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
-          - If another skill already owns the workflow, return dev-loop evidence and observed state to that owner instead of declaring the overall job complete.
-          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
-          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
-          
-          ## Out of scope
-          
-          - Image-backed candidate and release packaging.
-          - Backend feature design or DB schema design by itself.
-          - Generic route administration.
-
-      - path: /meshagent-skills/skills/meshagent-webapp-dev-operator/agents/openai.yaml
-        text: |
-          interface:
-            display_name: "MeshAgent Webapp Dev Operator"
-            short_description: "Hot-reload dev loop for room webapp backends"
-            default_prompt: "Use $meshagent-webapp-dev-operator to run or debug the hot-reload development loop for a room-hosted webapp backend."
-
       - path: /meshagent-skills/skills/meshagent-webapp-frontend-builder/SKILL.md
         text: |
           ---
@@ -9006,10 +8549,6 @@ container:
             related_skills:
               - skill: meshagent-webapp-backend-builder
                 when: The app needs the canonical Python handler, DB, mail, deploy, or verification backend path.
-              - skill: meshagent-webapp-dev-operator
-                when: The frontend work depends on a hot-reload backend dev loop while Python handlers are still changing.
-              - skill: meshagent-webapp-release-operator
-                when: The frontend work must be delivered through an image-backed candidate or release of the room webapp.
               - skill: meshagent-sdk-researcher
                 when: Checkout roots or codebase references must be resolved first.
               - skill: meshagent-service-operator
@@ -9056,8 +8595,6 @@ container:
           ## Related skills
           
           - `meshagent-webapp-backend-builder`: Use it for the canonical Python backend, DB, mail, deploy, route, and verification workflow around this frontend specialization.
-          - `meshagent-webapp-dev-operator`: Use it when the backend side of the app must stay in a hot-reload dev loop while frontend work is still changing.
-          - `meshagent-webapp-release-operator`: Use it when the combined app is moving into an image-backed candidate or release workflow.
           - `meshagent-sdk-researcher`: Resolve checkout roots before using codebase references outside this skill bundle.
           - `meshagent-service-operator`: Use it when the main task is room service lifecycle rather than frontend implementation.
           
@@ -9077,8 +8614,7 @@ container:
           - Put deployable static frontend assets in `website/dist/`.
           - Treat this skill as the canonical frontend path for interactive or creative room sites, but keep it layered over the backend conventions from `meshagent-webapp-backend-builder`.
           - For DB-backed or email-featured apps, let the backend skill own Python handlers, `room.database.*`, and mail paths while this skill owns UI composition, state, and interactions.
-          - If the backend side of the app is actively iterating in a hot-reload loop, keep that runtime loop on `meshagent-webapp-dev-operator`.
-          - If the app is moving into an image-backed candidate or release flow, keep that packaging and deploy lifecycle on `meshagent-webapp-release-operator`.
+          - If the backend side of the app is actively iterating in a hot-reload loop, keep that runtime loop on `meshagent-webapp-backend-builder`.
           - Prefer thin frontend calls into narrow backend endpoints over duplicating business logic or persistence logic in the browser.
           - If a build step is unavoidable, keep it minimal and justify it from the actual requirements.
           - When deploying frontend changes, add cache-busting query params to script and stylesheet tags so users do not see stale assets.
@@ -9144,149 +8680,6 @@ container:
             short_description: "Canonical frontend path for interactive room web apps"
             default_prompt: "Use $meshagent-webapp-frontend-builder to build the interactive Preact + htm frontend layer for a room web app."
 
-      - path: /meshagent-skills/skills/meshagent-webapp-release-operator/SKILL.md
-        text: |
-          ---
-          name: meshagent-webapp-release-operator
-          description: Build and verify image-backed release candidates and releases for MeshAgent room webapps. Use this skill for staged release contexts, candidate image tags, side-by-side candidate services, promotion, and rollback-ready release lifecycle.
-          metadata:
-            short-description: Image-backed candidate and release workflow for room webapps.
-            references:
-              bundled:
-                - ../meshagent-cli-operator/references/meshagent_cli_help.md
-                - ../meshagent-webapp-backend-builder/references/image_release_pipeline.sh
-                - ../meshagent-webapp-backend-builder/references/webserver_image_Containerfile.example
-                - ../_shared/references/environment_profile_rules.md
-                - ../_shared/references/image_backed_service_iteration.md
-                - ../_shared/references/live_room_cli_context.md
-                - ../_shared/references/managed_hostname_rules.md
-                - ../_shared/references/service_yaml_correctness.md
-                - ../_shared/references/workflow_accountability.md
-              requires_roots:
-                - cli_root
-                - docs_root
-                - server_root
-              resolved_targets:
-                - webserver CLI source
-                - services CLI source
-                - shared image-backed service iteration rules
-                - shared managed-hostname rules
-                - shared service YAML correctness rules
-            related_skills:
-              - skill: meshagent-workflow-orchestrator
-                when: Release work is one part of a larger end-to-end workflow.
-              - skill: meshagent-webapp-backend-builder
-                when: The backend behavior or handler code still needs to be built or repaired before packaging.
-              - skill: meshagent-service-operator
-                when: The remaining issue is generic service lifecycle rather than website-specific release flow.
-              - skill: meshagent-runtime-operator
-                when: The image candidate is deployed and the remaining question is live runtime state or logs.
-              - skill: meshagent-webmaster
-                when: The remaining work is route administration or public hostname repair.
-            scope:
-              owns:
-                - staged release-context preparation
-                - image-backed candidate and release workflow
-                - side-by-side candidate service and hostname defaults
-                - promotion and rollback-ready release lifecycle
-              excludes:
-                - backend feature implementation by itself
-                - Python hot-reload dev loops
-                - generic route administration
-            workflow:
-              can_be_owner: true
-              handoff_policy: retain_accountability_until_owner_transfer
-              completion_gates:
-                - mutation_target_confirmed_when_relevant
-                - observed_state_matches_claim
-                - user_visible_result_verified_or_exact_blocker_reported
-              evidence:
-                - exact_commands_or_artifacts_used
-                - observed_room_or_runtime_state
-                - user_visible_result_or_exact_blocker
-          ---
-          
-          # MeshAgent Webapp Release Operator
-          
-          Use this skill when the task is to turn a room-hosted webapp into a release candidate or release artifact that runs from a built image instead of a file-backed preview.
-          
-          ## Use this skill when
-          
-          - The user asks for a release candidate, release, promotion, or rollback-ready image-backed deploy.
-          - The task is to build a versioned image for a room webapp and run it as a separate candidate service.
-          - The workflow needs a side-by-side candidate URL that leaves the current dev or stable site unchanged.
-          - The blocker is service-manifest derivation, release-context staging, or candidate image/service naming for a webserver-backed site.
-          
-          ## References
-          
-          - Use `../meshagent-webapp-backend-builder/references/image_release_pipeline.sh` as the default in-room release pipeline asset.
-          - Use `../meshagent-webapp-backend-builder/references/webserver_image_Containerfile.example` as the base image pattern when a webserver-backed site needs a release image.
-          - Use `../_shared/references/image_backed_service_iteration.md` for the candidate/release tagging model and release-line rules.
-          - Use `../_shared/references/service_yaml_correctness.md` when the workflow depends on authored or derived `Service` YAML.
-          - Use `../_shared/references/managed_hostname_rules.md` for candidate hostname selection and validation.
-          
-          ## Related skills
-          
-          - `meshagent-workflow-orchestrator`: release work is only one part of a larger workflow
-          - `meshagent-webapp-backend-builder`: backend implementation and handler behavior
-          - `meshagent-service-operator`: generic service lifecycle mechanics
-          - `meshagent-runtime-operator`: live runtime inspection after candidate deploy
-          - `meshagent-webmaster`: route administration and hostname repair
-          
-          ## Default workflow
-          
-          1. Confirm that the task is `candidate` or `release` mode rather than `dev`.
-          2. Start from a proven backend behavior or an exact backend blocker from `meshagent-webapp-backend-builder`.
-          3. Stage a clean release context that contains `webserver.yaml`, the route-referenced files, and the image build file.
-          4. Build a versioned candidate image.
-          5. Derive a candidate service from a valid generated or existing service spec.
-          6. Deploy the candidate side-by-side and verify the candidate URL live.
-          7. Promote to the plain stable tag only after the candidate is proven.
-          
-          ## Release rules
-          
-          - In `candidate` or `release` mode, the code must run from a built image. Do not treat a file-backed `webserver deploy` preview as the release artifact.
-          - The image should contain the code, `webserver.yaml`, and supporting assets rather than relying on a room-storage code mount.
-          - Use `../meshagent-webapp-backend-builder/references/image_release_pipeline.sh` as the starting point for the release pipeline instead of inventing the build flow from scratch.
-          - Before image build, prove that the staged release context root contains `webserver.yaml`, `Containerfile`, and the route-referenced files the build actually needs.
-          - When building from room storage, use room subpaths such as `/<site-dir>` as the build source, not shell-visible `/data/...` paths.
-          - Default to a separate candidate service and separate candidate hostname. Do not replace the current dev or stable site unless the user explicitly asked for promotion, replacement, or rollback.
-          - If the user did not specify naming, derive deterministic defaults from the current site:
-            - candidate image tag: start at `1.0-rc1` for a new release line, then advance within that line
-            - candidate service: `<base-service>-rc`
-            - candidate hostname: `<base-host>-rc` in the environment-correct managed suffix family
-          - For a webserver-backed candidate, derive the candidate `Service` manifest from `meshagent webserver spec` or an existing valid live service spec. Do not hand-author the candidate service YAML from memory.
-          - Only a verified candidate should be promoted to the plain stable release tag.
-          - Rollback readiness means keeping the previous stable plain tag available. Do not roll back automatically unless the user explicitly asked for rollback.
-          
-          ## Verification rules
-          
-          - Do not claim a release candidate exists until the candidate service record exists, the candidate image tag is the one actually referenced, and the candidate URL or candidate service behavior is verified.
-          - If the resulting managed hostname uses the wrong suffix for the active environment, treat the candidate deploy as invalid and repair the hostname before inspecting anything behind it.
-          - If DNS or live HTTP reachability is still unproven, report the candidate or release as incomplete rather than summarizing it as done.
-          - If the candidate service YAML fails validation, repair the derived manifest and rerun validation before treating the issue as a runtime problem.
-          - If the candidate image is built successfully but the candidate service does not exist, report that as a deploy-stage blocker, not a completed release workflow.
-          
-          ## Workflow accountability
-          
-          - This skill may own the workflow outcome when the user's goal is primarily within this skill's scope.
-          - If another skill already owns the workflow, return release-stage evidence and observed state to that owner instead of declaring the overall job complete.
-          - If this skill hands off to another skill, keep accountability for the original goal until the handoff returns evidence or ownership is explicitly transferred.
-          - Follow `../_shared/references/workflow_accountability.md` for owner selection, completion gates, evidence, and forbidden shortcuts.
-          
-          ## Out of scope
-          
-          - Python hot-reload development loops.
-          - Backend feature implementation by itself.
-          - Generic route administration.
-
-      - path: /meshagent-skills/skills/meshagent-webapp-release-operator/agents/openai.yaml
-        text: |
-          interface:
-            display_name: "MeshAgent Webapp Release Operator"
-            short_description: "Image-backed candidate and release workflow for room webapps"
-            default_prompt: "Use $meshagent-webapp-release-operator to build, deploy, or verify image-backed release candidates and releases for a room-hosted webapp."
-
       - path: /meshagent-skills/skills/meshagent-webmaster/SKILL.md
         text: |
           ---
@@ -9319,8 +8712,6 @@ container:
                 when: Checkout roots or the sample static webserver YAML path must be resolved.
               - skill: meshagent-webapp-backend-builder
                 when: The task is building or debugging the website, not just the route.
-              - skill: meshagent-webapp-release-operator
-                when: The route work is part of a release-candidate or release workflow for a room-hosted website.
               - skill: meshagent-service-operator
                 when: The target service itself must be created or repaired before routing it.
             scope:
@@ -9369,7 +8760,6 @@ container:
           - `meshagent-cli-operator`: Reuse its general room-context and managed-hostname rules instead of inventing environment behavior locally.
           - `meshagent-sdk-researcher`: Resolve checkout roots and the sample static webserver YAML path before using codebase references.
           - `meshagent-webapp-backend-builder`: Use it when the task is building or debugging the website rather than operating the route.
-          - `meshagent-webapp-release-operator`: Use it when the route work belongs to a release-candidate or release workflow for a room-hosted website.
           - `meshagent-service-operator`: Use it when the target service must be created, validated, or repaired before routing it.
           
           ## Live room execution
@@ -9514,10 +8904,6 @@ container:
                 when: Room storage copy, inspection, or path verification is required.
               - skill: meshagent-webapp-backend-builder
                 when: The workflow includes room-hosted website or web-handler implementation.
-              - skill: meshagent-webapp-dev-operator
-                when: The workflow needs a hot-reload development loop for a room-hosted webapp backend.
-              - skill: meshagent-webapp-release-operator
-                when: The workflow needs an image-backed candidate, release, promotion, or rollback-ready room-webapp deploy.
               - skill: meshagent-webmaster
                 when: Route or managed-hostname administration is required.
             scope:
@@ -9575,8 +8961,6 @@ container:
           - `meshagent-scheduler`: scheduled-task timing and queue alignment
           - `meshagent-storage-operator`: room storage copy and path verification
           - `meshagent-webapp-backend-builder`: room-hosted website and handler implementation
-          - `meshagent-webapp-dev-operator`: hot-reload dev loops for room-hosted webapp backends
-          - `meshagent-webapp-release-operator`: image-backed candidate and release workflow for room-hosted webapps
           - `meshagent-webmaster`: routes and managed hostnames
           
           ## Core model
@@ -9607,13 +8991,9 @@ container:
           - If a broad probe fails but a narrower room-scoped probe succeeds, continue and report the broad-scope limitation accurately.
           - If the workflow depends on authored service YAML, prefer generated specs and require valid flags, roles, and wiring before treating the asset as deployable.
           - If the workflow must choose a service image, derive the image family from the actual environment before copying an example.
-          - If a service runtime is under active iteration and changes should be containable, prefer a versioned image-build -> service-update -> verify -> rollback-if-needed loop over mutating the live runtime in place.
-          - If the user asks for a release candidate and does not explicitly ask to replace the current site, treat the candidate as a side-by-side deploy: separate service identity, separate candidate URL, and unchanged dev/stable URL.
-          - If the user asks for a release candidate without naming details, derive deterministic defaults from the current site or service instead of inventing arbitrary names: `<base>-rc` for candidate service and hostname, and the next `x.y-rcN` image tag in the active release line.
           - If the workflow includes relative scheduling, make schedule creation the last mutation after the runtime path is proven.
           - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
-          - If the workflow is active Python-handler iteration and the user needs hot reload or rapid preview feedback, keep backend implementation decisions with `meshagent-webapp-backend-builder` and route the runtime loop to `meshagent-webapp-dev-operator`.
-          - If the workflow asks for a release candidate, release, promotion, rollback, or image-backed web deploy, keep backend implementation decisions with `meshagent-webapp-backend-builder` and route packaging plus deploy lifecycle to `meshagent-webapp-release-operator`.
+          - If the workflow is active Python-handler iteration and the user needs hot reload or rapid preview feedback, keep both backend implementation and the `join --watch` dev loop on `meshagent-webapp-backend-builder`.
           - If the workflow returns a managed public URL, require the hostname suffix to match the active API environment before treating that URL as valid output.
           - If the workflow produces a wrong-suffix managed hostname for the active environment, stop immediately and repair the hostname. Do not spend time debugging downstream route, edge, or application behavior behind that invalid URL.
           - If the workflow is a public site that sends email, inherit the webapp and mail completion rules together rather than relaxing either one at the orchestration layer.
