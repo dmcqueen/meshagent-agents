@@ -1,6 +1,6 @@
 ---
 name: meshagent-webmaster
-description: Manage MeshAgent domain mappings and use the sample MeshAgent static webserver YAML as a reference example.
+description: Manage MeshAgent domain mappings, published room-service hostnames, and legacy static webserver references.
 metadata:
   short-description: Operate routes and managed hostnames for published room services.
   references:
@@ -53,11 +53,12 @@ metadata:
 
 # MeshAgent Webmaster
 
-Use this skill for domain mappings, what they do, and the sample static webserver YAML example.
+Use this skill for domain mappings, public hostname routing, and legacy static webserver example lookup.
 
 ## Use this skill when
 
 - The task involves `meshagent route ...` creation, inspection, update, or deletion.
+- The task involves public hostname exposure through `meshagent image build --pack ... --deploy --domain ...` and the main concern is where that hostname routes.
 - The user needs to understand what a domain mapping does.
 - The user needs the sample MeshAgent webserver YAML as an example of serving raw HTML and JavaScript statically.
 - The user wants to verify which room and port a public hostname points to.
@@ -92,11 +93,14 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 - `meshagent route show`
 - `meshagent route list`
 - `meshagent route delete`
+- `meshagent image build --pack ... --deploy --domain ...` when route creation or update is part of an image-backed deploy
 
 ## Domain mapping model
 
 - A route maps a public hostname to a published service port.
 - Creating a route publishes an existing service; it does not build a website for you.
+- `meshagent image build --pack ... --deploy --domain ...` creates or updates the backing route as part of the deploy workflow.
+- `--domain` on `meshagent image build` requires `--deploy` and exactly one published service port from the deployed image-backed service.
 - Updating a route changes where the hostname points.
 - Deleting a route removes public exposure for that hostname.
 - Always verify the target room and port before mutating a route.
@@ -105,13 +109,13 @@ Use this skill for domain mappings, what they do, and the sample static webserve
 
 See `references/static_webserver_example.yaml` for the bundled static webserver YAML example.
 
-This example is for serving static HTML, CSS, JavaScript, and similar assets. It is only a reference example, not a website-building guide.
+This example is for serving static HTML, CSS, JavaScript, and similar assets. It is a legacy or specialized reference example, not the default production hosting path.
 
 ## Route workflow
 
 1. Inspect existing routes with `meshagent route list` or `meshagent route show`.
 2. Confirm the exact hostname, room, and published port.
-3. Create, update, or delete the route.
+3. Create, update, or delete the route, or use `meshagent image build --pack ... --deploy --domain ...` when the route mutation is part of deploying an image-backed site.
 4. Verify that the hostname points to the intended room and service port.
 5. If the hostname is MeshAgent-managed, verify that its suffix matches the active API environment before reporting it as valid.
 
