@@ -1,0 +1,4 @@
+interface:
+  display_name: "MeshAgent Core"
+  short_description: "Minimal high-signal rules for live room work"
+  default_prompt: "Use $meshagent-core for the minimum high-signal MeshAgent room rules before choosing a narrower specialist skill."
