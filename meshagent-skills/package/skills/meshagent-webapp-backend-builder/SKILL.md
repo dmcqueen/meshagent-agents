@@ -9,6 +9,7 @@ metadata:
       - references/meshagent_cli_help.md
       - references/contact_form_example.py
       - references/contact_submission_store.py
+      - references/dev_hot_reload_loop.sh
       - references/mailbox_backed_sender.md
       - references/minimal_webserver.yaml
       - references/verification_checklist.md
@@ -37,10 +38,6 @@ metadata:
       when: The site must persist form submissions or query the in-room database from handler code.
     - skill: meshagent-mail-operator
       when: The blocker is mailbox provisioning or room SMTP behavior.
-    - skill: meshagent-webapp-dev-operator
-      when: The task is active Python-handler iteration and the runtime must hot-reload backend changes.
-    - skill: meshagent-webapp-release-operator
-      when: The task is to cut, verify, promote, or roll back an image-backed release candidate for the webapp.
     - skill: meshagent-webmaster
       when: The main task is route and hostname administration rather than the web app itself.
     - skill: meshagent-webapp-frontend-builder
@@ -52,8 +49,6 @@ metadata:
       - post-deploy HTTP verification
     excludes:
       - generic route administration
-      - hot-reload dev-loop operation
-      - image-backed release-candidate lifecycle
       - deep frontend platform design beyond room webapps
   workflow:
     can_be_owner: true
@@ -87,6 +82,7 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - Reuse the packaged implementation assets in this skill before inventing a fresh pattern:
   - `references/contact_form_example.py`
   - `references/contact_submission_store.py`
+  - `references/dev_hot_reload_loop.sh`
   - `references/mailbox_backed_sender.md`
   - `references/minimal_webserver.yaml`
   - `references/verification_checklist.md`
@@ -107,8 +103,6 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - `meshagent-participant-token-operator`: Use it when the blocker is service token injection, participant-token discovery, or direct room API auth inside the handler runtime.
 - `meshagent-database-operator`: Use it when the site must write to or read from the in-room database.
 - `meshagent-mail-operator`: Use it when the blocker is mailbox provisioning, queue-backed mail intake, or SMTP behavior.
-- `meshagent-webapp-dev-operator`: Use it when the task is active backend iteration and the runtime must hot-reload Python handler changes.
-- `meshagent-webapp-release-operator`: Use it when the task is an image-backed candidate, release, promotion, or rollback-ready webapp deploy.
 - `meshagent-webmaster`: Use it when the main task is route and hostname administration rather than the web app itself.
 - `meshagent-webapp-frontend-builder`: Use it when the site needs a richer interactive frontend built with Preact + htm on top of this backend path.
 
@@ -132,12 +126,14 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 - If the site needs richer interactivity, canvas-style UI, or component-heavy state, keep this backend path and layer `meshagent-webapp-frontend-builder` on top of it rather than inventing a separate backend stack.
 - Do not switch backend languages or runtime models without a requirement that the Python golden path clearly cannot satisfy.
 
-## Mode routing
+## Dev loop routing
 
-- Keep this skill focused on backend implementation, handler behavior, DB integration, and mail integration.
-- If the main need is a hot-reload dev loop for Python handlers, hand the runtime loop to `meshagent-webapp-dev-operator`.
-- If the main need is an image-backed candidate, release, promotion, or rollback-ready artifact, hand the packaging and deploy lifecycle to `meshagent-webapp-release-operator`.
-- If a website request spans backend implementation plus dev or release mechanics, keep backend behavior work here and use the narrower dev or release skill for that mode-specific part.
+- Keep this skill focused on backend implementation, handler behavior, DB integration, mail integration, and the preferred hot-reload dev loop for Python handlers.
+- The preferred Python-handler dev loop is `meshagent webserver join --watch`.
+- Use `references/dev_hot_reload_loop.sh` when the room source lives under room storage and the runtime should watch that source directly.
+- Distinguish room-storage source paths such as `/<site-dir>` from shell-visible mount paths such as `/data/<site-dir>`.
+- Do not treat `meshagent webserver deploy` as a hot-reload path for Python code.
+- If a public dev URL is needed while preserving hot reload, prefer a separate dev-only runtime whose command explicitly runs `meshagent webserver join --watch` against room-mounted source.
 
 ## Implementation rules
 
@@ -203,9 +199,8 @@ Use this skill when the task is to build, deploy, or debug the backend/runtime s
 19. Only fall back to custom raw SMTP code when the user explicitly asks for it or the mailbox-backed path is unavailable.
 20. Before deploying a raw-SMTP form, prove that the runtime actually has a usable SMTP configuration instead of assuming the mailbox implies one.
 21. When using direct SMTP, use the real room SMTP defaults from `mail_common.py`, explicitly add a hostname fallback from `MESHAGENT_API_URL` when `SMTP_HOSTNAME` is null, and use the mailbox-backed sender address from the CLI result.
-22. If the user needs a hot-reload dev loop for Python handlers, hand the runtime loop to `meshagent-webapp-dev-operator` once the backend shape is clear.
-23. If the user asks for a release candidate, release, promotion, or rollback-ready artifact, hand packaging and release lifecycle to `meshagent-webapp-release-operator` after the backend behavior is ready.
-24. Verify the live site with actual GET and POST requests after deploy.
+22. If the user needs a hot-reload dev loop for Python handlers, use `references/dev_hot_reload_loop.sh` or an equivalent `meshagent webserver join --watch` command once the backend shape is clear.
+23. Verify the live site with actual GET and POST requests after deploy.
 
 ## Managed hostname selection
 
