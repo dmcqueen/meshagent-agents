@@ -15,9 +15,7 @@ Use these rules whenever a skill needs to choose, validate, or report a MeshAgen
 - A managed hostname with the wrong environment suffix is a hard error, not a debugging lead. Stop the public-site workflow immediately and correct the hostname before inspecting any edge, DNS, route, or application behavior behind that invalid hostname.
 - A public hostname under the mail domain family or API domain family is a hard error for a managed minisite workflow. Stop immediately and correct the hostname before treating the deploy as meaningful.
 - If a deploy command warns that the hostname suffix is wrong for the current environment, treat that deploy result as failed for public-hostname purposes and fix the hostname before reporting success.
-- If a candidate hostname collides, keep the same environment-specific suffix family and try additional candidates before asking the user to choose one.
-- When a workflow is creating a release candidate rather than promoting the main release, choose a separate candidate hostname in the same managed suffix family and leave the current dev or stable hostname unchanged unless the user explicitly asked to replace it.
-- If the user did not specify a candidate hostname, derive it from the current dev or stable hostname label by appending `-rc` before the environment-correct managed suffix.
+- If a hostname collides, keep the same environment-specific suffix family and try additional alternatives before asking the user to choose one.
 - If `meshagent webserver deploy --domain ...` fails because the hostname is already in use and a follow-up route read is forbidden, treat that hostname as unavailable and try a different candidate before reporting a generic permissions blocker.
 - If a mailbox domain, API environment, and managed public hostname disagree about whether the room is `.life` or `.com`, treat that as unresolved environment evidence and do not report the public URL as valid yet.
 - Do not report, test, or keep debugging a managed URL whose suffix contradicts the active API environment. Nothing behind that URL counts as valid workflow evidence until the hostname itself is corrected.
