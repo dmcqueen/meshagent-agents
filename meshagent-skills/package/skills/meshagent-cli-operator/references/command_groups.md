@@ -6,7 +6,7 @@ This reference set is anchored to the MeshAgent CLI version recorded in `compat.
 Room-runtime default: when executing commands inside `meshagent/shell-codex:default`, prefer `/usr/bin/meshagent ...`.
 For room-visible runtime data, use `/data`.
 If the user asks to create or write a room-visible file and does not give a more specific path, default to `/data/<filename>`.
-For `meshagent webserver deploy`, keep the local website source tree under the current working directory and use `--website-path` as the room-storage destination.
+For room website deploys, keep the local source tree under the current working directory. Prefer `meshagent image build --pack ... --tag room.meshagent.com/... --deploy` for public hosting, and add `--domain` only when the image-backed service exposes exactly one published port. Keep `meshagent webserver join --watch` for Python-handler dev loops and specialized handler workflows.
 For this skill, the current room is the value of `MESHAGENT_ROOM`.
 For website, route, and public hostname work in this environment, the managed hostname suffix is fixed by `MESHAGENT_API_URL` and the shared environment profile rules. If the environment is still unclear, inspect an existing route or ask before inventing a hostname.
 Do not derive a public minisite hostname from the mailbox domain, SMTP hostname, or API hostname. A mail domain such as `mail.meshagent.life` is not a public site suffix.
@@ -40,8 +40,10 @@ Use the following status values exactly:
   Use for transcriber runtime flows when the task is clearly about deploying or operating that runtime.
 - `meshagent port`
   Use for room port inspection and exposure work tied to the current room. If a `--room` flag is used, it must match the current room.
+- `meshagent image`
+  Use for Dockerfile-based room website and container deploys, especially when packing a local source tree into room storage and deploying a service from the built image. If a `--room` flag is used, it must match the current room.
 - `meshagent webserver`
-  Use for room webserver deployment and web content hosting tasks. If a `--room` flag is used, it must match the current room. Prefer the managed hostname suffix derived from `MESHAGENT_API_URL` by default in this environment.
+  Use for Python-handler dev loops, specialized room web handlers, and `join --watch` workflows. If a `--room` flag is used, it must match the current room. Do not treat it as the default production website deploy path when `meshagent image build --pack ... --deploy` can satisfy the request.
 - `meshagent codex`
   Use for Codex-backed runtime operations that stay within room scope.
 - `meshagent voicebot`
@@ -103,12 +105,13 @@ Use the following status values exactly:
 
 - For room-scoped tasks, start with `meshagent room ...`.
 - When the task is room service discovery, prefer `meshagent room service list` over generic `meshagent room agent invoke-tool` calls.
-- For runtime deployment tasks, prefer the specific runtime family such as `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, or `meshagent webserver ...`.
+- For runtime deployment tasks, prefer the specific runtime family such as `meshagent image ...`, `meshagent process ...`, `meshagent chatbot ...`, `meshagent worker ...`, or `meshagent webserver ...`.
 - Use `meshagent service ...` when the task is specifically about service specs, templates, validation, rendering, or deployment mechanics.
 - Use `meshagent rooms ...` only when the user explicitly wants room lifecycle changes such as create/list/update/delete.
 - If a command accepts `--room`, do not target any room other than `MESHAGENT_ROOM`.
 - For room-site requests, deploy in the current room and return the public URL only after live verification succeeds. Do not treat local example-app edits, local build output, route creation, deploy success, DNS resolution, or a redirect alone as completion of a room deployment request.
-- For room-site requests that use `meshagent webserver deploy`, create the local app under the current working directory, keep route sources relative to the routes file when possible, and upload to room storage with `--website-path`.
+- For room-site requests, prefer `meshagent image build --pack <local-dir> --tag room.meshagent.com/<path> --deploy` for production hosting. Keep the local app under the current working directory, include the Dockerfile in that tree, and use a collision-resistant `room.meshagent.com/...` tag path.
+- Add `--domain` to `meshagent image build` only when the workflow wants public exposure and the deployed service has exactly one published port inferred from the local packed Dockerfile.
 - If `MESHAGENT_ROOM` is already available, do not block on `meshagent rooms list` before attempting the room-scoped deploy.
 - Do not add room-messaging enablement to a site, contact-form, mail, or runtime workflow unless the user explicitly asked for room messaging itself.
 - For deployed websites, verify the live URL with a real HTTP GET and confirm the final response is the intended page with the expected final success status, normally `200`, before replying with success.
@@ -116,12 +119,13 @@ Use the following status values exactly:
 - For deployed sites, do not use repeated `meshagent room container exec` attempts against another participant's private container as the primary debug path. Prefer service list, developer watch, container logs, public HTTP checks, and deployed artifacts first.
 - For managed public hostnames, prefer collision-resistant candidates that include the room name or another room-specific suffix instead of generic names like `contact-site`.
 - If the first hostname candidate collides, retry additional candidates automatically and keep the same environment-specific suffix family.
-- If `meshagent webserver deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
+- If `meshagent image build --pack ... --deploy --domain ...` returns a collision and route inspection is forbidden, do not stop there. Treat the hostname as unavailable and try a different candidate before reporting a permissions blocker.
 - Managed hostname suffix is absolute, not advisory: never return anything except the environment-appropriate managed suffix, even if packaged examples or previous failed attempts used the wrong suffix.
-- If a deployed webserver returns 500, inspect the route handler code and runtime assumptions before declaring a room or platform routing issue.
+- If an image-backed deployed site returns 500 or fails health checks, inspect the Dockerfile, exposed ports, service state, container logs, and runtime assumptions before declaring a room or platform routing issue.
 - Use `meshagent-mail-operator` for mailbox, inbox, process `mail:` channel, or contact-form email workflows.
 - Use `meshagent-scheduler` for scheduled-task creation, update, pause, resume, or deletion.
 - Use `meshagent-webapp-backend-builder` for websites, contact forms, `meshagent webserver ...`, or room-hosted web handlers.
+- For current production website hosting, that skill should normally prefer `meshagent image build ...` while keeping `meshagent webserver ...` for Python-handler dev loops and specialized handler workflows.
 - Use `meshagent-webmaster` for explicit route management or public hostname exposure.
 - Escalate to `USE WITH CAUTION` command families only when room-scoped commands are insufficient.
 
