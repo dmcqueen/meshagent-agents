@@ -10,23 +10,13 @@ Every workflow must have exactly one current workflow owner.
 - Supporting skills may execute part of the work, but they do not get to declare the overall workflow complete unless ownership is explicitly transferred.
 - Ownership may transfer to a narrower or more appropriate skill, but the transfer must be explicit in the reasoning and the new owner must continue tracking completion gates and evidence.
 
-## Deployment mode discipline
+## Development-mode discipline
 
-- When a workflow mutates a deployed runtime, classify the intended deployment mode before choosing the mutation path: `dev`, `candidate`, or `release`.
-- `dev` means fast iteration on behavior. File-backed previews and non-rollback-ready runtime changes are acceptable if they are labeled as development state rather than release state.
+- When a workflow mutates a deployed runtime, classify whether it is active development iteration or a normal deployed-state update.
+- `dev` means fast iteration on behavior. File-backed previews and non-stable runtime changes are acceptable if they are labeled as development state rather than stable deployed state.
 - For Python handler development, `dev` should preserve a real hot-reload loop when the workflow depends on rapid code iteration. Do not assume a file sync into a deployed service gives Python hot reload.
-- `candidate` means image-backed deploy testing. Use versioned candidate tags such as `4.2-rc1`, `4.2-rc2`, and verify the real deployed behavior before calling the image releaseable.
-- By default, `candidate` means a side-by-side testable deploy. Unless the user explicitly asks to replace the current dev or stable runtime, keep the existing user-facing service and route intact and stand up the candidate on a separate service identity and candidate URL.
-- If the user asks for a release candidate without specifying names, use deterministic defaults rather than inventing arbitrary naming:
-  - image tag: start a new line at `1.0-rc1` when no release line exists yet, otherwise continue the current release line with the next `-rcN`
-  - candidate service: `<base-service>-rc`
-  - candidate hostname label: `<base-host>-rc`
-- `release` means the current stable image-backed runtime. A release should be a previously verified candidate promoted to the plain stable tag such as `4.2`.
-- Promotion from `candidate` to `release` is an explicit step. Do not silently turn a candidate deploy into the main user-facing runtime just because the candidate worked.
-- If the user asks to release, ship, version, cut a candidate, or preserve rollback readiness, do not stay in `dev` mode silently.
-- If the user is iterating on behavior without asking for release semantics, `dev` is the default unless the chosen workflow explicitly requires image-backed candidate testing.
-- Never switch between `dev`, `candidate`, and `release` implicitly. State the chosen mode in the reasoning and keep the packaging, verification, and reporting rules consistent with that mode.
-- Do not promise hot reload in `candidate` or `release` mode. Hot reload belongs to the development loop, not the release artifact.
+- If the user is iterating on behavior without asking for special packaging semantics, `dev` is the default.
+- Never promise hot reload unless the runtime path actually supports it. Hot reload belongs to the development loop, not to an ordinary deployed service update.
 
 ## Completion gates
 
@@ -139,7 +129,7 @@ The workflow owner must collect concrete evidence for each gate, such as:
 - Do not treat a scheduled task record alone as proof that the future workflow will work.
 - Do not present a created route record, deploy result, or hostname string as the achieved public URL until DNS and the required live HTTP checks have passed.
 - For a normal public website or contact form, do not treat DNS resolution, a TCP connection, or a redirect alone as sufficient verification. The live GET must reach the intended page with the expected final success status, normally `200`.
-- If a public URL has not been verified yet, label it explicitly as an unverified candidate or partial preparation, not as the finished output.
+- If a public URL has not been verified yet, label it explicitly as an unverified URL or partial preparation, not as the finished output.
 - Do not lead with "done", "deployed", "created route", or similar completion language when the public-site outcome is still blocked on DNS or live HTTP verification.
 - Do not summarize a site request as "built", "deployed", or "created in the room" when the actual requested outcome is still a non-working public site.
 - Do not use the room, server, or runtime timezone as a substitute for the requesting user's timezone when the workflow is about scheduling in the user's local time.
