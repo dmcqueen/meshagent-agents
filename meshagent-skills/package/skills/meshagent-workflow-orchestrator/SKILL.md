@@ -46,10 +46,6 @@ metadata:
       when: Room storage copy, inspection, or path verification is required.
     - skill: meshagent-webapp-backend-builder
       when: The workflow includes room-hosted website or web-handler implementation.
-    - skill: meshagent-webapp-dev-operator
-      when: The workflow needs a hot-reload development loop for a room-hosted webapp backend.
-    - skill: meshagent-webapp-release-operator
-      when: The workflow needs an image-backed candidate, release, promotion, or rollback-ready room-webapp deploy.
     - skill: meshagent-webmaster
       when: Route or managed-hostname administration is required.
   scope:
@@ -107,8 +103,6 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - `meshagent-scheduler`: scheduled-task timing and queue alignment
 - `meshagent-storage-operator`: room storage copy and path verification
 - `meshagent-webapp-backend-builder`: room-hosted website and handler implementation
-- `meshagent-webapp-dev-operator`: hot-reload dev loops for room-hosted webapp backends
-- `meshagent-webapp-release-operator`: image-backed candidate and release workflow for room-hosted webapps
 - `meshagent-webmaster`: routes and managed hostnames
 
 ## Core model
@@ -139,13 +133,9 @@ Use this skill when the user's goal spans multiple MeshAgent domains and one ski
 - If a broad probe fails but a narrower room-scoped probe succeeds, continue and report the broad-scope limitation accurately.
 - If the workflow depends on authored service YAML, prefer generated specs and require valid flags, roles, and wiring before treating the asset as deployable.
 - If the workflow must choose a service image, derive the image family from the actual environment before copying an example.
-- If a service runtime is under active iteration and changes should be containable, prefer a versioned image-build -> service-update -> verify -> rollback-if-needed loop over mutating the live runtime in place.
-- If the user asks for a release candidate and does not explicitly ask to replace the current site, treat the candidate as a side-by-side deploy: separate service identity, separate candidate URL, and unchanged dev/stable URL.
-- If the user asks for a release candidate without naming details, derive deterministic defaults from the current site or service instead of inventing arbitrary names: `<base>-rc` for candidate service and hostname, and the next `x.y-rcN` image tag in the active release line.
 - If the workflow includes relative scheduling, make schedule creation the last mutation after the runtime path is proven.
 - If the workflow includes real outbound email, require a real recipient unless the user explicitly asked for a payload-only template.
-- If the workflow is active Python-handler iteration and the user needs hot reload or rapid preview feedback, keep backend implementation decisions with `meshagent-webapp-backend-builder` and route the runtime loop to `meshagent-webapp-dev-operator`.
-- If the workflow asks for a release candidate, release, promotion, rollback, or image-backed web deploy, keep backend implementation decisions with `meshagent-webapp-backend-builder` and route packaging plus deploy lifecycle to `meshagent-webapp-release-operator`.
+- If the workflow is active Python-handler iteration and the user needs hot reload or rapid preview feedback, keep both backend implementation and the `join --watch` dev loop on `meshagent-webapp-backend-builder`.
 - If the workflow returns a managed public URL, require the hostname suffix to match the active API environment before treating that URL as valid output.
 - If the workflow produces a wrong-suffix managed hostname for the active environment, stop immediately and repair the hostname. Do not spend time debugging downstream route, edge, or application behavior behind that invalid URL.
 - If the workflow is a public site that sends email, inherit the webapp and mail completion rules together rather than relaxing either one at the orchestration layer.
